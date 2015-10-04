@@ -1,0 +1,14 @@
+
+wlanInterface.type = DistanceCapacityInterface
+
+# values from http://www.xirrus.com/cdn/pdf/wifi-demystified/documents_posters_range_plotter
+# 0-50ft:54Mbps, 75-100ft:48 Mbps, 125ft:36Mbps, 150ft:24 Mbps, 175ft:18Mbps,
+# 200ft:12Mbps, 225ft:9Mbps, 250ft:6Mbps, 275ft:2Mbps, 300ft:1Mbps
+
+wlanInterface.transmitSpeeds = 6750k, 6750k, 6750k, 6000k, 6000k, 4500k, 3000k, 2250k, 1500k, 1125k, 750k, 250k, 125k
+wlanInterface.transmitRange = 91
+
+# dummy speed
+wlanInterface.transmitSpeed = 0
+
+Group.interface1 = wlanInterface

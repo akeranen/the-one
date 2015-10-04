@@ -1,0 +1,19 @@
+# This configuration file adds Ping application for all the nodes and 
+# a report module that counts the number of pings & pongs sent & received
+
+# Define new application
+pingApp.type = PingApplication
+pingApp.interval = 500
+pingApp.destinationRange = 0,125
+pingApp.pingSize = 5
+pingApp.pongSize = 5
+pingApp.passive = false
+
+# Set Ping app for all nodes
+Group.nrofApplications = 1
+Group.application1 = pingApp
+
+# Add report for Ping app
+Report.nrofReports = 2
+Report.report2 = PingAppReporter
+

@@ -1,0 +1,5 @@
+255c255,256
+< 			network.vprint("Removing copy of " + m + " - ACKed or delivered to final destination.");
+---
+> 			network.vprint("Removing copy of " + m + " at " + this.parent.getName());
+> 			// ACKed or delivered to final destination.

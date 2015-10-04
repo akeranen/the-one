@@ -1,0 +1,2 @@
+Scenario.name = Epidemic
+Group.router = EpidemicRouter

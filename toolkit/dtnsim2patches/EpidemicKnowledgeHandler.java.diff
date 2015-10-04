@@ -1,0 +1,10 @@
+212c212,213
+< 			network.vprint("Removing copy of " + m + " - ACKed or delivered to final destination.");
+---
+> 			network.vprint("Removing copy of " + m + " at " + this.parent.getName());
+> 			// ACKed or delivered to final destination.
+312c313,314
+< 				parent.getNetwork().vprint("DROPPED epidemic " + m + " to free buffer space for " + forMsg);
+---
+> 				parent.getNetwork().vprint("DROPPED epidemic " + m + " to free buffer space for " + forMsg + 
+> 						" at " + parent.getName());

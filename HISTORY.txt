@@ -1,0 +1,205 @@
+HISTORY
+
+This document describes the main changes between each release version.
+
+
+Version 1.6.0 (Oct 2015)
+ - Migrated code to github: https://github.com/akeranen/the-one
+ - New interface module: DistanceCapacityInterface for modeling 
+   interfaces where transfer capacity depends on the distance between
+   nodes (see also example_settings/wifi-interface.txt)
+ - New report module: BufferOccupancyReport
+ - New movement modules: RandomDirection and ModifiedRandomDirection
+ - moved all example settings except default_settings.txt to example_settings
+ - Lots of small bug fixes
+ 
+ 
+Version 1.5.0 (Dec 2011 - Nov 2013)
+  - New movement models
+    - GridLocation for static grid formations
+    - LinearMovement for nodes moving on a line
+    - Path-based external movement model and reader (ExternalPathMovement)
+  - New router modules
+    - WaveRouter for forwarding messages in waves
+    - LifeRouter for "Conway's game of life"-kind of routing
+    - ProphetV2Router with updated PRoPHET algorithm (by Samo Grasic)
+  - New Report modules: MessageCopyCountReport & MessageAvailabilityReport
+    (and analyzing/plotting scripts for them)
+  - Generic energy awareness feature for all routing modules
+  - Message Transfer Accept Policy for defining which messages and from who
+    the nodes should accept for transfers (with any routing module)
+  - Configuration settings improvements
+    - Ability to define ranges as setting values
+    - Ability to define arithmetic expressions as setting values
+    - Default-getters for various settings types
+    - Optimization option to simulate connections only once (see World class)  
+    - Sub-namespace support
+      - Group-specific network interface related settings (e.g., activePeriods
+        and scanInterval) are now in "net" sub-namespace
+  - GUI fixes & updates
+    - Offset to playfield view and dynamic scaling of distance reference bar
+    - Option to disable (by default) the node name string
+    - Autorefresh-feature and keeping the expanded-state to routing info window
+    - Showing of radio coverages, connections and message count is configurable
+   - New GUI features
+    - Focus nodes by clicking on the playfield (see "Playfield options" menu)
+    - GUI node filters feature and one message based filter (see "Tools" menu)    
+  - Bugfixes
+    - Scan intervals work also without MessageCommunicationBus; 
+      thanks to Matthew Orlinski
+    - Connections are properly cleared when ActivenessHandler is used
+    - MaxProp doesn't send messages to hosts that have already received the
+      message even if they have then deleted it
+    - Fix to scanning intervals (works with only the 1st interface though)
+    - Fixed cellSizeMultiplier in ConnectivityGrid class
+    - Message blacklisting for messages that have been rejected by application
+    - Typo fix to initialEnergy setting (need to update config files using this)
+  - Refactoring (may break some third party code)
+    - Moved utility classes to util and routing.util packages
+    - Renamed getOldestMessage method to getNextMessageToRemove in ActiveRouter
+
+    
+Version 1.4.1 (31 Jan 2011)
+  - Bugfixes
+    - External connectivity traces now properly clear connections; thanks to CS
+    - InterferenceLimitedInterface speeds are updated; thanks to Jad Makhlouta
+    - CarMovement reads speed properly from settings 
+    - Warmup time fix to connectivity reports
+    - Fixed initial location (was off by one stop) in MapRoute movement model 
+    - dieselnetConverter.pl supports now also exponent format in the input data
+  - GUI fixes
+    - Fixed window resize issue and using spinner instead of dropdown for zoom
+      levels; thanks to PJ
+  - Set of javadoc, style, and other small fixes
+
+
+Version 1.4.0 (18 Mar 2010)
+  - Added the possibility for each node having multiple interfaces
+     * Requires changes to the configuration files, see default_settings.txt
+  - New/improved routing algorithms
+     * added parametrization for MaxProp (default alpha=1)
+     * added Prophet and Maxprop routing algorithm versions that
+       take timescale as a parameter, and estimate the needed routing algorithm
+       parameters based on that
+       * see Karvo and Ott, Time Scales and Delay-Tolerant Routing Protocols,
+         CHANTS 2008, for more information. 
+     * added new (unrealistic) EpidemicOracleRouter that transfers messages 
+       immediately and deletes all replicas from buffers when the message is
+       delivered
+     * added maximum meeting probability set size support for MaxProp to improve
+       its performance in scenarios with many nodes
+  - Added MessageReport class for reporting message deliveries,
+    CreatedMessagesReport for message creations and EventLogReport for
+    reporting everything (in a StandardEventsReader-compatible format)
+  - Added application layer
+     * applications can be created by extending the Application class
+     * multiple applications can run in the nodes
+     * report modules can register for application events
+     * see PingApplication and PingAppReporter for an example
+  - Added ClusterMovement for creating clusters of nodes and LinearFormation
+    for lines of nodes
+  - ExternalMovementReader supports comment lines (starting with "#")
+  - "Delete all" message event and support for this in StandardEventsReader
+  - Possibility to choose first route stop for MapRouteMovement
+  - Added new message event generators: OneFromEachMessageGenerator and
+    OneToEachMessageGenerator
+  - Added time range setting to MessageEventGenerator
+  - GUI improvements
+    * highlighting of pause-events to EventLogPanel
+    * GUI starts paused by default
+    * hh:mm:ss display for simulation time (right-click the simulation time)
+  - Improved and new analysis scripts
+    * added "log", "total", and "index" options for the ccdfPlotter.pl
+    * added getStatsAverages.pl
+  - Bugfixes
+    * host range checking in MessageEventGenerator
+    * command line option -b doesn't require range anymore
+    
+
+
+Version 1.3.0 (19 Jan 2009)
+- New Features
+  - ModuleCommunicationBus for sharing information between different 
+    (types of) modules
+  - EnergyAwareRouter demonstrating energy awareness possibilities and use of
+    the ModuleCommunicationBus
+    - EnergyLevelReport for reporting the energy levels 
+  - ConnectivityONEReport class for generating connectivity traces
+    that can be read using the StandardEventsReader
+- Enhancements
+  - Any number of input config files supported
+  - Batch mode supports run index ranges (can start from any index)
+    - small change in the command line syntax; see README for details
+  - MessageEventGenerator supports message creation time and destination 
+    host ranges
+  - NetworkLayer has configurable scanning intervals
+  - ExternalEventsQueue can be configured like all the other event 
+    generators (though the old way is still supported too)
+  - ccdfPlotter script has better help and can now also create CDFs
+- New toolkit scripts
+  - messageLocationAnimator for creating GIF animations out of 
+    MessageLocation reports
+  - dieselNetConverter for converting DieselNet traces into ONE 
+    mobility traces
+  - getAverages for counting averages out of different time-stamped reports
+  - splotEnergy for creating 3D plots from EnergyLevel reports
+- Fixed bugs in
+  - handling of incoming messages with expired TTL
+  - report directory creation; thanks to STARpio
+  - BusTravellerMovement incState; thanks to Mehedi Bakht
+  - MaxProp calcTreshold; thanks to Vasco Soares and STARpio
+
+
+Version 1.2.0 (25 Aug 2008)
+- New movement model (framework): Working Day Movement
+    - see WDM_conf_help.txt for configuration help
+    - sample configuration files can be found from the wdm_settings folder  
+    - for information about the model, see our paper at 
+      http://www.netlab.tkk.fi/tutkimus/distance/papers/
+      2008-mobmod-working-day-model.pdf
+- A "stationary movement model" StationaryMovement.
+  - useful for running simulations with only connectivity trace input
+  - createCircles.pl script for easily creating suitable configuration 
+    files for this movement model
+
+
+Version 1.1.0 (6 May 2008)
+- External Events Interface which allows event generator classes that
+  can generate external events (such as creating new messages or 
+  setting up and tearing down connections). See EventQueueHandler 
+  class for details.
+    - due to the EEI, some API changes (in e.g., 
+      createNewMessage method)
+    - external events file feature is now part of the new interface
+    - MessageEventGenerator class for generating uniformly 
+      distributed message creation patterns
+    - new event: ConnectionEvent (supported by StandardEventsReader)
+- Configurable message queue modes (random and FIFO)
+- Option to automatically delete messages that are already delivered
+  to the final recipient
+- Small change in the ordering of checks whether transfer has 
+  already succeeded when the connection has gone down
+- Connection class has now getTransferDoneTime method
+- Settings class can validate range settings (assertValidRange)
+- Classes that need to reset static fields between batch runs can
+  register to the "resetting service" at DTNSim class 
+  (registerForReset)
+- Experimental "update scheduling" functionality that can be used to
+  dynamically insert "update points" between time steps for higher 
+  precision simulations 
+- DTN2 connectivity (requires JDK 6 or higher)
+- Generic property adding feature for Message class (addProperty,
+  getProperty and updateProperty) 
+   - SprayAndWait router uses this now for the copy count
+- New tests
+
+
+Version 1.0.1 (24 February 2008)
+- New warm up feature for the report modules that allows ignoring
+  events and messages that were created during a configurable warm
+  up time.
+- New routing module: First Contact
+
+
+Version 1.0.0 (27 November 2007)
+- First official public release

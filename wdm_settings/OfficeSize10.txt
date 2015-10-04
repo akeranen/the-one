@@ -1,0 +1,306 @@
+
+Scenario.name = default_scenario
+Scenario.simulateConnections = true
+Scenario.updateInterval = 1
+# 43k ~= 12h
+Scenario.endTime = 700k
+
+Report.warmup = 200000
+Group.msgTtl = 1433
+
+Scenario.nrofHostGroups = 17
+
+###################################
+### common settings for all groups
+Group.movementModel = MapBasedMovement
+Group.router = EpidemicRouter
+Group.bufferSize = 100M
+Group.transmitRange = 10
+# transmit speed of 2 Mbps = 250kBps
+Group.transmitSpeed = 100k
+Group.waitTime = 0, 0
+# walking speeds
+Group.speed = 0.5, 1.5
+
+Group.nrOfOffices = 50
+Group.workDayLength = 28800
+Group.probGoShoppingAfterWork = 0.5
+Group.nrOfMeetingSpots = 10
+
+Group.officeWaitTimeParetoCoeff = 0.5
+Group.officeMinWaitTime = 10
+Group.officeMaxWaitTime = 100000
+Group.officeSize = 10
+
+Group.nrofHosts = 0
+
+Group.timeDiffSTD = 7200
+Group.minGroupSize = 1
+Group.maxGroupSize = 3
+Group.minAfterShoppingStopTime = 3600
+Group.maxAfterShoppingStopTime = 7200
+
+####################################################
+Group1.groupID = o
+Group1.speed = 7, 10
+Group1.waitTime = 10, 30
+#Group1.nrofHosts = 0 
+Group1.nrofHosts = 2
+Group1.movementModel = BusMovement
+Group1.routeFile = data/HelsinkiMedium/A_bus.wkt
+Group1.routeType = 2
+Group1.busControlSystemNr = 1
+
+Group2.groupID = A
+Group2.waitTime = 0, 0 
+#Group2.nrofHosts = 0 
+Group2.nrofHosts = 150
+Group2.movementModel = WorkingDayMovement
+Group2.busControlSystemNr = 1
+Group2.speed = 0.8, 1.4
+Group2.ownCarProb = 0.5
+Group2.shoppingControlSystemNr = 1
+Group2.meetingSpotsFile = data/HelsinkiMedium/A_meetingspots.wkt
+Group2.officeLocationsFile = data/HelsinkiMedium/A_offices.wkt
+Group2.homeLocationsFile = data/HelsinkiMedium/A_homes.wkt
+
+
+Group3.groupID = p
+Group3.speed = 7, 10
+Group3.waitTime = 10, 30
+#Group3.nrofHosts = 0 
+Group3.nrofHosts = 2
+Group3.movementModel = BusMovement
+Group3.routeFile = data/HelsinkiMedium/B_bus.wkt
+Group3.routeType = 2
+Group3.busControlSystemNr = 2
+
+Group4.groupID = B
+Group4.waitTime = 0, 0 
+#Group4.nrofHosts = 0 
+Group4.nrofHosts = 50
+Group4.movementModel = WorkingDayMovement
+Group4.busControlSystemNr = 2
+Group4.speed = 0.8, 1.4
+Group4.ownCarProb = 0.5
+Group4.shoppingControlSystemNr = 2
+Group4.meetingSpotsFile = data/HelsinkiMedium/B_meetingspots.wkt
+Group4.officeLocationsFile = data/HelsinkiMedium/B_offices.wkt
+Group4.homeLocationsFile = data/HelsinkiMedium/B_homes.wkt
+
+
+Group5.groupID = q
+Group5.speed = 7, 10
+Group5.waitTime = 10, 30
+#Group5.nrofHosts = 0 
+Group5.nrofHosts = 2
+Group5.movementModel = BusMovement
+Group5.routeFile = data/HelsinkiMedium/C_bus.wkt
+Group5.routeType = 2
+Group5.busControlSystemNr = 3
+
+Group6.groupID = C
+Group6.waitTime = 0, 0 
+#Group6.nrofHosts = 0 
+Group6.nrofHosts = 100
+Group6.movementModel = WorkingDayMovement
+Group6.busControlSystemNr = 3
+Group6.speed = 0.8, 1.4
+Group6.ownCarProb = 0.5
+Group6.shoppingControlSystemNr = 3
+Group6.meetingSpotsFile = data/HelsinkiMedium/C_meetingspots.wkt
+Group6.officeLocationsFile = data/HelsinkiMedium/C_offices.wkt
+Group6.homeLocationsFile = data/HelsinkiMedium/C_homes.wkt
+
+
+Group7.groupID = r
+Group7.speed = 7, 10
+Group7.waitTime = 10, 30
+#Group7.nrofHosts = 0 
+Group7.nrofHosts = 2
+Group7.movementModel = BusMovement
+Group7.routeFile = data/HelsinkiMedium/D_bus.wkt
+Group7.routeType = 2
+Group7.busControlSystemNr = 4
+
+Group8.groupID = D
+Group8.waitTime = 0, 0 
+#Group8.nrofHosts = 0 
+Group8.nrofHosts = 100
+Group8.movementModel = WorkingDayMovement
+Group8.busControlSystemNr = 4
+Group8.speed = 0.8, 1.4
+Group8.ownCarProb = 0.5
+Group8.shoppingControlSystemNr = 4
+Group8.meetingSpotsFile = data/HelsinkiMedium/D_meetingspots.wkt
+Group8.officeLocationsFile = data/HelsinkiMedium/D_offices.wkt
+Group8.homeLocationsFile = data/HelsinkiMedium/D_homes.wkt
+
+
+Group9.groupID = s
+Group9.speed = 7, 10
+Group9.waitTime = 10, 30
+#Group9.nrofHosts = 0 
+Group9.nrofHosts = 2
+Group9.movementModel = BusMovement
+Group9.routeFile = data/HelsinkiMedium/E_bus.wkt
+Group9.routeType = 2
+Group9.busControlSystemNr = 5
+
+Group10.groupID = E
+Group10.waitTime = 0, 0 
+#Group10.nrofHosts = 0 
+Group10.nrofHosts = 100
+Group10.movementModel = WorkingDayMovement
+Group10.busControlSystemNr = 5
+Group10.speed = 0.8, 1.4
+Group10.ownCarProb = 0.5
+Group10.shoppingControlSystemNr = 5
+Group10.meetingSpotsFile = data/HelsinkiMedium/E_meetingspots.wkt
+Group10.officeLocationsFile = data/HelsinkiMedium/E_offices.wkt
+Group10.homeLocationsFile = data/HelsinkiMedium/E_homes.wkt
+
+
+Group11.groupID = t
+Group11.speed = 7, 10
+Group11.waitTime = 10, 30
+#Group11.nrofHosts = 0 
+Group11.nrofHosts = 2
+Group11.movementModel = BusMovement
+Group11.routeFile = data/HelsinkiMedium/F_bus.wkt
+Group11.routeType = 2
+Group11.busControlSystemNr = 6
+
+Group12.groupID = F
+Group12.waitTime = 0, 0 
+#Group12.nrofHosts = 0 
+Group12.nrofHosts = 150
+Group12.movementModel = WorkingDayMovement
+Group12.busControlSystemNr = 6
+Group12.speed = 0.8, 1.4
+Group12.ownCarProb = 0.5
+Group12.shoppingControlSystemNr = 6
+Group12.meetingSpotsFile = data/HelsinkiMedium/F_meetingspots.wkt
+Group12.officeLocationsFile = data/HelsinkiMedium/F_offices.wkt
+Group12.homeLocationsFile = data/HelsinkiMedium/F_homes.wkt
+
+
+Group13.groupID = u
+Group13.speed = 7, 10
+Group13.waitTime = 10, 30
+#Group13.nrofHosts = 0 
+Group13.nrofHosts = 2
+Group13.movementModel = BusMovement
+Group13.routeFile = data/HelsinkiMedium/G_bus.wkt
+Group13.routeType = 2
+Group13.busControlSystemNr = 7
+
+Group14.groupID = G
+Group14.waitTime = 0, 0 
+#Group14.nrofHosts = 0 
+Group14.nrofHosts = 150
+Group14.movementModel = WorkingDayMovement
+Group14.busControlSystemNr = 7
+Group14.speed = 0.8, 1.4
+Group14.ownCarProb = 0.5
+Group14.shoppingControlSystemNr = 7
+Group14.meetingSpotsFile = data/HelsinkiMedium/G_meetingspots.wkt
+Group14.officeLocationsFile = data/HelsinkiMedium/G_offices.wkt
+Group14.homeLocationsFile = data/HelsinkiMedium/G_homes.wkt
+
+
+Group15.groupID = v
+Group15.speed = 7, 10
+Group15.waitTime = 10, 30
+Group15.nrofHosts = 4
+Group15.movementModel = BusMovement
+Group15.routeFile = data/HelsinkiMedium/H_bus.wkt
+Group15.routeType = 2
+Group15.busControlSystemNr = 8
+
+Group16.groupID = H
+Group16.waitTime = 0, 0 
+Group16.nrofHosts = 200
+Group16.movementModel = WorkingDayMovement
+Group16.busControlSystemNr = 8
+Group16.speed = 0.8, 1.4
+Group16.ownCarProb = 0.5
+Group16.shoppingControlSystemNr = 8
+Group16.nrOfOffices = 40
+Group16.nrOfMeetingSpots = 5
+
+
+Group17.groupID = K
+Group17.movementModel = ShortestPathMapBasedMovement
+Group17.waitTime = 100, 300
+Group17.speed = 7, 10
+Group17.nrofHosts = 10
+
+
+# max number of external events to preload (default = 500) 
+ExternalEvents.nrofPreload = 500
+# path to external events file
+ExternalEvents.filePath = ee/700_events_1000_nodes_700ks.txt
+
+# seed for movement models' pseudo random number generator (default = 0)
+MovementModel.rngSeed = [2; 8372; 98092; 18293; 777]
+#MovementModel.rngSeed = [2; 8372]
+#MovementModel.rngSeed = 8372
+
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 10000, 8000
+# How long time to move hosts in the world before real simulation
+MovementModel.warmup = 43000
+
+## Map based movement -movement model specific settings
+MapBasedMovement.nrofMapFiles = 1
+
+MapBasedMovement.mapFile1 = data/HelsinkiMedium/roads.wkt
+
+## Reports - all report names have to be valid report classes
+
+# how many reports to load
+Report.nrofReports = 8
+# default directory of reports (can be overriden per Report with output setting)
+Report.reportDir = [reports/OfficeSize10/1; reports/OfficeSize10/2; reports/OfficeSize10/3; reports/OfficeSize10/4; reports/OfficeSize10/5]
+#Report.reportDir = [reports/r1; reports/r2]
+#Report.reportDir = reports/
+
+# Report classes to load
+Report.report1 = InterContactTimesReport
+Report.report2 = ContactTimesReport
+Report.report3 = UniqueEncountersReport
+Report.report4 = TotalEncountersReport
+Report.report5 = EncountersVSUniqueEncountersReport
+Report.report6 = ContactsDuringAnICTReport
+Report.report7 = MessageStatsReport
+Report.report8 = ContactsPerHourReport
+
+## Default settings for some routers settings
+ProphetRouter.secondsInTimeUnit = 30
+SprayAndWaitRouter.nrofCopies = 6
+SprayAndWaitRouter.binaryMode = true
+
+
+## Optimization settings -- these affect the speed of the simulation
+## see World class for details.
+Optimization.connectionAlg = 2
+Optimization.cellSizeMult = 5
+Optimization.randomizeUpdateOrder = true
+
+
+## GUI settings
+
+# GUI underlay image settings
+GUI.UnderlayImage.fileName = data/helsinki_underlay.png
+# Image offset in pixels (x, y)
+GUI.UnderlayImage.offset = 64, 20
+# Scaling factor for the image
+GUI.UnderlayImage.scale = 4.75
+# Image rotation (radians)
+GUI.UnderlayImage.rotate = -0.015
+
+# how many events to show in the log panel (default = 30)
+GUI.EventLogPanel.nrofEvents = 200
+# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
+#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$

@@ -1,0 +1,116 @@
+
+Scenario.name = default_scenario
+Scenario.simulateConnections = true
+Scenario.updateInterval = 1
+# 43k ~= 12h
+Scenario.endTime = 700k
+
+Report.warmup = 200000
+Group.msgTtl = 1433
+
+Scenario.nrofHostGroups = 1
+
+###################################
+### common settings for all groups
+Group.movementModel = MapBasedMovement
+Group.router = EpidemicRouter
+Group.bufferSize = 100M
+Group.transmitRange = 10
+# transmit speed of 2 Mbps = 250kBps
+Group.transmitSpeed = 100k
+Group.waitTime = 0, 0
+# walking speeds
+Group.speed = 0.5, 1.5
+
+Group.nrOfOffices = 50
+Group.workDayLength = 28800
+Group.probGoShoppingAfterWork = 0.5
+Group.nrOfMeetingSpots = 10
+
+Group.officeWaitTimeParetoCoeff = 0.5
+Group.officeMinWaitTime = 10
+Group.officeMaxWaitTime = 100000
+Group.officeSize = 100
+
+Group.nrofHosts = 0
+
+Group.timeDiffSTD = 7200
+Group.minGroupSize = 1
+Group.maxGroupSize = 3
+Group.minAfterShoppingStopTime = 3600
+Group.maxAfterShoppingStopTime = 7200
+
+####################################################
+Group1.groupID = R
+Group1.speed = 0.5, 5
+Group1.waitTime = 1, 3600
+Group1.nrofHosts = 1000
+Group1.movementModel = RandomWaypoint
+
+# max number of external events to preload (default = 500) 
+ExternalEvents.nrofPreload = 500
+# path to external events file
+ExternalEvents.filePath = ee/700_events_1000_nodes_700ks.txt
+
+# seed for movement models' pseudo random number generator (default = 0)
+MovementModel.rngSeed = [2; 8372; 98092; 18293; 777]
+#MovementModel.rngSeed = [2; 8372]
+#MovementModel.rngSeed = 8372
+
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 8300, 7300
+# How long time to move hosts in the world before real simulation
+MovementModel.warmup = 43000
+
+## Map based movement -movement model specific settings
+MapBasedMovement.nrofMapFiles = 1
+
+MapBasedMovement.mapFile1 = data/HelsinkiMedium/roads.wkt
+
+## Reports - all report names have to be valid report classes
+
+# how many reports to load
+Report.nrofReports = 8
+# default directory of reports (can be overriden per Report with output setting)
+Report.reportDir = [reports/RWP/1; reports/RWP/2; reports/RWP/3; reports/RWP/4; reports/RWP/5]
+#Report.reportDir = [reports/r1; reports/r2]
+#Report.reportDir = reports/
+
+# Report classes to load
+Report.report1 = InterContactTimesReport
+Report.report2 = ContactTimesReport
+Report.report3 = UniqueEncountersReport
+Report.report4 = TotalEncountersReport
+Report.report5 = EncountersVSUniqueEncountersReport
+Report.report6 = ContactsDuringAnICTReport
+Report.report7 = MessageStatsReport
+Report.report8 = ContactsPerHourReport
+
+## Default settings for some routers settings
+ProphetRouter.secondsInTimeUnit = 30
+SprayAndWaitRouter.nrofCopies = 6
+SprayAndWaitRouter.binaryMode = true
+
+
+## Optimization settings -- these affect the speed of the simulation
+## see World class for details.
+Optimization.connectionAlg = 2
+Optimization.cellSizeMult = 5
+Optimization.randomizeUpdateOrder = true
+
+
+## GUI settings
+
+# GUI underlay image settings
+GUI.UnderlayImage.fileName = data/helsinki_underlay.png
+# Image offset in pixels (x, y)
+GUI.UnderlayImage.offset = 64, 20
+# Scaling factor for the image
+GUI.UnderlayImage.scale = 4.75
+# Image rotation (radians)
+GUI.UnderlayImage.rotate = -0.015
+
+# how many events to show in the log panel (default = 30)
+GUI.EventLogPanel.nrofEvents = 200
+# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
+#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$

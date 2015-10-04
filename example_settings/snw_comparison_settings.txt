@@ -1,0 +1,13 @@
+Scenario.name = SNWComp-%%SprayAndWaitRouter.nrofCopies%%-B%%SprayAndWaitRouter.binaryMode%%
+
+Group.router = SprayAndWaitRouter
+
+SprayAndWaitRouter.nrofCopies = [1;2;3;4;5;6;7;8;9;10;11]
+SprayAndWaitRouter.binaryMode = [true;false]
+
+
+MovementModel.rngSeed = 0
+Report.nrofReports = 1
+Report.report1 = MessageStatsReport
+
+Report.reportDir = snwcomp_reports/

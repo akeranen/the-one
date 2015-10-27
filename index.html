@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="The ONE : The Opportunistic Network Environment simulator">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>The ONE</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/akeranen/the-one">View on GitHub</a>
+
+          <h1 id="project_title">The ONE</h1>
+          <h2 id="project_tagline">The Opportunistic Network Environment simulator</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/akeranen/the-one/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/akeranen/the-one/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a id="information" class="anchor" href="#information" aria-hidden="true"><span class="octicon octicon-link"></span></a>Information</h3>
+
+<p>The ONE is a simulation environment that is capable of</p>
+
+<ul>
+<li>generating node movement using different movement models</li>
+<li>routing messages between nodes with various DTN routing algorithms and sender and receiver types</li>
+<li>visualizing both mobility and message passing in real time in its graphical user interface.</li>
+<li>ONE can import mobility data from real-world traces or other mobility generators. It can also produce a variety of reports from node movement to message passing and general statistics.</li>
+</ul>
+
+<h3>
+<a id="referring-to-the-one-simulator" class="anchor" href="#referring-to-the-one-simulator" aria-hidden="true"><span class="octicon octicon-link"></span></a>Referring to the ONE simulator</h3>
+
+<p>If you have used the ONE simulator in your research, please use the SIMUTools paper (<a href="https://www.netlab.tkk.fi/tutkimus/dtn/theone/pub/the_one_simutools.pdf">[PDF]</a> <a href="https://www.netlab.tkk.fi/tutkimus/dtn/theone/pub/theone_bib.txt">[BibTeX]</a>) as the reference.</p>
+
+<h3>
+<a id="community-resources" class="anchor" href="#community-resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>Community Resources</h3>
+
+<p>The users of the ONE simulator have created many helpful resources:</p>
+
+<ul>
+<li><a href="https://theonekb-barunsaha.rhcloud.com/">Barun Saha's Knowledge Base for the ONE</a></li>
+<li><a href="http://one-simuator-for-beginners.blogspot.in/2013/08/one-simulator-introduction.html">The ONE Simulator for Beginners</a></li>
+<li><a href="http://www.margalho.pro.br/subsites/theone.html">ONE Tutorial by Mauro Margalho Coutinho</a></li>
+<li><a href="http://agoes.web.id/metric-description-from-simulator/">Agussalim's metrics compilation</a></li>
+<li>
+<a href="http://delay-tolerant-networks.blogspot.com.br/">Barun Saha's blog on Delay-tolerant Networks</a>
+<a href="https://sites.google.com/site/sahilgupta221231/file-cabinet">Sahil Gupta's web site related to DTN and ONE</a>
+</li>
+</ul>
+
+<h3>
+<a id="contact" class="anchor" href="#contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contact</h3>
+
+<p>For questions about the simulator you can subscribe to the ONE user community email list at our <a href="https://www.netlab.tkk.fi/mailman/listinfo/theone">mailman</a>.</p>
+
+<p>This list is for discussion and announcements for the ONE simulator. The users of the ONE can report bugs, share experiences and code, and give hints to each other on this list. New releases of the ONE are also announced on this list.</p>
+
+<p>However, we are planning to move to a new platform for Q&amp;A in the near future. Stay tuned, the change will be announced at the mailing list.</p>
+
+<h3>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h3>
+
+<p>The program is released under GPLv3 license. Copyrights of the included map data of Helsinki downtown are owned by Maanmittauslaitos.</p>
+
+<h3>
+<a id="running-a-really-quick-help" class="anchor" href="#running-a-really-quick-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running (a really quick help)</h3>
+
+<p>Download the program. Compile it using your favourite IDE or compile.bat (should work in Linux, Windows and Mac OS X).</p>
+
+<p>Start a simulation by typing (in Linux/Unix/OS X)
+    ./one.sh
+or (in Windows)
+    one.bat</p>
+
+<p>After a short while, the GUI should start and a simulation should be up and running.</p>
+
+<p>Every simulation run uses the settings from default_settings.txt, if one exists. You can give an additional configuration file(s) as a parameters to define new settings or override the ones defined in default settings. For example:</p>
+
+<pre><code>./one.sh epidemic_settings.txt
+</code></pre>
+
+<p>That would use the (included) epidemic settings configuration file and change the router for all nodes to epidemic (default is "passive router", i.e., no routing logic). See default_settings.txt for information about the different settings.</p>
+
+<p>If you don't wish to use the GUI, you can run simulations in batch mode using -b option. In batch mode you can also define the number of runs using different run indexes. For example:</p>
+
+<pre><code>./one.sh -b 22 example_settings/snw_comparison_settings.txt 
+</code></pre>
+
+<p>That would run spray and wait comparison using 11 different message copy counts and with binary and normal mode. See Settings class' javadoc for details about run indexing.</p>
+
+<p>To create a local copy of the javadoc documentation, run the create_docs.sh script in the doc folder.</p>
+
+<p>See the included README.txt for more information.</p>
+
+<h3>
+<a id="publications" class="anchor" href="#publications" aria-hidden="true"><span class="octicon octicon-link"></span></a>Publications</h3>
+
+<p>Ari Keränen, Jörg Ott and Teemu Kärkkäinen: The ONE Simulator for DTN Protocol Evaluation. SIMUTools'09: 2nd International Conference on Simulation Tools and Techniques. Rome, March 2009. [PDF] [BibTeX]</p>
+
+<p>Jouni Karvo and Jörg Ott: Time Scales and Delay-Tolerant Routing Protocols. Proceedings of the ACM MobiCom CHANTS Workshop, September 2008. San Francisco, September 2008. [PDF] [BibTeX]</p>
+
+<p>Frans Ekman, Ari Keränen, Jouni Karvo, and Jörg Ott: Working Day Movement Model. 1st SIGMOBILE Workshop on Mobility Models for Networking Research, Hong Kong, May 2008. [PDF] [BibTeX]</p>
+
+<p>Ari Keränen: Opportunistic Network Environment simulator. Special Assignment, Helsinki University of Technology, Department of Communications and Networking, May 2008. [PDF]</p>
+
+<p>Ari Keränen and Jörg Ott: Increasing Reality for DTN Protocol Simulations. Technical Report, Helsinki University of Technology, Networking Laboratory, July 2007. [PDF]</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">The ONE maintained by <a href="https://github.com/akeranen">akeranen</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

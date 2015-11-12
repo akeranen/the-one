@@ -48,7 +48,7 @@ public class MovementListenerTest {
 			"Scenario.simulateConnections = false\n" +
 			"MovementModel.worldSize = 1000,1000\n" +
 			"Report.nrofReports = 1\n" +
-			"Report.reportDir = test/reports/MovementListenerTest\n" +
+			"Report.reportDir = test\n" +
 			"Report.report1 = MovementListenerTestReport\n" +
 			"Events.nrof = 0\n" +
 			"Scenario.nrofHostGroups = 1\n" +
@@ -70,9 +70,6 @@ public class MovementListenerTest {
 		// TODO: If more test cases are added that use Settings, they might
 		// be run in parallel and break.
 
-		// Set the delegate for MovementListenerTestReport
-		MovementListenerTestReport.setDelegate(new MovementReport());
-
 		// Setup the settings
 		Settings.initFromStream(
 				new StringBufferInputStream(INITIAL_LOC_TEST_SETTINGS));
@@ -82,6 +79,9 @@ public class MovementListenerTest {
 				super.done();
 			}
 		};
+
+		// Set the delegate for MovementListenerTestReport
+		MovementListenerTestReport.setDelegate(new MovementReport());
 
 		// Start the DTNSimUI, this will create SimScenario instance with all
 		// the nodes and reports based on the configuration.

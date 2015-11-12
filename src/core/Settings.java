@@ -281,6 +281,40 @@ public class Settings {
 	}
 
 	/**
+	 * Initializes the settings all Settings objects will use. This should be
+	 * called before any setting requests. Subsequent calls replace all
+	 * old settings and then Settings contains only the new settings.
+	 *
+	 * @param settingsStream
+	 * 		InputStream where the properties are read.
+	 * @throws SettingsError
+	 * 		If loading the settings didn't succeed
+	 */
+	public static void initFromStream(final InputStream settingsStream)
+	throws SettingsError {
+		props = new Properties();
+		try {
+			props.load(settingsStream);
+		} catch (IOException e) {
+			throw new SettingsError(e);
+		}
+
+		String outFile = props.getProperty(SETTING_OUTPUT_S);
+		if (outFile != null) {
+			if (outFile.trim().length() == 0) {
+				out = System.out;
+			} else {
+				try {
+					out = new PrintStream(new File(outFile));
+				} catch (FileNotFoundException e) {
+					throw new SettingsError("Can't open Settings output file:" +
+							e);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Reads another settings file and adds the key-value pairs to the current
 	 * settings overriding any values that already existed with the same keys.
 	 * @param propFile Path to the property file

@@ -25,6 +25,8 @@ import core.Debug;
 import core.Settings;
 import core.SimClock;
 
+import static core.Constants.DEBUG;
+
 /**
  * Delivers bundles from dtnd to ONE. Must be configured as an
  * external events generator in the configuration file.
@@ -97,8 +99,8 @@ public class DTN2Events implements EventQueue {
 			try {
 				f_in = new FileInputStream(new File(location));
 			} catch (FileNotFoundException ex) {
-				Debug.p("CLAInterfaceImpl: Couldn't open file "+location+
-						" (file not found)");
+				if (DEBUG) Debug.p("CLAInterfaceImpl: Couldn't open file " +
+						location + " (file not found)");
 				return r;
 			}
 
@@ -139,8 +141,8 @@ public class DTN2Events implements EventQueue {
 			Collection<DTN2Manager.EIDHost> c =
 				DTN2Manager.getHosts(bundle.destination_EID);
 			if (c==null || c.isEmpty()) {
-				Debug.p( "Couldn't find destination matching '" +
-						bundle.destination_EID+"'");
+				if (DEBUG) Debug.p( "Couldn't find destination matching '" +
+						bundle.destination_EID + "'");
 				r.reply = false;
 				r.bytes_sent = 0;
 				return r;

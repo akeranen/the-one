@@ -20,6 +20,8 @@ import report.DTN2Reporter;
 import fi.tkk.netlab.dtn.ecla.Bundle;
 import fi.tkk.netlab.dtn.ecla.CLAParser;
 
+import static core.Constants.DEBUG;
+
 /**
  * Manages the external convergence layer connections to dtnd.
  * Parses the configuration file and sets up the CLAParsers
@@ -90,8 +92,8 @@ public class DTN2Manager {
 			isr = new InputStreamReader(f_in);
 			in = new BufferedReader(isr);
 		} catch (Exception e) {
-			Debug.p("Could not load requested DTN2 configuration file '"
-					+fname+"'");
+			if (DEBUG) Debug.p("Could not load requested DTN2 configuration " +
+					"file '" + fname + "'.");
 			return;
 		}
 

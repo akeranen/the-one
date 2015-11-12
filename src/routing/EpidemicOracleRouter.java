@@ -9,6 +9,8 @@ import java.util.List;
 
 import core.*;
 
+import static core.Constants.DEBUG;
+
 /**
  * <P>
  * Epidemic message router with an oracle that tells when a message is delivered
@@ -148,7 +150,7 @@ public class EpidemicOracleRouter extends ActiveRouter {
 		Message m = con.getMessage();
 
 		if (m == null) {
-			core.Debug.p("Null message for con " + con);
+			if (DEBUG) core.Debug.p("Null message for con " + con);
 			return;
 		}
 

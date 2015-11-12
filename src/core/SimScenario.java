@@ -274,6 +274,13 @@ public class SimScenario implements Serializable {
 	 */
 	public void addMovementListener(MovementListener ml){
 		this.movementListeners.add(ml);
+
+		// Invoke the initialLocation() for all nodes that already exist in
+		// the Scenario. This ensures initialLocation() gets called for every
+		// node.
+		for (final DTNHost host : this.hosts) {
+			ml.initialLocation(host, host.getLocation());
+		}
 	}
 
 	/**

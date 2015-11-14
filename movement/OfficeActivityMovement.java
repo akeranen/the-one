@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -20,56 +20,56 @@ import core.Settings;
 import core.SimClock;
 
 /**
- * This class models movement at an office. If the node happens to be at some 
- * other location than the office, it first walks the shortest path to the 
- * office and then stays there until the end of the work day. A node has only 
+ * This class models movement at an office. If the node happens to be at some
+ * other location than the office, it first walks the shortest path to the
+ * office and then stays there until the end of the work day. A node has only
  * works at one office.
- * 
+ *
  * @author Frans Ekman
  *
  */
-public class OfficeActivityMovement extends MapBasedMovement implements 
+public class OfficeActivityMovement extends MapBasedMovement implements
 	SwitchableMovement {
 
 	private static final int WALKING_TO_OFFICE_MODE = 0;
 	private static final int AT_OFFICE_MODE = 1;
-	
+
 	public static final String WORK_DAY_LENGTH_SETTING = "workDayLength";
 	public static final String NR_OF_OFFICES_SETTING = "nrOfOffices";
-	
+
 	public static final String OFFICE_SIZE_SETTING = "officeSize";
-	public static final String OFFICE_WAIT_TIME_PARETO_COEFF_SETTING = 
+	public static final String OFFICE_WAIT_TIME_PARETO_COEFF_SETTING =
 		"officeWaitTimeParetoCoeff";
-	public static final String OFFICE_MIN_WAIT_TIME_SETTING = 
+	public static final String OFFICE_MIN_WAIT_TIME_SETTING =
 		"officeMinWaitTime";
-	public static final String OFFICE_MAX_WAIT_TIME_SETTING = 
-		"officeMaxWaitTime"; 
-	public static final String OFFICE_LOCATIONS_FILE_SETTING = 
+	public static final String OFFICE_MAX_WAIT_TIME_SETTING =
+		"officeMaxWaitTime";
+	public static final String OFFICE_LOCATIONS_FILE_SETTING =
 		"officeLocationsFile";
-	
+
 	private static int nrOfOffices = 50;
-	
+
 	private int mode;
 	private int workDayLength;
 	private int startedWorkingTime;
 	private boolean ready;;
 	private DijkstraPathFinder pathFinder;
-	
+
 	private ParetoRNG paretoRNG;
-	
+
 	private int distance;
 	private double officeWaitTimeParetoCoeff;
 	private double officeMinWaitTime;
 	private double officeMaxWaitTime;
-	
+
 	private List<Coord> allOffices;
-	
+
 	private Coord lastWaypoint;
 	private Coord officeLocation;
 	private Coord deskLocation;
-	
+
 	private boolean sittingAtDesk;
-	
+
 	/**
 	 * OfficeActivityMovement constructor
 	 * @param settings
@@ -79,17 +79,17 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 
 		workDayLength = settings.getInt(WORK_DAY_LENGTH_SETTING);
 		nrOfOffices = settings.getInt(NR_OF_OFFICES_SETTING);
-		
+
 		distance = settings.getInt(OFFICE_SIZE_SETTING);
 		officeWaitTimeParetoCoeff = settings.getDouble(
 				OFFICE_WAIT_TIME_PARETO_COEFF_SETTING);
 		officeMinWaitTime = settings.getDouble(OFFICE_MIN_WAIT_TIME_SETTING);
 		officeMaxWaitTime = settings.getDouble(OFFICE_MAX_WAIT_TIME_SETTING);
-		
+
 		startedWorkingTime = -1;
 		pathFinder = new DijkstraPathFinder(null);
 		mode = WALKING_TO_OFFICE_MODE;
-		
+
 		String officeLocationsFile = null;
 		try {
 			officeLocationsFile = settings.getSetting(
@@ -97,7 +97,7 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 		} catch (Throwable t) {
 			// Do nothing;
 		}
-		
+
 		if (officeLocationsFile == null) {
 			MapNode[] mapNodes = (MapNode[])getMap().getNodes().
 				toArray(new MapNode[0]);
@@ -113,8 +113,8 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 					SimMap map = getMap();
 					Coord offset = map.getOffset();
 					// mirror points if map data is mirrored
-					if (map.isMirrored()) { 
-						coord.setLocation(coord.getX(), -coord.getY()); 
+					if (map.isMirrored()) {
+						coord.setLocation(coord.getX(), -coord.getY());
 					}
 					coord.translate(offset.getX(), offset.getY());
 					allOffices.add(coord);
@@ -125,12 +125,12 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 				e.printStackTrace();
 			}
 		}
-		
+
 		deskLocation = getRandomCoorinateInsideOffice();
-		paretoRNG = new ParetoRNG(rng, officeWaitTimeParetoCoeff, 
+		paretoRNG = new ParetoRNG(rng, officeWaitTimeParetoCoeff,
 				officeMinWaitTime, officeMaxWaitTime);
 	}
-	
+
 	/**
 	 * Copyconstructor
 	 * @param proto
@@ -142,11 +142,11 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 		this.distance = proto.distance;
 		this.pathFinder = proto.pathFinder;
 		this.mode = proto.mode;
-		
+
 		if (proto.allOffices == null) {
 			MapNode[] mapNodes = (MapNode[])getMap().getNodes().
 				toArray(new MapNode[0]);
-			int officeIndex = rng.nextInt(mapNodes.length - 1) / 
+			int officeIndex = rng.nextInt(mapNodes.length - 1) /
 				(mapNodes.length/nrOfOffices);
 			officeLocation = mapNodes[officeIndex].getLocation().clone();
 		} else {
@@ -154,24 +154,24 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 			officeLocation = allOffices.get(
 					rng.nextInt(allOffices.size())).clone();
 		}
-		
+
 		officeWaitTimeParetoCoeff = proto.officeWaitTimeParetoCoeff;
 		officeMinWaitTime = proto.officeMinWaitTime;
 		officeMaxWaitTime = proto.officeMaxWaitTime;
-		
+
 		deskLocation = getRandomCoorinateInsideOffice();
 		this.paretoRNG = proto.paretoRNG;
 	}
-	
+
 	public Coord getRandomCoorinateInsideOffice() {
-		double x_coord = officeLocation.getX() + 
+		double x_coord = officeLocation.getX() +
 			(0.5 - rng.nextDouble()) * distance;
 		if (x_coord > getMaxX()) {
 			x_coord = getMaxX();
 		} else if (x_coord < 0) {
 			x_coord = 0;
 		}
-		double y_coord = officeLocation.getY() + 
+		double y_coord = officeLocation.getY() +
 			(0.5 - rng.nextDouble()) * distance;
 		if (y_coord > getMaxY()) {
 			y_coord = getMaxY();
@@ -180,7 +180,7 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 		}
 		return new Coord(x_coord, y_coord);
 	}
-	
+
 	@Override
 	public Coord getInitialLocation() {
 		double x = rng.nextDouble() * getMaxX();
@@ -201,7 +201,7 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 			}
 			MapNode thisNode = map.getNodeByCoord(lastWaypoint);
 			MapNode destinationNode = map.getNodeByCoord(officeLocation);
-			List<MapNode> nodes = pathFinder.getShortestPath(thisNode, 
+			List<MapNode> nodes = pathFinder.getShortestPath(thisNode,
 					destinationNode);
 			Path path = new Path(generateSpeed());
 			for (MapNode node : nodes) {
@@ -211,7 +211,7 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 			mode = AT_OFFICE_MODE;
 			return path;
 		}
-		
+
 		if (startedWorkingTime == -1) {
 			startedWorkingTime = SimClock.getIntTime();
 		}
@@ -229,7 +229,7 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 			c = deskLocation.clone();
 			sittingAtDesk = true;
 		}
-		
+
 		Path path =  new Path(1);
 		path.addWaypoint(c);
 		return path;
@@ -237,16 +237,16 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 
 	@Override
 	protected double generateWaitTime() {
-		int timeLeft = workDayLength - 
+		int timeLeft = workDayLength -
 			(SimClock.getIntTime() - startedWorkingTime);
-		
+
 		int waitTime = (int)paretoRNG.getDouble();
 		if (waitTime > timeLeft) {
 			return timeLeft;
-		} 
+		}
 		return waitTime;
 	}
-	
+
 	@Override
 	public MapBasedMovement replicate() {
 		return new OfficeActivityMovement(this);
@@ -275,7 +275,7 @@ public class OfficeActivityMovement extends MapBasedMovement implements
 		ready = false;
 		mode = WALKING_TO_OFFICE_MODE;
 	}
-	
+
 	/**
 	 * @return The location of the office
 	 */

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -22,29 +22,29 @@ import core.SimError;
 public class BinaryEventsReader implements ExternalEventsReader {
 	/** Extension of binary external events file */
 	public static final String BINARY_EXT = ".binee";
-	
+
 	private ObjectInputStream in;
 	private int eventsLeft;
-	
+
 	/**
 	 * Constructor.
 	 * @param eventsFile The file where the events are read
 	 */
-	public BinaryEventsReader(File eventsFile) {	
+	public BinaryEventsReader(File eventsFile) {
 		try {
 			FileInputStream fis = new FileInputStream(eventsFile);
 			in = new ObjectInputStream(fis);
 			// first object should tell the amount of events
-			eventsLeft = (Integer)in.readObject(); 
+			eventsLeft = (Integer)in.readObject();
 		} catch (IOException e) {
 			throw new SimError(e);
 		} catch (ClassNotFoundException e) {
 			throw new SimError("Invalid binary input file for external " +
 					"events:" + eventsFile.getAbsolutePath(), e);
 		}
-		
+
 	}
-	
+
 	/**
 	 * Read events from a binary file created with storeBinaryFile method
 	 * @param nrof Maximum number of events to read
@@ -58,7 +58,7 @@ public class BinaryEventsReader implements ExternalEventsReader {
 		if (eventsLeft == 0) {
 			return events;
 		}
-		
+
 		try {
 			for (int i=0; i < nrof && eventsLeft > 0; i++) {
 				events.add((ExternalEvent)in.readObject());
@@ -70,9 +70,9 @@ public class BinaryEventsReader implements ExternalEventsReader {
 		} catch (Exception e) { // FIXME: quick 'n' dirty exception handling
 			throw new SimError(e);
 		}
-		return events;	
+		return events;
 	}
-	
+
 	/**
 	 * Checks if the given file is a binary external events file
 	 * @param file The file to check
@@ -82,8 +82,8 @@ public class BinaryEventsReader implements ExternalEventsReader {
 		if (!file.getName().endsWith(BINARY_EXT)) {
 			return false;
 		}
-		
-		// extension matches, try to read an event 
+
+		// extension matches, try to read an event
 		try {
 			BinaryEventsReader r = new BinaryEventsReader(file);
 			r.readEvents(1);
@@ -92,10 +92,10 @@ public class BinaryEventsReader implements ExternalEventsReader {
 		catch (SimError e) {
 			return false; // read failed -> not a valid file
 		}
-		
+
 		return true; // seems to be a valid binary ee file
 	}
-	
+
 	/**
 	 * Stores the events to a binary file
 	 * @param fileName Path to the file where the events are stored
@@ -109,14 +109,14 @@ public class BinaryEventsReader implements ExternalEventsReader {
 		if (!fileName.endsWith(BINARY_EXT)) {
 			fileName += "BINARY_EXT";
 		}
-		
+
 		ObjectOutputStream out;
 		FileOutputStream fos = new FileOutputStream(fileName);
 		out = new ObjectOutputStream(fos);
 
 		// store the number of events
 		out.writeObject(new Integer(events.size()));
-		
+
 		// store events
 		for (ExternalEvent ee : events) {
 			out.writeObject(ee);
@@ -133,5 +133,5 @@ public class BinaryEventsReader implements ExternalEventsReader {
 			throw new SimError(ioe);
 		}
 	}
-		
+
 }

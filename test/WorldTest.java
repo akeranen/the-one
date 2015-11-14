@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -32,7 +32,7 @@ public class WorldTest extends TestCase {
 	private double upInterval = 0.1;
 	private List<TestDTNHost> testHosts;
 	private List<EventQueue> eQueues;
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		SimClock.reset();
@@ -40,7 +40,7 @@ public class WorldTest extends TestCase {
 		testSettings.setNameSpace(TestUtils.IFACE_NS);
 		testSettings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
 		testSettings.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
-				
+
 		this.eQueues = new ArrayList<EventQueue>();
 		this.testHosts = new ArrayList<TestDTNHost>();
 		for (int i=0; i<10; i++) {
@@ -48,38 +48,38 @@ public class WorldTest extends TestCase {
 			List<NetworkInterface> li = new ArrayList<NetworkInterface>();
 			li.add(ni);
 			ModuleCommunicationBus comBus = new ModuleCommunicationBus();
-			
+
 			this.testHosts.add(new TestDTNHost(li, comBus, testSettings));
 		}
-		
+
 		TestScenario ts = new TestScenario();
-		this.world = new World(ts.getHosts(),ts.getWorldSizeX(), 
-				ts.getWorldSizeY(),ts.getUpdateInterval(), 
-				ts.getUpdateListeners(), ts.simulateConnections(), 
+		this.world = new World(ts.getHosts(),ts.getWorldSizeX(),
+				ts.getWorldSizeY(),ts.getUpdateInterval(),
+				ts.getUpdateListeners(), ts.simulateConnections(),
 				ts.getExternalEvents() );
 	}
 
 	public void testUpdate() {
 		double endTime = 1000;
 		int nrofRounds = (int)(endTime/upInterval);
-		
+
 		for (int i=0; i<nrofRounds; i++) {
 			world.update();
 		}
-		
+
 		/* time matches (approximately) the expected */
 		assertEquals(endTime, SimClock.getTime(), TIME_DELTA);
-		
+
 		/* all hosts are correctly updated */
 		assertNrofUpdates(nrofRounds);
 	}
-	
+
 	private void assertNrofUpdates(int nrof) {
 		for (TestDTNHost h : testHosts) {
-			assertEquals(nrof, h.nrofUpdate);			
-		}		
+			assertEquals(nrof, h.nrofUpdate);
+		}
 	}
-	
+
 	public void testUpdateScheduling() {
 		world.scheduleUpdate(0.25);
 
@@ -100,28 +100,28 @@ public class WorldTest extends TestCase {
 		assertNrofUpdates(5);
 
 	}
-	
 
-	/** Dummy scenario for providing test values for the World */ 
+
+	/** Dummy scenario for providing test values for the World */
 	@SuppressWarnings("serial")
 	private class TestScenario extends core.SimScenario {
 		public TestScenario() {	}
-		
+
 		public int getWorldSizeX() {
 			return worldSizeX;
 		}
 		public int getWorldSizeY() {
 			return worldSizeY;
 		}
-		
+
 		public double getUpdateInterval() {
 			return upInterval;
 		}
-		
+
 		public List<UpdateListener> getUpdateListeners() {
 			return new ArrayList<UpdateListener>();
 		}
-		
+
 		public List<DTNHost> getHosts() {
 			ArrayList<DTNHost> hs = new ArrayList<DTNHost>();
 			for (TestDTNHost h : testHosts) {
@@ -129,19 +129,19 @@ public class WorldTest extends TestCase {
 			}
 			return hs;
 		}
-		
+
 		public boolean simulateConnections() {
 			return simulateConnections;
 		}
-		
+
 		public List<EventQueue> getExternalEvents() {
 			return eQueues;
 		}
-		
+
 		public double getMaxHostRange() {
 			return 10;
 		}
-		
+
 		protected void createHosts() {
 			this.hosts = new ArrayList<DTNHost>();
 		}

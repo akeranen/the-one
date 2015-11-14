@@ -43,7 +43,7 @@ while (my $inFile = shift(@ARGV)) {
     while(<INFILE>) {
 		my ($idsStr) = m/\w+\d+ (.*)/;
 		next unless $idsStr;
-		
+
 		foreach my $id (split(' ', $idsStr)) {
 			$id = substr($id, 1); # remove message prefix
 			if (not defined $mCounts{$id}) {

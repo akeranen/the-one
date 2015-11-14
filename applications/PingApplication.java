@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 
 package applications;
@@ -17,14 +17,14 @@ import core.SimScenario;
 import core.World;
 
 /**
- * Simple ping application to demonstrate the application support. The 
+ * Simple ping application to demonstrate the application support. The
  * application can be configured to send pings with a fixed interval or to only
  * answer to pings it receives. When the application receives a ping it sends
  * a pong message in response.
- * 
+ *
  * The corresponding <code>PingAppReporter</code> class can be used to record
  * information about the application behavior.
- * 
+ *
  * @see PingAppReporter
  * @author teemuk
  */
@@ -43,10 +43,10 @@ public class PingApplication extends Application {
 	public static final String PING_PING_SIZE = "pingSize";
 	/** Size of the pong message */
 	public static final String PING_PONG_SIZE = "pongSize";
-	
+
 	/** Application ID */
 	public static final String APP_ID = "fi.tkk.netlab.PingApplication";
-	
+
 	// Private vars
 	private double	lastPing = 0;
 	private double	interval = 500;
@@ -57,10 +57,10 @@ public class PingApplication extends Application {
 	private int		pingSize=1;
 	private int		pongSize=1;
 	private Random	rng;
-	
-	/** 
+
+	/**
 	 * Creates a new ping application with the given settings.
-	 * 
+	 *
 	 * @param s	Settings to use for initializing the application.
 	 */
 	public PingApplication(Settings s) {
@@ -87,14 +87,14 @@ public class PingApplication extends Application {
 			this.destMin = destination[0];
 			this.destMax = destination[1];
 		}
-		
+
 		rng = new Random(this.seed);
 		super.setAppID(APP_ID);
 	}
-	
-	/** 
+
+	/**
 	 * Copy-constructor
-	 * 
+	 *
 	 * @param a
 	 */
 	public PingApplication(PingApplication a) {
@@ -109,11 +109,11 @@ public class PingApplication extends Application {
 		this.pingSize = a.getPingSize();
 		this.rng = new Random(this.seed);
 	}
-	
-	/** 
+
+	/**
 	 * Handles an incoming message. If the message is a ping message replies
 	 * with a pong message. Generates events for ping and pong messages.
-	 * 
+	 *
 	 * @param msg	message received by the router
 	 * @param host	host to which the application instance is attached
 	 */
@@ -121,33 +121,33 @@ public class PingApplication extends Application {
 	public Message handle(Message msg, DTNHost host) {
 		String type = (String)msg.getProperty("type");
 		if (type==null) return msg; // Not a ping/pong message
-		
+
 		// Respond with pong if we're the recipient
 		if (msg.getTo()==host && type.equalsIgnoreCase("ping")) {
-			String id = "pong" + SimClock.getIntTime() + "-" + 
+			String id = "pong" + SimClock.getIntTime() + "-" +
 				host.getAddress();
 			Message m = new Message(host, msg.getFrom(), id, getPongSize());
 			m.addProperty("type", "pong");
 			m.setAppID(APP_ID);
 			host.createNewMessage(m);
-			
+
 			// Send event to listeners
 			super.sendEventToListeners("GotPing", null, host);
 			super.sendEventToListeners("SentPong", null, host);
 		}
-		
+
 		// Received a pong reply
 		if (msg.getTo()==host && type.equalsIgnoreCase("pong")) {
 			// Send event to listeners
 			super.sendEventToListeners("GotPong", null, host);
 		}
-		
+
 		return msg;
 	}
 
-	/** 
+	/**
 	 * Draws a random host from the destination range
-	 * 
+	 *
 	 * @return host
 	 */
 	private DTNHost randomHost() {
@@ -159,15 +159,15 @@ public class PingApplication extends Application {
 		World w = SimScenario.getInstance().getWorld();
 		return w.getNodeByAddress(destaddr);
 	}
-	
+
 	@Override
 	public Application replicate() {
 		return new PingApplication(this);
 	}
 
-	/** 
+	/**
 	 * Sends a ping packet if this is an active application instance.
-	 * 
+	 *
 	 * @param host to which the application instance is attached
 	 */
 	@Override
@@ -182,10 +182,10 @@ public class PingApplication extends Application {
 			m.addProperty("type", "ping");
 			m.setAppID(APP_ID);
 			host.createNewMessage(m);
-			
+
 			// Call listeners
 			super.sendEventToListeners("SentPing", null, host);
-			
+
 			this.lastPing = curTime;
 		}
 	}

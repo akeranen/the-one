@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -13,30 +13,30 @@ import core.Coord;
 import core.DTNSim;
 
 /**
- * This class controls busses and passengers that can use the bus. 
- * There can be many bus BusControlSystems, but a bus or passenger can only 
+ * This class controls busses and passengers that can use the bus.
+ * There can be many bus BusControlSystems, but a bus or passenger can only
  * belong to one system.
- * 
+ *
  * @author Frans Ekman
  */
 public class BusControlSystem {
 	public static final String BUS_CONTROL_SYSTEM_NR = "busControlSystemNr";
-	
+
 	private static HashMap<Integer, BusControlSystem> systems;
-	
+
 	private HashMap<Integer, BusMovement> busses;
 	private HashMap<Integer, BusTravellerMovement> travellers;
 	private List<Coord> busStops;
-	
+
 	private SimMap simMap;
-	
+
 	static {
 		DTNSim.registerForReset(BusControlSystem.class.getCanonicalName());
 		reset();
 	}
-	
+
 	/**
-	 * Creates a new instance of BusControlSystem without any travelers or 
+	 * Creates a new instance of BusControlSystem without any travelers or
 	 * busses
 	 * @param systemID The unique ID of this system.
 	 */
@@ -44,14 +44,14 @@ public class BusControlSystem {
 		busses = new HashMap<Integer, BusMovement>();
 		travellers = new HashMap<Integer, BusTravellerMovement>();
 	}
-	
+
 	public static void reset() {
 		systems = new HashMap<Integer, BusControlSystem>();
 	}
-	
+
 	/**
 	 * Called by busses belonging to this system every time the bus has stopped.
-	 * It calls every passengers enterBus() method so that the passengers can 
+	 * It calls every passengers enterBus() method so that the passengers can
 	 * enter the bus if they want to.
 	 * @param busID Unique identifier of the bus
 	 * @param busStop Coordinates of the bus stop
@@ -69,22 +69,22 @@ public class BusControlSystem {
 							STATE_WAITING_FOR_BUS) {
 						Path path = new Path(nextPath);
 						traveller.enterBus(path);
-					} 
+					}
 				}
 			}
 		}
 	}
-	
+
 	/**
-	 * Returns a reference to a BusControlSystem with ID provided as parameter. 
-	 * If a system does not already exist with the requested ID, a new one is 
-	 * created. 
+	 * Returns a reference to a BusControlSystem with ID provided as parameter.
+	 * If a system does not already exist with the requested ID, a new one is
+	 * created.
 	 * @param systemID unique ID of the system
 	 * @return The bus control system with the provided ID
 	 */
 	public static BusControlSystem getBusControlSystem(int systemID) {
 		Integer id = new Integer(systemID);
-		
+
 		if (systems.containsKey(id)) {
 			return systems.get(id);
 		} else {
@@ -93,7 +93,7 @@ public class BusControlSystem {
 			return bcs;
 		}
 	}
-	
+
 	/**
 	 * Registers a bus to be part of a bus control system
 	 * @param bus The bus to register
@@ -101,7 +101,7 @@ public class BusControlSystem {
 	public void registerBus(BusMovement bus) {
 		busses.put(bus.getID(), bus);
 	}
-	
+
 	/**
 	 * Registers a traveller/passenger to be part of a bus control system
 	 * @param traveller The traveller to register
@@ -109,7 +109,7 @@ public class BusControlSystem {
 	public void registerTraveller(BusTravellerMovement traveller) {
 		travellers.put(traveller.getID(), traveller);
 	}
-	
+
 	/**
 	 * Provide the system with the map
 	 * @param map
@@ -117,7 +117,7 @@ public class BusControlSystem {
 	public void setMap(SimMap map) {
 		this.simMap = map;
 	}
-	
+
 	/**
 	 * Get the underlying map of the system
 	 * @return The map
@@ -140,5 +140,5 @@ public class BusControlSystem {
 	public void setBusStops(List<Coord> busStops) {
 		this.busStops = busStops;
 	}
-	
+
 }

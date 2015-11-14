@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -13,14 +13,14 @@ public class ActivenessHandlerTest extends TestCase {
 	private SimClock clock;
 	private double in = 3.0;
 	private double out = 7.0;
-	
+
 	private String moreTimes = ", 100,110, 210,220, 350,400";
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		TestSettings ts = new TestSettings();
-		
-		ts.putSetting(ActivenessHandler.ACTIVE_TIMES_S, in + "," + out + 
+
+		ts.putSetting(ActivenessHandler.ACTIVE_TIMES_S, in + "," + out +
 				moreTimes);
 		ah = new ActivenessHandler(ts);
 		clock = SimClock.getInstance();
@@ -38,8 +38,8 @@ public class ActivenessHandlerTest extends TestCase {
 		clock.advance(10.0);
 		assertFalse(ah.isActive());
 	}
-	
-	
+
+
 	public void testMoreTimes() {
 		// test second value tuple
 		clock.setTime(98);
@@ -51,7 +51,7 @@ public class ActivenessHandlerTest extends TestCase {
 		clock.setTime(112);
 		assertFalse(ah.isActive());
 
-		
+
 		// test zero ease
 		clock.setTime(209.9);
 		assertFalse(ah.isActive());
@@ -69,6 +69,6 @@ public class ActivenessHandlerTest extends TestCase {
 		assertFalse(ah.isActive());
 
 	}
-	
+
 }
 

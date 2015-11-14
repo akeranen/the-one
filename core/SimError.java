@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -15,16 +15,16 @@ public class SimError extends AssertionError {
 		super(cause);
 		e = null;
 	}
-	
+
 	public SimError(String cause, Exception e) {
 		super(cause);
 		this.e = e;
 	}
-	
+
 	public SimError(Exception e) {
 		this(e.getMessage(),e);
 	}
-	
+
 	public Exception getException() {
 		return e;
 	}

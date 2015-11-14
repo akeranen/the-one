@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -12,18 +12,18 @@ import core.Coord;
 import core.Settings;
 
 /**
- * The CarMovement class representing the car movement submodel 
- * 
+ * The CarMovement class representing the car movement submodel
+ *
  * @author Frans Ekman
  */
-public class CarMovement extends MapBasedMovement implements 
+public class CarMovement extends MapBasedMovement implements
 	SwitchableMovement, TransportMovement {
 
 	private Coord from;
 	private Coord to;
-	
+
 	private DijkstraPathFinder pathFinder;
-	
+
 	/**
 	 * Car movement constructor
 	 * @param settings
@@ -32,7 +32,7 @@ public class CarMovement extends MapBasedMovement implements
 		super(settings);
 		pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 	}
-	
+
 	/**
 	 * Construct a new CarMovement instance from a prototype
 	 * @param proto
@@ -55,21 +55,21 @@ public class CarMovement extends MapBasedMovement implements
 	@Override
 	public Path getPath() {
 		Path path = new Path(generateSpeed());
-		
+
 		MapNode fromNode = getMap().getNodeByCoord(from);
 		MapNode toNode = getMap().getNodeByCoord(to);
-		
+
 		List<MapNode> nodePath = pathFinder.getShortestPath(fromNode, toNode);
-				
+
 		for (MapNode node : nodePath) { // create a Path from the shortest path
 			path.addWaypoint(node.getLocation());
 		}
-		
+
 		lastMapNode = toNode;
-		
+
 		return path;
 	}
-	
+
 	/**
 	 * @see SwitchableMovement
 	 * @return true

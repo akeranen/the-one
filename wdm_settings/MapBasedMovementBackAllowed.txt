@@ -47,7 +47,7 @@ Group1.waitTime = 0, 0
 Group1.nrofHosts = 1000
 Group1.movementModel = MapBasedMovementBackAllowed
 
-# max number of external events to preload (default = 500) 
+# max number of external events to preload (default = 500)
 ExternalEvents.nrofPreload = 500
 # path to external events file
 ExternalEvents.filePath = ee/700_events_1000_nodes_700ks.txt

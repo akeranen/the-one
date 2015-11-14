@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -19,7 +19,7 @@ import core.Coord;
 
 /**
  * "Well-known text syntax" map data reader.<BR>
- * <STRONG>Note</STRONG>: Understands only <CODE>LINESTRING</CODE>s and 
+ * <STRONG>Note</STRONG>: Understands only <CODE>LINESTRING</CODE>s and
  * <CODE>MULTILINESTRING</CODE>s. Skips all <CODE>POINT</CODE> data.
  * Other data causes IOException.
  */
@@ -28,25 +28,25 @@ public class WKTMapReader extends WKTReader {
 	/** are all paths bidirectional */
 	private boolean bidirectionalPaths = true;
 	private int nodeType = -1;
-	
+
 	/**
 	 * Constructor. Creates a new WKT reader ready for addPaths() calls.
-	 * @param bidi If true, all read paths are set bidirectional (i.e. if node A 
+	 * @param bidi If true, all read paths are set bidirectional (i.e. if node A
 	 * is a neighbor of node B, node B is also a neighbor of node A).
 	 */
 	public WKTMapReader(boolean bidi) {
 		this.bidirectionalPaths = bidi;
 		this.nodes = new Hashtable<Coord, MapNode>();
 	}
-	
+
 	/**
-	 * Sets bidirectional paths on/off. 
- 	 * @param bidi If true, all paths are set bidirectional (false -> not)
+	 * Sets bidirectional paths on/off.
+	 * @param bidi If true, all paths are set bidirectional (false -> not)
 	 */
 	public void setBidirectional(boolean bidi) {
 		this.bidirectionalPaths = bidi;
 	}
-	
+
 	/**
 	 * Returns the map nodes that were read in a collection
 	 * @return the map nodes that were read in a collection
@@ -62,7 +62,7 @@ public class WKTMapReader extends WKTReader {
 	public Map<Coord, MapNode> getNodesHash() {
 		return this.nodes;
 	}
-	
+
 	/**
 	 * Returns new a SimMap that is based on the read map
 	 * @return new a SimMap that is based on the read map
@@ -70,7 +70,7 @@ public class WKTMapReader extends WKTReader {
 	public SimMap getMap() {
 		return new SimMap(this.nodes);
 	}
-	
+
 	/**
 	 * Adds paths to the map and adds given type to all nodes' type.
 	 * @param file The file where the WKT data is read from
@@ -80,13 +80,13 @@ public class WKTMapReader extends WKTReader {
 	public void addPaths(File file, int type) throws IOException {
 		addPaths(new FileReader(file), type);
 	}
-	
-	
+
+
 	/**
 	 * Add paths to current path set. Adding paths multiple times
 	 * has the same result as concatenating the data before adding it.
 	 * @param input Reader where the WKT data is read from
-	 * @param nodeType The type to use (integer value, see class 
+	 * @param nodeType The type to use (integer value, see class
 	 * {@link MapNode}))
 	 * @throws IOException if something went wrong with reading from the input
 	 */
@@ -94,9 +94,9 @@ public class WKTMapReader extends WKTReader {
 		this.nodeType = nodeType;
 		String type;
 		String contents;
-		
+
 		init(input);
-		
+
 		while((type = nextType()) != null) {
 			if (type.equals(LINESTRING)) {
 				contents = readNestedContents();
@@ -113,7 +113,7 @@ public class WKTMapReader extends WKTReader {
 			}
 		}
 	}
-	
+
 	/**
 	 * Updates simulation map with coordinates in the list
 	 * @param coords The list of coordinates
@@ -124,9 +124,9 @@ public class WKTMapReader extends WKTReader {
 			previousNode = createOrUpdateNode(c, previousNode);
 		}
 	}
-		
+
 	/**
-	 * Creates or updates a node that is in location c and next to 
+	 * Creates or updates a node that is in location c and next to
 	 * node previous
 	 * @param c The location coordinates of the node
 	 * @param previous Previous node whose neighbor node at c is
@@ -134,9 +134,9 @@ public class WKTMapReader extends WKTReader {
 	 */
 	private MapNode createOrUpdateNode(Coord c, MapNode previous) {
 		MapNode n = null;
-		
+
 		n = nodes.get(c);	// try to get the node at that location
-		
+
 		if (n == null) { 	// no node in that location -> create new
 			n = new MapNode(c);
 			nodes.put(c, n);
@@ -148,11 +148,11 @@ public class WKTMapReader extends WKTReader {
 				previous.addNeighbor(n);
 			}
 		}
-		
+
 		if (nodeType != -1) {
 			n.addType(nodeType);
 		}
-		
+
 		return n;
 	}
 

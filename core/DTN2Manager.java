@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 
 package core;
@@ -20,7 +20,7 @@ import report.DTN2Reporter;
 import fi.tkk.netlab.dtn.ecla.Bundle;
 import fi.tkk.netlab.dtn.ecla.CLAParser;
 
-/** 
+/**
  * Manages the external convergence layer connections to dtnd.
  * Parses the configuration file and sets up the CLAParsers
  * and EID->host mappings.
@@ -29,14 +29,14 @@ import fi.tkk.netlab.dtn.ecla.CLAParser;
 public class DTN2Manager {
 	private static Map<DTNHost, CLAParser>	CLAs = null;
 	/** Mapping from EID to DTNHost */
-	private static Collection<EIDHost>		EID_to_host = null;	
+	private static Collection<EIDHost>		EID_to_host = null;
 	/** Set of all bundles in the simulator */
 	private static Map<String, Bundle>		bundles = null;
 	/** Reporter object that passes messages from ONE to dtnd */
 	private static DTN2Reporter				reporter = null;
 	/** Events object that passes messages from dtnd to ONE */
 	private static DTN2Events				events = null;
-	
+
 	/**
 	 * EID to DTNHost mapping elements.
 	 */
@@ -50,7 +50,7 @@ public class DTN2Manager {
 			this.host_id = host_id;
 		}
 	}
-	
+
 	/**
 	 * Sets up the dtnd connections by parsing the configuration file
 	 * defined in the <code>DTN2.configFile</code> setting.
@@ -65,16 +65,16 @@ public class DTN2Manager {
 		String[]			attrs;
 		int					nodeID, dtnd_port, console_port;
 		String				nodeEID, dtnd_host;
-			
+
 		DTN2Manager.CLAs = new HashMap<DTNHost, CLAParser>();
 		DTN2Manager.EID_to_host = new LinkedList<EIDHost>();
 		DTN2Manager.bundles = new HashMap<String, Bundle>();
-		
+
 		// Check if DTN2Reporter and DTN2Events have been loaded.
 		// If not, we do nothing here.
 		if (DTN2Manager.reporter==null || DTN2Manager.events==null)
 			return;
-		
+
 		// Get input stream from the settings file.
 		Settings conf = new Settings("DTN2");
 		String fname;
@@ -94,12 +94,12 @@ public class DTN2Manager {
 					+fname+"'");
 			return;
 		}
-		
+
 		// Create a directory to hold copies of the bundles
 		f = new File("bundles");
 		if (!f.exists())
 			f.mkdir();
-		
+
 		// Parse config file
 		try {
 				s = in.readLine();
@@ -114,21 +114,21 @@ public class DTN2Manager {
 				dtnd_host = attrs[2];
 				dtnd_port = Integer.parseInt(attrs[3]);
 				console_port = Integer.parseInt(attrs[4]);
-				
+
 				// Find the host
 				DTNHost h = world.getNodeByAddress(nodeID);
 
 				// Add to the EID -> Host mapping
-				DTN2Manager.EIDHost e = new DTN2Manager.EIDHost(nodeEID, 
+				DTN2Manager.EIDHost e = new DTN2Manager.EIDHost(nodeEID,
 						nodeID, h);
 				DTN2Manager.EID_to_host.add(e);
-				
+
 				// Configure and start the CLA
 				CLAParser p;
 				p = new CLAParser(dtnd_host, dtnd_port, "ONE");
-				DTN2Events.ParserHandler ph = 
+				DTN2Events.ParserHandler ph =
 					DTN2Manager.events.getParserHandler(nodeID, dtnd_host,
-							console_port); 
+							console_port);
 				p.setListener(ph);
 				Thread t = new Thread(p);
 				t.start();
@@ -142,8 +142,8 @@ public class DTN2Manager {
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * Sets the <code>DTN2Reporter</code> object used to pass messages from ONE
 	 * to dtnd.
@@ -154,15 +154,15 @@ public class DTN2Manager {
 	public static void setReporter(DTN2Reporter reporter) {
 		DTN2Manager.reporter = reporter;
 	}
-	
+
 	/**
 	 * Returns reference to the <code>DTN2Reporter</code> object.
 	 * @return reference to the active DTN2Reporter object
-	 */ 
+	 */
 	public static DTN2Reporter getReporter() {
 		return DTN2Manager.reporter;
 	}
-	
+
 	/**
 	 * Sets the DTN2Events object.
 	 * @param events	the active events object to use
@@ -170,15 +170,15 @@ public class DTN2Manager {
 	public static void setEvents(DTN2Events events) {
 		DTN2Manager.events = events;
 	}
-	
-	/** 
+
+	/**
 	 * Returns the DTN2Events object.
 	 * @return the currently active events object.
 	 */
 	public static DTN2Events getEvents() {
 		return DTN2Manager.events;
 	}
-	
+
 	/**
 	 * Returns the ECL parser associated with the host.
 	 * @param host	the host who's parser to return
@@ -187,8 +187,8 @@ public class DTN2Manager {
 	public static CLAParser getParser(DTNHost host) {
 		return DTN2Manager.CLAs.get(host);
 	}
-	
-	/** 
+
+	/**
 	 * Returns a <code>Collection</code> of <code>DTNHost</code>
 	 * objects corresponding to the given EID.
 	 * @param EID	EID of the host
@@ -201,7 +201,7 @@ public class DTN2Manager {
 		}
 		return c;
 	}
-	
+
 	/**
 	 * Stores a reference to a bundle corresponding to the given message.
 	 * @param	id		the id of the message
@@ -210,8 +210,8 @@ public class DTN2Manager {
 	public static void addBundle(String id, Bundle bundle) {
 		DTN2Manager.bundles.put(id, bundle);
 	}
-	
-	/** 
+
+	/**
 	 * Returns the bundle associated with the given message id.
 	 * @param	id	the message id
 	 * @return	the bundle associated with the message

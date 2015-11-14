@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -21,17 +21,17 @@ import core.SimClock;
 public class DistanceDelayReportTest extends TestCase {
 	private SimClock clock;
 	File outFile;
-	
+
 	private Vector<MessageListener> ml;
 	private DistanceDelayReport r;
 	private TestUtils utils;
-	
+
 	public void setUp() throws IOException {
 		final String NS = "DistanceDelayReport.";
 		TestSettings ts = new TestSettings();
 		outFile = File.createTempFile("ddrtest", ".tmp");
 		outFile.deleteOnExit();
-		
+
 		ts.putSetting(NS + "output", outFile.getAbsolutePath());
 		ts.putSetting(NS + report.Report.PRECISION_SETTING, "1");
 		clock = SimClock.getInstance();
@@ -40,8 +40,8 @@ public class DistanceDelayReportTest extends TestCase {
 		ml.add(r);
 		this.utils = new TestUtils(null, ml, ts);
 	}
-	
-	
+
+
 	public void testMessageTransferred() throws IOException {
 		DTNHost h1 = utils.createHost(new Coord(0,0));
 		DTNHost h2 = utils.createHost(new Coord(2,0));
@@ -59,7 +59,7 @@ public class DistanceDelayReportTest extends TestCase {
 		clock.advance(0.5);
 		h2.sendMessage("tst2", h1);
 		h1.messageTransferred("tst2", h2);
-		
+
 		Message m3 = new Message(h1,h3, "tst3", 1);
 		h1.createNewMessage(m3);
 		clock.advance(1.0);
@@ -67,11 +67,11 @@ public class DistanceDelayReportTest extends TestCase {
 		h2.messageTransferred("tst3", h1);
 		h2.sendMessage("tst3", h3);
 		h3.messageTransferred("tst3", h2);
-		
+
 		r.done();
-		
+
 		reader = new BufferedReader(new FileReader(outFile));
-		
+
 		reader.readLine(); // skip headers
 		reader.readLine(); // skip headers
 		assertEquals("2.0 1.5 1 tst1",reader.readLine());
@@ -80,6 +80,6 @@ public class DistanceDelayReportTest extends TestCase {
 
 		reader.close();
 	}
-	
+
 
 }

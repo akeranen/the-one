@@ -35,13 +35,13 @@ open(OUTFILE, ">$outfile") or die "Can't open output file $outfile : $!";
 while (<INFILE>) {
     if (m/^#/) {
 	next; # skip comment lines
-    } 
-    
+    }
+
     my ($dist, $time) = m/^([\d\.-]+) ([\d\.-]+)/;
     die "invalid input line $_" unless defined $dist;
 
     my $index = int($dist / $granularity); # map distance values to table indexes
-    
+
     if ($time == -1) {
 	$nrofNotDelivered[$index] = 0 unless defined $nrofNotDelivered[$index];
 	$nrofNotDelivered[$index]++;
@@ -60,7 +60,7 @@ for (my $i=0; $i <= $maxIndex; $i++) {
     my $del = $nrofDelivered[$i];
     my $nDel = $nrofNotDelivered[$i];
     my $delProb;
-   
+
     if (not defined($del) and not defined($nDel)) {
 	next; # skip distance slots that don't have any data
     }
@@ -73,9 +73,9 @@ for (my $i=0; $i <= $maxIndex; $i++) {
     else {
 	$delProb = $del / ($del + $nDel);
     }
-    
+
     my $dist = $granularity * ($i+1);
-    
+
     print OUTFILE "$dist $delProb\n";
 }
 

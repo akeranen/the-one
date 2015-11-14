@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -11,22 +11,22 @@ import core.NetworkInterface;
 import core.Settings;
 
 public class TestInterface extends NetworkInterface {
-	
+
 	public TestInterface(Settings s) {
 		super(s);
 	}
-	
+
 	public TestInterface(TestInterface ti) {
 		super(ti);
 	}
-	
+
 	/**
 	 * Replication function
 	 */
 	public NetworkInterface replicate() {
 		return new TestInterface(this);
 	}
-	
+
 	/**
 	 * Gives the currentTransmit Speed
 	 */
@@ -40,12 +40,12 @@ public class TestInterface extends NetworkInterface {
 	public double getTransmitRange() {
 		return transmitRange;
 	}
-	
+
 	/**
 	 * Connects the interface to another interface.
-	 * 
+	 *
 	 * Overload this in a derived class.  Check the requirements for
-	 * the connection to work in the derived class, then call 
+	 * the connection to work in the derived class, then call
 	 * connect(Connection, NetworkInterface) for the actual connection.
 	 * @param anotherInterface The host to connect to
 	 */
@@ -77,9 +77,9 @@ public class TestInterface extends NetworkInterface {
 		}
 	}
 
-	/** 
+	/**
 	 * Creates a connection to another host. This method does not do any checks
-	 * on whether the other node is in range or active 
+	 * on whether the other node is in range or active
 	 * (cf. {@link #connect(DTNHost)}).
 	 * @param anotherHost The host to create the connection to
 	 */

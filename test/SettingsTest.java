@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -15,10 +15,10 @@ import core.Settings;
  */
 public class SettingsTest extends TestCase {
 	private static final String IRS_S = "invalidRunSetting";
-	
+
 	private static final String CSV_RS_S = "csvRunSetting";
 	private static final int[] CSV_RS_V = {1,2,3,4};
-	
+
 	private static final String TST = "tstSetting";
 	private static final String TST_RES = "tst";
 	private static final String[] INPUT = {
@@ -37,30 +37,30 @@ public class SettingsTest extends TestCase {
 		CSV_RS_S + " = [" + CSV_RS_V[0]+","+CSV_RS_V[1]+";"+CSV_RS_V[2]+","+CSV_RS_V[3]+"]",
 		"Ns.runSetting = [ ; ; 2; ]",
 		"DefNs.runSetting = 1"
-		
+
 	};
-	
+
 	private String RS_S = "runSetting";
 
-	
+
 	private Settings s;
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		File tempFile = File.createTempFile("settingsTest", ".tmp");
 		tempFile.deleteOnExit();
-		
+
 		PrintWriter out = new PrintWriter(tempFile);
-		
+
 		for (String s : INPUT) {
 			out.println(s);
 		}
 		out.close();
-		
+
 		Settings.init(tempFile.getAbsolutePath());
 		s = new Settings();
 	}
-	
+
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
@@ -97,7 +97,7 @@ public class SettingsTest extends TestCase {
 		assertEquals(2.2,csv[1]);
 		assertEquals(3.3,csv[2]);
 	}
-	
+
 	public void testGetCsvDoublesUnknownAmount() {
 		double[] csv = s.getCsvDoubles("csvDoubles");
 		assertEquals(csv.length, 3);
@@ -113,13 +113,13 @@ public class SettingsTest extends TestCase {
 		assertEquals(2,csv[1]);
 		assertEquals(3,csv[2]);
 	}
-	
+
 	public void testGetCsvIntsUnknownAmount() {
 		int[] csv = s.getCsvInts("csvInts");
 		assertEquals(csv.length, 3);
 		assertEquals(1,csv[0]);
 		assertEquals(2,csv[1]);
-		assertEquals(3,csv[2]);		
+		assertEquals(3,csv[2]);
 	}
 
 	public void testGetInt() {
@@ -141,14 +141,14 @@ public class SettingsTest extends TestCase {
 		String test = "1-%%tstSetting%%-2-%%tstSetting2%%";
 		String result = s.valueFillString(test);
 		assertEquals("1-tst-2-tst2",result);
-		
+
 		result = s.valueFillString("%%"+TST+"%%-aaa");
 		assertEquals(TST_RES + "-aaa",result);
-		
+
 		result = s.valueFillString("%%"+TST+"%%");
 		assertEquals(TST_RES,result);
 	}
-	
+
 	public void testRunIndex() {
 		assertEquals(s.getSetting(RS_S), "val1");
 		Settings.setRunIndex(1);
@@ -160,15 +160,15 @@ public class SettingsTest extends TestCase {
 		Settings.setRunIndex(4);
 		assertEquals(s.getSetting(RS_S), "val1"); // should wrap around
 		Settings.setRunIndex(5);
-		assertEquals(s.getSetting(RS_S), "val2");		
+		assertEquals(s.getSetting(RS_S), "val2");
 	}
-	
+
 	public void testRunIndexContains() {
 		assertFalse(s.contains("Ns.runSetting"));
 		Settings.setRunIndex(2);
 		assertTrue(s.contains("Ns.runSetting"));
 	}
-	
+
 	/**
 	 * Test filling empty values of run index from secondary namespace
 	 */
@@ -179,14 +179,14 @@ public class SettingsTest extends TestCase {
 		assertEquals(s.getInt(rs), 1);
 		Settings.setRunIndex(1);
 		assertEquals(s.getInt(rs), 1);
-		
+
 		Settings.setRunIndex(2);
 		assertEquals(s.getInt(rs), 2); // the only defined value
-		
+
 		Settings.setRunIndex(3);
 		assertEquals(s.getInt(rs), 1);
 	}
-	
+
 	public void testRunIndexCSVs() {
 		// test CSVs
 		int [] vals = s.getCsvInts(CSV_RS_S, 2);
@@ -203,11 +203,11 @@ public class SettingsTest extends TestCase {
 		assertEquals(CSV_RS_V[0],vals[0]);
 		assertEquals(CSV_RS_V[1],vals[1]);
 	}
-	
+
 	public void testInvalidRunIndex() {
 		assertEquals("[val1 ; val2",s.getSetting(IRS_S));
 	}
-	
+
 	/**
 	 * Tests disabled run-specific variables
 	 */

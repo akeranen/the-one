@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2011 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package routing;
 
@@ -15,16 +15,16 @@ import core.Connection;
  * Router module mimicking the game-of-life behavior
  */
 public class LifeRouter extends ActiveRouter {
-	
-	/** 
+
+	/**
 	 * Neighboring message count -setting id ({@value}). Two comma
 	 * separated values: min and max. Only if the amount of connected nodes
 	 * with the given message is between the min and max value, the message
-	 * is accepted for transfer and kept in the buffer. 
+	 * is accepted for transfer and kept in the buffer.
 	 */
 	public static final String NM_COUNT_S = "nmcount";
 	private int countRange[];
-	
+
 	/**
 	 * Constructor. Creates a new message router based on the settings in
 	 * the given Settings object.
@@ -34,7 +34,7 @@ public class LifeRouter extends ActiveRouter {
 		super(s);
 		countRange = s.getCsvInts(NM_COUNT_S, 2);
 	}
-	
+
 	/**
 	 * Copy constructor.
 	 * @param r The router prototype where setting values are copied from
@@ -53,59 +53,59 @@ public class LifeRouter extends ActiveRouter {
 		DTNHost me = getHost();
 		String id = m.getId();
 		int peerMsgCount = 0;
-		
+
 		for (Connection c : getConnections()) {
 			if (c.getOtherNode(me).getRouter().hasMessage(id)) {
 				peerMsgCount++;
-			}	
+			}
 		}
-		
+
 		return peerMsgCount;
 	}
-	
+
 	@Override
 	protected int checkReceiving(Message m, DTNHost from) {
 		int peerMsgCount = getPeerMessageCount(m);
-		
-		if (peerMsgCount < this.countRange[0] || 
+
+		if (peerMsgCount < this.countRange[0] ||
 				peerMsgCount > this.countRange[1]) {
 			return DENIED_POLICY;
 		}
-		
+
 		/* peer message count check OK; receive based on other checks */
 		return super.checkReceiving(m, from);
 	}
-	
+
 	@Override
 	public void update() {
 		int peerMsgCount;
 		Vector<String> messagesToDelete = new Vector<String>();
 		super.update();
-		
+
 		if (isTransferring() || !canStartTransfer()) {
 			return; /* transferring, don't try other connections yet */
 		}
-		
+
 		/* Try first the messages that can be delivered to final recipient */
 		if (exchangeDeliverableMessages() != null) {
-			return; 
-		}		
+			return;
+		}
 		this.tryAllMessagesToAllConnections();
-		
+
 		/* see if need to drop some messages... */
 		for (Message m : getMessageCollection()) {
 			peerMsgCount = getPeerMessageCount(m);
-			if (peerMsgCount < this.countRange[0] || 
+			if (peerMsgCount < this.countRange[0] ||
 					peerMsgCount > this.countRange[1]) {
-				messagesToDelete.add(m.getId());				
+				messagesToDelete.add(m.getId());
 			}
-		}		
+		}
 		for (String id : messagesToDelete) { /* ...and drop them */
 			this.deleteMessage(id, true);
 		}
-		
+
 	}
-	
+
 
 	@Override
 	public LifeRouter replicate() {

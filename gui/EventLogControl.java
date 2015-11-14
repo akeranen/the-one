@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui;
 
@@ -14,7 +14,7 @@ import javax.swing.JCheckBox;
 public class EventLogControl {
 	private JCheckBox show;
 	private JCheckBox pause;
-	
+
 	/**
 	 * Constructor.
 	 * @param show The checkbox that controls showing this type of event
@@ -24,16 +24,16 @@ public class EventLogControl {
 		this.show = show;
 		this.pause = pause;
 	}
-	
-	/** 
+
+	/**
 	 * Returns true if this event type should be shown
 	 * @return true if this event type should be shown
 	 */
 	public boolean showEvent() {
 		return this.show.isSelected();
 	}
-	
-	/** 
+
+	/**
 	 * Returns true if this event type should cause pause
 	 * @return true if this event type should cause pause
 	 */
@@ -41,9 +41,9 @@ public class EventLogControl {
 	public boolean pauseOnEvent() {
 		return this.pause.isSelected();
 	}
-	
+
 	/**
-	 * Sets ought this event type should be shown (return true for 
+	 * Sets ought this event type should be shown (return true for
 	 * {@link #showEvent()} )
 	 * @param show If true, events are set to be shown
 	 */
@@ -52,7 +52,7 @@ public class EventLogControl {
 	}
 
 	/**
-	 * Sets ought this event type cause pause (return true for 
+	 * Sets ought this event type cause pause (return true for
 	 * {@link #pauseOnEvent()} )
 	 * @param pause If true, events cause pause
 	 */

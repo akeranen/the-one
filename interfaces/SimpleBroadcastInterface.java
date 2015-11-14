@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package interfaces;
 
@@ -16,14 +16,14 @@ import core.Settings;
  * one transmission can be on at a time.
  */
 public class SimpleBroadcastInterface extends NetworkInterface {
-	
+
 	/**
 	 * Reads the interface settings from the Settings file
 	 */
 	public SimpleBroadcastInterface(Settings s)	{
 		super(s);
 	}
-		
+
 	/**
 	 * Copy constructor
 	 * @param ni the copied network interface object
@@ -38,23 +38,23 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 
 	/**
 	 * Tries to connect this host to another host. The other host must be
-	 * active and within range of this host for the connection to succeed. 
+	 * active and within range of this host for the connection to succeed.
 	 * @param anotherInterface The interface to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning()  
-				&& anotherInterface.getHost().isRadioActive() 
-				&& isWithinRange(anotherInterface) 
+		if (isScanning()
+				&& anotherInterface.getHost().isRadioActive()
+				&& isWithinRange(anotherInterface)
 				&& !isConnected(anotherInterface)
 				&& (this != anotherInterface)) {
 			// new contact within range
-			// connection speed is the lower one of the two speeds 
+			// connection speed is the lower one of the two speeds
 			int conSpeed = anotherInterface.getTransmitSpeed(this);
 			if (conSpeed > this.transmitSpeed) {
-				conSpeed = this.transmitSpeed; 
+				conSpeed = this.transmitSpeed;
 			}
 
-			Connection con = new CBRConnection(this.host, this, 
+			Connection con = new CBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface, conSpeed);
 			connect(con,anotherInterface);
 		}
@@ -68,7 +68,7 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 		if (optimizer == null) {
 			return; /* nothing to do */
 		}
-		
+
 		// First break the old ones
 		optimizer.updateLocation(this);
 		for (int i=0; i<this.connections.size(); ) {
@@ -94,20 +94,20 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 		}
 	}
 
-	/** 
+	/**
 	 * Creates a connection to another host. This method does not do any checks
-	 * on whether the other node is in range or active 
+	 * on whether the other node is in range or active
 	 * @param anotherInterface The interface to create the connection to
 	 */
 	public void createConnection(NetworkInterface anotherInterface) {
-		if (!isConnected(anotherInterface) && (this != anotherInterface)) {    			
-			// connection speed is the lower one of the two speeds 
+		if (!isConnected(anotherInterface) && (this != anotherInterface)) {
+			// connection speed is the lower one of the two speeds
 			int conSpeed = anotherInterface.getTransmitSpeed(this);
 			if (conSpeed > this.transmitSpeed) {
-				conSpeed = this.transmitSpeed; 
+				conSpeed = this.transmitSpeed;
 			}
 
-			Connection con = new CBRConnection(this.host, this, 
+			Connection con = new CBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface, conSpeed);
 			connect(con,anotherInterface);
 		}

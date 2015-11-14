@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -19,7 +19,7 @@ public class MessageGraphvizReport extends Report implements MessageListener {
 	/** Name of the graphviz report ({@value})*/
 	public static final String GRAPH_NAME = "msggraph";
 	private Vector<Message> deliveredMessages;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -29,7 +29,7 @@ public class MessageGraphvizReport extends Report implements MessageListener {
 
 	protected void init() {
 		super.init();
-		this.deliveredMessages = new Vector<Message>();		
+		this.deliveredMessages = new Vector<Message>();
 	}
 
 	public void newMessage(Message m) {
@@ -37,7 +37,7 @@ public class MessageGraphvizReport extends Report implements MessageListener {
 			addWarmupID(m.getId());
 		}
 	}
-	
+
 	public void messageTransferred(Message m, DTNHost from,
 			DTNHost to,	boolean firstDelivery) {
 		if (firstDelivery && !isWarmupID(m.getId())) {
@@ -54,11 +54,11 @@ public class MessageGraphvizReport extends Report implements MessageListener {
 	@Override
 	public void done() {
 		write("/* scenario " + getScenarioName() + "\n" +
-				deliveredMessages.size() + " messages delivered at " + 
+				deliveredMessages.size() + " messages delivered at " +
 				"sim time " + getSimTime() + " */") ;
 		write("digraph " + GRAPH_NAME + " {");
 		setPrefix("\t"); // indent following lines by one tab
-		
+
 		for (Message m : deliveredMessages) {
 			List<DTNHost> path = m.getHops();
 			String pathString = path.remove(0).toString(); // start node
@@ -66,13 +66,13 @@ public class MessageGraphvizReport extends Report implements MessageListener {
 			for (DTNHost next : path) {
 				pathString += "->" + next.toString();
 			}
-			
+
 			write (pathString + ";");
 		}
-		
+
 		setPrefix(""); // don't indent anymore
 		write("}");
-		
+
 		super.done();
 	}
 

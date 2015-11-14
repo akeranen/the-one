@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -29,20 +29,20 @@ public class ConnectionTest extends TestCase {
 	private int index;
 	private SimClock clock = SimClock.getInstance();
 	private int conCount;
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
-		SimClock.reset(); 
+		SimClock.reset();
 		clock.setTime(START_TIME);
 		TestSettings testSettings = new TestSettings();
 		testSettings.setNameSpace(TestUtils.IFACE_NS);
 		testSettings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
 		testSettings.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
-		
+
 		h = new TestDTNHost[nrof];
 		c = new CBRConnection[nrof];
 		m = new Message[nrof];
-				
+
 		for (int i=0; i< nrof; i++) {
 			NetworkInterface ni = new TestInterface(testSettings);
 			List<NetworkInterface> li = new ArrayList<NetworkInterface>();
@@ -52,13 +52,13 @@ public class ConnectionTest extends TestCase {
 			h[i] = new TestDTNHost(li,comBus, testSettings);
 			m[i] = new Message(h[0], h[i],""+i, size[i]);
 		}
-		
+
 		con(h[0], h[1]);
 		con(h[0], h[2]);
 		con(h[1], h[3]);
 		con(h[2], h[4]);
 		con(h[3], h[4]);
-		
+
 		c[0].startTransfer(h[0], m[0]);
 		c[1].startTransfer(h[0], m[1]);
 		c[2].startTransfer(h[1], m[2]);
@@ -69,7 +69,7 @@ public class ConnectionTest extends TestCase {
 		c[index] = new CBRConnection(from, from.getInterfaces().get(0), to, to.getInterfaces().get(0), speed[index]);
 		index++;
 	}
-	
+
 	public void testIsInitiator() {
 		assertTrue(c[0].isInitiator(h[0]));
 		assertFalse(c[0].isInitiator(h[1]));
@@ -89,7 +89,7 @@ public class ConnectionTest extends TestCase {
 		assertFalse(c[0].isMessageTransferred());
 
 		c[0].abortTransfer();
-		
+
 		assertTrue(h[1].abortedId != null);
 		assertTrue(h[1].abortedId.equals(m[0].getId()));
 		assertTrue(c[0].isMessageTransferred());
@@ -97,10 +97,10 @@ public class ConnectionTest extends TestCase {
 
 	public void testGetTransferDoneTime() {
 		double doneTime;
-		
+
 		doneTime = START_TIME + (1.0 * m[0].getSize()) / speed[0];
 		assertEquals(doneTime, c[0].getTransferDoneTime());
-		
+
 		doneTime = START_TIME + (1.0 * m[1].getSize()) / speed[1];
 		assertEquals(doneTime, c[1].getTransferDoneTime());
 	}
@@ -108,22 +108,22 @@ public class ConnectionTest extends TestCase {
 	public void testGetRemainingByteCount() {
 		double STEP = 0.1;
 		int transferred;
-		
+
 		assertEquals(size[0], c[0].getRemainingByteCount());
 		assertEquals(size[1], c[1].getRemainingByteCount());
-		
+
 		clock.setTime(START_TIME + STEP);
 		for (int i=0; i<this.conCount; i++) {
 			transferred = (int)Math.ceil(STEP * speed[i]);
 			assertEquals("index " + i,
 					size[i] - transferred, c[i].getRemainingByteCount());
 		}
-		
+
 		clock.setTime(START_TIME + STEP * 5);
 		for (int i=0; i<this.conCount; i++) {
 			transferred = (int)Math.ceil(STEP * 5 * speed[i]);
 			assertEquals("index " + i,
-					size[i] - transferred, 
+					size[i] - transferred,
 					c[i].getRemainingByteCount());
 		}
 	}
@@ -131,28 +131,28 @@ public class ConnectionTest extends TestCase {
 	public void testIsMessageTransferred() {
 		assertFalse(c[0].isMessageTransferred()); /* takes 1.0 seconds */
 		assertFalse(c[1].isMessageTransferred()); /* takes 1.5 seconds */
-		
+
 		clock.advance(0.9);
 		assertFalse(c[0].isMessageTransferred());
 		assertFalse(c[1].isMessageTransferred());
-		
+
 		clock.advance(0.1); /* at 1.0 */
 		assertTrue(c[0].isMessageTransferred());
 		assertFalse(c[1].isMessageTransferred());
-		
+
 		clock.advance(0.1);
 		assertFalse(c[1].isMessageTransferred());
 		clock.advance(0.3); /* at 1.4 */
 		assertFalse(c[1].isMessageTransferred());
-		
+
 		clock.advance(0.19); /* at 1.49 */
 		assertTrue(c[1].isMessageTransferred());
-		
+
 		clock.advance(0.01); /* at 1.5 */
 		assertTrue(c[1].isMessageTransferred());
 	}
 
-	
+
 	public void testFinalizeTransfer() {
 		assertFalse(c[0].isMessageTransferred());
 		c[0].finalizeTransfer(); /* this doesn't check time */
@@ -163,41 +163,41 @@ public class ConnectionTest extends TestCase {
 		assertFalse(c[0].isReadyForTransfer());
 		assertFalse(c[1].isReadyForTransfer());
 		assertTrue(c[3].isReadyForTransfer());
-		
+
 		c[0].finalizeTransfer();
 		assertTrue(c[0].isReadyForTransfer());
 	}
 
 	public void testGetTotalBytesTransferred() {
 		int count = 0;
-		
+
 		for (int i=0; i<10; i++) {
-			assertEquals("at " + SimClock.getTime(), 
+			assertEquals("at " + SimClock.getTime(),
 					count, c[0].getTotalBytesTransferred());
 			clock.advance(0.1);
 			count += (int)(speed[0] * 0.1);
 		}
-		
+
 		/* transfer should be ready now */
 		clock.advance(0.1);
-		assertEquals("at " + SimClock.getTime(), 
+		assertEquals("at " + SimClock.getTime(),
 				count, c[0].getTotalBytesTransferred());
-		
+
 		clock.advance(5.3);
-		assertEquals("at " + SimClock.getTime(), 
+		assertEquals("at " + SimClock.getTime(),
 				count, c[0].getTotalBytesTransferred());
-		
+
 		c[0].finalizeTransfer(); /* should not affect */
 		assertEquals(count, c[0].getTotalBytesTransferred());
 
 		c[0].startTransfer(h[0],  new Message(h[0], h[0],"tst", 50000));
-		
+
 		clock.advance(345.67); /* just some value */
 		count += (int)(speed[0] * 345.67);
 		/* 1 byte difference is OK (due rounding) */
-		assertEquals(count, c[0].getTotalBytesTransferred(), 1); 
+		assertEquals(count, c[0].getTotalBytesTransferred(), 1);
 	}
-	
+
 	public void testGetOtherNode() {
 		assertEquals(h[1], c[0].getOtherNode(h[0]));
 		assertEquals(h[0], c[0].getOtherNode(h[1]));

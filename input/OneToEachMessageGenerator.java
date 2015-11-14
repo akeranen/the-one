@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -15,8 +15,8 @@ import core.SettingsError;
  * Message creation -external events generator. Creates one message from
  * source node/nodes (defined with {@link MessageEventGenerator#HOST_RANGE_S})
  * to all destination nodes (defined with
- * {@link MessageEventGenerator#TO_HOST_RANGE_S}). 
- * The message size, first messages time and the intervals between creating 
+ * {@link MessageEventGenerator#TO_HOST_RANGE_S}).
+ * The message size, first messages time and the intervals between creating
  * messages can be configured like with {@link MessageEventGenerator}. End
  * time is not respected, but messages are created until there's a message for
  * every destination node.
@@ -24,13 +24,13 @@ import core.SettingsError;
  */
 public class OneToEachMessageGenerator extends MessageEventGenerator {
 	private List<Integer> toIds;
-	
+
 	public OneToEachMessageGenerator(Settings s) {
 		super(s);
 		this.toIds = new ArrayList<Integer>();
-		
+
 		if (toHostRange == null) {
-			throw new SettingsError("Destination host (" + TO_HOST_RANGE_S + 
+			throw new SettingsError("Destination host (" + TO_HOST_RANGE_S +
 					") must be defined");
 		}
 		for (int i = toHostRange[0]; i < toHostRange[1]; i++) {
@@ -38,8 +38,8 @@ public class OneToEachMessageGenerator extends MessageEventGenerator {
 		}
 		Collections.shuffle(toIds, rng);
 	}
-	
-	/** 
+
+	/**
 	 * Returns the next message creation event
 	 * @see input.EventQueue#nextEvent()
 	 */
@@ -47,10 +47,10 @@ public class OneToEachMessageGenerator extends MessageEventGenerator {
 		int responseSize = 0; /* no responses requested */
 		int from;
 		int to;
-		
-		from = drawHostAddress(hostRange);	
+
+		from = drawHostAddress(hostRange);
 		to = this.toIds.remove(0);
-		
+
 		if (to == from) { /* skip self */
 			if (this.toIds.size() == 0) { /* oops, no more from addresses */
 				this.nextEventsTime = Double.MAX_VALUE;
@@ -65,10 +65,10 @@ public class OneToEachMessageGenerator extends MessageEventGenerator {
 		} else {
 			this.nextEventsTime += drawNextEventTimeDiff();
 		}
-				
-		MessageCreateEvent mce = new MessageCreateEvent(from, to, getID(), 
+
+		MessageCreateEvent mce = new MessageCreateEvent(from, to, getID(),
 				drawMessageSize(), responseSize, this.nextEventsTime);
-		
+
 		return mce;
 	}
 

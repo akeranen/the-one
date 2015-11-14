@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -19,7 +19,7 @@ public class ConnectionEvent extends ExternalEvent {
 	protected boolean isUp;
 	/** What is the interface number for this event*/
 	protected String interfaceId;
-	
+
 	/**
 	 * Creates a new connection event
 	 * @param from End point of connection
@@ -37,18 +37,18 @@ public class ConnectionEvent extends ExternalEvent {
 		this.isUp = up;
 		this.interfaceId = interf;
 	}
-	
+
 	@Override
 	public void processEvent(World world) {
 		DTNHost from = world.getNodeByAddress(this.fromAddr);
 		DTNHost to = world.getNodeByAddress(this.toAddr);
-		
+
 		from.forceConnection(to, interfaceId, this.isUp);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "CONN " + (isUp ? "up" : "down") + " @" + this.time + " " + 
+		return "CONN " + (isUp ? "up" : "down") + " @" + this.time + " " +
 				this.fromAddr+"<->"+this.toAddr;
 	}
 }

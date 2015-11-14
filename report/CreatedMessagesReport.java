@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -14,7 +14,7 @@ import core.MessageListener;
  * For output syntax, see {@link #HEADER}.
  */
 public class CreatedMessagesReport extends Report implements MessageListener {
-	public static String HEADER = "# time  ID  size  fromHost  toHost  TTL  " + 
+	public static String HEADER = "# time  ID  size  fromHost  toHost  TTL  " +
 		"isResponse";
 
 	/**
@@ -23,7 +23,7 @@ public class CreatedMessagesReport extends Report implements MessageListener {
 	public CreatedMessagesReport() {
 		init();
 	}
-	
+
 	@Override
 	public void init() {
 		super.init();
@@ -35,14 +35,14 @@ public class CreatedMessagesReport extends Report implements MessageListener {
 		if (isWarmup()) {
 			return;
 		}
-		
+
 		int ttl = m.getTtl();
-		write(format(getSimTime()) + " " + m.getId() + " " + 
+		write(format(getSimTime()) + " " + m.getId() + " " +
 				m.getSize() + " " + m.getFrom() + " " + m.getTo() + " " +
-				(ttl != Integer.MAX_VALUE ? ttl : "n/a") +  
+				(ttl != Integer.MAX_VALUE ? ttl : "n/a") +
 				(m.isResponse() ? " Y " : " N "));
 	}
-	
+
 	// nothing to implement for the rest
 	public void messageTransferred(Message m, DTNHost f, DTNHost t,boolean b) {}
 	public void messageDeleted(Message m, DTNHost where, boolean dropped) {}

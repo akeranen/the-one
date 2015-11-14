@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package util;
 
@@ -15,7 +15,7 @@ public class ParetoRNG {
 	private double xm; // min value (Xm)
 	private double k; // coefficient
 	private double maxValue;
-	
+
 	/**
 	 * Creates a new Pareto random number generator that makes use of a normal
 	 * random number generator
@@ -34,7 +34,7 @@ public class ParetoRNG {
 			this.maxValue = maxValue;
 		}
 	}
-	
+
 	/**
 	 * Returns a Pareto distributed double value
 	 * @return a Pareto distributed double value
@@ -49,5 +49,5 @@ public class ParetoRNG {
 		} while (x > maxValue);
 		return x;
 	}
-		
+
 }

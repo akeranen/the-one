@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -14,17 +14,17 @@ import core.Settings;
 /**
  * This class controls the movement of busses. It informs the bus control system
  * the bus is registered with every time the bus stops.
- * 
+ *
  * @author Frans Ekman
  */
 public class BusMovement extends MapRouteMovement {
-	
+
 	private BusControlSystem controlSystem;
 	private int id;
 	private static int nextID = 0;
 	private boolean startMode;
 	private List<Coord> stops;
-	
+
 	/**
 	 * Creates a new instance of BusMovement
 	 * @param settings
@@ -44,7 +44,7 @@ public class BusMovement extends MapRouteMovement {
 		}
 		controlSystem.setBusStops(stops);
 	}
-	
+
 	/**
 	 * Create a new instance from a prototype
 	 * @param proto
@@ -56,7 +56,7 @@ public class BusMovement extends MapRouteMovement {
 		controlSystem.registerBus(this);
 		startMode = true;
 	}
-	
+
 	@Override
 	public Coord getInitialLocation() {
 		return (super.getInitialLocation()).clone();
@@ -85,5 +85,5 @@ public class BusMovement extends MapRouteMovement {
 	public int getID() {
 		return id;
 	}
-	
+
 }

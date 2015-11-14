@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -24,19 +24,19 @@ public class MovementNs2Report extends Report implements MovementListener {
 	public static final String DEF_NODE_ARRAY = "$node_";
 	/** default value for the ns command ({@value})*/
 	public static final String DEF_NS_CMD = "$ns_";
-	
+
 	/** a value "close enough" to zero ({@value}). Used for fixing zero values*/
-	public static final double EPSILON = 0.00001; 
+	public static final double EPSILON = 0.00001;
 	/** formatting string for coordinate values ({@value})*/
 	public static final String COORD_FORMAT = "%.5f";
-	
+
 	private String nodeArray;
 	private String nsCmd;
-	
+
 	/**
-	 * Constructor. Reads {@link #NODE_ARR_S} and {@link #NS_CMD_S} settings 
-	 * and uses those values as the name of the node array and ns command. 
-	 * If the values aren't present, default values of 
+	 * Constructor. Reads {@link #NODE_ARR_S} and {@link #NS_CMD_S} settings
+	 * and uses those values as the name of the node array and ns command.
+	 * If the values aren't present, default values of
 	 * <CODE>{@value DEF_NODE_ARRAY}</CODE> and
 	 * <CODE>{@value DEF_NS_CMD}</CODE> are used.
 	 */
@@ -55,7 +55,7 @@ public class MovementNs2Report extends Report implements MovementListener {
 		else {
 			nsCmd = DEF_NS_CMD;
 		}
-		
+
 		init();
 	}
 
@@ -69,16 +69,16 @@ public class MovementNs2Report extends Report implements MovementListener {
 	public void newDestination(DTNHost host, Coord dst, double speed) {
 		int index = host.getAddress();
 		double time = getSimTime();
-		
-		write(nsCmd + " at " + time + " \"\\" + nodeArray +	"(" + index + ")" + 
+
+		write(nsCmd + " at " + time + " \"\\" + nodeArray +	"(" + index + ")" +
 				" setdest " + fix(dst.getX()) + " " + fix(dst.getY()) +
-				" " + speed + "\""); 
+				" " + speed + "\"");
 	}
 
-	/** 
-	 * Fixes and formats coordinate values suitable for Ns2 module. 
+	/**
+	 * Fixes and formats coordinate values suitable for Ns2 module.
 	 * I.e. converts zero-values to {@value EPSILON} and formats values
-	 * with {@link #COORD_FORMAT}. 
+	 * with {@link #COORD_FORMAT}.
 	 * @param val The value to fix
 	 * @return The fixed value
 	 */

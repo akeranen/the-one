@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -13,7 +13,7 @@ import core.World;
  */
 public class MessageRelayEvent extends MessageEvent {
 	private int stage;
-	
+
 	/** Message relay stage constant for start of sending */
 	public static final int SENDING = 1;
 	/** Message relay stage constant for ready delivery */
@@ -37,21 +37,21 @@ public class MessageRelayEvent extends MessageEvent {
 		super(from, to, id, time);
 		this.stage = stage;
 	}
-	
+
 	/**
 	 * Relays the message
 	 */
 	public void processEvent(World world) {
 		// get DTNHosts and pass messages between them
 		DTNHost from = world.getNodeByAddress(this.fromAddr);
-		DTNHost to = world.getNodeByAddress(this.toAddr);			
+		DTNHost to = world.getNodeByAddress(this.toAddr);
 
 		switch(stage) {
 		case SENDING:
 			from.sendMessage(id, to);
 			break;
 		case TRANSFERRED:
-			to.messageTransferred(id, from); 
+			to.messageTransferred(id, from);
 			break;
 		case ABORTED:
 			to.messageAborted(id, from, -1);
@@ -60,11 +60,11 @@ public class MessageRelayEvent extends MessageEvent {
 			assert false : "Invalid stage (" + stage + ") for " + this;
 		}
 	}
-	
+
 	@Override
 	public String toString() {
-		return super.toString() + " [" + fromAddr + "->" + toAddr + "] " + 
+		return super.toString() + " [" + fromAddr + "->" + toAddr + "] " +
 		STAGE_STRINGS[stage-1];
 	}
-	
+
 }

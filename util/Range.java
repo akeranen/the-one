@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package util;
 
@@ -9,10 +9,10 @@ package util;
  * @author Ari
  */
 public class Range {
-	
+
 	private double min;
 	private double max;
-	
+
 	/**
 	 * Creates a new range
 	 * @param min The minimum bound of the range
@@ -23,7 +23,7 @@ public class Range {
 		this.max = max;
 		checkRangeValidity(min, max);
 	}
-	
+
 	/**
 	 * Parses a range from the given string
 	 * @param str The string to parse
@@ -34,7 +34,7 @@ public class Range {
 			/* TODO */
 			throw new Error("Ranges with negative values not supported");
 		}
-		
+
 		if (str.substring(1).contains("-")) {
 			/* has "-" but not as the first char -> range */
 			String[] vals = str.split("-");
@@ -45,7 +45,7 @@ public class Range {
 		}
 		checkRangeValidity(min, max);
 	}
-	
+
 	/**
 	 * Checks if the given values for a valid range
 	 * @param min The minimum value
@@ -57,7 +57,7 @@ public class Range {
 			throw new Error("Minimum value is larger than maximum");
 		}
 	}
-	
+
 	/**
 	 * Returns true if the given value is within this range [min, max],
 	 * min and max included
@@ -67,7 +67,7 @@ public class Range {
 	public boolean isInRange(double value) {
 		return (value >= min && value <= max);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "Range [" + min + ", " + max + "]";

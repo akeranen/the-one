@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -18,10 +18,10 @@ public class AllTests {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
 		// set US locale to parse decimals in consistent way
 		java.util.Locale.setDefault(java.util.Locale.US);
-		
+
 		//$JUnit-BEGIN$
 		suite.addTestSuite(WorldTest.class);
 		suite.addTestSuite(ConnectionTest.class);

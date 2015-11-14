@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package routing;
 
@@ -23,17 +23,17 @@ import core.Settings;
 import core.SimClock;
 
 /**
- * Implementation of PRoPHET router as described in 
+ * Implementation of PRoPHET router as described in
  * <I>Probabilistic routing in intermittently connected networks</I> by
  * Anders Lindgren et al.
- * 
- * 
+ *
+ *
  * This version tries to estimate a good value of protocol parameters from
  * a timescale parameter given by the user, and from the encounters the node
  * sees during simulation.
- * Refer to Karvo and Ott, <I>Time Scales and Delay-Tolerant Routing 
- * Protocols</I> Chants, 2008 
- * 
+ * Refer to Karvo and Ott, <I>Time Scales and Delay-Tolerant Routing
+ * Protocols</I> Chants, 2008
+ *
  */
 public class ProphetRouterWithEstimation extends ActiveRouter {
 	/** delivery predictability initialization constant*/
@@ -45,14 +45,14 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	/** default P target */
 	public static final double DEFAULT_PTARGET = .2;
 
-	/** Prophet router's setting namespace ({@value})*/ 
+	/** Prophet router's setting namespace ({@value})*/
 	public static final String PROPHET_NS = "ProphetRouterWithEstimation";
 	/**
 	 * Number of seconds in time scale.*/
 	public static final String TIME_SCALE_S ="timeScale";
 	/**
 	 * Target P_avg
-	 * 
+	 *
 	 */
 	public static final String P_AVG_TARGET_S = "targetPavg";
 
@@ -141,12 +141,12 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	@Override
 	public void changedConnection(Connection con) {
 		super.changedConnection(con);
-		
+
 		if (con.isUp()) {
 			DTNHost otherHost = con.getOtherNode(getHost());
 			if (updateIET(otherHost)) {
 				updateParams();
-			} 
+			}
 			updateDeliveryPredFor(otherHost);
 			updateTransitivePreds(otherHost);
 		}
@@ -156,7 +156,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	 * Updates the interencounter time estimates
 	 * @param host
 	 */
-	private boolean updateIET(DTNHost host) {		
+	private boolean updateIET(DTNHost host) {
 		/* First estimate the mean InterEncounter Time */
 		double currentTime = SimClock.getTime();
 		if (meetings.containsKey(host)) {
@@ -172,7 +172,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 			/* nothing to update */
 			meetings.put(host,currentTime);
 			return false;
-		}		
+		}
 	}
 
 	/**
@@ -189,7 +189,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 		double zetadiff;
 		int ozeta;
 		double pstable;
-		double pavg;		
+		double pavg;
 		double ee;
 		double bdiff;
 		int ob;
@@ -212,7 +212,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 		if (meanIET == 0) {
 			System.out.printf("Mean IET == 0\n");
 			return;
-		}			
+		}
 
 		System.out.printf("prophetfindparams(%d,%f,%f);\n",timescale,ptavg,meanIET);
 		b = 1e-5;
@@ -263,7 +263,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 
 			//System.out.printf("Zeta: %f Zetadiff: %f\n",zeta,zetadiff);
 			ee = 1;
-			bdiff = .1;			
+			bdiff = .1;
 			ob = 0;
 			zcount = 0; // if 100 iterations won't help, lets increase zeta...
 			bcheck = false;
@@ -354,11 +354,11 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	 */
 	private void updateTransitivePreds(DTNHost host) {
 		MessageRouter otherRouter = host.getRouter();
-		assert otherRouter instanceof ProphetRouterWithEstimation : "PRoPHET only works " + 
+		assert otherRouter instanceof ProphetRouterWithEstimation : "PRoPHET only works " +
 		" with other routers of same type";
 
 		double pForHost = getPredFor(host); // P(a,b)
-		Map<DTNHost, Double> othersPreds = 
+		Map<DTNHost, Double> othersPreds =
 			((ProphetRouterWithEstimation)otherRouter).getDeliveryPreds();
 
 		for (Map.Entry<DTNHost, Double> e : othersPreds.entrySet()) {
@@ -406,7 +406,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	public void update() {
 		super.update();
 		if (!canStartTransfer() ||isTransferring()) {
-			return; // nothing to transfer or is currently transferring 
+			return; // nothing to transfer or is currently transferring
 		}
 
 		// try messages that could be delivered to final recipient
@@ -414,7 +414,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 			return;
 		}
 
-		tryOtherMessages();		
+		tryOtherMessages();
 	}
 
 	/**
@@ -423,8 +423,8 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	 * @return The return value of {@link #tryMessagesForConnected(List)}
 	 */
 	private Tuple<Message, Connection> tryOtherMessages() {
-		List<Tuple<Message, Connection>> messages = 
-			new ArrayList<Tuple<Message, Connection>>(); 
+		List<Tuple<Message, Connection>> messages =
+			new ArrayList<Tuple<Message, Connection>>();
 
 		Collection<Message> msgCollection = getMessageCollection();
 
@@ -446,7 +446,7 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 					// the other node has higher probability of delivery
 					messages.add(new Tuple<Message, Connection>(m,con));
 				}
-			}			
+			}
 		}
 
 		if (messages.size() == 0) {
@@ -460,10 +460,10 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 
 	/**
 	 * Comparator for Message-Connection-Tuples that orders the tuples by
-	 * their delivery probability by the host on the other side of the 
+	 * their delivery probability by the host on the other side of the
 	 * connection (GRTRMax)
 	 */
-	private class TupleComparator implements Comparator 
+	private class TupleComparator implements Comparator
 	<Tuple<Message, Connection>> {
 
 		public int compare(Tuple<Message, Connection> tuple1,
@@ -495,14 +495,14 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	public RoutingInfo getRoutingInfo() {
 		ageDeliveryPreds();
 		RoutingInfo top = super.getRoutingInfo();
-		RoutingInfo ri = new RoutingInfo(preds.size() + 
+		RoutingInfo ri = new RoutingInfo(preds.size() +
 		" delivery prediction(s)");
 
 		for (Map.Entry<DTNHost, Double> e : preds.entrySet()) {
 			DTNHost host = e.getKey();
 			Double value = e.getValue();
 
-			ri.addMoreInfo(new RoutingInfo(String.format("%s : %.6f", 
+			ri.addMoreInfo(new RoutingInfo(String.format("%s : %.6f",
 					host, value)));
 		}
 

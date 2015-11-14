@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package routing.schedule;
 
@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class ScheduleEntry implements Serializable {
 	private static final long serialVersionUID = 42L;
-	
+
 	private double time;
 	private int from;
 	private int to;
@@ -16,7 +16,7 @@ public class ScheduleEntry implements Serializable {
 	private double delta;
 	private double duration;
 	private int usageCount;
-	
+
 	/**
 	 * Constructor of new schedule entry
 	 * @param time When the journey from "from" starts
@@ -71,12 +71,12 @@ public class ScheduleEntry implements Serializable {
 	 */
 	public double getDuration() {
 		return duration;
-	}		
-	
+	}
+
 	public double getDestinationTime() {
 		return this.getTime() + this.getDuration();
 	}
-	
+
 	/**
 	 * @return the delta
 	 */
@@ -97,7 +97,7 @@ public class ScheduleEntry implements Serializable {
 	public int getUsageCount() {
 		return usageCount;
 	}
-	
+
 	public void increaseUsageCount() {
 		this.usageCount++;
 	}
@@ -107,5 +107,5 @@ public class ScheduleEntry implements Serializable {
 		return time + "(+" + delta + "): " + from + "->"
 				+ (via > 0 ? via + "->" : "") + to + " (" + duration + ")";
 	}
-	
+
 }

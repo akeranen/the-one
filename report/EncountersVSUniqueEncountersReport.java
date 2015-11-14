@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -12,20 +12,20 @@ import core.UpdateListener;
 
 /**
  * The total- vs. the unique encounters for each node
- * 
+ *
  * @author Frans Ekman
  */
-public class EncountersVSUniqueEncountersReport extends Report 
+public class EncountersVSUniqueEncountersReport extends Report
 	implements ConnectionListener, UpdateListener {
 
 	private TotalEncountersReport totalEncountersReport;
 	private UniqueEncountersReport uniqueEncountersReport;
-	
+
 	public EncountersVSUniqueEncountersReport() {
 		totalEncountersReport = new TotalEncountersReport();
 		uniqueEncountersReport = new UniqueEncountersReport();
 	}
-	
+
 	public void hostsConnected(DTNHost host1, DTNHost host2) {
 		totalEncountersReport.hostsConnected(host1, host2);
 		uniqueEncountersReport.hostsConnected(host1, host2);
@@ -33,7 +33,7 @@ public class EncountersVSUniqueEncountersReport extends Report
 
 	public void hostsDisconnected(DTNHost host1, DTNHost host2) {
 		totalEncountersReport.hostsDisconnected(host1, host2);
-		uniqueEncountersReport.hostsDisconnected(host1, host2);	
+		uniqueEncountersReport.hostsDisconnected(host1, host2);
 	}
 
 	public void updated(List<DTNHost> hosts) {
@@ -45,12 +45,12 @@ public class EncountersVSUniqueEncountersReport extends Report
 	public void done() {
 		int[] totalEncounters = totalEncountersReport.getEncounters();
 		int[][] nodeRelationships = uniqueEncountersReport.getNodeRelationships();
-		
+
 		for (int i=0; i<totalEncounters.length; i++) {
 			String row = "";
 			row += i + "\t";
 			row += totalEncounters[i] + "\t";
-			
+
 			int count = 0;
 			for (int j=0; j<nodeRelationships.length; j++) {
 				if (nodeRelationships[i][j] > 0) {
@@ -60,7 +60,7 @@ public class EncountersVSUniqueEncountersReport extends Report
 			row += count;
 			write(row);
 		}
-		
+
 		super.done();
 	}
 }

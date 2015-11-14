@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui;
 
@@ -35,11 +35,11 @@ public class RoutingInfoWindow extends JFrame implements ActionListener {
 	private Timer refreshTimer;
 	/** how often auto refresh is performed */
 	private static final int AUTO_REFRESH_DELAY = 1000;
-	
+
 	public RoutingInfoWindow(DTNHost host) {
 		Container cp = this.getContentPane();
 		JPanel refreshPanel = new JPanel();
-		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);		
+		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		this.host = host;
 		this.setLayout(new BorderLayout());
 		refreshPanel.setLayout(new BorderLayout());
@@ -47,27 +47,27 @@ public class RoutingInfoWindow extends JFrame implements ActionListener {
 		this.autoRefresh.addActionListener(this);
 		this.treePane = new JScrollPane();
 		updateTree();
-		
+
 		cp.add(treePane, BorderLayout.CENTER);
 		cp.add(refreshPanel, BorderLayout.SOUTH);
-		
+
 		this.refreshButton = new JButton("refresh");
 		this.refreshButton.addActionListener(this);
 		refreshPanel.add(refreshButton, BorderLayout.EAST);
 		refreshPanel.add(autoRefresh, BorderLayout.WEST);
-		
-		this.pack();		
+
+		this.pack();
 		this.setVisible(true);
 	}
 
-	
-	private void updateTree() {	
-		super.setTitle("Routing Info of " + host + " at " + 
+
+	private void updateTree() {
+		super.setTitle("Routing Info of " + host + " at " +
 				SimClock.getFormattedTime(2));
 		RoutingInfo ri = host.getRoutingInfo();
 		DefaultMutableTreeNode top = new DefaultMutableTreeNode(ri);
 		Vector<Integer> expanded = new Vector<Integer>();
-		
+
 		addChildren(top, ri);
 
 		if (this.tree != null) { /* store expanded state */
@@ -77,21 +77,21 @@ public class RoutingInfoWindow extends JFrame implements ActionListener {
 				}
 			}
 		}
-		
+
 		this.tree = new JTree(top);
-		
+
 		for (int i=0; i < this.tree.getRowCount(); i++) { /* restore expanded */
 			if (expanded.size() > 0 && expanded.firstElement() == i) {
 				this.tree.expandRow(i);
 				expanded.remove(0);
 			}
 		}
-		
+
 		this.treePane.setViewportView(this.tree);
 		this.treePane.revalidate();
 	}
-	
-	
+
+
 	private void addChildren(DefaultMutableTreeNode node, RoutingInfo info) {
 		for (RoutingInfo ri : info.getMoreInfo()) {
 			DefaultMutableTreeNode child = new DefaultMutableTreeNode(ri);
@@ -115,5 +115,5 @@ public class RoutingInfoWindow extends JFrame implements ActionListener {
 			}
 		}
 	}
-	
+
 }

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -21,7 +21,7 @@ public class ModuleCommunicationBus {
 	private HashMap<String, Object> values;
 	/** Subscribed listeners (or null if none)*/
 	private HashMap<String, List<ModuleCommunicationListener>> listeners;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -29,12 +29,12 @@ public class ModuleCommunicationBus {
 		this.values = null; /* use lazy creation  */
 		this.listeners = null;
 	}
-	
+
 	/**
-	 * Adds a new property for this node. The key can be any string but 
+	 * Adds a new property for this node. The key can be any string but
 	 * it should be such that no other class accidently uses the same value.
 	 * Note that, unless the value is immutable, it can be changed by any
-	 * object that can call {@link #getProperty}. 
+	 * object that can call {@link #getProperty}.
 	 * @param key The key which is used to lookup the value
 	 * @param value The value to store
 	 * @throws SimError if there is already a value for the given key
@@ -42,15 +42,15 @@ public class ModuleCommunicationBus {
 	public void addProperty(String key, Object value) throws SimError {
 		if (this.values != null && this.values.containsKey(key)) {
 			/* check to prevent accidental name space collisions */
-			throw new SimError("A value for the key " + key + 
+			throw new SimError("A value for the key " + key +
 					" already exists");
 		}
-		
+
 		this.updateProperty(key, value);
 	}
-	
+
 	/**
-	 * Returns an object that was stored using the given key. If such object 
+	 * Returns an object that was stored using the given key. If such object
 	 * is not found, null is returned.
 	 * @param key The key used to lookup the object
 	 * @return The stored object or null if it isn't found
@@ -61,7 +61,7 @@ public class ModuleCommunicationBus {
 		}
 		return this.values.get(key);
 	}
-	
+
 	/**
 	 * Returns true if the bus contains a value for the given key
 	 * @param key The key for which a value's existence is checked
@@ -73,9 +73,9 @@ public class ModuleCommunicationBus {
 		}
 		return this.values.containsKey(key);
 	}
-	
+
 	/**
-	 * Updates a value for an existing property. For storing the value first 
+	 * Updates a value for an existing property. For storing the value first
 	 * time, {@link #addProperty(String, Object)} should be used which
 	 * checks for name space clashes.
 	 * @param key The key which is used to lookup the value
@@ -86,14 +86,14 @@ public class ModuleCommunicationBus {
 			/* lazy creation to prevent performance overhead for classes
 			   that don't use the property feature  */
 			this.values = new HashMap<String, Object>();
-		}		
+		}
 
 		this.values.put(key, value);
 		notifyListeners(key, value);
 	}
 
 	/**
-	 * Changes the Double value with given key with the value delta  
+	 * Changes the Double value with given key with the value delta
 	 * @param key The key of variable to update
 	 * @param delta Value added to the old value
 	 * @return The new value
@@ -114,7 +114,7 @@ public class ModuleCommunicationBus {
 
 		return current + delta;
 	}
-	
+
 	/**
 	 * Returns a double value from the communication bus.
 	 * @param key The key of the variable
@@ -134,7 +134,7 @@ public class ModuleCommunicationBus {
 			throw new SimError("No Double value for key " + key);
 		}
 	}
-	
+
 	/**
 	 * Returns an integer value from the communication bus.
 	 * @param key The key of the variable
@@ -154,7 +154,7 @@ public class ModuleCommunicationBus {
 			throw new SimError("No Integer value for key " + key);
 		}
 	}
-	
+
 	/**
 	 * Subscribes a module to changes of a certain value.
 	 * @param key The key of the value whose changes the module is interested of
@@ -163,20 +163,20 @@ public class ModuleCommunicationBus {
 	public void subscribe(String key, ModuleCommunicationListener module) {
 		if (this.listeners == null) {
 			/* first listener for the whole node */
-			this.listeners = 
+			this.listeners =
 				new HashMap<String, List<ModuleCommunicationListener>>();
 		}
-		
+
 		List<ModuleCommunicationListener> list = this.listeners.get(key);
 		if (list == null) {
 			/* first listener for this key */
 			list = new ArrayList<ModuleCommunicationListener>(INIT_CAPACITY);
 			this.listeners.put(key, list);
 		}
-		
+
 		list.add(module);
 	}
-	
+
 	/**
 	 * Removes a notification subscription
 	 * @param key The key for which the subscription should be removed
@@ -184,46 +184,46 @@ public class ModuleCommunicationBus {
 	 */
 	public void unsubscribe(String key, ModuleCommunicationListener module) {
 		List<ModuleCommunicationListener> list;
-		
+
 		if (this.listeners == null) {
 			return; /* no subscriptions */
 		}
-		
+
 		list = this.listeners.get(key);
 		if (list == null) {
 			return; /* no subscriptions for the key */
 		}
-		
+
 		list.remove(module);
 	}
-	
-	
+
+
 	/**
-	 * Notifies all listeners that have subscribed to the given key 
+	 * Notifies all listeners that have subscribed to the given key
 	 * @param key The key which got new value
 	 * @param newValue The new value for the key
 	 */
 	private void notifyListeners(String key, Object newValue) {
 		List<ModuleCommunicationListener> list;
-		
+
 		if (this.listeners == null) {
 			return;
 		}
 		list = this.listeners.get(key);
-		
+
 		if (list == null) {
 			return;
 		}
-		
+
 		for (ModuleCommunicationListener mcl : list) {
 			mcl.moduleValueChanged(key, newValue);
 		}
 	}
-	
-	
+
+
 	@Override
 	public String toString() {
-		return "ComBus with mapping: " + (this.values != null ? 
+		return "ComBus with mapping: " + (this.values != null ?
 				this.values.toString() : "n/a");
 	}
 }

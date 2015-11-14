@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -14,11 +14,11 @@ public abstract class MessageEvent extends ExternalEvent {
 	protected int toAddr;
 	/** identifier of the message */
 	protected String id;
-	
+
 	/**
 	 * Creates a message  event
 	 * @param from Where the message comes from
-	 * @param to Who the message goes to 
+	 * @param to Who the message goes to
 	 * @param id ID of the message
 	 * @param time Time when the message event occurs
 	 */
@@ -28,7 +28,7 @@ public abstract class MessageEvent extends ExternalEvent {
 		this.toAddr= to;
 		this.id = id;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "MSG @" + this.time + " " + id;

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -19,17 +19,17 @@ import core.MessageListener;
  */
 public class DistanceDelayReport extends Report implements MessageListener {
 	/** Syntax of the report lines */
-	public static final String SYNTAX = 
+	public static final String SYNTAX =
 		"distance at msg send, delivery time, hop count, MSG_ID";
 	private HashMap<String, InfoTuple> creationInfos;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public DistanceDelayReport() {
 		init();
 	}
-	
+
 	@Override
 	protected void init() {
 		super.init();
@@ -43,14 +43,14 @@ public class DistanceDelayReport extends Report implements MessageListener {
 	public void messageTransferred(Message m, DTNHost from, DTNHost to,
 			boolean firstDelivery) {
 		if (isWarmupID(m.getId()) || !firstDelivery) {
-			return; // report is only interested of first deliveries  
+			return; // report is only interested of first deliveries
 		}
-		
+
 		InfoTuple info = this.creationInfos.remove(m.getId());
 		if (info == null) {
 			return; /* message was created before the warm up period */
 		}
-		
+
 		report(m.getId(), info.getLoc1().distance(info.getLoc2()),
 				getSimTime() - info.getTime(), m.getHops().size()-1);
 	}
@@ -63,9 +63,9 @@ public class DistanceDelayReport extends Report implements MessageListener {
 			addWarmupID(m.getId());
 			return;
 		}
-		
-		this.creationInfos.put( m.getId(), 
-				new InfoTuple(getSimTime(), 
+
+		this.creationInfos.put( m.getId(),
+				new InfoTuple(getSimTime(),
 						m.getFrom().getLocation().clone(),
 						m.getTo().getLocation().clone()) );
 	}
@@ -77,7 +77,7 @@ public class DistanceDelayReport extends Report implements MessageListener {
 		write("# Scenario " + getScenarioName());
 		write("# " + SYNTAX);
 	}
-	
+
 	/**
 	 * Writes a report line
 	 * @param id Id of the message
@@ -87,10 +87,10 @@ public class DistanceDelayReport extends Report implements MessageListener {
 	 */
 	private void report(String id, double startDistance, double time,
 			int hopCount) {
-		write(format(startDistance) + " " + format(time) + " " + hopCount + 
+		write(format(startDistance) + " " + format(time) + " " + hopCount +
 				" " + id);
 	}
-	
+
 	/* nothing to implement for the rest */
 	public void messageDeleted(Message m, DTNHost where, boolean dropped) {}
 	public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {}
@@ -102,11 +102,11 @@ public class DistanceDelayReport extends Report implements MessageListener {
 			InfoTuple info = creationInfos.get(id);
 			report(id, info.getLoc1().distance(info.getLoc2()), -1, -1);
 		}
-		
+
 		super.done();
 	}
-	
- 	/**
+
+	/**
 	 * Private class that encapsulates time and location related information
 	 */
 	private class InfoTuple {

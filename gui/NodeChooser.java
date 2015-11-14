@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui;
 
@@ -35,11 +35,11 @@ public class NodeChooser extends JPanel implements ActionListener {
 	private Timer refreshTimer;
 	/** how often auto refresh is performed */
 	private static final int AUTO_REFRESH_DELAY = 100;
-	
+
 	/** Default message node filters -setting id ({@value}). Comma separate
 	 * list of message IDs from which the default filter set is created. */
 	public static final String NODE_MESSAGE_FILTERS_S = "nodeMessageFilters";
-	
+
 	private static final String HOST_KEY = "host";
 	private List<DTNHost> allNodes;
 	private List<DTNHost> shownNodes;
@@ -49,7 +49,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 	private JPanel chooserPanel;
 	private Vector<NodeFilter> filters;
 
-	
+
 	public NodeChooser(List<DTNHost> nodes,	DTNSimGUI gui) {
 		Settings s = new Settings(MainWindow.GUI_NS);
 		// create a replicate to not interfere with original's ordering
@@ -57,7 +57,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 		this.shownNodes = allNodes;
 		this.gui = gui;
 		this.filters = new Vector<NodeFilter>();
-		
+
 		if (s.contains(NODE_MESSAGE_FILTERS_S)) {
 			String[] filterIds = s.getCsvSetting(NODE_MESSAGE_FILTERS_S);
 			for (String id : filterIds) {
@@ -66,12 +66,12 @@ public class NodeChooser extends JPanel implements ActionListener {
 				this.refreshTimer.start();
 			}
 		}
-		
+
 		Collections.sort(this.allNodes);
-		
+
 		init();
 	}
-	
+
 	/**
 	 * Adds a new node filter to the node chooser
 	 * @param f The filter to add
@@ -84,7 +84,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 			this.refreshTimer.start();
 		}
 	}
-	
+
 	/**
 	 * Clears all node filters
 	 */
@@ -95,24 +95,24 @@ public class NodeChooser extends JPanel implements ActionListener {
 			this.refreshTimer.stop();
 		}
 		this.refreshTimer = null;
-		
+
 		NodeGraphic.setHighlightedNodes(null);
 		updateList();
 	}
-	
+
 	private void updateList() {
 		setNodes(0);
 		if (this.groupChooser != null) {
 			this.groupChooser.setSelectedIndex(0);
 		}
 	}
-	
-	
+
+
 	private void updateShownNodes() {
 		List<DTNHost> oldShownNodes = shownNodes;
 		List<DTNHost>nodes = new Vector<DTNHost>();
-		
-		for (DTNHost node : allNodes) {	
+
+		for (DTNHost node : allNodes) {
 			for (NodeFilter f : this.filters) {
 				if (f.filterNode(node)) {
 					nodes.add(node);
@@ -120,7 +120,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 				}
 			}
 		}
-		
+
 		if (nodes.size() == oldShownNodes.size() &&
 			oldShownNodes.containsAll(nodes)) {
 			return; /* nothing to update */
@@ -129,29 +129,29 @@ public class NodeChooser extends JPanel implements ActionListener {
 			updateList();
 			NodeGraphic.setHighlightedNodes(nodes);
 		}
-		
+
 	}
-	
+
 	/**
 	 * Initializes the node chooser panels
 	 */
 	private void init() {
 		nodesPanel = new JPanel();
 		chooserPanel = new JPanel();
-		
+
 		this.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor = GridBagConstraints.FIRST_LINE_START;
-		
+
 		nodesPanel.setLayout(new BoxLayout(nodesPanel,BoxLayout.Y_AXIS));
 		nodesPanel.setBorder(BorderFactory.createTitledBorder(getBorder(),
 				"Nodes"));
-		
+
 		if (shownNodes.size() > MAX_NODE_COUNT) {
 			String[] groupNames = new String[(shownNodes.size()-1)
 			                                 / MAX_NODE_COUNT+1];
 			int last = 0;
-			for (int i=0, n=shownNodes.size(); 
+			for (int i=0, n=shownNodes.size();
 				i <= (n-1) / MAX_NODE_COUNT; i++) {
 				int next = MAX_NODE_COUNT * (i+1) - 1;
 				if (next > n) {
@@ -164,7 +164,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 			groupChooser.addActionListener(this);
 			chooserPanel.add(groupChooser);
 		}
-		
+
 		setNodes(0);
 		c.gridy = 0;
 		this.add(chooserPanel, c);
@@ -179,7 +179,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 	private void setNodes(int offset) {
 		nodesPanel.removeAll();
 
-		for (int i=offset; i< shownNodes.size() && 
+		for (int i=offset; i< shownNodes.size() &&
 			i < offset + MAX_NODE_COUNT; i++) {
 			DTNHost h = shownNodes.get(i);
 			JButton jb = new JButton(h.toString());
@@ -187,11 +187,11 @@ public class NodeChooser extends JPanel implements ActionListener {
 			jb.addActionListener(this);
 			nodesPanel.add(jb);
 		}
-		
+
 		revalidate();
 		repaint();
 	}
-	
+
 	/**
 	 * Action listener method for buttons and node set chooser
 	 */
@@ -208,5 +208,5 @@ public class NodeChooser extends JPanel implements ActionListener {
 			updateShownNodes();
 		}
 	}
-	
+
 }

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -29,7 +29,7 @@ public abstract class Connection {
 	 * @param toNode The node in the other side of the connection
 	 * @param toInterface The interface in the other side of the connection
 	 */
-	public Connection(DTNHost fromNode, NetworkInterface fromInterface, 
+	public Connection(DTNHost fromNode, NetworkInterface fromInterface,
 			DTNHost toNode, NetworkInterface toInterface) {
 		this.fromNode = fromNode;
 		this.fromInterface = fromInterface;
@@ -48,7 +48,7 @@ public abstract class Connection {
 		return this.isUp;
 	}
 
-	/** 
+	/**
 	 * Returns true if the connections is transferring a message
 	 * @return true if the connections is transferring a message
 	 */
@@ -56,7 +56,7 @@ public abstract class Connection {
 		return this.msgOnFly != null;
 	}
 
-	
+
 	/**
 	 * Returns true if the given node is the initiator of the connection, false
 	 * otherwise
@@ -66,7 +66,7 @@ public abstract class Connection {
 	public boolean isInitiator(DTNHost node) {
 		return node == this.fromNode;
 	}
-	
+
 	/**
 	 * Sets the state of the connection.
 	 * @param state True if the connection is up, false if not
@@ -78,11 +78,11 @@ public abstract class Connection {
 	/**
 	 * Sets a message that this connection is currently transferring. If message
 	 * passing is controlled by external events, this method is not needed
-	 * (but then e.g. {@link #finalizeTransfer()} and 
+	 * (but then e.g. {@link #finalizeTransfer()} and
 	 * {@link #isMessageTransferred()} will not work either). Only a one message
 	 * at a time can be transferred using one connection.
 	 * @param m The message
-	 * @return The value returned by 
+	 * @return The value returned by
 	 * {@link MessageRouter#receiveMessage(Message, DTNHost)}
 	 */
 	public abstract int startTransfer(DTNHost from, Message m);
@@ -97,7 +97,7 @@ public abstract class Connection {
      * Aborts the transfer of the currently transferred message.
      */
 	public void abortTransfer() {
-		assert msgOnFly != null : "No message to abort at " + msgFromNode;	
+		assert msgOnFly != null : "No message to abort at " + msgFromNode;
 		int bytesRemaining = getRemainingByteCount();
 
 		this.bytesTransferred += msgOnFly.getSize() - bytesRemaining;
@@ -105,7 +105,7 @@ public abstract class Connection {
 		getOtherNode(msgFromNode).messageAborted(this.msgOnFly.getId(),
 				msgFromNode, bytesRemaining);
 		clearMsgOnFly();
-	}	
+	}
 
 	/**
 	 * Returns the amount of bytes to be transferred before ongoing transfer
@@ -121,7 +121,7 @@ public abstract class Connection {
 	 */
 	protected void clearMsgOnFly() {
 		this.msgOnFly = null;
-		this.msgFromNode = null;		
+		this.msgFromNode = null;
 	}
 
 	/**
@@ -133,7 +133,7 @@ public abstract class Connection {
 	public void finalizeTransfer() {
 		assert this.msgOnFly != null : "Nothing to finalize in " + this;
 		assert msgFromNode != null : "msgFromNode is not set";
-		
+
 		this.bytesTransferred += msgOnFly.getSize();
 
 		getOtherNode(msgFromNode).messageTransferred(this.msgOnFly.getId(),
@@ -142,7 +142,7 @@ public abstract class Connection {
 	}
 
 	/**
-	 * Returns true if the current message transfer is done 
+	 * Returns true if the current message transfer is done
 	 * @return True if the transfer is done, false if not
 	 */
 	public abstract boolean isMessageTransferred();
@@ -153,21 +153,21 @@ public abstract class Connection {
 	 * @return true if the connection is ready to transfer a message
 	 */
 	public boolean isReadyForTransfer() {
-		return this.isUp && this.msgOnFly == null; 
+		return this.isUp && this.msgOnFly == null;
 	}
 
 	/**
 	 * Gets the message that this connection is currently transferring.
 	 * @return The message or null if no message is being transferred
-	 */	
+	 */
 	public Message getMessage() {
 		return this.msgOnFly;
 	}
 
-	/** 
+	/**
 	 * Gets the current connection speed
 	 */
-	public abstract double getSpeed();	
+	public abstract double getSpeed();
 
 	/**
 	 * Returns the total amount of bytes this connection has transferred so far
@@ -182,7 +182,7 @@ public abstract class Connection {
 				return this.bytesTransferred + this.msgOnFly.getSize();
 			}
 			else {
-				return this.bytesTransferred + 
+				return this.bytesTransferred +
 				(msgOnFly.getSize() - getRemainingByteCount());
 			}
 		}
@@ -221,8 +221,8 @@ public abstract class Connection {
 	 */
 	public String toString() {
 		return fromNode + "<->" + toNode + " (" + getSpeed()/1000 + " kBps) is " +
-		(isUp() ? "up":"down") + 
-		(isTransferring() ? " transferring " + this.msgOnFly  + 
+		(isUp() ? "up":"down") +
+		(isTransferring() ? " transferring " + this.msgOnFly  +
 				" from " + this.msgFromNode : "");
 	}
 

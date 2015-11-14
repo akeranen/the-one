@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -17,9 +17,9 @@ import java.util.Scanner;
 import core.Coord;
 
 /**
- * Class for reading "Well-known text syntax" files. See e.g. 
+ * Class for reading "Well-known text syntax" files. See e.g.
  * <A HREF="http://en.wikipedia.org/wiki/Well-known_text">Wikipedia</A> for
- * WKT syntax details. For example, <A HREF="http://openjump.org/">Open JUMP</A> 
+ * WKT syntax details. For example, <A HREF="http://openjump.org/">Open JUMP</A>
  * GIS program can save compatible data from many other formats.<BR>
  */
 public class WKTReader {
@@ -29,12 +29,12 @@ public class WKTReader {
 	public static final String MULTILINESTRING = "MULTILINESTRING";
 	/** known WKT type POINT */
 	public static final String POINT = "POINT";
-	
+
 	/** are all lines of the file read */
 	private boolean done;
 	/** reader for the data */
 	private BufferedReader reader;
-	
+
 	/**
 	 * Read point data from a file
 	 * @param file The file to read points from
@@ -56,7 +56,7 @@ public class WKTReader {
 
 		String type;
 		init(r);
-		
+
 		while((type = nextType()) != null) {
 			if (type.equals(POINT)) {
 				points.add(parsePoint());
@@ -66,10 +66,10 @@ public class WKTReader {
 				readNestedContents();
 			}
 		}
-		
+
 		return points;
 	}
-	
+
 	/**
 	 * Read line (LINESTRING) data from a file
 	 * @param file The file to read data from
@@ -81,7 +81,7 @@ public class WKTReader {
 
 		String type;
 		init(new FileReader(file));
-		
+
 		while((type = nextType()) != null) {
 			if (type.equals(LINESTRING)) {
 				lines.add(parseLineString(readNestedContents()));
@@ -91,11 +91,11 @@ public class WKTReader {
 				readNestedContents();
 			}
 		}
-		
+
 		return lines;
 	}
-	
-	
+
+
 	/**
 	 * Initialize the reader to use a certain input reader
 	 * @param input The input to use
@@ -104,7 +104,7 @@ public class WKTReader {
 		setDone(false);
 		reader = new BufferedReader(input);
 	}
-	
+
 	/**
 	 * Returns the next type read from the reader given at init or null
 	 * if no more types can be read
@@ -113,7 +113,7 @@ public class WKTReader {
 	 */
 	protected String nextType() throws IOException {
 		String type = null;
-		
+
 		while (!done && type == null) {
 			type = readWord(reader);
 
@@ -122,10 +122,10 @@ public class WKTReader {
 				continue;
 			}
 		}
-		
+
 		return type;
 	}
-	
+
 	/**
 	 * Returns true if type is one of the known WKT types
 	 * @param type The type to check
@@ -145,7 +145,7 @@ public class WKTReader {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Reads a "word", ie whitespace delimited string of characters, from
 	 * the reader
@@ -156,40 +156,40 @@ public class WKTReader {
 	protected String readWord(Reader r) throws IOException {
 		StringBuffer buf = new StringBuffer();
 		char c = skipAllWhitespace(r);
-		
+
 		// read non-whitespace part
 		while(c != (char)-1 && !Character.isWhitespace(c)) {
 			buf.append(c);
 			c = (char)r.read();
-		}		
-		
+		}
+
 		if (c == (char)-1) {
 			setDone(true);
 		}
 		return buf.toString();
 	}
-	
+
 	/**
 	 * Parses a MULTILINESTRING statement that has nested linestrings from
 	 * the current reader
 	 * @return List of parsed Coord lists
 	 * @throws IOException
 	 */
-	protected List<List<Coord>> parseMultilinestring() 
+	protected List<List<Coord>> parseMultilinestring()
 			throws IOException {
 		List<List<Coord>> list = new ArrayList<List<Coord>>();
 		String multiContents = readNestedContents(reader);
 		StringReader r2 = new StringReader(multiContents);
 		String lineString = readNestedContents(r2);
-		
+
 		while (lineString.length() > 0) {
 			list.add(parseLineString(lineString));
 			lineString = readNestedContents(r2);
 		}
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * Parses a WKT point data from the intialized reader
 	 * @return Point data as a Coordinate
@@ -199,19 +199,19 @@ public class WKTReader {
 		String coords = readNestedContents(reader);
 		Scanner s = new Scanner(coords);
 		double x,y;
-		
+
 		try {
 			x = s.nextDouble();
 			y = s.nextDouble();
 		} catch (RuntimeException e) {
 			throw new IOException("Bad coordinate values: '" + coords + "'");
 		}
-		
+
 		return new Coord(x,y);
 	}
-	
+
 	/**
-	 * Reads and skips all characters until character "until" is read or 
+	 * Reads and skips all characters until character "until" is read or
 	 * end of stream is reached. Also the expected character is discarded.
 	 * @param r Reader to read characters from
 	 * @param until What character to expect
@@ -223,7 +223,7 @@ public class WKTReader {
 			c = (char)r.read();
 		} while (c != until && c != (char)-1);
 	}
-	
+
 	/**
 	 * Skips all consecutive whitespace characters from reader
 	 * @param r Reader where the whitespace is skipped
@@ -235,10 +235,10 @@ public class WKTReader {
 		do {
 			c = (char)r.read();
 		} while (Character.isWhitespace(c) && c != (char)-1);
-		
+
 		return c;
 	}
-	
+
 	/**
 	 * Reads everything from the first opening parenthesis until line that
 	 * ends to a closing parenthesis and returns the contents in one string
@@ -249,10 +249,10 @@ public class WKTReader {
 		StringBuffer contents = new StringBuffer();
 		int parOpen; // nrof open parentheses
 		char c = '\0';
-		
+
 		skipUntil(r,'(');
 		parOpen = 1;
-		
+
 		while (c != (char)-1 && parOpen > 0) {
 			c = (char)r.read();
 			if (c == '(') {
@@ -266,11 +266,11 @@ public class WKTReader {
 			}
 			contents.append(c);
 		}
-		
+
 		contents.deleteCharAt(contents.length()-1);	// remove last ')'
 		return contents.toString();
 	}
-	
+
 	/**
 	 * Returns nested contents from the reader given at init
 	 * @return nested contents from the reader given at init
@@ -280,34 +280,34 @@ public class WKTReader {
 	public String readNestedContents() throws IOException {
 		return readNestedContents(reader);
 	}
-	
+
 	/**
 	 * Parses coordinate tuples from "LINESTRING" lines
 	 * @param line String that contains the whole "LINESTRING"'s content
 	 * @return List of coordinates parsed from the linestring
 	 */
 	protected List<Coord> parseLineString(String line) {
-		List<Coord> coords = new ArrayList<Coord>(); 
+		List<Coord> coords = new ArrayList<Coord>();
 		Scanner lineScan;
 		Scanner tupleScan;
 		double x,y;
 		Coord c;
-		
+
 		lineScan = new Scanner(line);
 		lineScan.useDelimiter(",");
-			
-		while (lineScan.hasNext()) {			
+
+		while (lineScan.hasNext()) {
 			tupleScan = new Scanner(lineScan.next());
 			x = Double.parseDouble(tupleScan.next());
 			y = Double.parseDouble(tupleScan.next());
 			c = new Coord(x,y);
-						
+
 			coords.add(c);
 		}
-		
+
 		return coords;
 	}
-	
+
 	/**
 	 * Returns true if the whole file has been read
 	 * @return true if the whole file has been read

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package ui;
 
@@ -18,12 +18,12 @@ public class DTNSimTextUI extends DTNSimUI {
 	protected void runSim() {
 		double simTime = SimClock.getTime();
 		double endTime = scen.getEndTime();
-	
+
 		print("Running simulation '" + scen.getName()+"'");
 
 		startTime = System.currentTimeMillis();
 		lastUpdateRt = startTime;
-		
+
 		while (simTime < endTime && !simCancelled){
 			try {
 				world.update();
@@ -35,17 +35,17 @@ public class DTNSimTextUI extends DTNSimUI {
 			simTime = SimClock.getTime();
 			this.update(false);
 		}
-		
+
 		double duration = (System.currentTimeMillis() - startTime)/1000.0;
-		
+
 		simDone = true;
 		done();
 		this.update(true); // force final UI update
-		
+
 		print("Simulation done in " + String.format("%.2f", duration) + "s");
-	
+
 	}
-	
+
 	/**
 	 * Updates user interface if the long enough (real)time (update interval)
 	 * has passed from the previous update.
@@ -59,16 +59,16 @@ public class DTNSimTextUI extends DTNSimUI {
 		if (forced || (diff > UI_UP_INTERVAL)) {
 			// simulated seconds/second calc
 			double ssps = ((SimClock.getTime() - lastUpdate)*1000) / diff;
-			print(String.format("%.1f %d: %.2f 1/s", dur, 
+			print(String.format("%.1f %d: %.2f 1/s", dur,
 					SimClock.getIntTime(),ssps));
-			
+
 			this.lastUpdateRt = System.currentTimeMillis();
 			this.lastUpdate = SimClock.getTime();
-		}		
+		}
 	}
-	
+
 	private void print(String txt) {
 		System.out.println(txt);
 	}
-	
+
 }

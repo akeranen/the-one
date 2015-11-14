@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -11,7 +11,7 @@ package core;
 public class Coord implements Cloneable, Comparable<Coord> {
 	private double x;
 	private double y;
-	
+
 	/**
 	 * Constructor.
 	 * @param x Initial X-coordinate
@@ -20,7 +20,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public Coord(double x, double y) {
 		setLocation(x,y);
 	}
-	
+
 	/**
 	 * Sets the location of this coordinate object
 	 * @param x The x coordinate to set
@@ -28,9 +28,9 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 */
 	public void setLocation(double x, double y) {
 		this.x = x;
-		this.y = y;		
+		this.y = y;
 	}
-	
+
 	/**
 	 * Sets this coordinate's location to be equal to other
 	 * coordinates location
@@ -38,9 +38,9 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 */
 	public void setLocation(Coord c) {
 		this.x = c.x;
-		this.y = c.y;		
+		this.y = c.y;
 	}
-	
+
 	/**
 	 * Moves the point by dx and dy
 	 * @param dx How much to move the point in X-direction
@@ -50,7 +50,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 		this.x += dx;
 		this.y += dy;
 	}
-	
+
 	/**
 	 * Returns the distance to another coordinate
 	 * @param other The other coordinate
@@ -59,10 +59,10 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public double distance(Coord other) {
 		double dx = this.x - other.x;
 		double dy = this.y - other.y;
-		
+
 		return Math.sqrt(dx*dx + dy*dy);
 	}
-	
+
 	/**
 	 * Returns the x coordinate
 	 * @return x coordinate
@@ -74,11 +74,11 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	/**
 	 * Returns the y coordinate
 	 * @return y coordinate
-	 */	
+	 */
 	public double getY() {
 		return this.y;
 	}
-	
+
 	/**
 	 * Returns a text representation of the coordinate (rounded to 2 decimals)
 	 * @return a text representation of the coordinate
@@ -86,7 +86,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public String toString() {
 		return String.format("(%.2f,%.2f)",x,y);
 	}
-	
+
 	/**
 	 * Returns a clone of this coordinate
 	 */
@@ -100,7 +100,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 		}
 		return clone;
 	}
-	
+
 	/**
 	 * Checks if this coordinate's location is equal to other coordinate's
 	 * @param c The other coordinate

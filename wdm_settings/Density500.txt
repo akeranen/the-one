@@ -53,7 +53,7 @@ Group1.routeType = 2
 Group1.busControlSystemNr = 8
 
 Group2.groupID = P
-Group2.waitTime = 0, 0 
+Group2.waitTime = 0, 0
 Group2.nrofHosts = 500
 Group2.movementModel = WorkingDayMovement
 Group2.busControlSystemNr = 8
@@ -70,7 +70,7 @@ Group3.speed = 7, 10
 Group3.nrofHosts = 10
 
 
-# max number of external events to preload (default = 500) 
+# max number of external events to preload (default = 500)
 ExternalEvents.nrofPreload = 500
 # path to external events file
 ExternalEvents.filePath = ee/350_events_500_nodes_700ks.txt

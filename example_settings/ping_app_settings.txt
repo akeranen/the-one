@@ -1,4 +1,4 @@
-# This configuration file adds Ping application for all the nodes and 
+# This configuration file adds Ping application for all the nodes and
 # a report module that counts the number of pings & pongs sent & received
 
 # Define new application

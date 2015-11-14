@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package interfaces;
 
@@ -33,7 +33,7 @@ abstract public class ConnectivityOptimizer {
 	/**
 	 * Finds all network interfaces that might be located so that they can be
 	 * connected with the network interface
-	 * 
+	 *
 	 * @param ni network interface that needs to be connected
 	 * @return A collection of network interfaces within proximity
 	 */

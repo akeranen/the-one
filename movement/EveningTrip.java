@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -12,7 +12,7 @@ import core.Coord;
  * 2. Where it ends
  * 3. The path
  * 4. All nodes in the group
- * 
+ *
  * @author Frans Ekman
  */
 public class EveningTrip {
@@ -22,19 +22,19 @@ public class EveningTrip {
 	private Coord location;
 	private Coord destination;
 	private double waitTimeAtEnd;
-	
+
 	/**
 	 * Create a new instance of a EveningTrip
 	 * @param nrOfeveningActivityNodes The number of shoppers in the group
 	 * @param location Where the trip starts
 	 */
 	public EveningTrip(int nrOfeveningActivityNodes, Coord location) {
-		eveningActivityNodes = 
+		eveningActivityNodes =
 			new EveningActivityMovement[nrOfeveningActivityNodes];
 		this.location = location;
 		eveningActivityNodesInBuffer = 0;
 	}
-	
+
 	/**
 	 * Add an evening activity node to the group
 	 * @param eveningActivityNode
@@ -44,13 +44,13 @@ public class EveningTrip {
 		if (isFull()) {
 			return false;
 		} else {
-			eveningActivityNodes[eveningActivityNodesInBuffer] = 
+			eveningActivityNodes[eveningActivityNodesInBuffer] =
 				eveningActivityNode;
 			eveningActivityNodesInBuffer++;
 			return true;
 		}
 	}
- 	
+
 	/**
 	 * Sets the shopping path for the group
 	 * @param path
@@ -58,7 +58,7 @@ public class EveningTrip {
 	public void setPath(Path path) {
 		this.path = new Path(path);
 	}
-	
+
 	/**
 	 * @return The shopping trip path
 	 */
@@ -69,21 +69,21 @@ public class EveningTrip {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * @return The location where the shopping trip starts
 	 */
 	public Coord getLocation() {
 		return location;
 	}
-	
+
 	/**
 	 * @return true if the group is full
 	 */
 	public boolean isFull() {
 		return eveningActivityNodesInBuffer >= eveningActivityNodes.length;
 	}
-	
+
 	/**
 	 * Checks if all members of the group have found their way to the meeting
 	 *  point
@@ -109,7 +109,7 @@ public class EveningTrip {
 	}
 
 	/**
-	 * Sets the destination square of the trip. MUST be the same as the last 
+	 * Sets the destination square of the trip. MUST be the same as the last
 	 * node in the path
 	 * @param destination
 	 */

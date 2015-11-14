@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -19,37 +19,37 @@ import core.SimClock;
 
 /**
  * A Class to model movement at home. If the node happens to be at some other
- * location than its home, it first walks the shortest path home location and 
+ * location than its home, it first walks the shortest path home location and
  * then stays there until morning. A node has only one home
- * 
+ *
  * @author Frans Ekman
  */
-public class HomeActivityMovement extends MapBasedMovement 
+public class HomeActivityMovement extends MapBasedMovement
 	implements SwitchableMovement {
 
 	private static final int WALKING_HOME_MODE = 0;
 	private static final int AT_HOME_MODE = 1;
 	private static final int READY_MODE = 2;
-	
+
 	private static final int DAY_LENGTH = 86000;
-	
+
 	public static final String HOME_LOCATIONS_FILE_SETTING = "homeLocationsFile";
-	
+
 	public static final String STD_FOR_TIME_DIFF_SETTING = "timeDiffSTD";
-	
+
 	private int mode;
 	private DijkstraPathFinder pathFinder;
-	
+
 	private int distance;
-	
+
 	private Coord lastWaypoint;
 	private Coord homeLocation;
-	
+
 	private List<Coord> allHomes;
-	
+
 	private int timeDiffSTD;
 	private int timeDifference;
-	
+
 	/**
 	 * Creates a new instance of HomeActivityMovement
 	 * @param settings
@@ -58,17 +58,17 @@ public class HomeActivityMovement extends MapBasedMovement
 		super(settings);
 		distance = 100;
 		pathFinder = new DijkstraPathFinder(null);
-		mode = WALKING_HOME_MODE;	
-		
+		mode = WALKING_HOME_MODE;
+
 		String homeLocationsFile = null;
 		try {
 			homeLocationsFile = settings.getSetting(HOME_LOCATIONS_FILE_SETTING);
 		} catch (Throwable t) {
 			// Do nothing;
 		}
-		
+
 		timeDiffSTD = settings.getInt(STD_FOR_TIME_DIFF_SETTING);
-		
+
 		if (homeLocationsFile == null) {
 			MapNode[] mapNodes = (MapNode[])getMap().getNodes().
 				toArray(new MapNode[0]);
@@ -83,8 +83,8 @@ public class HomeActivityMovement extends MapBasedMovement
 					SimMap map = getMap();
 					Coord offset = map.getOffset();
 					// mirror points if map data is mirrored
-					if (map.isMirrored()) { 
-						coord.setLocation(coord.getX(), -coord.getY()); 
+					if (map.isMirrored()) {
+						coord.setLocation(coord.getX(), -coord.getY());
 					}
 					coord.translate(offset.getX(), offset.getY());
 					allHomes.add(coord);
@@ -94,7 +94,7 @@ public class HomeActivityMovement extends MapBasedMovement
 				e.printStackTrace();
 			}
 		}
-		
+
 		if (timeDiffSTD == -1) {
 			timeDifference = rng.nextInt(DAY_LENGTH) - DAY_LENGTH/2;
 		} else if (timeDiffSTD == 0) {
@@ -102,14 +102,14 @@ public class HomeActivityMovement extends MapBasedMovement
 		} else {
 			timeDifference = (int)Math.min(
 									Math.max(
-											(rng.nextGaussian() * timeDiffSTD), 
+											(rng.nextGaussian() * timeDiffSTD),
 											-DAY_LENGTH/2
-										), 
+										),
 									DAY_LENGTH/2
 								);
 		}
 	}
-	
+
 	/**
 	 * Creates a new instance of HomeActivityMovement from a prototype
 	 * @param proto
@@ -119,9 +119,9 @@ public class HomeActivityMovement extends MapBasedMovement
 		this.distance = proto.distance;
 		this.pathFinder = proto.pathFinder;
 		this.mode = proto.mode;
-		
+
 		this.timeDiffSTD = proto.timeDiffSTD;
-		
+
 		if (proto.allHomes == null) {
 			MapNode[] mapNodes = (MapNode[])getMap().getNodes().
 				toArray(new MapNode[0]);
@@ -131,7 +131,7 @@ public class HomeActivityMovement extends MapBasedMovement
 			this.allHomes = proto.allHomes;
 			homeLocation = allHomes.get(rng.nextInt(allHomes.size())).clone();
 		}
-		
+
 		if (timeDiffSTD == -1) {
 			timeDifference = rng.nextInt(DAY_LENGTH) - DAY_LENGTH/2;
 		} else if (timeDiffSTD == 0) {
@@ -139,14 +139,14 @@ public class HomeActivityMovement extends MapBasedMovement
 		} else {
 			timeDifference = (int)Math.min(
 									Math.max(
-											(rng.nextGaussian() * timeDiffSTD), 
+											(rng.nextGaussian() * timeDiffSTD),
 											-DAY_LENGTH/2
-										), 
+										),
 									DAY_LENGTH/2
 								);
 		}
 	}
-	
+
 	@Override
 	public Coord getInitialLocation() {
 		double x = rng.nextDouble() * getMaxX();
@@ -167,7 +167,7 @@ public class HomeActivityMovement extends MapBasedMovement
 			}
 			MapNode thisNode = map.getNodeByCoord(lastWaypoint);
 			MapNode destinationNode = map.getNodeByCoord(homeLocation);
-			List<MapNode> nodes = pathFinder.getShortestPath(thisNode, 
+			List<MapNode> nodes = pathFinder.getShortestPath(thisNode,
 					destinationNode);
 			Path path = new Path(generateSpeed());
 			for (MapNode node : nodes) {
@@ -175,7 +175,7 @@ public class HomeActivityMovement extends MapBasedMovement
 			}
 			lastWaypoint = homeLocation.clone();
 			mode = AT_HOME_MODE;
-			
+
 			double newX = lastWaypoint.getX() + (rng.nextDouble() - 0.5) *
 				distance;
 			if (newX > getMaxX()) {
@@ -183,7 +183,7 @@ public class HomeActivityMovement extends MapBasedMovement
 			} else if (newX < 0) {
 				newX = 0;
 			}
-			double newY = lastWaypoint.getY() + (rng.nextDouble() - 0.5) * 
+			double newY = lastWaypoint.getY() + (rng.nextDouble() - 0.5) *
 				distance;
 			if (newY > getMaxY()) {
 				newY = getMaxY();
@@ -199,19 +199,19 @@ public class HomeActivityMovement extends MapBasedMovement
 			mode = READY_MODE;
 			return path;
 		}
-		
+
 	}
 
 	@Override
 	protected double generateWaitTime() {
 		if (mode == AT_HOME_MODE) {
-			return DAY_LENGTH - ((SimClock.getIntTime() + DAY_LENGTH + 
+			return DAY_LENGTH - ((SimClock.getIntTime() + DAY_LENGTH +
 					timeDifference) % DAY_LENGTH);
 		} else {
 			return 0;
 		}
 	}
-	
+
 	@Override
 	public MapBasedMovement replicate() {
 		return new HomeActivityMovement(this);
@@ -238,7 +238,7 @@ public class HomeActivityMovement extends MapBasedMovement
 		this.lastWaypoint = lastWaypoint.clone();
 		mode = WALKING_HOME_MODE;
 	}
-	
+
 	/**
 	 * @return Home location of the node
 	 */

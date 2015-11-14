@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -12,18 +12,18 @@ import core.DTNHost;
  * The syntax of the report file is the same as in {@link ContactTimesReport}.
  */
 public class InterContactTimesReport extends ContactTimesReport {
-	
+
 	@Override
 	public void hostsConnected(DTNHost host1, DTNHost host2) {
 		ConnectionInfo ci = this.removeConnection(host1, host2);
-		
+
 		if (ci != null) { // connected again
 			newEvent();
-			ci.connectionEnd();			
+			ci.connectionEnd();
 			increaseTimeCount(ci.getConnectionTime());
-		}		
+		}
 	}
-	
+
 	@Override
 	public void hostsDisconnected(DTNHost host1, DTNHost host2) {
 		if (isWarmup()) {

@@ -19,14 +19,14 @@ my $hostPrefix = "";
 my $msgIndex = 1;
 
 my ($randSeed,  $nrofMessages, $times, $hosts, $sizes, $rsizes, $help);
-    
-GetOptions("seed=i" => \$randSeed, "time=s" => \$times, 
-	   "nrof=i" => \$nrofMessages, 
-	   "hosts=s" => \$hosts, 
+
+GetOptions("seed=i" => \$randSeed, "time=s" => \$times,
+	   "nrof=i" => \$nrofMessages,
+	   "hosts=s" => \$hosts,
 	   "sizes=s" => \$sizes,
 	   "rsizes=s" => \$rsizes,
 	   "help|?!" => \$help);
-    
+
 unless (defined($help)) {
     unless (defined($times) and defined($nrofMessages)
 	    and defined($hosts) and defined($sizes)) {
@@ -65,7 +65,7 @@ if (defined($randSeed)) {
 
 for (my $time = $start; $time < $end; $time += $step) {
     my $prob = $step * (($nrofMessages - $nrof) / ($end - $time));
-    
+
     if (rand() < $prob) {
 	my $from = int(rand() * ($maxHost-$minHost) + $minHost);
 	my $to = $from;
@@ -73,7 +73,7 @@ for (my $time = $start; $time < $end; $time += $step) {
 	  $to = int(rand() * ($maxHost-$minHost) + $minHost);
 	}
 	my $size = int(rand() * ($maxSize-$minSize) + $minSize);
-	
+
 	printf "%.${prec}f",$time;
 	print "\tC\t$msgPrefix$msgIndex\t$hostPrefix$from\t$hostPrefix$to";
 	print "\t$size";

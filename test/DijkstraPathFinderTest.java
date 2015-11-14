@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -22,16 +22,16 @@ public class DijkstraPathFinderTest extends TestCase {
 	private final MapNode n6 = newNode(15,10);
 	private final MapNode n7 = newNode(20,10);
 	private final MapNode n8 = newNode(25,10);
-	
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		r = new DijkstraPathFinder(null);
 		createTopology();
 	}
-	
+
 	/**
 	 * Creates a topology:
-	 * 
+	 *
 	 * n1-10-n2---10---n3
 	 * 10    10      / 10
 	 * n4-10-n5-5-n6-5-n7-5-n8
@@ -58,7 +58,7 @@ public class DijkstraPathFinderTest extends TestCase {
 		n7.addNeighbor(n8);
 		n8.addNeighbor(n7);
 	}
-	
+
 	private MapNode newNode(double x, double y) {
 		return new MapNode(new Coord(x,y));
 	}
@@ -72,19 +72,19 @@ public class DijkstraPathFinderTest extends TestCase {
 		checkPath(getPath(n4,n8), n4, n5, n6, n7, n8);
 		checkPath(getPath(n8,n4), n8, n7, n6, n5, n4);
 	}
-	
+
 	private void checkPath(List<MapNode> path, MapNode ... nodes) {
 		assertEquals(nodes.length,path.size());
-		
+
 		for (int i=0; i< nodes.length; i++) {
 			assertEquals((i+1)+"th node was wrong",nodes[i],path.get(i));
 		}
 	}
-	
+
 	private List<MapNode> getPath(MapNode from, MapNode to) {
 		List<MapNode> path = r.getShortestPath(from, to);
 		return path;
 	}
-	
-	
+
+
 }

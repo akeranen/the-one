@@ -12,7 +12,7 @@ package Toolkit;
 # epidemic simulations.
 
 use strict;
-use warnings; 
+use warnings;
 use Common; # parseArgs and debug methods
 
 parseArgs("dtnsim2parser");
@@ -36,19 +36,19 @@ my %ignoreCommands = ('C_MSG_SENT' => 1,
 		      );
 
 while(<INFILE>) {
-    #                             timestamp    action      msgId 
+    #                             timestamp    action      msgId
     my ($time, $action, $id) = m/^(\d+\.\d+): ([\w\s]+):? (MSG_\d+_D_\d+)_\(\d+\)/;
-    
+
     unless ($time and $action and $id) {
 	debug ("Discarded: $_");
 	next;
     }
-    
+
     my $actionCode = $commandMapping{$action};
 
     die "Unknown action '" , $action,"'\n" unless $actionCode or $ignoreCommands{$action};
     next unless $actionCode;
-    
+
     my $lastPart;
 
     if ($actionCode eq 'C') {
@@ -73,7 +73,7 @@ while(<INFILE>) {
 	die "Couldn't parse contact from $_\n" unless $h1 and $h2;
 	$lastPart = "$h1\t$h2";
     }
-    
+
     print OUTFILE "$time\t$actionCode\t$id\t$lastPart\n";
-    
+
 }

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package interfaces;
 
@@ -39,7 +39,7 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 		this.numberOfTransmissions = 0;
 	}
 
-	
+
 	public NetworkInterface replicate() {
 		return new InterferenceLimitedInterface(this);
 	}
@@ -55,14 +55,14 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 
 	/**
 	 * Tries to connect this host to another host. The other host must be
-	 * active and within range of this host for the connection to succeed. 
+	 * active and within range of this host for the connection to succeed.
 	 * @param anotherInterface The host to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning() 
+		if (isScanning()
 				&& anotherInterface.getHost().isRadioActive()
 				&& isWithinRange(anotherInterface)
-				&& !isConnected(anotherInterface) 
+				&& !isConnected(anotherInterface)
 				&& (this != anotherInterface)) {
 			// new contact within range
 
@@ -80,7 +80,7 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 		if (optimizer == null) {
 			return; /* nothing to do */
 		}
-		
+
 		// First break the old ones
 		optimizer.updateLocation(this);
 		for (int i=0; i<this.connections.size(); ) {
@@ -98,9 +98,9 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 			}
 		}
 		// Then find new possible connections
-		Collection<NetworkInterface> interfaces = 
+		Collection<NetworkInterface> interfaces =
 			optimizer.getNearInterfaces(this);
-		for (NetworkInterface i : interfaces) 
+		for (NetworkInterface i : interfaces)
 			connect(i);
 
 		// Find the current number of transmissions
@@ -122,18 +122,18 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 		if ( numberOfActive <2 ) numberOfActive = 2;
 
 		// Based on the equation of Gupta and Kumar - and the transmission speed
-		// is divided equally to all the ongoing transmissions 
-		currentTransmitSpeed = (int)Math.floor((double)transmitSpeed / 
+		// is divided equally to all the ongoing transmissions
+		currentTransmitSpeed = (int)Math.floor((double)transmitSpeed /
 				(Math.sqrt((1.0*numberOfActive) *
 						Math.log(1.0*numberOfActive))) /
 							ntrans );
-		
+
 		for (Connection con : getConnections()) {
 			con.update();
 		}
 	}
 
-	/** 
+	/**
 	 * Creates a connection to another host. This method does not do any checks
 	 * on whether the other node is in range or active
 	 * @param anotherInterface The interface to create the connection to
@@ -142,7 +142,7 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 		if (!isConnected(anotherInterface) && (this != anotherInterface)) {
 			// new contact within range
 
-			Connection con = new VBRConnection(this.host, this, 
+			Connection con = new VBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface);
 			connect(con,anotherInterface);
 		}

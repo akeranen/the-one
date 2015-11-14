@@ -16,7 +16,7 @@ usage: [-help] [-foreach] [-countplot] [-verbose]
 
 my ($help, $perc, $doForEach, $countPlot, $verbose);
 
-GetOptions("help|?!" => \$help, 
+GetOptions("help|?!" => \$help,
 	"foreach" => \$doForEach,
   "countplot" => \$countPlot,
 	"verbose" => \$verbose);
@@ -33,7 +33,7 @@ if ($help) {
   print 'MessageCopyCountReport analyzer.';
   print "\n$usage";
   print '
-options: 
+options:
  foreach   Do analyzing per message, not per timestamp
  countplot Use output that is suitable for message lifetime plots
 ';
@@ -58,7 +58,7 @@ while (<>) {
   if (m/^\[(\d*)\]/) { # next timestamp
     $lastTime = $time;
     $time = $1;
-	
+
 	if (not defined $lastTime) { # first timestamp
 		$timeStep = $time;
 		next;
@@ -66,10 +66,10 @@ while (<>) {
 
 		next; # not doing per time stamp but per message
   }
-  
+
   my ($msgId, $count) = m/^\D+(\d+) (\d+)$/;
   die "No valid message count at line $_" unless (defined $msgId and defined $count);
-  
+
 	$foreachSums{$msgId} = [()] unless $foreachSums{$msgId};
 	push @{ $foreachSums{$msgId} }, $count;
 }
@@ -78,7 +78,7 @@ if ($doForEach) {
   my @sortedKeys = sort {$a<=>$b} keys %foreachSums;
   my $valuesLeft = 1;
   print "# " . join (' ', @sortedKeys) . "\n";
-  
+
 	while ($valuesLeft) {
 		my $sum = 0;
     $valuesLeft = 0;
@@ -86,7 +86,7 @@ if ($doForEach) {
 			my $value = shift @{ $foreachSums{$id} };
 
       if (not defined $value) {
-        $value = 0; 
+        $value = 0;
       } else {
         $valuesLeft = 1; # still values left
       }

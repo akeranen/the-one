@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -25,14 +25,14 @@ public class DeliveredMessagesReport extends Report implements MessageListener {
 	public DeliveredMessagesReport() {
 		init();
 	}
-	
+
 	@Override
 	public void init() {
 		super.init();
 		write(HEADER);
 	}
 
-	/** 
+	/**
 	 * Returns the given messages hop path as a string
 	 * @param m The message
 	 * @return hop path as a string
@@ -40,23 +40,23 @@ public class DeliveredMessagesReport extends Report implements MessageListener {
 	private String getPathString(Message m) {
 		List<DTNHost> hops = m.getHops();
 		String str = m.getFrom().toString();
-		
+
 		for (int i=1; i<hops.size(); i++) {
-			str += "->" + hops.get(i); 
+			str += "->" + hops.get(i);
 		}
-		
+
 		return str;
 	}
-	
-	public void messageTransferred(Message m, DTNHost from, DTNHost to, 
+
+	public void messageTransferred(Message m, DTNHost from, DTNHost to,
 			boolean firstDelivery) {
 		if (!isWarmupID(m.getId()) && firstDelivery) {
 			int ttl = m.getTtl();
-			write(format(getSimTime()) + " " + m.getId() + " " + 
-					m.getSize() + " " + m.getHopCount() + " " + 
-					format(getSimTime() - m.getCreationTime()) + " " + 
+			write(format(getSimTime()) + " " + m.getId() + " " +
+					m.getSize() + " " + m.getHopCount() + " " +
+					format(getSimTime() - m.getCreationTime()) + " " +
 					m.getFrom() + " " + m.getTo() + " " +
-					(ttl != Integer.MAX_VALUE ? ttl : "n/a") +  
+					(ttl != Integer.MAX_VALUE ? ttl : "n/a") +
 					(m.isResponse() ? " Y " : " N ") + getPathString(m));
 		}
 	}
@@ -66,7 +66,7 @@ public class DeliveredMessagesReport extends Report implements MessageListener {
 			addWarmupID(m.getId());
 		}
 	}
-	
+
 	// nothing to implement for the rest
 	public void messageDeleted(Message m, DTNHost where, boolean dropped) {}
 	public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {}

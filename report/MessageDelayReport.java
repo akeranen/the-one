@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -22,14 +22,14 @@ public class MessageDelayReport extends Report implements MessageListener {
 	/** all message delays */
 	private List<Double> delays;
 	private int nrofCreated;
-	
+
 	/**
 	 * Constructor.
 	 */
 	public MessageDelayReport() {
 		init();
 	}
-	
+
 	@Override
 	public void init() {
 		super.init();
@@ -37,7 +37,7 @@ public class MessageDelayReport extends Report implements MessageListener {
 		this.delays = new ArrayList<Double>();
 		this.nrofCreated = 0;
 	}
-	
+
 	public void newMessage(Message m) {
 		if (isWarmup()) {
 			addWarmupID(m.getId());
@@ -46,13 +46,13 @@ public class MessageDelayReport extends Report implements MessageListener {
 			this.nrofCreated++;
 		}
 	}
-	
-	public void messageTransferred(Message m, DTNHost from, DTNHost to, 
+
+	public void messageTransferred(Message m, DTNHost from, DTNHost to,
 			boolean firstDelivery) {
 		if (firstDelivery && !isWarmupID(m.getId())) {
 			this.delays.add(getSimTime() - m.getCreationTime());
 		}
-		
+
 	}
 
 	@Override
@@ -63,16 +63,16 @@ public class MessageDelayReport extends Report implements MessageListener {
 			return;
 		}
 		double cumProb = 0; // cumulative probability
-		
+
 		java.util.Collections.sort(delays);
-		
+
 		for (int i=0; i < delays.size(); i++) {
 			cumProb += 1.0/nrofCreated;
 			write(format(delays.get(i)) + " " + format(cumProb));
 		}
 		super.done();
 	}
-	
+
 	// nothing to implement for the rest
 	public void messageDeleted(Message m, DTNHost where, boolean dropped) {}
 	public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {}

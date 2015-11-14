@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -32,43 +32,43 @@ public class ExternalEventsQueueTest extends TestCase {
 "# comment line",
 "106202.613	R	MSG_10644_D_5	c70"
 };
-	
-	private final double msgTimes[] = {1000.000, 1533.405, 1542.000, 
+
+	private final double msgTimes[] = {1000.000, 1533.405, 1542.000,
 			2200.000, 3095.408, 3103.000, 8071.608, 8091.608,
 			100502.200, 106202.613};
-	
+
 	private ExternalEventsQueue eeq;
 	private File tempFile;
-	
+
 	protected void setUp() throws Exception {
 		java.util.Locale.setDefault(java.util.Locale.US);
 		super.setUp();
 		String TMP = ".tmp";
 		tempFile = File.createTempFile("eeqTest", TMP);
-		
+
 		PrintWriter out = new PrintWriter(tempFile);
-		
+
 		for (String s : stdinput) {
 			out.println(s);
 		}
-		out.close();		
+		out.close();
 	}
 
-	
+
 	public void testEEQ() {
 		int preload = 10;
 		eeq = new ExternalEventsQueue(tempFile.getAbsolutePath(),preload);
 		checkEeq(eeq, preload);
-		
+
 		preload = 1;
 		eeq = new ExternalEventsQueue(tempFile.getAbsolutePath(),preload);
 		checkEeq(eeq, preload);
 	}
 
-	
+
 	public void testBinaryEEQ() throws Exception{
 		int preload = 7;
-		File tmpBinFile = File.createTempFile("TempBinTest", 
+		File tmpBinFile = File.createTempFile("TempBinTest",
 				BinaryEventsReader.BINARY_EXT);
 		String binFileName = tmpBinFile.getAbsolutePath();
 		ExternalEventsReader r = new StandardEventsReader(tempFile);
@@ -77,11 +77,11 @@ public class ExternalEventsQueueTest extends TestCase {
 
 		eeq = new ExternalEventsQueue(binFileName, preload);
 		checkEeq(eeq, preload);
-					
+
 		assertTrue(tmpBinFile.delete()); // make sure all locks are gone
 	}
-	
-	
+
+
 	private void checkEeq(ExternalEventsQueue eeq, int preloadVal) {
 		ExternalEvent ee;
 		assertEquals(msgTimes[0],eeq.nextEventsTime());

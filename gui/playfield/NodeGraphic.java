@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui.playfield;
 
@@ -25,7 +25,7 @@ public class NodeGraphic extends PlayFieldGraphic {
 	private static boolean drawConnections;
 	private static boolean drawBuffer;
 	private static List<DTNHost> highlightedNodes;
-	
+
 	private static Color rangeColor = Color.GREEN;
 	private static Color conColor = Color.BLACK;
 	private static Color hostColor = Color.BLUE;
@@ -33,12 +33,12 @@ public class NodeGraphic extends PlayFieldGraphic {
 	private static Color msgColor1 = Color.BLUE;
 	private static Color msgColor2 = Color.GREEN;
 	private static Color msgColor3 = Color.RED;
-	
+
 	private static Color highlightedNodeColor = Color.MAGENTA;
 
 	private DTNHost node;
 
-	public NodeGraphic(DTNHost node) {	
+	public NodeGraphic(DTNHost node) {
 		this.node = node;
 	}
 
@@ -60,7 +60,7 @@ public class NodeGraphic extends PlayFieldGraphic {
 			return highlightedNodes.contains(node);
 		}
 	}
-	
+
 	/**
 	 * Visualize node's location, radio ranges and connections
 	 * @param g2 The graphic context to draw to
@@ -69,7 +69,7 @@ public class NodeGraphic extends PlayFieldGraphic {
 		Coord loc = node.getLocation();
 
 		if (drawCoverage && node.isRadioActive()) {
-			ArrayList<NetworkInterface> interfaces = 
+			ArrayList<NetworkInterface> interfaces =
 				new ArrayList<NetworkInterface>();
 			interfaces.addAll(node.getInterfaces());
 			for (NetworkInterface ni : interfaces) {
@@ -77,8 +77,8 @@ public class NodeGraphic extends PlayFieldGraphic {
 				Ellipse2D.Double coverage;
 
 				coverage = new Ellipse2D.Double(scale(loc.getX()-range),
-						scale(loc.getY()-range), scale(range * 2), 
-						scale(range * 2)); 
+						scale(loc.getY()-range), scale(range * 2),
+						scale(range * 2));
 
 				// draw the "range" circle
 				g2.setColor(rangeColor);
@@ -95,11 +95,11 @@ public class NodeGraphic extends PlayFieldGraphic {
 			for (Connection c : conList) {
 				DTNHost otherNode = c.getOtherNode(node);
 				Coord c2;
-				
+
 				if (otherNode == null) {
 					continue; /* disconnected before drawn */
 				}
-				c2 = otherNode.getLocation();				
+				c2 = otherNode.getLocation();
 				g2.drawLine(scale(c1.getX()), scale(c1.getY()),
 						scale(c2.getX()), scale(c2.getY()));
 			}
@@ -107,15 +107,15 @@ public class NodeGraphic extends PlayFieldGraphic {
 
 
 		/* draw node rectangle */
-		g2.setColor(hostColor);	
+		g2.setColor(hostColor);
 		g2.drawRect(scale(loc.getX()-1),scale(loc.getY()-1),
 		scale(2),scale(2));
 
 		if (isHighlighted()) {
 			g2.setColor(highlightedNodeColor);
-			g2.fillRect(scale(loc.getX()) - 3 ,scale(loc.getY()) - 3, 6, 6);			
+			g2.fillRect(scale(loc.getX()) - 3 ,scale(loc.getY()) - 3, 6, 6);
 		}
-		
+
 		if (drawNodeName) {
 			g2.setColor(hostNameColor);
 			// Draw node's address next to it
@@ -134,7 +134,7 @@ public class NodeGraphic extends PlayFieldGraphic {
 
 	/**
 	 * Sets whether node's name should be displayed
-	 * @param draw If true, node's name is displayed  
+	 * @param draw If true, node's name is displayed
 	 */
 	public static void setDrawNodeName(boolean draw) {
 		drawNodeName = draw;
@@ -142,20 +142,20 @@ public class NodeGraphic extends PlayFieldGraphic {
 
 	/**
 	 * Sets whether node's connections to other nodes should be drawn
-	 * @param draw If true, node's connections to other nodes is drawn  
+	 * @param draw If true, node's connections to other nodes is drawn
 	 */
 	public static void setDrawConnections(boolean draw) {
 		drawConnections = draw;
 	}
-	
+
 	/**
 	 * Sets whether node's message buffer is shown
-	 * @param draw If true, node's message buffer is drawn  
+	 * @param draw If true, node's message buffer is drawn
 	 */
 	public static void setDrawBuffer(boolean draw) {
 		drawBuffer = draw;
 	}
-	
+
 	public static void setHighlightedNodes(List<DTNHost> nodes) {
 		highlightedNodes = nodes;
 	}

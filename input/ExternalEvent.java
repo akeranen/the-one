@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -16,11 +16,11 @@ import core.World;
 public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
 	/** Time of the event (simulated seconds) */
 	protected double time;
-	
+
 	public ExternalEvent(double time) {
 		this.time = time;
 	}
-	
+
 	/**
 	 * Processes the external event.
 	 * @param world World where the actors of the event are
@@ -36,15 +36,15 @@ public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
 	public double getTime() {
 		return this.time;
 	}
-	
+
 	/**
 	 * Compares two external events by their time.
-	 * @return -1, zero, 1 if this event happens before, at the same time, 
+	 * @return -1, zero, 1 if this event happens before, at the same time,
 	 * or after the other event
 	 * @param other The other external event
 	 */
 	public int compareTo(ExternalEvent other) {
-		if (this.time == other.time) { 
+		if (this.time == other.time) {
 			return 0;
 		}
 		else if (this.time < other.time) {
@@ -54,7 +54,7 @@ public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
 			return 1;
 		}
 	}
-	
+
 	/**
 	 * Returns a String representation of the event
 	 * @return a String representation of the event
@@ -62,5 +62,5 @@ public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
 	public String toString() {
 		return "ExtEvent @ " + this.time;
 	}
-	
+
 }

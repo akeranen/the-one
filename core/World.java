@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -22,18 +22,18 @@ public class World {
 	public static final String OPTIMIZATION_SETTINGS_NS = "Optimization";
 
 	/**
-	 * Should the order of node updates be different (random) within every 
-	 * update step -setting id ({@value}). Boolean (true/false) variable. 
+	 * Should the order of node updates be different (random) within every
+	 * update step -setting id ({@value}). Boolean (true/false) variable.
 	 * Default is @link {@link #DEF_RANDOMIZE_UPDATES}.
 	 */
 	public static final String RANDOMIZE_UPDATES_S = "randomizeUpdateOrder";
 	/** should the update order of nodes be randomized -setting's default value
 	 * ({@value}) */
 	public static final boolean DEF_RANDOMIZE_UPDATES = true;
-	
+
 	/**
-	 * Should the connectivity simulation be stopped after one round 
-	 * -setting id ({@value}). Boolean (true/false) variable. 
+	 * Should the connectivity simulation be stopped after one round
+	 * -setting id ({@value}). Boolean (true/false) variable.
 	 */
 	public static final String SIMULATE_CON_ONCE_S = "simulateConnectionsOnce";
 
@@ -47,7 +47,7 @@ public class World {
 	/** list of nodes; nodes are indexed by their network address */
 	private List<DTNHost> hosts;
 	private boolean simulateConnections;
-	/** nodes in the order they should be updated (if the order should be 
+	/** nodes in the order they should be updated (if the order should be
 	 * randomized; null value means that the order should not be randomized) */
 	private ArrayList<DTNHost> updateOrder;
 	/** is cancellation of simulation requested from UI */
@@ -60,7 +60,7 @@ public class World {
 	/**
 	 * Constructor.
 	 */
-	public World(List<DTNHost> hosts, int sizeX, int sizeY, 
+	public World(List<DTNHost> hosts, int sizeX, int sizeY,
 			double updateInterval, List<UpdateListener> updateListeners,
 			boolean simulateConnections, List<EventQueue> eventQueues) {
 		this.hosts = hosts;
@@ -70,7 +70,7 @@ public class World {
 		this.updateListeners = updateListeners;
 		this.simulateConnections = simulateConnections;
 		this.eventQueues = eventQueues;
-		
+
 		this.simClock = SimClock.getInstance();
 		this.scheduledUpdates = new ScheduledUpdatesQueue();
 		this.isCancelled = false;
@@ -90,7 +90,7 @@ public class World {
 			randomizeUpdates = s.getBoolean(RANDOMIZE_UPDATES_S);
 		}
 		simulateConOnce = s.getBoolean(SIMULATE_CON_ONCE_S, false);
-		
+
 		if(randomizeUpdates) {
 			// creates the update order array that can be shuffled
 			this.updateOrder = new ArrayList<DTNHost>(this.hosts);
@@ -101,7 +101,7 @@ public class World {
 	}
 
 	/**
-	 * Moves hosts in the world for the time given time initialize host 
+	 * Moves hosts in the world for the time given time initialize host
 	 * positions properly. SimClock must be set to <CODE>-time</CODE> before
 	 * calling this method.
 	 * @param time The total time (seconds) to move
@@ -119,11 +119,11 @@ public class World {
 		double finalStep = -SimClock.getTime();
 
 		moveHosts(finalStep);
-		simClock.setTime(0);	
+		simClock.setTime(0);
 	}
 
 	/**
-	 * Goes through all event Queues and sets the 
+	 * Goes through all event Queues and sets the
 	 * event queue that has the next event.
 	 */
 	public void setNextEventQueue() {
@@ -133,7 +133,7 @@ public class World {
 		/* find the queue that has the next event */
 		for (EventQueue eq : eventQueues) {
 			if (eq.nextEventsTime() < earliest){
-				nextQueue = eq;	
+				nextQueue = eq;
 				earliest = eq.nextEventsTime();
 			}
 		}
@@ -142,7 +142,7 @@ public class World {
 		this.nextQueueEventTime = earliest;
 	}
 
-	/** 
+	/**
 	 * Update (move, connect, disconnect etc.) all hosts in the world.
 	 * Runs all external events that are due between the time when
 	 * this method is called and after one update interval.
@@ -187,18 +187,18 @@ public class World {
 			}
 		}
 		else { // update order randomizing is on
-			assert this.updateOrder.size() == this.hosts.size() : 
+			assert this.updateOrder.size() == this.hosts.size() :
 				"Nrof hosts has changed unexpectedly";
 			Random rng = new Random(SimClock.getIntTime());
-			Collections.shuffle(this.updateOrder, rng); 
+			Collections.shuffle(this.updateOrder, rng);
 			for (int i=0, n = hosts.size();i < n; i++) {
 				if (this.isCancelled) {
 					break;
 				}
 				this.updateOrder.get(i).update(simulateConnections);
-			}			
+			}
 		}
-		
+
 		if (simulateConOnce && simulateConnections) {
 			simulateConnections = false;
 		}
@@ -211,8 +211,8 @@ public class World {
 	private void moveHosts(double timeIncrement) {
 		for (int i=0,n = hosts.size(); i<n; i++) {
 			DTNHost host = hosts.get(i);
-			host.move(timeIncrement);			
-		}		
+			host.move(timeIncrement);
+		}
 	}
 
 	/**
@@ -231,16 +231,16 @@ public class World {
 	}
 
 	/**
-	 * Returns the x-size (width) of the world 
-	 * @return the x-size (width) of the world 
+	 * Returns the x-size (width) of the world
+	 * @return the x-size (width) of the world
 	 */
 	public int getSizeX() {
 		return this.sizeX;
 	}
 
 	/**
-	 * Returns the y-size (height) of the world 
-	 * @return the y-size (height) of the world 
+	 * Returns the y-size (height) of the world
+	 * @return the y-size (height) of the world
 	 */
 	public int getSizeY() {
 		return this.sizeY;
@@ -258,14 +258,14 @@ public class World {
 		}
 
 		DTNHost node = this.hosts.get(address);
-		assert node.getAddress() == address : "Node indexing failed. " + 
+		assert node.getAddress() == address : "Node indexing failed. " +
 			"Node " + node + " in index " + address;
 
-		return node; 
+		return node;
 	}
 
 	/**
-	 * Schedules an update request to all nodes to happen at the specified 
+	 * Schedules an update request to all nodes to happen at the specified
 	 * simulation time.
 	 * @param simTime The time of the update
 	 */

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -11,20 +11,20 @@ import core.DTNHost;
 import core.UpdateListener;
 
 /**
- * UniqueEncountersReport class creates a report of the distribution of how 
+ * UniqueEncountersReport class creates a report of the distribution of how
  * many promilles of the other nodes a node has encountered.
- * 
+ *
  * @author Frans Ekman
  */
-public class UniqueEncountersReport extends Report implements 
+public class UniqueEncountersReport extends Report implements
 	ConnectionListener, UpdateListener {
 
 	private int[][] nodeRelationships;
-	
+
 	public UniqueEncountersReport() {
-		
+
 	}
-	
+
 	public void hostsConnected(DTNHost host1, DTNHost host2) {
 		if (nodeRelationships == null) {
 			return;
@@ -44,7 +44,7 @@ public class UniqueEncountersReport extends Report implements
 	@Override
 	public void done() {
 		int[] distribution = new int[1000];
-		
+
 		for (int i=0; i<nodeRelationships.length; i++) {
 			int count = 0;
 			for (int j=0; j<nodeRelationships.length; j++) {
@@ -56,12 +56,12 @@ public class UniqueEncountersReport extends Report implements
 			int promille = (count * 1000)/nodeRelationships.length;
 			distribution[promille]++;
 		}
-		
+
 		// print distribution
 		for (int i=0; i<distribution.length; i++) {
 			write(i + " " + distribution[i]);
 		}
-		
+
 		super.done();
 	}
 
@@ -72,5 +72,5 @@ public class UniqueEncountersReport extends Report implements
 	public void setNodeRelationships(int[][] nodeRelationships) {
 		this.nodeRelationships = nodeRelationships;
 	}
-	
+
 }

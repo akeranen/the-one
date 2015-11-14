@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -25,7 +25,7 @@ public class MessageDeliveryReport extends Report implements MessageListener {
 	public MessageDeliveryReport() {
 		init();
 	}
-	
+
 	@Override
 	public void init() {
 		super.init();
@@ -34,7 +34,7 @@ public class MessageDeliveryReport extends Report implements MessageListener {
 		write(HEADER);
 	}
 
-	public void messageTransferred(Message m, DTNHost from, DTNHost to, 
+	public void messageTransferred(Message m, DTNHost from, DTNHost to,
 			boolean firstDelivery) {
 		if (firstDelivery && !isWarmup() && !isWarmupID(m.getId())) {
 			delivered++;
@@ -50,13 +50,13 @@ public class MessageDeliveryReport extends Report implements MessageListener {
 		created++;
 		reportValues();
 	}
-	
+
 	/**
 	 * Writes the current values to report file
 	 */
 	private void reportValues() {
 		double prob = (1.0 * delivered) / created;
-		write(format(getSimTime()) + " " + created + " " + delivered + 
+		write(format(getSimTime()) + " " + created + " " + delivered +
 				" " + format(prob));
 	}
 

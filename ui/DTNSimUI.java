@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package ui;
 
@@ -24,12 +24,12 @@ import core.World;
  * settings.
  */
 public abstract class DTNSimUI {
-	/** 
+	/**
 	 * Number of reports -setting id ({@value}). Defines how many reports
-	 * are loaded. 
+	 * are loaded.
 	 */
 	public static final String NROF_REPORT_S = "Report.nrofReports";
-	/** 
+	/**
 	 * Report class name -setting id prefix ({@value}). Defines name(s) of
 	 * the report classes to load. Must be suffixed with numbers starting from
 	 * one.
@@ -37,12 +37,12 @@ public abstract class DTNSimUI {
 	public static final String REPORT_S = "Report.report";
 	/**
 	 * Movement model warmup time -setting id ({@value}). Defines how many
-	 * seconds of movement simulation is run without connectivity etc. checks 
+	 * seconds of movement simulation is run without connectivity etc. checks
 	 * before starting the real simulation.
 	 */
-	public static final String MM_WARMUP_S = 
+	public static final String MM_WARMUP_S =
 		movement.MovementModel.MOVEMENT_MODEL_NS + ".warmup";
-	
+
 	/** report class' package name */
 	private static final String REPORT_PAC = "report.";
 
@@ -58,7 +58,7 @@ public abstract class DTNSimUI {
 	protected SimScenario scen;
 	/** simtime of last UI update */
 	protected double lastUpdate;
-	
+
 	/**
 	 * Constructor.
 	 */
@@ -68,7 +68,7 @@ public abstract class DTNSimUI {
 		this.simDone = false;
 		this.simCancelled = false;
 	}
-	
+
 	/**
 	 * Starts the simulation.
 	 */
@@ -76,18 +76,18 @@ public abstract class DTNSimUI {
 		initModel();
 		runSim();
 	}
-	
+
 	/**
 	 * Runs simulation after the model has been initialized.
 	 */
 	protected abstract void runSim();
-	
+
 	/**
 	 * Initializes the simulator model.
 	 */
 	private void initModel() {
 		Settings settings = null;
-				
+
 		try {
 			settings = new Settings();
 			this.scen = SimScenario.getInstance();
@@ -95,8 +95,8 @@ public abstract class DTNSimUI {
 			// add reports
 			for (int i=1, n = settings.getInt(NROF_REPORT_S); i<=n; i++){
 				String reportClass = settings.getSetting(REPORT_S + i);
-				addReport((Report)settings.createObject(REPORT_PAC + 
-						reportClass));	
+				addReport((Report)settings.createObject(REPORT_PAC +
+						reportClass));
 			}
 
 			double warmupTime = 0;
@@ -114,15 +114,15 @@ public abstract class DTNSimUI {
 		catch (SettingsError se) {
 			System.err.println("Can't start: error in configuration file(s)");
 			System.err.println(se.getMessage());
-			System.exit(-1);			
+			System.exit(-1);
 		}
 		catch (SimError er) {
 			System.err.println("Can't start: " + er.getMessage());
 			System.err.println("Caught at " + er.getStackTrace()[0]);
 			System.exit(-1);
-		}		
+		}
 	}
-	
+
 	/**
 	 * Runs maintenance jobs that are needed before exiting.
 	 */
@@ -131,7 +131,7 @@ public abstract class DTNSimUI {
 			r.done();
 		}
 	}
-	
+
 	/**
 	 * Adds a new report for simulator
 	 * @param r Report to add

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -14,7 +14,7 @@ import core.DTNSim;
 /**
  * This class controls the group mobility of the people meeting their friends in
  * the evening
- * 
+ *
  * @author Frans Ekman
  */
 public class EveningActivityControlSystem {
@@ -22,18 +22,18 @@ public class EveningActivityControlSystem {
 	private HashMap<Integer, EveningActivityMovement> eveningActivityNodes;
 	private List<Coord> meetingSpots;
 	private EveningTrip[] nextTrips;
-	
+
 	private Random rng;
-	
-	private static HashMap<Integer, EveningActivityControlSystem> 
+
+	private static HashMap<Integer, EveningActivityControlSystem>
 		controlSystems;
-	
+
 	static {
 		DTNSim.registerForReset(EveningActivityControlSystem.class.
 				getCanonicalName());
 		reset();
 	}
-	
+
 	/**
 	 * Creates a new instance of EveningActivityControlSystem without any nodes
 	 * or meeting spots, with the ID given as parameter
@@ -46,16 +46,16 @@ public class EveningActivityControlSystem {
 	public static void reset() {
 		controlSystems = new HashMap<Integer, EveningActivityControlSystem>();
 	}
-	
+
 	/**
 	 * Register a evening activity node with the system
 	 * @param eveningMovement activity movement
 	 */
 	public void addEveningActivityNode(EveningActivityMovement eveningMovement) {
-		eveningActivityNodes.put(new Integer(eveningMovement.getID()), 
+		eveningActivityNodes.put(new Integer(eveningMovement.getID()),
 				eveningMovement);
 	}
-	
+
 	/**
 	 * Sets the meeting locations the nodes can choose among
 	 * @param meetingSpots
@@ -64,10 +64,10 @@ public class EveningActivityControlSystem {
 		this.meetingSpots = meetingSpots;
 		this.nextTrips = new EveningTrip[meetingSpots.size()];
 	}
-	
+
 	/**
-	 * This method gets the instruction for a node, i.e. When/where and with 
-	 * whom to go.  
+	 * This method gets the instruction for a node, i.e. When/where and with
+	 * whom to go.
 	 * @param eveningActivityNodeID unique ID of the node
 	 * @return Instructions object
 	 */
@@ -78,12 +78,12 @@ public class EveningActivityControlSystem {
 			int index = eveningActivityNodeID % meetingSpots.size();
 			if (nextTrips[index] == null) {
 				int nrOfEveningMovementNodes = (int)(eveningMovement.
-						getMinGroupSize() + 
-						(double)(eveningMovement.getMaxGroupSize() - 
-								eveningMovement.getMinGroupSize()) * 
+						getMinGroupSize() +
+						(double)(eveningMovement.getMaxGroupSize() -
+								eveningMovement.getMinGroupSize()) *
 								rng.nextDouble());
 				Coord loc = meetingSpots.get(index).clone();
-				nextTrips[index] = new EveningTrip(nrOfEveningMovementNodes, 
+				nextTrips[index] = new EveningTrip(nrOfEveningMovementNodes,
 						loc);
 			}
 			nextTrips[index].addNode(eveningMovement);
@@ -97,7 +97,7 @@ public class EveningActivityControlSystem {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Get the meeting spot for the node
 	 * @param id
@@ -108,20 +108,20 @@ public class EveningActivityControlSystem {
 		Coord loc = meetingSpots.get(index).clone();
 		return loc;
 	}
-	
-	
+
+
 	/**
-	 * Sets the random number generator to be used 
+	 * Sets the random number generator to be used
 	 * @param rand
 	 */
 	public void setRandomNumberGenerator(Random rand) {
 		this.rng = rand;
 	}
-	
+
 	/**
 	 * Returns a reference to a EveningActivityControlSystem with ID provided as
-	 * parameter. If a system does not already exist with the requested ID, a 
-	 * new one is created. 
+	 * parameter. If a system does not already exist with the requested ID, a
+	 * new one is created.
 	 * @param id unique ID of the EveningActivityControlSystem
 	 * @return The EveningActivityControlSystem with the provided ID
 	 */
@@ -130,11 +130,11 @@ public class EveningActivityControlSystem {
 		if (controlSystems.containsKey(new Integer(id))) {
 			return controlSystems.get(new Integer(id));
 		} else {
-			EveningActivityControlSystem scs = 
+			EveningActivityControlSystem scs =
 				new EveningActivityControlSystem(id);
 			controlSystems.put(new Integer(id), scs);
 			return scs;
 		}
 	}
-	
+
 }

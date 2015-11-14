@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -21,16 +21,16 @@ import core.NetworkInterface;
  * Generic convenience methods for tests.
  */
 public class TestUtils {
-	
+
 	private List<ConnectionListener> conListeners;
 	private List<MessageListener> msgListeners;
 	private String groupId = "h";
 	private List<DTNHost> allHosts;
 	private MessageRouter mr;
-	
+
 	private ModuleCommunicationBus comBus;
 	private TestSettings settings;
-	
+
 	public static String IFACE_NS = "interface";
 
 	/**
@@ -49,11 +49,11 @@ public class TestUtils {
 
 		this.comBus = new ModuleCommunicationBus();
 	}
-	
+
 	public void setMessageRouterProto(MessageRouter mr) {
 		this.mr = mr;
 	}
-	
+
 	/**
 	 * @param conListeners the ConnectionListeners to set
 	 */
@@ -81,7 +81,7 @@ public class TestUtils {
 	public void setTransmitRange(double transmitRange) {
 		this.comBus.updateProperty(NetworkInterface.RANGE_ID, transmitRange);
 	}
-	
+
 	/**
 	 * Creates a host to a location with stationary movement model and
 	 * MessageRouter router.
@@ -93,7 +93,7 @@ public class TestUtils {
 		MovementModel mmProto = new StationaryMovement(loc);
 		return createHost(mmProto, name);
 	}
-	
+
 	/**
 	 * Creates a host with defined movement model
 	 * @param mmProto The prototype of the movement model
@@ -108,7 +108,7 @@ public class TestUtils {
 			settings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
 			settings.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
 		}
-		
+
 		NetworkInterface ni = new TestInterface(settings);
 		ni.setClisteners(conListeners);
 		List<NetworkInterface> li = new ArrayList<NetworkInterface>();
@@ -118,11 +118,11 @@ public class TestUtils {
 		if (name != null) {
 			host.setName(name);
 		}
-		
+
 		this.allHosts.add(host);
-		return host;		
+		return host;
 	}
-		
+
 	/**
 	 * Creates a host to a location with stationary movement model and
 	 * default name.
@@ -132,16 +132,16 @@ public class TestUtils {
 	public DTNHost createHost(Coord loc) {
 		return this.createHost(loc, null);
 	}
-	
+
 	/**
-	 * Creates a host to location (0,0) with stationary movement model 
+	 * Creates a host to location (0,0) with stationary movement model
 	 * and default name.
 	 * @return The new host
 	 */
 	public DTNHost createHost() {
 		return this.createHost(new Coord(0,0));
 	}
-	
+
 	public List<DTNHost> getAllHosts() {
 		return this.allHosts;
 	}

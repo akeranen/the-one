@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -21,17 +21,17 @@ public class ExternalEventsQueue implements EventQueue {
 	public static final String PRELOAD_SETTING = "nrofPreload";
 	/** path of external events file -setting id ({@value})*/
 	public static final String PATH_SETTING = "filePath";
-	
+
 	/** default number of preloaded events */
 	public static final int DEFAULT_NROF_PRELOAD = 500;
-	
+
 	private File eventsFile;
 	private ExternalEventsReader reader;
 	private int nextEventIndex;
 	private int nrofPreload;
 	private List<ExternalEvent> queue;
 	private boolean allEventsRead = false;
-	
+
 	/**
 	 * Creates a new Queue from a file
 	 * @param filePath Path to the file where the events are read from. If
@@ -45,7 +45,7 @@ public class ExternalEventsQueue implements EventQueue {
 		setNrofPreload(nrofPreload);
 		init(filePath);
 	}
-	
+
 	/**
 	 * Create a new Queue based on the given settings: {@link #PRELOAD_SETTING}
 	 * and {@link #PATH_SETTING}. The path setting supports value filling.
@@ -73,24 +73,24 @@ public class ExternalEventsQueue implements EventQueue {
 		}
 		this.nrofPreload = nrof;
 	}
-	
+
 	private void init(String eeFilePath) {
 		this.eventsFile = new File(eeFilePath);
-		
+
 		if (BinaryEventsReader.isBinaryEeFile(eventsFile)) {
 			this.reader = new BinaryEventsReader(eventsFile);
 		}
 		else {
 			this.reader = new StandardEventsReader(eventsFile);
 		}
-		
+
 		this.queue = readEvents(nrofPreload);
 		this.nextEventIndex = 0;
 	}
-	
+
 	/**
-	 * Returns next event's time or Double.MAX_VALUE if there are no 
-	 * events left 
+	 * Returns next event's time or Double.MAX_VALUE if there are no
+	 * events left
 	 * @return Next event's time
 	 */
 	public double nextEventsTime() {
@@ -102,9 +102,9 @@ public class ExternalEventsQueue implements EventQueue {
 			return queue.get(nextEventIndex).getTime();
 		}
 	}
-	
+
 	/**
-	 * Returns the next event in the queue or ExternalEvent with time of 
+	 * Returns the next event in the queue or ExternalEvent with time of
 	 * double.MAX_VALUE if there are no events left
 	 * @return The next event
 	 */
@@ -112,18 +112,18 @@ public class ExternalEventsQueue implements EventQueue {
 		if (queue.size() == 0) { // no more events
 			return new ExternalEvent(Double.MAX_VALUE);
 		}
-		
+
 		ExternalEvent ee = queue.get(nextEventIndex);
 		nextEventIndex++;
-		
+
 		if (nextEventIndex >= queue.size()) { // ran out of events
 			queue = readEvents(nrofPreload);
 			nextEventIndex = 0;
 		}
-		
+
 		return ee;
 	}
-	
+
 	/**
 	 * Returns the amount of events left in the buffer at the moment
 	 * (the amount can increase later if more events are read).
@@ -137,8 +137,8 @@ public class ExternalEventsQueue implements EventQueue {
 			return this.queue.size() - this.nextEventIndex;
 		}
 	}
-		
-	
+
+
 	/**
 	 * Read some events from the external events reader
 	 * @param nrof Maximum number of events to read
@@ -149,15 +149,15 @@ public class ExternalEventsQueue implements EventQueue {
 		if (allEventsRead) {
 			return new ArrayList<ExternalEvent>(0);
 		}
-		
+
 		List<ExternalEvent> events = reader.readEvents(nrof);
-		
+
 		if (nrof > 0 && events.size() == 0) {
 			reader.close();
 			allEventsRead = true;
 		}
-				
+
 		return events;
 	}
-	
+
 }

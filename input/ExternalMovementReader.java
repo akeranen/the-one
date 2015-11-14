@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package input;
 
@@ -23,7 +23,7 @@ import core.SettingsError;
  * should be:<BR>
  * <CODE>minTime maxTime minX maxX minY maxY minZ maxZ</CODE>
  * <BR>
- * Last two values (Z-axis) are ignored at the moment but can be present 
+ * Last two values (Z-axis) are ignored at the moment but can be present
  * in the file.
  * <P>
  * Following lines' syntax should be:<BR>
@@ -50,7 +50,7 @@ public class ExternalMovementReader {
 	private double maxY;
 	private boolean normalize;
 
-		
+
 	/**
 	 * Constructor. Creates a new reader that reads the data from a file.
 	 * @param inFilePath Path to the file where the data is read
@@ -65,9 +65,9 @@ public class ExternalMovementReader {
 			throw new SettingsError("Couldn't find external movement input " +
 					"file " + inFile);
 		}
-		
+
 		String offsets = scanner.nextLine();
-	
+
 		try {
 			Scanner lineScan = new Scanner(offsets);
 			minTime = lineScan.nextDouble();
@@ -79,12 +79,12 @@ public class ExternalMovementReader {
 		} catch (Exception e) {
 			throw new SettingsError("Invalid offset line '" + offsets + "'");
 		}
-		
+
 		lastLine = scanner.nextLine();
 	}
-	
+
 	/**
-	 * Sets normalizing of read values on/off. If on, values returned by 
+	 * Sets normalizing of read values on/off. If on, values returned by
 	 * {@link #readNextMovements()} are decremented by minimum values of the
 	 * offsets. Default is on (normalize).
 	 * @param normalize If true, normalizing is on (false -> off).
@@ -92,47 +92,47 @@ public class ExternalMovementReader {
 	public void setNormalize(boolean normalize) {
 		this.normalize = normalize;
 	}
-	
+
 	/**
 	 * Reads all new id-coordinate tuples that belong to the same time instance
 	 * @return A list of tuples or empty list if there were no more moves
 	 * @throws SettingError if an invalid line was read
 	 */
 	public List<Tuple<String, Coord>> readNextMovements() {
-		ArrayList<Tuple<String, Coord>> moves = 
+		ArrayList<Tuple<String, Coord>> moves =
 			new ArrayList<Tuple<String, Coord>>();
-		
+
 		if (!scanner.hasNextLine()) {
 			return moves;
 		}
-		
+
 		Scanner lineScan = new Scanner(lastLine);
 		double time = lineScan.nextDouble();
 		String id = lineScan.next();
 		double x = lineScan.nextDouble();
 		double y = lineScan.nextDouble();
-		
+
 		if (normalize) {
 			time -= minTime;
 			x -= minX;
 			y -= minY;
 		}
-		
+
 		lastTimeStamp = time;
-		
+
 		while (scanner.hasNextLine() && lastTimeStamp == time) {
 			lastLine = scanner.nextLine();
-			
-			if (lastLine.trim().length() == 0 || 
+
+			if (lastLine.trim().length() == 0 ||
 					lastLine.startsWith(COMMENT_PREFIX)) {
 				continue; /* skip empty and comment lines */
 			}
-						
+
 			// add previous line's tuple
-			moves.add(new Tuple<String, Coord>(id, new Coord(x,y)));		
+			moves.add(new Tuple<String, Coord>(id, new Coord(x,y)));
 
 			lineScan = new Scanner(lastLine);
-			
+
 			try {
 				time = lineScan.nextDouble();
 				id = lineScan.next();
@@ -141,23 +141,23 @@ public class ExternalMovementReader {
 			} catch (Exception e) {
 				throw new SettingsError("Invalid line '" + lastLine + "'");
 			}
-			
+
 			if (normalize) {
 				time -= minTime;
 				x -= minX;
 				y -= minY;
 			}
 		}
-		
+
 		if (!scanner.hasNextLine()) {	// add the last tuple of the file
 			moves.add(new Tuple<String, Coord>(id, new Coord(x,y)));
 		}
-		
+
 		return moves;
 	}
-	
+
 	/**
-	 * Returns the time stamp where the last moves read with 
+	 * Returns the time stamp where the last moves read with
 	 * {@link #readNextMovements()} belong to.
 	 * @return The time stamp
 	 */
@@ -212,5 +212,5 @@ public class ExternalMovementReader {
 	public double getMinY() {
 		return minY;
 	}
-	
+
 }

@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui;
 
@@ -29,12 +29,12 @@ public class InfoPanel extends JPanel implements ActionListener{
 	private Message selectedMessage;
 	private DTNHost selectedHost;
 	private DTNSimGUI gui;
-	
+
 	public InfoPanel(DTNSimGUI gui) {
 		this.gui = gui;
 		reset();
 	}
-	
+
 	private void reset() {
 		this.removeAll();
 		this.repaint();
@@ -42,34 +42,34 @@ public class InfoPanel extends JPanel implements ActionListener{
 		this.infoButton = null;
 		this.selectedMessage = null;
 	}
-	
+
 	/**
 	 * Show information about a host
 	 * @param host Host to show the information of
 	 */
 	public void showInfo(DTNHost host) {
-		Vector<Message> messages = 
+		Vector<Message> messages =
 			new Vector<Message>(host.getMessageCollection());
 		Collections.sort(messages);
 		reset();
 		this.selectedHost = host;
-		String text = (host.isMovementActive() ? "" : "INACTIVE ") + host + 
+		String text = (host.isMovementActive() ? "" : "INACTIVE ") + host +
 			" at " + host.getLocation();
-		
+
 		msgChooser = new JComboBox(messages);
 		msgChooser.insertItemAt(messages.size() + " messages", 0);
 		msgChooser.setSelectedIndex(0);
 		msgChooser.addActionListener(this);
-		
+
 		routingInfoButton = new JButton("routing info");
 		routingInfoButton.addActionListener(this);
-		
+
 		this.add(new JLabel(text));
 		this.add(msgChooser);
 		this.add(routingInfoButton);
 		this.revalidate();
 	}
-	
+
 	/**
 	 * Show information about a message
 	 * @param message Message to show the information of
@@ -83,15 +83,15 @@ public class InfoPanel extends JPanel implements ActionListener{
 
 	private void setMessageInfo(Message m) {
 		int ttl = m.getTtl();
-		String txt = " [" + m.getFrom() + "->" + m.getTo() + "] " +   
-				"size:" + m.getSize() + ", UI:" + m.getUniqueId() +  
+		String txt = " [" + m.getFrom() + "->" + m.getTo() + "] " +
+				"size:" + m.getSize() + ", UI:" + m.getUniqueId() +
 				", received @ " + String.format("%.2f", m.getReceiveTime());
 		if (ttl != Integer.MAX_VALUE) {
 			txt += " TTL: " + ttl;
 		}
-		
+
 		String butTxt = "path: " + (m.getHops().size()-1) + " hops";
-		
+
 		if (this.info == null) {
 			this.info = new JLabel(txt);
 			this.infoButton = new JButton(butTxt);
@@ -103,17 +103,17 @@ public class InfoPanel extends JPanel implements ActionListener{
 			this.info.setText(txt);
 			this.infoButton.setText(butTxt);
 		}
-		
+
 		this.selectedMessage = m;
 		infoButton.setToolTipText("path:" + m.getHops());
-		
+
 		this.revalidate();
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == msgChooser) {
 			if (msgChooser.getSelectedIndex() == 0) { // title text selected
-				return; 
+				return;
 			}
 			Message m = (Message)msgChooser.getSelectedItem();
 			setMessageInfo(m);
@@ -123,12 +123,12 @@ public class InfoPanel extends JPanel implements ActionListener{
 			for (DTNHost h : this.selectedMessage.getHops()) {
 				p.addWaypoint(h.getLocation());
 			}
-				
+
 			this.gui.showPath(p);
 		}
 		else if (e.getSource() ==  this.routingInfoButton) {
 			new RoutingInfoWindow(this.selectedHost);
 		}
 	}
-	
+
 }

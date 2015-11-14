@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -14,28 +14,28 @@ import core.Coord;
 import core.Settings;
 
 /**
- * 
- * This class controls the movement of bus travellers. A bus traveller belongs 
- * to a bus control system. A bus traveller has a destination and a start 
- * location. If the direct path to the destination is longer than the path the 
- * node would have to walk if it would take the bus, the node uses the bus. If 
+ *
+ * This class controls the movement of bus travellers. A bus traveller belongs
+ * to a bus control system. A bus traveller has a destination and a start
+ * location. If the direct path to the destination is longer than the path the
+ * node would have to walk if it would take the bus, the node uses the bus. If
  * the destination is not provided, the node will pass a random number of stops
  * determined by Markov chains (defined in settings).
- * 
+ *
  * @author Frans Ekman
  *
  */
-public class BusTravellerMovement extends MapBasedMovement implements 
+public class BusTravellerMovement extends MapBasedMovement implements
 	SwitchableMovement, TransportMovement {
 
 	public static final String PROBABILITIES_STRING = "probs";
 	public static final String PROBABILITY_TAKE_OTHER_BUS = "probTakeOtherBus";
-	
+
 	public static final int STATE_WAITING_FOR_BUS = 0;
 	public static final int STATE_DECIDED_TO_ENTER_A_BUS = 1;
 	public static final int STATE_TRAVELLING_ON_BUS = 2;
 	public static final int STATE_WALKING_ELSEWHERE = 3;
-	
+
 	private int state;
 	private Path nextPath;
 	private Coord location;
@@ -46,16 +46,16 @@ public class BusTravellerMovement extends MapBasedMovement implements
 	private double[] probabilities;
 	private double probTakeOtherBus;
 	private DijkstraPathFinder pathFinder;
-	
+
 	private Coord startBusStop;
 	private Coord endBusStop;
-	
+
 	private boolean takeBus;
-	
+
 	private static int nextID = 0;
-	
+
 	/**
-	 * Creates a BusTravellerModel 
+	 * Creates a BusTravellerModel
 	 * @param settings
 	 */
 	public BusTravellerMovement(Settings settings) {
@@ -76,7 +76,7 @@ public class BusTravellerMovement extends MapBasedMovement implements
 		pathFinder = new DijkstraPathFinder(null);
 		takeBus = true;
 	}
-	
+
 	/**
 	 * Creates a BusTravellerModel from a prototype
 	 * @param proto
@@ -97,19 +97,19 @@ public class BusTravellerMovement extends MapBasedMovement implements
 		this.probTakeOtherBus = proto.probTakeOtherBus;
 		takeBus = true;
 	}
-	
+
 	@Override
 	public Coord getInitialLocation() {
-		
+
 		MapNode[] mapNodes = (MapNode[])getMap().getNodes().
 			toArray(new MapNode[0]);
 		int index = rng.nextInt(mapNodes.length - 1);
 		location = mapNodes[index].getLocation().clone();
-		
+
 		List<Coord> allStops = controlSystem.getBusStops();
 		Coord closestToNode = getClosestCoordinate(allStops, location.clone());
 		latestBusStop = closestToNode.clone();
-		
+
 		return location.clone();
 	}
 
@@ -133,7 +133,7 @@ public class BusTravellerMovement extends MapBasedMovement implements
 			}
 			MapNode thisNode = map.getNodeByCoord(location);
 			MapNode destinationNode = map.getNodeByCoord(latestBusStop);
-			List<MapNode> nodes = pathFinder.getShortestPath(thisNode, 
+			List<MapNode> nodes = pathFinder.getShortestPath(thisNode,
 					destinationNode);
 			Path path = new Path(generateSpeed());
 			for (MapNode node : nodes) {
@@ -142,13 +142,13 @@ public class BusTravellerMovement extends MapBasedMovement implements
 			location = latestBusStop.clone();
 			return path;
 		}
-			
+
 		return null;
 	}
 
 	/**
 	 * Switches state between getPath() calls
-	 * @return Always 0 
+	 * @return Always 0
 	 */
 	protected double generateWaitTime() {
 		if (state == STATE_WALKING_ELSEWHERE) {
@@ -161,7 +161,7 @@ public class BusTravellerMovement extends MapBasedMovement implements
 		}
 		return 0;
 	}
-	
+
 	@Override
 	public MapBasedMovement replicate() {
 		return new BusTravellerMovement(this);
@@ -170,7 +170,7 @@ public class BusTravellerMovement extends MapBasedMovement implements
 	public int getState() {
 		return state;
 	}
-	
+
 	/**
 	 * Get the location where the bus is located when it has moved its path
 	 * @return The end point of the last path returned
@@ -181,14 +181,14 @@ public class BusTravellerMovement extends MapBasedMovement implements
 		}
 		return location.clone();
 	}
-	
+
 	/**
-	 * Notifies the node at the bus stop that a bus is there. Nodes inside 
+	 * Notifies the node at the bus stop that a bus is there. Nodes inside
 	 * busses are also notified.
 	 * @param nextPath The next path the bus is going to take
 	 */
 	public void enterBus(Path nextPath) {
-		
+
 		if (startBusStop != null && endBusStop != null) {
 			if (location.equals(endBusStop)) {
 				state = STATE_WALKING_ELSEWHERE;
@@ -199,11 +199,11 @@ public class BusTravellerMovement extends MapBasedMovement implements
 			}
 			return;
 		}
-		
+
 		if (!cbtd.continueTrip()) {
 			state = STATE_WAITING_FOR_BUS;
 			this.nextPath = null;
-			/* It might decide not to start walking somewhere and wait 
+			/* It might decide not to start walking somewhere and wait
 			   for the next bus */
 			if (rng.nextDouble() > probTakeOtherBus) {
 				state = STATE_WALKING_ELSEWHERE;
@@ -214,35 +214,35 @@ public class BusTravellerMovement extends MapBasedMovement implements
 			this.nextPath = nextPath;
 		}
 	}
-	
+
 	public int getID() {
 		return id;
 	}
-	
-	
+
+
 	/**
-	 * Small class to help nodes decide if they should continue the bus trip. 
-	 * Keeps the state of nodes, i.e. how many stops they have passed so far. 
-	 * Markov chain probabilities for the decisions. 
-	 * 
+	 * Small class to help nodes decide if they should continue the bus trip.
+	 * Keeps the state of nodes, i.e. how many stops they have passed so far.
+	 * Markov chain probabilities for the decisions.
+	 *
 	 * NOT USED BY THE WORKING DAY MOVEMENT MODEL
-	 * 
+	 *
 	 * @author Frans Ekman
 	 */
 	class ContinueBusTripDecider {
-		
+
 		private double[] probabilities; // Probability to travel with bus
 		private int state;
 		private Random rng;
-		
+
 		public ContinueBusTripDecider(Random rng, double[] probabilities) {
 			this.rng = rng;
 			this.probabilities = probabilities;
 			state = 0;
 		}
-		
+
 		/**
-		 * 
+		 *
 		 * @return true if node should continue
 		 */
 		public boolean continueTrip() {
@@ -255,7 +255,7 @@ public class BusTravellerMovement extends MapBasedMovement implements
 				return false;
 			}
 		}
-		
+
 		/**
 		 * Call when a stop has been passed
 		 */
@@ -264,13 +264,13 @@ public class BusTravellerMovement extends MapBasedMovement implements
 				state++;
 			}
 		}
-		
+
 		/**
 		 * Call when node has finished it's trip
 		 */
 		private void resetState() {
 			state = 0;
-		}	
+		}
 	}
 
 	/**
@@ -280,7 +280,7 @@ public class BusTravellerMovement extends MapBasedMovement implements
 	 * @param coord destination node
 	 * @return closest to the destination
 	 */
-	private static Coord getClosestCoordinate(List<Coord> allCoords, 
+	private static Coord getClosestCoordinate(List<Coord> allCoords,
 			Coord coord) {
 		Coord closestCoord = null;
 		double minDistance = Double.POSITIVE_INFINITY;
@@ -293,38 +293,38 @@ public class BusTravellerMovement extends MapBasedMovement implements
 		}
 		return closestCoord.clone();
 	}
-	
+
 	/**
-	 * Sets the next route for the traveller, so that it can decide wether it 
-	 * should take the bus or not. 
+	 * Sets the next route for the traveller, so that it can decide wether it
+	 * should take the bus or not.
 	 * @param nodeLocation
 	 * @param nodeDestination
 	 */
 	public void setNextRoute(Coord nodeLocation, Coord nodeDestination) {
-			
+
 		// Find closest stops to current location and destination
 		List<Coord> allStops = controlSystem.getBusStops();
-		
+
 		Coord closestToNode = getClosestCoordinate(allStops, nodeLocation);
-		Coord closestToDestination = getClosestCoordinate(allStops, 
+		Coord closestToDestination = getClosestCoordinate(allStops,
 				nodeDestination);
-		
-		// Check if it is shorter to walk than take the bus 
+
+		// Check if it is shorter to walk than take the bus
 		double directDistance = nodeLocation.distance(nodeDestination);
-		double busDistance = nodeLocation.distance(closestToNode) + 
+		double busDistance = nodeLocation.distance(closestToNode) +
 			nodeDestination.distance(closestToDestination);
-		
+
 		if (directDistance < busDistance) {
 			takeBus = false;
 		} else {
 			takeBus = true;
 		}
-		
+
 		this.startBusStop = closestToNode;
 		this.endBusStop = closestToDestination;
 		this.latestBusStop = startBusStop.clone();
 	}
-	
+
 	/**
 	 * @see SwitchableMovement
 	 */
@@ -349,9 +349,9 @@ public class BusTravellerMovement extends MapBasedMovement implements
 			return false;
 		}
 	}
-	
+
 	public static void reset() {
 		nextID = 0;
 	}
-	
+
 }

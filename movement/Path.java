@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -18,7 +18,7 @@ public class Path  {
 	/** speeds in the path legs */
 	private List<Double> speeds;
 	private int nextWpIndex;
-	
+
 	/**
 	 * Creates a path with zero speed.
 	 */
@@ -38,7 +38,7 @@ public class Path  {
 		this.coords = new ArrayList<Coord>((ArrayList<Coord>)path.coords);
 		this.speeds = new ArrayList<Double>((ArrayList<Double>)path.speeds);
 	}
-	
+
 	/**
 	 * Creates a path with constant speed
 	 * @param speed The speed on the path
@@ -47,7 +47,7 @@ public class Path  {
 		this();
 		setSpeed(speed);
 	}
-	
+
 	/**
 	 * Sets a constant speed for the whole path. Any previously set speed(s)
 	 * is discarded.
@@ -56,15 +56,15 @@ public class Path  {
 		this.speeds = new ArrayList<Double>(1);
 		speeds.add(speed);
 	}
-	
+
 	/**
-	 * Returns a reference to the coordinates of this path 
+	 * Returns a reference to the coordinates of this path
 	 * @return coordinates of the path
 	 */
 	public List<Coord> getCoords() {
 		return this.coords;
 	}
-	
+
 	/**
 	 * Adds a new waypoint to the end of the path.
 	 * @param wp The waypoint to add
@@ -74,7 +74,7 @@ public class Path  {
 			" paths with constant speed";
 		this.coords.add(wp);
 	}
-	
+
 	/**
 	 * Adds a new waypoint with a speed towards that waypoint
 	 * @param wp The waypoint
@@ -84,7 +84,7 @@ public class Path  {
 		this.coords.add(wp);
 		this.speeds.add(speed);
 	}
-	
+
 	/**
 	 * Returns the next waypoint on this path
 	 * @return the next waypoint
@@ -93,7 +93,7 @@ public class Path  {
 		assert hasNext() : "Path didn't have " + (nextWpIndex+1) + ". waypoint";
 		return coords.get(nextWpIndex++);
 	}
-	
+
 	/**
 	 * Returns true if the path has more waypoints, false if not
 	 * @return true if the path has more waypoints, false if not
@@ -101,16 +101,16 @@ public class Path  {
 	public boolean hasNext() {
 		return nextWpIndex < this.coords.size();
 	}
-	
+
 	/**
 	 * Returns the speed towards the next waypoint (asked with
-	 * {@link #getNextWaypoint()}. 
+	 * {@link #getNextWaypoint()}.
 	 * @return the speed towards the next waypoint
 	 */
 	public double getSpeed() {
-		assert speeds.size() != 0 : "No speed set"; 
+		assert speeds.size() != 0 : "No speed set";
 		assert nextWpIndex != 0 : "No waypoint asked";
-		
+
 		if (speeds.size() == 1) {
 			return speeds.get(0);
 		}
@@ -118,7 +118,7 @@ public class Path  {
 			return speeds.get(nextWpIndex-1);
 		}
 	}
-	
+
 	/**
 	 * Returns a string presentation of the path's coordinates
 	 * @return Path as a string
@@ -134,7 +134,7 @@ public class Path  {
 		}
 		return s;
 	}
-	
+
 	public List<Double> getSpeeds() {
 		return this.speeds;
 	}

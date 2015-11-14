@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2011 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -21,8 +21,8 @@ import routing.MessageRouter;
  * simulation run.
  */
 public class SimScenario implements Serializable {
-	
-	/** a way to get a hold of this... */	
+
+	/** a way to get a hold of this... */
 	private static SimScenario myinstance=null;
 
 	/** namespace of scenario settings ({@value})*/
@@ -53,7 +53,7 @@ public class SimScenario implements Serializable {
 	public static final String APPTYPE_S = "type";
 	/** setting name for the number of applications */
 	public static final String APPCOUNT_S = "nrofApplications";
-	
+
 	/** namespace for host group settings ({@value})*/
 	public static final String GROUP_NS = "Group";
 	/** group id -setting id ({@value})*/
@@ -78,10 +78,10 @@ public class SimScenario implements Serializable {
 
 	/** package where to look for interface classes */
 	private static final String INTTYPE_PACKAGE = "interfaces.";
-	
+
 	/** package where to look for application classes */
 	private static final String APP_PACKAGE = "applications.";
-	
+
 	/** The world instance */
 	private World world;
 	/** List of hosts in this simulation */
@@ -122,7 +122,7 @@ public class SimScenario implements Serializable {
 		DTNSim.registerForReset(SimScenario.class.getCanonicalName());
 		reset();
 	}
-	
+
 	public static void reset() {
 		myinstance = null;
 	}
@@ -158,14 +158,14 @@ public class SimScenario implements Serializable {
 		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE, 2);
 		this.worldSizeX = worldSize[0];
 		this.worldSizeY = worldSize[1];
-		
+
 		createHosts();
-		
-		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval, 
-				updateListeners, simulateConnections, 
+
+		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
+				updateListeners, simulateConnections,
 				eqHandler.getEventQueues());
 	}
-	
+
 	/**
 	 * Returns the SimScenario instance and creates one if it doesn't exist yet
 	 */
@@ -235,7 +235,7 @@ public class SimScenario implements Serializable {
 	}
 
 	/**
-	 * Returns the (external) event queue(s) of this scenario or null if there 
+	 * Returns the (external) event queue(s) of this scenario or null if there
 	 * aren't any
 	 * @return External event queues in a list or null
 	 */
@@ -292,14 +292,14 @@ public class SimScenario implements Serializable {
 		return this.updateListeners;
 	}
 
-	/** 
+	/**
 	 * Adds a new application event listener for all nodes.
 	 * @param al The listener
 	 */
 	public void addApplicationListener(ApplicationListener al) {
 		this.appListeners.add(al);
 	}
-	
+
 	/**
 	 * Returns the list of registered application event listeners
 	 * @return the list of registered application event listeners
@@ -307,7 +307,7 @@ public class SimScenario implements Serializable {
 	public List<ApplicationListener> getApplicationListeners() {
 		return this.appListeners;
 	}
-	
+
 	/**
 	 * Creates hosts for the scenario
 	 */
@@ -315,7 +315,7 @@ public class SimScenario implements Serializable {
 		this.hosts = new ArrayList<DTNHost>();
 
 		for (int i=1; i<=nrofGroups; i++) {
-			List<NetworkInterface> interfaces = 
+			List<NetworkInterface> interfaces =
 				new ArrayList<NetworkInterface>();
 			Settings s = new Settings(GROUP_NS+i);
 			s.setSecondaryNamespace(GROUP_NS);
@@ -325,13 +325,13 @@ public class SimScenario implements Serializable {
 			int appCount;
 
 			// creates prototypes of MessageRouter and MovementModel
-			MovementModel mmProto = 
-				(MovementModel)s.createIntializedObject(MM_PACKAGE + 
+			MovementModel mmProto =
+				(MovementModel)s.createIntializedObject(MM_PACKAGE +
 						s.getSetting(MOVEMENT_MODEL_S));
-			MessageRouter mRouterProto = 
-				(MessageRouter)s.createIntializedObject(ROUTING_PACKAGE + 
+			MessageRouter mRouterProto =
+				(MessageRouter)s.createIntializedObject(ROUTING_PACKAGE +
 						s.getSetting(ROUTER_S));
-			
+
 			/* checks that these values are positive (throws Error if not) */
 			s.ensurePositiveValue(nrofHosts, NROF_HOSTS_S);
 			s.ensurePositiveValue(nrofInterfaces, NROF_INTERF_S);
@@ -339,8 +339,8 @@ public class SimScenario implements Serializable {
 			// setup interfaces
 			for (int j=1;j<=nrofInterfaces;j++) {
 				String intName = s.getSetting(INTERFACENAME_S + j);
-				Settings intSettings = new Settings(intName); 
-				NetworkInterface iface = 
+				Settings intSettings = new Settings(intName);
+				NetworkInterface iface =
 					(NetworkInterface)intSettings.createIntializedObject(
 							INTTYPE_PACKAGE +intSettings.getSetting(INTTYPE_S));
 				iface.setClisteners(connectionListeners);
@@ -388,8 +388,8 @@ public class SimScenario implements Serializable {
 
 				// prototypes are given to new DTNHost which replicates
 				// new instances of movement model and message router
-				DTNHost host = new DTNHost(this.messageListeners, 
-						this.movementListeners,	gid, interfaces, comBus, 
+				DTNHost host = new DTNHost(this.messageListeners,
+						this.movementListeners,	gid, interfaces, comBus,
 						mmProto, mRouterProto);
 				hosts.add(host);
 			}
@@ -403,7 +403,7 @@ public class SimScenario implements Serializable {
 	public List<DTNHost> getHosts() {
 		return this.hosts;
 	}
-	
+
 	/**
 	 * Returns the World object of this scenario
 	 * @return the World object

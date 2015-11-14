@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -26,13 +26,13 @@ import core.SimError;
 
 /**
  * Map based movement model which gives out Paths that use the
- * roads of a SimMap. 
+ * roads of a SimMap.
  */
 public class MapBasedMovement extends MovementModel implements SwitchableMovement {
 	/** sim map for the model */
 	private SimMap map = null;
 	/** node where the last path ended or node next to initial placement */
-	protected MapNode lastMapNode; 
+	protected MapNode lastMapNode;
 	/**  max nrof map nodes to travel/path */
 	protected int maxPathLength = 100;
 	/**  min nrof map nodes to travel/path */
@@ -45,26 +45,26 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	public static final String NROF_FILES_S = "nrofMapFiles";
 	/** map file -setting id ({@value})*/
 	public static final String FILE_S = "mapFile";
-	
-	/** 
+
+	/**
 	 * Per node group setting for selecting map node types that are OK for
 	 * this node group to traverse trough. Value must be a comma separated list
 	 * of integers in range of [1,31]. Values reference to map file indexes
-	 * (see {@link #FILE_S}). If setting is not defined, all map nodes are 
+	 * (see {@link #FILE_S}). If setting is not defined, all map nodes are
 	 * considered OK.
 	 */
 	public static final String MAP_SELECT_S = "okMaps";
-	
+
 	/** the indexes of the OK map files or null if all maps are OK */
 	private int [] okMapNodeTypes;
-	
+
 	/** how many map files are read */
 	private int nrofMapFilesRead = 0;
 	/** map cache -- in case last mm read the same map, use it without loading*/
 	private static SimMap cachedMap = null;
 	/** names of the previously cached map's files (for hit comparison) */
 	private static List<String> cachedMapFiles = null;
-	
+
 	/**
 	 * Creates a new MapBasedMovement based on a Settings object's settings.
 	 * @param settings The Settings object where the settings are read from
@@ -84,7 +84,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	 * @param settings The Settings object where the settings are read from
 	 * @param newMap The SimMap to use
 	 * @param nrofMaps How many map "files" are in the map
-	 */	
+	 */
 	public MapBasedMovement(Settings settings, SimMap newMap, int nrofMaps) {
 		super(settings);
 		map = newMap;
@@ -94,7 +94,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		minPathLength = 10;
 		backAllowed = false;
 	}
-	
+
 	/**
 	 * Reads the OK map node types from settings
 	 * @param settings The settings where the types are read
@@ -104,27 +104,27 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 			this.okMapNodeTypes = settings.getCsvInts(MAP_SELECT_S);
 			for (int i : okMapNodeTypes) {
 				if (i < MapNode.MIN_TYPE || i > MapNode.MAX_TYPE) {
-					throw new SettingsError("Map type selection '" + i + 
-							"' is out of range for setting " + 
+					throw new SettingsError("Map type selection '" + i +
+							"' is out of range for setting " +
 							settings.getFullPropertyName(MAP_SELECT_S));
 				}
 				if (i > nrofMapFilesRead) {
 					throw new SettingsError("Can't use map type selection '" + i
-							+ "' for setting " + 
+							+ "' for setting " +
 							settings.getFullPropertyName(MAP_SELECT_S)
-							+ " because only " + nrofMapFilesRead + 
+							+ " because only " + nrofMapFilesRead +
 							" map files are read");
 				}
 			}
 		}
 		else {
 			this.okMapNodeTypes = null;
-		}		
+		}
 	}
-	
+
 	/**
 	 * Copyconstructor.
-	 * @param mbm The MapBasedMovement object to base the new object to 
+	 * @param mbm The MapBasedMovement object to base the new object to
 	 */
 	protected MapBasedMovement(MapBasedMovement mbm) {
 		super(mbm);
@@ -134,7 +134,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		this.maxPathLength = mbm.maxPathLength;
 		this.backAllowed = mbm.backAllowed;
 	}
-	
+
 	/**
 	 * Returns a (random) coordinate that is between two adjacent MapNodes
 	 */
@@ -145,29 +145,29 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		Coord n2Location, nLocation, placement;
 		double dx, dy;
 		double rnd = rng.nextDouble();
-		
+
 		// choose a random node (from OK types if such are defined)
 		do {
 			n = nodes.get(rng.nextInt(nodes.size()));
 		} while (okMapNodeTypes != null && !n.isType(okMapNodeTypes));
-		
+
 		// choose a random neighbor of the selected node
-		n2 = n.getNeighbors().get(rng.nextInt(n.getNeighbors().size())); 
-		
+		n2 = n.getNeighbors().get(rng.nextInt(n.getNeighbors().size()));
+
 		nLocation = n.getLocation();
 		n2Location = n2.getLocation();
-		
+
 		placement = n.getLocation().clone();
-		
+
 		dx = rnd * (n2Location.getX() - nLocation.getX());
 		dy = rnd * (n2Location.getY() - nLocation.getY());
-		
+
 		placement.translate(dx, dy); // move coord from n towards n2
-		
+
 		this.lastMapNode = n;
 		return placement;
 	}
-	
+
 	/**
 	 * Returns map node types that are OK for this movement model in an array
 	 * or null if all values are considered ok
@@ -176,22 +176,22 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	protected int[] getOkMapNodeTypes() {
 		return okMapNodeTypes;
 	}
-	
+
 	@Override
 	public Path getPath() {
 		Path p = new Path(generateSpeed());
 		MapNode curNode = lastMapNode;
 		MapNode prevNode = lastMapNode;
-		MapNode nextNode = null;	
+		MapNode nextNode = null;
 		List<MapNode> neighbors;
 		Coord nextCoord;
-		
+
 		assert lastMapNode != null: "Tried to get a path before placement";
-		
-		// start paths from current node 
+
+		// start paths from current node
 		p.addWaypoint(curNode.getLocation());
-		
-		int pathLength = rng.nextInt(maxPathLength-minPathLength) + 
+
+		int pathLength = rng.nextInt(maxPathLength-minPathLength) +
 			minPathLength;
 
 		for (int i=0; i<pathLength; i++) {
@@ -199,8 +199,8 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 			Vector<MapNode> n2 = new Vector<MapNode>(neighbors);
 			if (!this.backAllowed) {
 				n2.remove(prevNode); // to prevent going back
-			}	
-				
+			}
+
 			if (okMapNodeTypes != null) { //remove neighbor nodes that aren't ok
 				for (int j=0; j < n2.size(); ){
 					if (!n2.get(j).isType(okMapNodeTypes)) {
@@ -211,27 +211,27 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 					}
 				}
 			}
-			
+
 			if (n2.size() == 0) { // only option is to go back
 				nextNode = prevNode;
 			}
 			else { // choose a random node from remaining neighbors
 				nextNode = n2.get(rng.nextInt(n2.size()));
 			}
-			
+
 			prevNode = curNode;
-		
+
 			nextCoord = nextNode.getLocation();
 			curNode = nextNode;
-			
+
 			p.addWaypoint(nextCoord);
 		}
-		
+
 		lastMapNode = curNode;
 
 		return p;
 	}
-	
+
 	/**
 	 * Selects and returns a random node that is OK from a list of nodes.
 	 * Whether node is OK, is determined by the okMapNodeTypes list.
@@ -248,7 +248,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 
 		return n;
 	}
-	
+
 	/**
 	 * Returns the SimMap this movement model uses
 	 * @return The SimMap this movement model uses
@@ -256,7 +256,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	public SimMap getMap() {
 		return map;
 	}
-	
+
 	/**
 	 * Reads a sim map from location set to the settings, mirrors the map and
 	 * moves its upper left corner to origo.
@@ -266,7 +266,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		SimMap simMap;
 		Settings settings = new Settings(MAP_BASE_MOVEMENT_NS);
 		WKTMapReader r = new WKTMapReader(true);
-		
+
 		if (cachedMap == null) {
 			cachedMapFiles = new ArrayList<String>(); // no cache present
 		}
@@ -291,7 +291,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 				cachedMapFiles.add(pathFile);
 				r.addPaths(new File(pathFile), i);
 			}
-			
+
 			nrofMapFilesRead = nrofMapFiles;
 		} catch (IOException e) {
 			throw new SimError(e.toString(),e);
@@ -301,14 +301,14 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		checkMapConnectedness(simMap.getNodes());
 		// mirrors the map (y' = -y) and moves its upper left corner to origo
 		simMap.mirror();
-		Coord offset = simMap.getMinBound().clone();		
+		Coord offset = simMap.getMinBound().clone();
 		simMap.translate(-offset.getX(), -offset.getY());
 		checkCoordValidity(simMap.getNodes());
-		
+
 		cachedMap = simMap;
 		return simMap;
 	}
-	
+
 	/**
 	 * Checks that all map nodes can be reached from all other map nodes
 	 * @param nodes The list of nodes to check
@@ -319,16 +319,16 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		Queue<MapNode> unvisited = new LinkedList<MapNode>();
 		MapNode firstNode;
 		MapNode next = null;
-		
+
 		if (nodes.size() == 0) {
 			throw new SimError("No map nodes in the given map");
 		}
-		
+
 		firstNode = nodes.get(0);
-		
+
 		visited.add(firstNode);
 		unvisited.addAll(firstNode.getNeighbors());
-		
+
 		while ((next = unvisited.poll()) != null) {
 			visited.add(next);
 			for (MapNode n: next.getNeighbors()) {
@@ -337,7 +337,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 				}
 			}
 		}
-		
+
 		if (visited.size() != nodes.size()) { // some node couldn't be reached
 			MapNode disconnected = null;
 			for (MapNode n : nodes) { // find an example node
@@ -346,13 +346,13 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 					break;
 				}
 			}
-			throw new SettingsError("SimMap is not fully connected. Only " + 
+			throw new SettingsError("SimMap is not fully connected. Only " +
 					visited.size() + " out of " + nodes.size() + " map nodes " +
-					"can be reached from " + firstNode + ". E.g. " + 
+					"can be reached from " + firstNode + ". E.g. " +
 					disconnected + " can't be reached");
 		}
 	}
-	
+
 	/**
 	 * Checks that all coordinates of map nodes are within the min&max limits
 	 * of the movement model
@@ -365,17 +365,17 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 			double x = n.getLocation().getX();
 			double y = n.getLocation().getY();
 			if (x < 0 || x > getMaxX() || y < 0 || y > getMaxY()) {
-				throw new SettingsError("Map node " + n.getLocation() + 
+				throw new SettingsError("Map node " + n.getLocation() +
 						" is out of world  bounds "+
 						"(x: 0..." + getMaxX() + " y: 0..." + getMaxY() + ")");
 			}
 		}
 	}
-	
+
 	/**
 	 * Checks map cache if the requested map file(s) match to the cached
 	 * sim map
-	 * @param settings The Settings where map file names are found 
+	 * @param settings The Settings where map file names are found
 	 * @return A cached map or null if the cached map didn't match
 	 */
 	private SimMap checkCache(Settings settings) {
@@ -384,23 +384,23 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		if (nrofMapFiles != cachedMapFiles.size() || cachedMap == null) {
 			return null; // wrong number of files
 		}
-		
+
 		for (int i = 1; i <= nrofMapFiles; i++ ) {
 			String pathFile = settings.getSetting(FILE_S + i);
 			if (!pathFile.equals(cachedMapFiles.get(i-1))) {
 				return null;	// found wrong file name
 			}
 		}
-		
+
 		// all files matched -> return cached map
 		return cachedMap;
 	}
-	
+
 	@Override
 	public MapBasedMovement replicate() {
 		return new MapBasedMovement(this);
 	}
-	
+
 	public Coord getLastLocation() {
 		if (lastMapNode != null) {
 			return lastMapNode.getLocation();
@@ -428,5 +428,5 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	public boolean isReady() {
 		return true;
 	}
-	
+
 }

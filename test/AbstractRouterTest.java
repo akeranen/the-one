@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -16,14 +16,14 @@ import core.NetworkInterface;
 import core.SimClock;
 
 /**
- * Superclass for router tests. Sets up the environment by creating 
+ * Superclass for router tests. Sets up the environment by creating
  * multiple hosts with router set by {@link #setRouterProto(MessageRouter)}
  */
 public abstract class AbstractRouterTest extends TestCase {
 	protected MessageChecker mc;
 	protected TestUtils utils;
 	protected static TestSettings ts = new TestSettings();
-	
+
 	protected static final int BUFFER_SIZE = 100;
 	protected static final int TRANSMIT_SPEED = 10;
 	protected SimClock clock;
@@ -43,9 +43,9 @@ public abstract class AbstractRouterTest extends TestCase {
 	protected static final String msgId3 = "MSG_ID3";
 	protected static final String msgId4 = "MSG_ID4";
 	protected static final String msgId5 = "MSG_ID5";
-	
+
 	protected MessageRouter routerProto;
-		
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		this.mc = new MessageChecker();
@@ -58,7 +58,7 @@ public abstract class AbstractRouterTest extends TestCase {
 
 		ts.setNameSpace(TestUtils.IFACE_NS);
 		ts.putSetting(NetworkInterface.TRANSMIT_SPEED_S, ""+TRANSMIT_SPEED);
-		
+
 		this.utils = new TestUtils(null,ml,ts);
 		this.utils.setMessageRouterProto(routerProto);
 		core.NetworkInterface.reset();
@@ -71,23 +71,23 @@ public abstract class AbstractRouterTest extends TestCase {
 		this.h5 = utils.createHost(c0, "h5");
 		this.h6 = utils.createHost(c0, "h6");
 	}
-	
+
 	protected void setRouterProto(MessageRouter r) {
 		this.routerProto = r;
 	}
-	
+
 	/**
 	 * Checks that mc contains only nrof create-events and nothing else
 	 * @param nrof how many creates to expect
 	 */
 	protected void checkCreates(int nrof) {
-		for (int i=0; i<nrof; i++) { 
+		for (int i=0; i<nrof; i++) {
 			assertTrue(mc.next());
 			assertEquals(mc.TYPE_CREATE, mc.getLastType());
 		}
 		assertFalse("MC contained " + mc.getLastType(), mc.next());
 	}
-	
+
 	protected void updateAllNodes() {
 		for (DTNHost node : utils.getAllHosts()) {
 			node.update(true);
@@ -101,7 +101,7 @@ public abstract class AbstractRouterTest extends TestCase {
 		assertEquals(from, mc.getLastFrom());
 		assertEquals(to, mc.getLastTo());
 	}
-	
+
 	protected void checkDelivered(DTNHost from, DTNHost to, String msgId,
 			boolean isFirstDelivery) {
 		if (isFirstDelivery) {
@@ -117,13 +117,13 @@ public abstract class AbstractRouterTest extends TestCase {
 		assertEquals(msgId, mc.getLastMsg().getId());
 		assertEquals(from, mc.getLastFrom());
 		assertEquals(to, mc.getLastTo());
-		
+
 		if (isFirstDelivery) {
 			assertTrue(mc.getLastFirstDelivery());
 		}
 	}
-	
-	protected void deliverMessage(DTNHost from, DTNHost to, String msgId, 
+
+	protected void deliverMessage(DTNHost from, DTNHost to, String msgId,
 			int msgSize, boolean firstDelivery) {
 		assertFalse("MC contained " + mc.getLastType(), mc.next());
 		from.update(true);
@@ -134,7 +134,7 @@ public abstract class AbstractRouterTest extends TestCase {
 		to.update(true);
 		checkDelivered(from, to, msgId, firstDelivery);
 	}
-	
+
 	/**
 	 * Moves node to disconnectLocation (far away from c0), updates it and
 	 * restores the node location
@@ -146,7 +146,7 @@ public abstract class AbstractRouterTest extends TestCase {
 		node.update(true);
 		node.setLocation(loc);
 	}
-	
+
 	public String toString() {
 		return "MC: " + mc.toString();
 	}

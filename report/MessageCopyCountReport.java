@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2011 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -28,7 +28,7 @@ public class MessageCopyCountReport extends MessageLocationReport {
 		Map<String, Integer> counts = new HashMap<String, Integer>();
 		write("[" + (int) getSimTime() + "]"); /* write sim time stamp */
 		ArrayList<String> keys;
-		
+
 		for (DTNHost host : hosts) {
 			for (Message m : host.getMessageCollection()) {
 				Integer oldCount;
@@ -42,11 +42,11 @@ public class MessageCopyCountReport extends MessageLocationReport {
 
 		keys = new ArrayList<String>(counts.keySet());
 		Collections.sort(keys);
-		
+
 		for (String key : keys) {
 			write(key + " " + counts.get(key));
 		}
-		
+
 	}
 
 }

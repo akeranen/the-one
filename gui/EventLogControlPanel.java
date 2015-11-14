@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui;
 
@@ -32,7 +32,7 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 
 	private JCheckBox showAllCheck;
 	private JCheckBox pauseAllCheck;
-	
+
 	private GridBagLayout layout;
 	private GridBagConstraints c;
 
@@ -45,11 +45,11 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 		logControls = new Vector<EventLogControl>();
 
 		c.ipadx = PADDING;
-		
+
 		setLayout(layout);
 		this.setBorder(BorderFactory.createTitledBorder(
 				getBorder(), TITLE_TEXT));
-		
+
 		c.fill = GridBagConstraints.BOTH;
 		addLabel(" ");
 		addLabel(SHOW_TEXT + "");
@@ -63,10 +63,10 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 		pauseAllCheck = addCheckBox(false,true);
 		showAllCheck.addActionListener(this);
 		pauseAllCheck.addActionListener(this);
-		
+
 		this.setMinimumSize(new Dimension(0,0));
 	}
-	
+
 	/**
 	 * Adds a new filter&pause control
 	 * @param name Name of the control
@@ -79,12 +79,12 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 		JCheckBox filterCheck;
 		JCheckBox pauseCheck;
 		EventLogControl control;
-		
+
 		c.gridwidth = 1; // one component/cell
 		addLabel(name);
 		filterCheck = addCheckBox(showOn, false);
 		pauseCheck = addCheckBox(pauseOn, true);
-		
+
 		control = new EventLogControl(filterCheck, pauseCheck);
 		this.logControls.add(control);
 		return control;
@@ -109,10 +109,10 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 
 		layout.setConstraints(box, c);
 		add(box);
-		
+
 		return box;
 	}
-	
+
 	/**
 	 * Adds a new filter&pause control with initially "show" checked
 	 * but "pause" unchecked
@@ -123,17 +123,17 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 	public EventLogControl addControl(String name) {
 		return addControl(name, true, false);
 	}
-	
+
 	/**
 	 * Adds a new heading in the control panel. Subsequent addControl
 	 * controls will be under this heading
-	 * @param name The heading text 
+	 * @param name The heading text
 	 */
 	public void addHeading(String name) {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		addLabel(name).setFont(this.headingFont);
 	}
-	
+
 	private JLabel addLabel(String txt) {
 		JLabel label = new JLabel(txt);
 		label.setFont(this.smallFont);
@@ -146,7 +146,7 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 		if (e.getSource() == this.showAllCheck) {
 			for (EventLogControl elc : logControls) {
 				elc.setShowEvent(this.showAllCheck.isSelected());
-			}			
+			}
 		}
 		else if (e.getSource() == this.pauseAllCheck) {
 			for (EventLogControl elc : logControls) {
@@ -154,6 +154,6 @@ public class EventLogControlPanel extends JPanel implements ActionListener {
 			}
 		}
 
-		
+
 	}
 }

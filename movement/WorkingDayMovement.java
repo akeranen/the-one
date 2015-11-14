@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package movement;
 
@@ -8,41 +8,41 @@ import core.Coord;
 import core.Settings;
 
 /**
- * 
+ *
  * This movement model makes use of several other movement models to simulate
- * movement with daily routines. People wake up in the morning, go to work, 
- * go shopping or similar activities in the evening and finally go home to 
- * sleep. 
- * 
+ * movement with daily routines. People wake up in the morning, go to work,
+ * go shopping or similar activities in the evening and finally go home to
+ * sleep.
+ *
  * @author Frans Ekman
  */
 public class WorkingDayMovement extends ExtendedMovementModel {
 
 	public static final String PROBABILITY_TO_OWN_CAR_SETTING = "ownCarProb";
-	public static final String PROBABILITY_TO_GO_SHOPPING_SETTING = 
+	public static final String PROBABILITY_TO_GO_SHOPPING_SETTING =
 		"probGoShoppingAfterWork";
-	
+
 	private BusTravellerMovement busTravellerMM;
 	private OfficeActivityMovement workerMM;
 	private HomeActivityMovement homeMM;
 	private EveningActivityMovement eveningActivityMovement;
 	private CarMovement carMM;
-	
+
 	private TransportMovement movementUsedForTransfers;
-	
+
 	private static final int BUS_TO_WORK_MODE = 0;
 	private static final int BUS_TO_HOME_MODE = 1;
 	private static final int BUS_TO_EVENING_ACTIVITY_MODE = 2;
-	
+
 	private static final int WORK_MODE = 3;
 	private static final int HOME_MODE = 4;
 	private static final int EVENING_ACTIVITY_MODE = 5;
-	
+
 	private int mode;
-	
+
 	private double ownCarProb;
 	private double doEveningActivityProb;
-	
+
 	/**
 	 * Creates a new instance of WorkingDayMovement
 	 * @param settings
@@ -55,18 +55,18 @@ public class WorkingDayMovement extends ExtendedMovementModel {
 		eveningActivityMovement = new EveningActivityMovement(settings);
 		carMM = new CarMovement(settings);
 		ownCarProb = settings.getDouble(PROBABILITY_TO_OWN_CAR_SETTING);
-		if (rng.nextDouble() < ownCarProb) { 
+		if (rng.nextDouble() < ownCarProb) {
 			movementUsedForTransfers = carMM;
 		} else {
 			movementUsedForTransfers = busTravellerMM;
 		}
 		doEveningActivityProb = settings.getDouble(
 				PROBABILITY_TO_GO_SHOPPING_SETTING);
-		
+
 		setCurrentMovementModel(homeMM);
 		mode = HOME_MODE;
 	}
-	
+
 	/**
 	 * Creates a new instance of WorkingDayMovement from a prototype
 	 * @param proto
@@ -79,19 +79,19 @@ public class WorkingDayMovement extends ExtendedMovementModel {
 		eveningActivityMovement = new EveningActivityMovement(
 				proto.eveningActivityMovement);
 		carMM = new CarMovement(proto.carMM);
-		
+
 		ownCarProb = proto.ownCarProb;
-		if (rng.nextDouble() < ownCarProb) { 
+		if (rng.nextDouble() < ownCarProb) {
 			movementUsedForTransfers = carMM;
 		} else {
 			movementUsedForTransfers = busTravellerMM;
 		}
 		doEveningActivityProb = proto.doEveningActivityProb;
-		
+
 		setCurrentMovementModel(homeMM);
 		mode = proto.mode;
 	}
-	
+
 	@Override
 	public boolean newOrders() {
 		switch (mode) {
@@ -100,13 +100,13 @@ public class WorkingDayMovement extends ExtendedMovementModel {
 				setCurrentMovementModel(movementUsedForTransfers);
 				if (doEveningActivityProb > rng.nextDouble()) {
 					movementUsedForTransfers.setNextRoute(
-							workerMM.getOfficeLocation(), 
+							workerMM.getOfficeLocation(),
 							eveningActivityMovement.
 								getShoppingLocationAndGetReady());
 					mode = BUS_TO_EVENING_ACTIVITY_MODE;
 				} else {
 					movementUsedForTransfers.setNextRoute(
-							workerMM.getOfficeLocation(), 
+							workerMM.getOfficeLocation(),
 							homeMM.getHomeLocation());
 					mode = BUS_TO_HOME_MODE;
 				}
@@ -164,17 +164,17 @@ public class WorkingDayMovement extends ExtendedMovementModel {
 		return new WorkingDayMovement(this);
 	}
 
-	
+
 	public Coord getOfficeLocation() {
 		return workerMM.getOfficeLocation().clone();
 	}
-	
+
 	public Coord getHomeLocation() {
 		return homeMM.getHomeLocation().clone();
 	}
-	
+
 	public Coord getShoppingLocation() {
 		return eveningActivityMovement.getShoppingLocation().clone();
 	}
-	
+
 }

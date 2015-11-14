@@ -18,7 +18,7 @@ my (
 );
 
 my $usage = '
-usage:  -out <output file name> 
+usage:  -out <output file name>
         [-comp]
         [-log]
         [-total <total sum>]
@@ -50,12 +50,12 @@ are plotted to the same graph.';
 	print "\n$usage";
 	print '
 options:
-   
+
 out    Output file name\'s prefix
 
 total  If defined, the total value against which cumulative values are compared.
        By default, total is calculated from the input file.
-       
+
 index  Index (which of whitespace delimeted fields) of the hitcount value.
        Default = 1 (first field after time stamp). Zero value reports hitcount
        of 1 for each line.
@@ -71,7 +71,7 @@ params Gnuplot plotting style parameters. Default = \'smooth unique\'
 term   Name of the terminal used for gnuplot output. Use "na" for no terminal
        (only the gnuplot output file is created). Default = emf
 
-range  Range of x-values in the resulting graph (e.g. 0:100). 
+range  Range of x-values in the resulting graph (e.g. 0:100).
        Default = no range, i.e. automatic scaling by gnuplot
 ';
 	exit();
@@ -105,7 +105,7 @@ if ( defined($range) ) {
 }
 
 if ( not $term eq "na" ) {
-	my ($suffix) = $term=~ /(\S+)/; 
+	my ($suffix) = $term=~ /(\S+)/;
 	print PLOT "set terminal $term\n";
 	print PLOT "set output \"$outfile.$suffix\"\n";
 }

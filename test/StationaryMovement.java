@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
 
@@ -14,16 +14,16 @@ import core.Coord;
  */
 public class StationaryMovement extends MovementModel {
 	private Coord loc;
-	
+
 	public StationaryMovement(Coord location) {
 		if (location == null) {
 			this.loc = new Coord(0,0);
 		}
-		else { 
+		else {
 			this.loc = location;
 		}
 	}
-	
+
 	/**
 	 * Returns the only location of this movement model
 	 * @return the only location of this movement model
@@ -32,12 +32,12 @@ public class StationaryMovement extends MovementModel {
 	public Coord getInitialLocation() {
 		return loc;
 	}
-	
+
 	@Override
 	public boolean isActive() {
 		return true;
 	}
-	
+
 	/**
 	 * Returns a single coordinate path (using the only possible coordinate)
 	 * @return a single coordinate path
@@ -48,12 +48,12 @@ public class StationaryMovement extends MovementModel {
 		p.addWaypoint(loc);
 		return p;
 	}
-	
+
 	@Override
 	public double nextPathAvailable() {
 		return Double.MAX_VALUE;	// no new paths available
 	}
-	
+
 	@Override
 	public StationaryMovement replicate() {
 		return new StationaryMovement(loc);

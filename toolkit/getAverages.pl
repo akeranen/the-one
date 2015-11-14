@@ -24,14 +24,14 @@ if (not $help and not @ARGV) {
 }
 
 if ($help) {
-    print 'Report file value averager. Counts and prints out average for 
-each line over multiple files. 
+    print 'Report file value averager. Counts and prints out average for
+each line over multiple files.
 Expected syntax for input files: <time stamp> <value>
 Output syntax: <time stamp> <average> [<min> <max>]';
     print "\n$usage";
     print '
 options:
-   
+
 error  Add minimum and maximum values to the output (for error bars)
 
 ';
@@ -58,23 +58,23 @@ while($cont) {
   my $min = undef;
   my $max = undef;
   my $oldTime = undef;
-  
+
   # read one line from each file and count average
   for (my $i=0; $i < $fileCount; $i++) {
     my $fh = $fileHandles[$i];
     $_ = <$fh>;
     if (not $_) { # no more input
-      $cont = 0; 
+      $cont = 0;
       last;
     }
     ($time, $value) = m/([\d\.]+) ([\d\.]+)/;
     $sum += $value;
-    
+
     if (defined $oldTime and $oldTime != $time) {
       die "Time stamps are not in sync ($oldTime vs. $time)";
     }
     $oldTime = $time;
-    
+
     # update min and max values
     if (not defined $min) { # first value for the round
       $min = $value;
@@ -87,11 +87,11 @@ while($cont) {
       $min = $value;
     }
   }
-  
+
   if ($cont) {
     my $avg = $sum/$fileCount;
     print "$time $avg";
-  
+
     if ($error) {
       print " $min $max";
     }

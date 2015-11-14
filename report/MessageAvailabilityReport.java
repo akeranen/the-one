@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2011 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package report;
 
@@ -18,25 +18,25 @@ import core.SettingsError;
 /**
  * Reports which messages are available (either in the buffer or at one
  * of the connected hosts' buffer) for certain, randomly selected,
- * tracked hosts. Supports the same settings as the 
+ * tracked hosts. Supports the same settings as the
  * {@link MessageLocationReport}
  */
 public class MessageAvailabilityReport extends MessageLocationReport {
 
-	/** Number of tracked hosts -setting id ({@value}). Defines how many 
+	/** Number of tracked hosts -setting id ({@value}). Defines how many
 	 * hosts are selected for sampling message availability */
 	public static final String NROF_HOSTS_S = "nrofHosts";
-	
+
 	private int nrofHosts;
-	private Set<DTNHost> trackedHosts;	
+	private Set<DTNHost> trackedHosts;
 	private Random rng;
-	
+
 	public MessageAvailabilityReport() {
-		super();		
+		super();
 		Settings s = getSettings();
 		nrofHosts = s.getInt(NROF_HOSTS_S, -1);
 		this.rng = new Random(nrofHosts);
-		
+
 		this.trackedHosts = null;
 	}
 
@@ -52,8 +52,8 @@ public class MessageAvailabilityReport extends MessageLocationReport {
 			throw new SettingsError("Can't use more hosts than there are " +
 					"in the simulation scenario");
 		}
-			
-		
+
+
 		for (int i=0; i<nrofHosts; i++) {
 			DTNHost nextHost = allHosts.get(rng.nextInt(allHosts.size()));
 			if (trackedHosts.contains(nextHost)) {
@@ -62,37 +62,37 @@ public class MessageAvailabilityReport extends MessageLocationReport {
 				trackedHosts.add(nextHost);
 			}
 		}
-		
+
 		return trackedHosts;
 	}
-	
+
 	/**
 	 * Creates a snapshot of message availability
 	 * @param trackedHosts The list of hosts in the world
 	 */
 	@Override
-	protected void createSnapshot(List<DTNHost> hosts) {		
+	protected void createSnapshot(List<DTNHost> hosts) {
 		write("[" + (int) getSimTime() + "]"); /* write sim time stamp */
-		
+
 		if (this.trackedHosts == null) {
 			this.trackedHosts = selectTrackedHosts(hosts);
 		}
-		
+
 		for (DTNHost host : hosts) {
 			Set<String> msgIds = null;
 			String idString = "";
-			
+
 			if (! this.trackedHosts.contains(host)) {
 				continue;
 			}
-			
+
 			msgIds = new HashSet<String>();
-			
+
 			/* add own messages */
 			for (Message m : host.getMessageCollection()) {
 				if (!isTracked(m)) {
 					continue;
-				}				
+				}
 				msgIds.add(m.getId());
 			}
 			/* add all peer messages */
@@ -102,15 +102,15 @@ public class MessageAvailabilityReport extends MessageLocationReport {
 					if (!isTracked(m)) {
 						continue;
 					}
-					msgIds.add(m.getId());					
+					msgIds.add(m.getId());
 				}
 			}
-			
+
 			for (String id : msgIds) {
 				idString += " " + id;
 			}
-			
-			write(host + idString);				
-		}		
+
+			write(host + idString);
+		}
 	}
 }

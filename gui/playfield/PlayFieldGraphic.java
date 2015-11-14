@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package gui.playfield;
 
@@ -14,7 +14,7 @@ public abstract class PlayFieldGraphic {
 	 * @see #setScale(double)
 	 */
 	protected static double scale = 1;
-		
+
 	/**
 	 * Set the zooming factor of the graphics to be drawn
 	 * @param newScale New scale
@@ -30,14 +30,14 @@ public abstract class PlayFieldGraphic {
 	public static double getScale() {
 		return scale;
 	}
-	
+
 	/**
 	 * Draws the graphic component to the graphics context g2
 	 * @param g2 The context to draw the graphics to
 	 */
 	public abstract void draw(Graphics2D g2);
 
-	
+
 	/**
 	 * Scales the value according to current zoom level
 	 * @param value Value to scale
@@ -55,18 +55,18 @@ public abstract class PlayFieldGraphic {
 	public static int scale(int value) {
 		return (int)Math.round(scale * value);
 	}
-	
+
 	/**
 	 * Performs an inverse of the scaling procedure with current scale.
 	 * NOTE: invScale(scale(value)) != value because of rounding to integer
 	 * at scale() -methods
 	 * @param value The value to inverse-scale
 	 * @return Inverse-scaled value
-	 * @see #scale(double) 
+	 * @see #scale(double)
 	 */
 	public static double invScale(double value) {
 		return value/scale;
 	}
-	
+
 
 }

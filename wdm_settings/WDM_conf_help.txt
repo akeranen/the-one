@@ -8,12 +8,12 @@ homeLocationsFile
 	- WKT File containing the coordinates of home locations
 
 nrOfMeetingSpots
-	- Only used if no meetingSpotsFile is specified, in which case the spots will be 
+	- Only used if no meetingSpotsFile is specified, in which case the spots will be
 	randomly placed on the map
-		
+
 nrOfOffices
 	- Same but for offices
-	
+
 workDayLength
 	- Length of the time spent at work
 

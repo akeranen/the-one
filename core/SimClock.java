@@ -1,6 +1,6 @@
-/* 
+/*
  * Copyright 2010 Aalto University, ComNet
- * Released under GPLv3. See LICENSE.txt for details. 
+ * Released under GPLv3. See LICENSE.txt for details.
  */
 package core;
 
@@ -10,14 +10,14 @@ package core;
 public class SimClock {
 	private static double clockTime = 0.0;
 	private static SimClock clock = null;
-	
+
 	private SimClock() {}
-	
+
 	static {
 		DTNSim.registerForReset(SimClock.class.getCanonicalName());
 		reset();
 	}
-	
+
 	/**
 	 * Get the instance of the class that can also change the time.
 	 * @return The instance of this clock
@@ -28,7 +28,7 @@ public class SimClock {
 		}
 		return clock;
 	}
-	
+
 	/**
 	 * Returns the current time (seconds since start)
 	 * @return Time as a double
@@ -36,7 +36,7 @@ public class SimClock {
 	public static double getTime() {
 		return clockTime;
 	}
-	
+
 	/**
 	 * Returns the current time rounded to the nearest integer
 	 * @return Time as integer
@@ -44,7 +44,7 @@ public class SimClock {
 	public static int getIntTime() {
 		return (int)Math.round(clockTime);
 	}
-	
+
 	/**
 	 * Returns a string presentation of the sim time shown with the given amount
 	 * of decimals
@@ -54,7 +54,7 @@ public class SimClock {
 	public static String getFormattedTime(int decimals) {
 		return String.format("%." + decimals + "f", clockTime);
 	}
-	
+
 	/**
 	 * Advances the time by n seconds
 	 * @param time Nrof seconds to increase the time
@@ -62,7 +62,7 @@ public class SimClock {
 	public void advance(double time) {
 		clockTime += time;
 	}
-	
+
 	/**
 	 * Sets the time of the clock.
 	 * @param time the time to set
@@ -70,15 +70,15 @@ public class SimClock {
 	public void setTime(double time) {
 		clockTime = time;
 	}
-	
+
 	/**
 	 * Returns the current simulation time in a string
-	 * @return the current simulation time in a string 
+	 * @return the current simulation time in a string
 	 */
 	public String toString() {
 		return "SimTime: " + clockTime;
 	}
-	
+
 	/**
 	 * Resets the static fields of the class
 	 */

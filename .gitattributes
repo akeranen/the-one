@@ -1,0 +1,17 @@
+# Keep EOLs consistent
+
+* text=auto
+
+*.java          text
+*.txt           text
+*.md            text
+*.bat           text
+*.sh            text
+*.pl            text
+*.pm            text
+*.py            text
+
+*.class         binary
+*.gif           binary
+*.png           binary
+*.jar           binary

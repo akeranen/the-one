@@ -170,6 +170,7 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 
 	private ImageIcon createImageIcon(String path) {
 		java.net.URL imgURL = getClass().getResource(PATH_GRAPHICS+path);
+		
 		return new ImageIcon(imgURL);
 	}
 

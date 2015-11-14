@@ -11,7 +11,7 @@ use FileHandle;
 use Getopt::Long;
 
 my $usage = '
-usage: -out <output file name> [-help] [-first <first time stamp>] 
+usage: -out <output file name> [-help] [-first <first time stamp>]
        <input file name>
 ';
 
@@ -31,11 +31,11 @@ if ($help) {
   print 'Dieselnet trace converter.';
   print "\n$usage";
    print '
-options: 
+options:
 out   Name of the output file
 
 first Time stamp for the first connection event. Adjusts all timestamps so
-      that the first event happens at this time (by N seconds from the start 
+      that the first event happens at this time (by N seconds from the start
       of the simulation). By default, the times are not adjusted at all.
 ';
   exit();
@@ -65,8 +65,8 @@ foreach (@lines) {
   if (m/^\s$/) {
     next; # skip empty lines
   }
-  
-  my ($node1, $node2, $h, $m, $s, $duration) = 
+
+  my ($node1, $node2, $h, $m, $s, $duration) =
     m/(\w+) (\w+) (\d+):(\d+):(\d+) [\d\.E]+ (\d+\.\d+)/;
   die "Invalid input line: $_" unless ($node1 and $node2);
   my $time = $h * 3600 + $m * 60 + $s;
@@ -88,14 +88,14 @@ foreach (@lines) {
     $nodeIds{$node2} = $nextNodeId;
     $nextNodeId++;
   }
-  
+
   my $conEndTime = $time + $duration;
   push(@output, "$time CONN $nodeId1 $nodeId2 up");
   push(@output, "$conEndTime CONN $nodeId1 $nodeId2 down");
 }
 
 # sort result by time stamp
-@output = sort 
+@output = sort
 {
   my ($t1) = $a =~ m/^(\d+)/;
   my ($t2) = $b =~ m/^(\d+)/;

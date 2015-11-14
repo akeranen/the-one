@@ -17,7 +17,7 @@ usage: [-help] [-fname] [-perc <percentile>] [-count] [-icounts] [-ids] [-avg] [
 my ($help, $showFileName, $perc, $showIds, $showCount, $showIndividualCounts, $avg, $verbose);
 
 GetOptions("help|?!" => \$help,
-  "fname" => \$showFileName, 
+  "fname" => \$showFileName,
 	"perc=i" => \$perc,
 	"ids" => \$showIds,
   "count" => \$showCount,
@@ -36,7 +36,7 @@ if ($help) {
   print 'MessageAvailabilityReport analyzer.';
   print "\n$usage";
   print '
-options: 
+options:
  perc  How manyth percentiles to show
  TBD
 ';
@@ -45,7 +45,7 @@ options:
 
 
 sub getPercs {
-	my @sorted = sort {$a<=>$b} @_;	
+	my @sorted = sort {$a<=>$b} @_;
 	my $lowIndex = int(@sorted * ($perc/100));
 	my $highIndex = @sorted - $lowIndex - 1;
 	my $medIndex = int(@sorted/2);
@@ -77,16 +77,16 @@ while (<>) {
   if (m/^\[(\d*)\]/) { # next timestamp
     $lastTime = $time;
     $time = $1;
-	
-  	if (not defined $lastTime) { # first timestamp
-  		$timeStep = $time;
-  	}
+
+	if (not defined $lastTime) { # first timestamp
+		$timeStep = $time;
+	}
     next;
   }
-  
+
   my @vals = split(' ');
   my $hostId = shift @vals;
-    
+
   foreach my $msgId (@vals) {
     $msgCounts{$msgId} = {()} unless $msgCounts{$msgId};
 
@@ -102,9 +102,9 @@ foreach my $msgId (keys %msgCounts) {
   my %hostIds = %{$msgCounts{$msgId}};
   my $count = keys(%hostIds);
   push @counts, $count;
-  
+
   $sum += $count;
-  
+
   if ($showIndividualCounts) {
     print "$msgId $count";
     if ($showIds) {
@@ -119,11 +119,11 @@ foreach my $msgId (keys %msgCounts) {
   }
 }
 
-if (defined $perc) { 
+if (defined $perc) {
   print "Counts: @counts\n" if $verbose;
   my ($mid, $low, $high) = getPercs(@counts);
   $output = "$output $low $mid $high";
-  $legend = "$legend low-perc-$perc median high-perc-$perc"; 
+  $legend = "$legend low-perc-$perc median high-perc-$perc";
 }
 
 if ($showCount) {

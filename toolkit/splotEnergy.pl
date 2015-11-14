@@ -16,7 +16,7 @@ usage: -name <output file name> [-every <value>] [-term <gnuplot terminal>]
 
 my ($help, $name, $every, $term, $tcmd, $title);
 
-GetOptions("name=s" => \$name, "every=i" => \$every, "term=s" => \$term, 
+GetOptions("name=s" => \$name, "every=i" => \$every, "term=s" => \$term,
 "tcmd=s" => \$tcmd, "title=s" => \$title, "help|?!" => \$help);
 
 if (not $help and (not $name or not @ARGV)) {
@@ -29,18 +29,18 @@ if ($help) {
   print 'Energy level 3D plotter';
   print "\n$usage";
       print '
-options: 
-name   Output filename\'s prefix. Two files are created: one with .gnuplot and 
+options:
+name   Output filename\'s prefix. Two files are created: one with .gnuplot and
        second with the selected terminal as suffix.
-       
+
 every  If value bigger than 1 is given, only values from every Nth timestamp are
        used (so there will be less lines). Default = 1.
-       
+
 term   Name of the terminal used for gnuplot output. Default = emf
 
 tcmd   Extra commands for the gnuplot terminal. Nothing by default.
        For example \'"Times-Roman" 24\' for postscript font selection.
-       
+
 title  Plot title. No title by default.
 ';
   exit();
@@ -84,9 +84,9 @@ while (<>) {
     if (@times == 1) {
       next; # the very first timestamp
     }
-    
 
-    if ($round % $every == 0) {   
+
+    if ($round % $every == 0) {
       print $dataFile " \n\n" unless @times == 2;
 
       @values = sort { $a <=> $b } @values;
@@ -95,15 +95,15 @@ while (<>) {
         print $dataFile "$round $i " . $values[$i]/3600 . "\n";
       }
     }
-    
+
     @values = (); # clear values
     $round++;
     next;
   }
-  
+
   my ($value) = m/^\w+ ([\d\.]+)$/;
   die "No valid value at line $_" unless $value;
-  
+
   push @values, $value;
 }
 

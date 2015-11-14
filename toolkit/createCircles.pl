@@ -13,11 +13,11 @@ my $hostPrefix = "g";
 # number of rings
 
 my ($rings, $radius, $help);
-    
+
 GetOptions("rings=n" => \$rings,
            "radius=n" => \$radius,
 	   "help|?!" => \$help);
-    
+
 unless (defined($help)) {
     unless (defined($rings) and defined($radius)) {
 	print "Missing required parameters\n";
@@ -56,5 +56,5 @@ for (my $ring = 0; $ring <= $rings; $ring++) {
 			$hostID++;
 		}
 	}
-	
+
 }

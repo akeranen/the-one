@@ -21,8 +21,8 @@ usage: -stat <statName> [-label <labelExtractingRe>]
        statFileNames...
 ';
 
-GetOptions("stat=s" => \$statName, "label=s" => \$labelRe, 
-	   "out=s" => \$outfile, "term=s" => \$term, 
+GetOptions("stat=s" => \$statName, "label=s" => \$labelRe,
+	   "out=s" => \$outfile, "term=s" => \$term,
 	   "range=s" => \$range, "help|?!" => \$help);
 
 if (not $help and (not defined $statName or not @ARGV)) {
@@ -36,21 +36,21 @@ if ($help) {
 and generates an output image using gnuplot';
     print "\n$usage";
     print '
-options: 
+options:
 stat   The name of the statistic value to parse from all files
 
-label  A regular expression which is used to parse labels for bars from the 
-       file names. Use capture groups to get the content(s). 
+label  A regular expression which is used to parse labels for bars from the
+       file names. Use capture groups to get the content(s).
        Default = \'([^_]*)_\' (everything up to first underscore)
 
 out    Output filename\'s prefix. Default = parsed statistic\'s name
-       
+
 term   Name of the terminal used for gnuplot output. Default = emf
 
-range  Range of y-values in the resulting graph (e.g. 0:100). 
+range  Range of y-values in the resulting graph (e.g. 0:100).
        Default = no range, i.e. automatic scaling by gnuplot
 
-example: 
+example:
   getStats.pl -stat delivery_prob -label \'RC-([\w-]+)_\' -out stats \
               -term emf -range 0:1 reports/RC*MessageStats*
 ';
@@ -86,7 +86,7 @@ while (my $statFile = shift(@ARGV)) {
 
     while(<SFILE>) {
 	if (m/$statName/) {
-	    ($value) = m/$statName: (.+)/; 
+	    ($value) = m/$statName: (.+)/;
 	}
     }
 

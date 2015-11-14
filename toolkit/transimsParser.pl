@@ -5,7 +5,7 @@ package Toolkit;
 # Transims vehicle shapshot file parser
 
 use strict;
-use warnings; 
+use warnings;
 use Common; # parseArgs and debug methods
 
 parseArgs("Transims vehicle shapshot parser");

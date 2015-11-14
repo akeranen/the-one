@@ -9,9 +9,9 @@ use FileHandle;
 use Getopt::Long;
 
 my $usage = '
-usage: -name <name of the animation> 
+usage: -name <name of the animation>
        [-xrange <xmin:xmax>]
-       [-yrange <ymin:ymax>] 
+       [-yrange <ymin:ymax>]
        [-size <xsize,ysize>]
        [-delay <delay per animation frame>]
        [-inc <reg exp for included message IDs>]
@@ -23,7 +23,7 @@ usage: -name <name of the animation>
 my ($help, $name, $xrange, $yrange, $size, $delay, $includeRe, $ptype);
 
 GetOptions("xrange=s" => \$xrange, "yrange=s" => \$yrange, "size=s"=>\$size,
-  "delay=i" => \$delay, "inc=s"=>\$includeRe, "ptype=i"=>\$ptype, 
+  "delay=i" => \$delay, "inc=s"=>\$includeRe, "ptype=i"=>\$ptype,
   "name=s" => \$name, "help|?!" => \$help);
 
 if (not $help and (not defined $name or not @ARGV)) {
@@ -37,25 +37,25 @@ $size = "800,800" unless defined $size;
 $includeRe = ".*" unless defined $includeRe;
 
 if ($help) {
-  print 'Message Location Animator. 
-Creates an animated GIF of message locations from MessageLocationReport 
+  print 'Message Location Animator.
+Creates an animated GIF of message locations from MessageLocationReport
 output using gnuplot. Gnuplot needs to be linked with gd 2.0.29 or newer.';
   print "\n$usage";
   print '
-options: 
+options:
 name    Name of the animation file and folder
 xrange  Value range for the x-axis (default: variable). E.g. "0:4500"
 yrange  Value range for the y-axis (default: variable). E.g. "0:3500"
 size    Size (pixels) of the resulting image (default: 800,800)
 delay   Delay per animation frame (default: 100)
 inc     Regular expression for matching the messages that should be included
-        in the animation (default: \'.*\'). E.g. use \'M(1|2)$\' for animating 
+        in the animation (default: \'.*\'). E.g. use \'M(1|2)$\' for animating
         only messages M1 and M2
 ptype   Type of the point (integer value) to use in the location of the message
-        (default: variable). Valid values are from 0 to 21. Type "test" in 
+        (default: variable). Valid values are from 0 to 21. Type "test" in
         gnuplot to get samples of all types.
 
-example: 
+example:
   messageLocationAnimator.pl -name test reportfile.txt
 ';
   exit();
@@ -89,12 +89,12 @@ while (<>) {
     for (values %fileHandles) {
       $_->close(); # close all existing handles
     }
-    
+
     # add plotting command for all file names from the previous round
     if (@msgIds) {
       writePlotCommand(@msgIds);
-    }    
-    
+    }
+
     while ( my ($key, $value) = each(%fileHandles) ) {
       my $fileName = "${time}-${key}.data";
       # open new file for all known messages
@@ -102,15 +102,15 @@ while (<>) {
     }
     next;
   }
-  
+
   my ($xcoord, $ycoord, $messageLine) = m/^\((\d*\.\d*),(\d*\.\d*)\) (.*)$/;
   die "No valid coordinates at line $_" unless ($xcoord and $ycoord);
-  
+
   my @messages = split(/ /, $messageLine);
- 
+
   foreach (@messages) {
     my $fh;
-    if (exists $fileHandles{$_}) { 
+    if (exists $fileHandles{$_}) {
       $fh = $fileHandles{$_};
     }
     else { # no file handle for this message ID -> create one
@@ -124,7 +124,7 @@ while (<>) {
       $fh->open(">${animDir}/$fileName");
       push(@msgIds, $_);
     }
-    
+
     print $fh "$xcoord $ycoord\n";
   }
 }

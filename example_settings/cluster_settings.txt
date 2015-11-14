@@ -59,7 +59,7 @@ MapBasedMovement.mapFile1 = data/cluster/ferryroute.wkt
 MapBasedMovement.mapFile2 = data/cluster/origin.wkt
 
 
-## Message creation parameters 
+## Message creation parameters
 # How many event generators
 Events.nrof = 1
 # Class of the first event generator

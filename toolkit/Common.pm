@@ -35,14 +35,14 @@ Discarded lines and "errors" are printed to stderr.
 
     $infile = shift @ARGV;;
     $outfile = shift @ARGV;
-    
+
     if ($infile) {
 	open(INFILE, $infile) or die "Can't open $infile : $!";
     }
     else {
 	open(INFILE, "<-") or die "Can't read from stdin";
     }
-    
+
     if ($outfile) {
 	open OUTFILE, ">$outfile" or die "Can't open $outfile : $!";
     }

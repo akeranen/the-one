@@ -11,6 +11,9 @@
 *.pm            text
 *.py            text
 
+# Windows batch files should retain CRLF
+*.bat           text eol=crlf
+
 *.class         binary
 *.gif           binary
 *.png           binary

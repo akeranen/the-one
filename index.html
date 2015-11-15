@@ -43,6 +43,10 @@
 <li>ONE can import mobility data from real-world traces or other mobility generators. It can also produce a variety of reports from node movement to message passing and general statistics.</li>
 </ul>
 
+<p>The ONE simulator was developed at Aalto University and is now maintained and extended in cooperation between Aalto University (Comnet) and Technische Universität München (Connected Mobility).</p>
+
+<p>Developers: <a href="https://twitter.com/ari_kk">Ari Keränen</a>, Teemu Kärkkäinen, Mikko Pitkänen, Frans Ekman, Jouni Karvo, and Jörg Ott </p>
+
 <h3>
 <a id="acknowledgments" class="anchor" href="#acknowledgments" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgments</h3>
 
@@ -103,7 +107,7 @@
 <h3>
 <a id="running-a-really-quick-help" class="anchor" href="#running-a-really-quick-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running (a really quick help)</h3>
 
-<p>Download the program. Compile it using your favourite IDE or <code>compile.bat</code> (should work in Linux, Windows and Mac OS X).</p>
+<p>Download the program. Compile it using your favourite IDE or <code>compile.bat</code> (on Windows) or <code>compile.sh</code> (on Linux or Mac OS X).</p>
 
 <p>Start a simulation by typing in (Linux/Unix/OS X) terminal:</p>
 
@@ -115,21 +119,21 @@
 <pre><code>one.bat
 </code></pre>
 
-<p>After a short while, the GUI should start and a simulation should be up and running.</p>
+<p>After a short while, the GUI should start and a simulation based on default settings should be up and running.</p>
 
 <p>Every simulation run uses the settings from default_settings.txt, if one exists. You can give an additional configuration file(s) as a parameters to define new settings or override the ones defined in default settings. For example:</p>
 
-<pre><code>./one.sh epidemic_settings.txt
+<pre><code>./one.sh example_settings/snw_settings.txt
 </code></pre>
 
-<p>That would use the (included) epidemic settings configuration file and change the router for all nodes to epidemic (default is "passive router", i.e., no routing logic). See default_settings.txt for information about the different settings.</p>
+<p>That would use the (included) snw_settings.txt settings configuration file and change the router for all nodes to Spray and Wait (default is "passive router", i.e., no routing logic). See default_settings.txt for information about the different settings.</p>
 
 <p>If you don't wish to use the GUI, you can run simulations in batch mode using -b option. In batch mode you can also define the number of runs using different run indexes. For example:</p>
 
 <pre><code>./one.sh -b 22 example_settings/snw_comparison_settings.txt 
 </code></pre>
 
-<p>That would run spray and wait comparison using 11 different message copy counts and with binary and normal mode. See Settings class' javadoc for details about run indexing.</p>
+<p>That would run Spray and Wait comparison using 11 different message copy counts and with binary and normal mode. See Settings class' javadoc for details about run indexing.</p>
 
 <p>To create a local copy of the javadoc documentation, run the <code>create_docs.sh</code> script in the doc folder.</p>
 

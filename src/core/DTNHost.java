@@ -120,8 +120,11 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @return true if this node's radio is active (false if not)
 	 */
 	public boolean isRadioActive() {
-		/* TODO: make this work for multiple interfaces */
-		return this.getInterface(1).isActive();
+		// Radio is active if any of the network interfaces are active.
+		for (final NetworkInterface i : this.net) {
+			if (i.isActive()) return true;
+		}
+		return false;
 	}
 
 	/**

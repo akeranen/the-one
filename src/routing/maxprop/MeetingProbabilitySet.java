@@ -10,6 +10,8 @@ import java.util.Map;
 
 import core.SimClock;
 
+import static core.Constants.DEBUG;
+
 /**
  * Class for storing and manipulating the meeting probabilities for the MaxProp
  * router module.
@@ -98,8 +100,8 @@ public class MeetingProbabilitySet {
 		}
 
         if (probs.size() >= maxSetSize) {
-            core.Debug.p("Probsize: " + probs.size() + " dropping " +
-                    probs.remove(smallestEntry.getKey()));
+            if (DEBUG) core.Debug.p("Probsize: " + probs.size() + " dropping " +
+					probs.remove(smallestEntry.getKey()));
         }
 	}
 

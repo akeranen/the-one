@@ -13,6 +13,8 @@ import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
 
+import static core.Constants.DEBUG;
+
 /**
  * A DTN capable host.
  */
@@ -317,8 +319,8 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * for tests only --- do not use!!!
 	 */
 	public void connect(DTNHost h) {
-		Debug.p("WARNING: using deprecated DTNHost.connect(DTNHost)" +
-		"Use DTNHost.forceConnection(DTNHost,null,true) instead");
+		if (DEBUG) Debug.p("WARNING: using deprecated DTNHost.connect" +
+			"(DTNHost) Use DTNHost.forceConnection(DTNHost,null,true) instead");
 		forceConnection(h,null,true);
 	}
 

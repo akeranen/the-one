@@ -28,6 +28,8 @@ extends SamplingReport {
 	public static final String Y_COUNT_SETTING = "yCount";
 	/** Boolean setting to output gnuplot file ({@value}). */
 	public static final String GNUPLOT_SETTING = "outputGnuplot";
+	/** Boolean setting to output only the average ({@value}). */
+	public static final String ONLY_AVERAGE_SETTING = "onlyAverage";
 
 	/** Default number of divisions along the x-axis ({@value}). */
 	public static final int DEFAULT_X_COUNT = 10;
@@ -35,6 +37,8 @@ extends SamplingReport {
 	public static final int DEFAULT_Y_COUNT = 10;
 	/** Default value for outputting gnuplot instead of raw data ({@value}). */
 	public static final boolean DEFAULT_GNUPLOT_SETTING = false;
+	/** Default value for outputting only the average density ({@value}). */
+	public static final boolean DEFAULT_ONLY_AVERAGE_SETTING = false;
 	//========================================================================//
 
 
@@ -46,6 +50,7 @@ extends SamplingReport {
 	private final double divisionWidth;
 	private final double divisionHeight;
 	private final boolean gnuplot;
+	private final boolean onlyAverage;
 	private final String runName;
 	private final List<int[][]> samples;
 	//========================================================================//
@@ -61,6 +66,8 @@ extends SamplingReport {
 
 		this.gnuplot = settings.getBoolean(GNUPLOT_SETTING,
 				DEFAULT_GNUPLOT_SETTING);
+		this.onlyAverage = settings.getBoolean(ONLY_AVERAGE_SETTING,
+				DEFAULT_ONLY_AVERAGE_SETTING);
 
 		// Set up the sampling grid
 		this.horizontalCount
@@ -128,8 +135,10 @@ extends SamplingReport {
 			for (int g_y = 0; g_y < this.verticalCount; g_y++) {
 				String line = "" + g_x + " " + g_y + " "
 						+ averages[g_x][g_y];
-				for (final int[][] sample : this.samples) {
-					line += " " + sample[g_x][g_y];
+				if (!this.onlyAverage) {
+					for (final int[][] sample : this.samples) {
+						line += " " + sample[g_x][g_y];
+					}
 				}
 				super.write(line);
 			}
@@ -179,20 +188,26 @@ extends SamplingReport {
 	// Private - Gnuplot
 	//========================================================================//
 	private void outputGnuplotPrefix() {
-		super.write("set terminal png");
+		super.write("set terminal svg");
+		super.write("set tic scale 0");
+		super.write("set xrange [-0.5:" + (this.horizontalCount - 1) + ".5]");
+		super.write("set yrange [-0.5:" + (this.verticalCount - 1) + ".5]");
 		super.write("$data << EOD");
 	}
 
 	private void outputGnuplotSuffix(final int sampleCount) {
 		super.write("EOD");
 		super.write("set output sprintf('" + this.runName
-				+ "-avrg.png')");
+				+ "-avrg.svg')");
 		super.write("plot '$data' using 2:1:3 with image");
-		super.write("do for [ii=4:" + (3 + sampleCount) + "] {");
-		super.write("set output sprintf('" + this.runName
-						+ "%04.0f.png',ii-3)");
-		super.write("plot '$data' using 2:1:ii with image");
-		super.write("}");
+
+		if (!this.onlyAverage) {
+			super.write("do for [ii=4:" + (3 + sampleCount) + "] {");
+			super.write("set output sprintf('" + this.runName
+					+ "%04.0f.png',ii-3)");
+			super.write("plot '$data' using 2:1:ii with image");
+			super.write("}");
+		}
 	}
 	//========================================================================//
 }

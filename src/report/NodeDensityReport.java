@@ -45,7 +45,7 @@ extends SamplingReport {
 	/** Default value for gnuplot terminal ({@value}). */
 	public static final String DEFAULT_GNUPLOT_TERMINAL =
 			"png size 1024,768";
-	public static final String DEFAULT_GNUPLOT_FILE_EXTENSION = ".png";
+	public static final String DEFAULT_GNUPLOT_FILE_EXTENSION = "png";
 	/** Default value for outputting only the average density ({@value}). */
 	public static final boolean DEFAULT_ONLY_AVERAGE = false;
 	//========================================================================//

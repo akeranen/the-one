@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Sampling report that counts the number of nodes in grid over the
- * simulation area. Output format is: G_x G_y count_1, count_2, ...
+ * simulation area. Output format is: G_x G_y average count_1, count_2, ...
  * Where G_x and G_y are the coordinates of the grid square [0, 1, ...] and
  * count_n is the count during the nth sample.
  *

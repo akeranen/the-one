@@ -21,7 +21,7 @@ implements UpdateListener {
 	// Settings
 	//========================================================================//
 	/** Interval in seconds between samples ({@value}). */
-	public static final String SAMPLE_INTERVAL_SETTING = "interval";
+	public static final String SAMPLE_INTERVAL_SETTING = "sampleInterval";
 	/** Default value for sample interval ({@value} seconds). */
 	public static final double DEFAULT_SAMPLE_INTERVAL = 60;
 	//========================================================================//

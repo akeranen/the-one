@@ -111,7 +111,7 @@ extends SamplingReport {
 		final double duration = scenario.getEndTime();
 		final int sampleCount = (int) (duration / super.interval + 1);
 
-		this.samples = new ArrayList<>(sampleCount);
+		this.samples = new ArrayList<int[][]>(sampleCount);
 
 		this.runName = scenario.getName();
 	}

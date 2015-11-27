@@ -522,9 +522,22 @@ public class Settings {
 		else if (value.endsWith("G")) {
 			multiplier = 1000000000;
 		}
+		else if (value.endsWith("kiB")) {
+			//2^10
+			multiplier = 1024;
+		}
+		else if (value.endsWith("MiB")) {
+			//2^20
+			multiplier = 1048576;
+		}
+		else if (value.endsWith("GiB")) {
+			//2^30
+			multiplier = 1073741824;
+		}
 
 		if (multiplier > 1) { // take the suffix away before parsing
-			value = value.substring(0,value.length()-1);
+			value = value.replaceAll("[^\\d.]","");
+			//replaceAll removes everything which is not a digit or point
 		}
 
 		try {

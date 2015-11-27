@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.Integer;
+import java.lang.NumberFormatException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -159,10 +161,23 @@ public class StandardEventsReader implements ExternalEventsReader {
 					host2Addr = getHostAddress(lineScan.next());
 
 					if (action.equals(CREATE)){
-						int size = lineScan.nextInt();
+						int size = 0;
+
+						if (lineScan.hasNextInt()){
+							size = lineScan.nextInt();
+						}
+						else if (lineScan.hasNext()){
+							size = convertToInteger(lineScan.next());
+						}else{
+							throw new Exception("Invalid number of columns for CREATE event");
+						}
+
 						int respSize = 0;
 						if (lineScan.hasNextInt()) {
 							respSize = lineScan.nextInt();
+						}
+						else if(lineScan.hasNext()) {
+							respSize = convertToInteger(lineScan.next());
 						}
 						events.add(new MessageCreateEvent(hostAddr, host2Addr,
 								msgId, size, respSize, time));
@@ -195,6 +210,7 @@ public class StandardEventsReader implements ExternalEventsReader {
 					line = this.reader.readLine();
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				throw new SimError("Can't parse external event " +
 						(eventsRead+1) + " from '" + line + "'", e);
 			}
@@ -230,6 +246,34 @@ public class StandardEventsReader implements ExternalEventsReader {
 		try {
 			this.reader.close();
 		} catch (IOException e) {}
+	}
+
+	private int convertToInteger(String str){
+		String dataUnit = str.replaceAll("[\\d.]","").trim();
+		String numericPart = str.replaceAll("[^\\d.]","");
+		int number = Integer.parseInt(numericPart);
+
+		if (dataUnit.equals("k")) {
+			return (number * 1000);
+		}
+		else if (dataUnit.equals("M")) {
+			return (number * 1000000);
+		}
+		else if (dataUnit.equals("G")) {
+			return (number * 1000000000);
+		}
+		else if (dataUnit.equals("kiB")) {
+			return (number * 1024);
+		}
+		else if (dataUnit.equals("MiB")) {
+			return (number * 1048576);
+		}
+		else if (dataUnit.equals("GiB")) {
+			return (number * 1073741824);
+		}
+		else{
+			throw new NumberFormatException("Invalid number format for StandardEventsReader: ["+str+"]");
+		}
 	}
 
 }

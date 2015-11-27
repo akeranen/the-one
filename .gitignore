@@ -13,3 +13,4 @@ doc/package-list
 # Eclipse IDE files
 .classpath
 .project
+/target/

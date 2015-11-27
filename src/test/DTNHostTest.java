@@ -3,23 +3,28 @@ package test;
 
 import core.Coord;
 import core.DTNHost;
+import core.MessageListener;
+import core.MovementListener;
+import core.NetworkInterface;
 import core.Settings;
 import movement.MovementModel;
 import movement.Path;
+
 import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
 import routing.MessageRouter;
 import routing.PassiveRouter;
 
-import java.util.Collections;
+import java.util.ArrayList;
 
-import static org.junit.Assert.*;
+import junit.framework.TestCase;
 
 /**
  * @author teemuk
  */
-public class DTNHostTest {
+public class DTNHostTest extends TestCase {
 
   //==========================================================================//
   // Setup/cleanup
@@ -50,10 +55,10 @@ public class DTNHostTest {
   public void testNoInterfaces()
   throws Exception {
     final DTNHost host = new DTNHost(
-            Collections.emptyList(),
-            Collections.emptyList(),
+            new ArrayList<MessageListener>(),
+            new ArrayList<MovementListener>(),
             "",
-            Collections.emptyList(),
+            new ArrayList<NetworkInterface>(),
             null,
             makeMovementModel(),
             makeMessageRouter());

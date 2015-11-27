@@ -49,6 +49,7 @@ public class AllTests {
 		suite.addTestSuite(ScheduledUpdatesQueueTest.class);
 		suite.addTestSuite(MessageTest.class);
 		suite.addTestSuite(ModuleCommunicationBusTest.class);
+		suite.addTestSuite(DTNHostTest.class);
 		//$JUnit-END$
 		return suite;
 	}

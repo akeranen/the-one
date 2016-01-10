@@ -279,6 +279,9 @@ public class DTNHost implements Comparable<DTNHost> {
 
 	/**
 	 * Find the network interface based on the interfacetype
+	 * @param interfacetype Type (name) of the interface
+	 * @return The interface or null if there is no interface with the 
+	 * given type
 	 */
 	protected NetworkInterface getInterface(String interfacetype) {
 		for (NetworkInterface ni : net) {
@@ -290,7 +293,10 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
-	 * Force a connection event
+	 * Force a connection event on the host.
+	 * @param anotherHost The host to connect to
+	 * @param interfaceId Name of the interface to use
+	 * @param up Is the connection up (true) or down (false)
 	 */
 	public void forceConnection(DTNHost anotherHost, String interfaceId,
 			boolean up) {
@@ -301,14 +307,21 @@ public class DTNHost implements Comparable<DTNHost> {
 			ni = getInterface(interfaceId);
 			no = anotherHost.getInterface(interfaceId);
 
-			assert (ni != null) : "Tried to use a nonexisting interfacetype "+interfaceId;
-			assert (no != null) : "Tried to use a nonexisting interfacetype "+interfaceId;
-		} else {
+			if (ni == null) {
+				throw new SimError ("No interface named " + 
+						interfaceId + " at " + this);
+			}
+			if (no == null) {
+				throw new SimError ("No interface named " + 
+						interfaceId + " at " + anotherHost);
+			}
+
+		} else { 
 			ni = getInterface(1);
 			no = anotherHost.getInterface(1);
 
 			assert (ni.getInterfaceType().equals(no.getInterfaceType())) :
-				"Interface types do not match.  Please specify interface type explicitly";
+				"Interface types do not match.";
 		}
 
 		if (up) {

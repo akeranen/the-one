@@ -11,25 +11,28 @@ import core.World;
  * A connection up/down event.
  */
 public class ConnectionEvent extends ExternalEvent {
+	/** Default serialization UID */
+	private static final long serialVersionUID = 1L;
 	/** address of the node the (dis)connection is from */
 	protected int fromAddr;
 	/** address of the node the (dis)connection is to */
 	protected int toAddr;
-	/** Is this a "connection up" event*/
+	/** Is this a "connection up" (true) or "down" (false) event */
 	protected boolean isUp;
-	/** What is the interface number for this event*/
+	/** What is the interface name for this event */
 	protected String interfaceId;
 
 	/**
 	 * Creates a new connection event
 	 * @param from End point of connection
 	 * @param to Another end of connection
-	 * @param interf The number of interface for the connection
+	 * @param interf The name of interface for the connection
 	 * @param up If true, this was a "connection up" event, if false, this
 	 *  was a "connection down" event
 	 * @param time Time when the Connection event occurs
 	 */
-	public ConnectionEvent(int from, int to, String interf, boolean up, double time) {
+	public ConnectionEvent(int from, int to, String interf, boolean up, 
+			double time) {
 		super(time);
 		assert to != from : "Can't self connect";
 		this.fromAddr = from;
@@ -49,6 +52,7 @@ public class ConnectionEvent extends ExternalEvent {
 	@Override
 	public String toString() {
 		return "CONN " + (isUp ? "up" : "down") + " @" + this.time + " " +
-				this.fromAddr+"<->"+this.toAddr;
+				this.fromAddr+"<->"+this.toAddr + 
+				interfaceId != null ? " using " + interfaceId : "";
 	}
 }

@@ -17,6 +17,7 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import core.SimError;
+import core.SimScenario;
 
 /**
  * <P>
@@ -27,7 +28,7 @@ import core.SimError;
  * Syntax:<BR>
  * <TT>
  * &lt;time&gt; &lt;actionId&gt; &lt;msgId&gt; &lt;hostId&gt;
- * [&lt;host2Id&gt; [&lt;size&gt;] [&lt;respSize&gt;]]
+ * [&lt;host2Id&gt; | &lt;interfaceId&gt; [&lt;size&gt;] [&lt;respSize&gt;]]
  * </TT>
  * </P><P>
  * All actions (except CONNECTION) must have first four fields. SEND, DELIVERED
@@ -37,12 +38,26 @@ import core.SimError;
  * a response to this message is requested.</P>
  * <P> CONNNECTION action is followed by the two hosts which connect (or
  * disconnect) to each other and then either "up" or "down" depending on whether
- * the connection was created or destroyed.
+ * the connection was created or destroyed. The CONNECTION action can have
+ * optional last field "interfaceId" to address the event to a specific 
+ * interface defined in settings (see {@link SimScenario#INTERFACENAME_S}). 
+ * By default the first interface is used.
  * </P>
  * <P> Message DROP and REMOVE events can use {@value #ALL_MESSAGES_ID} as the
  * message ID for referring to all messages the node has in message buffer
  * (i.e., to delete all messages).
  * </P>
+ * <P>
+ * actionIds are as follows:
+ * <PRE>
+ * CREATE: C
+ * SEND: S
+ * DELIVERED: DE
+ * ABORT: A
+ * DROP: DR
+ * REMOVE: R
+ * CONNECTION: CONN
+ * </PRE>
  */
 public class StandardEventsReader implements ExternalEventsReader {
 	/** Identifier of message creation event ({@value}) */
@@ -98,6 +113,7 @@ public class StandardEventsReader implements ExternalEventsReader {
 				try {
 					line = this.reader.readLine();
 				} catch (IOException e) {
+					lineScan.close();
 					throw new SimError("Reading from external event file " +
 							"failed.");
 				}
@@ -145,6 +161,7 @@ public class StandardEventsReader implements ExternalEventsReader {
 						isUp = false;
 					}
 					else {
+						lineScan.close();
 						throw new SimError("Unknown up/down value '" +
 								connEventType + "'");
 					}
@@ -168,8 +185,10 @@ public class StandardEventsReader implements ExternalEventsReader {
 						}
 						else if (lineScan.hasNext()){
 							size = convertToInteger(lineScan.next());
-						}else{
-							throw new Exception("Invalid number of columns for CREATE event");
+						} else{
+							lineScan.close();
+							throw new Exception("Invalid number of columns " +
+							" for CREATE event");
 						}
 
 						int respSize = 0;
@@ -194,6 +213,7 @@ public class StandardEventsReader implements ExternalEventsReader {
 							stage = MessageRelayEvent.ABORTED;
 						}
 						else {
+							lineScan.close();
 							throw new SimError("Unknown action '" + action +
 								"' in external events");
 						}
@@ -211,9 +231,11 @@ public class StandardEventsReader implements ExternalEventsReader {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				lineScan.close();
 				throw new SimError("Can't parse external event " +
 						(eventsRead+1) + " from '" + line + "'", e);
 			}
+			lineScan.close();
 		}
 
 		return events;
@@ -272,7 +294,8 @@ public class StandardEventsReader implements ExternalEventsReader {
 			return (number * 1073741824);
 		}
 		else{
-			throw new NumberFormatException("Invalid number format for StandardEventsReader: ["+str+"]");
+			throw new NumberFormatException("Invalid number format for "+
+					"StandardEventsReader: ["+str+"]");
 		}
 	}
 

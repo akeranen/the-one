@@ -12,7 +12,6 @@ import report.Report;
 import ui.DTNSimUI;
 
 import java.io.StringBufferInputStream;
-import java.net.URLClassLoader;
 
 import static org.junit.Assert.*;
 

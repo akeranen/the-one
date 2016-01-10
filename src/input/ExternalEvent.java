@@ -14,6 +14,9 @@ import core.World;
  * an update request (and no further actions) to all hosts is needed.
  */
 public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
+	/** Default serialization UID */
+	private static final long serialVersionUID = 1L;
+	
 	/** Time of the event (simulated seconds) */
 	protected double time;
 

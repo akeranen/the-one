@@ -8,6 +8,8 @@ package input;
  * A message related external event
  */
 public abstract class MessageEvent extends ExternalEvent {
+	/** Default serialization UID */
+	private static final long serialVersionUID = 1L;
 	/** address of the node the message is from */
 	protected int fromAddr;
 	/** address of the node the message is to */

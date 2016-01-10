@@ -52,6 +52,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	private static Random rng;
 	protected DTNHost host = null;
 
+	/** Type of the interface; based on the name of the interface in settings */
 	protected String interfacetype;
 	protected List<Connection> connections; // connected hosts
 	private List<ConnectionListener> cListeners = null; // list of listeners

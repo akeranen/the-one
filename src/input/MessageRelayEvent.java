@@ -12,8 +12,11 @@ import core.World;
  * hosts (start and possible abort or delivery).
  */
 public class MessageRelayEvent extends MessageEvent {
+	/** Default serialization UID */
+	private static final long serialVersionUID = 1L;
+	
+	/** Relaying stage of the event */
 	private int stage;
-
 	/** Message relay stage constant for start of sending */
 	public static final int SENDING = 1;
 	/** Message relay stage constant for ready delivery */

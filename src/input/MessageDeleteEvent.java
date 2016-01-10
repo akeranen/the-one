@@ -16,6 +16,9 @@ import core.World;
  */
 
 public class MessageDeleteEvent extends MessageEvent {
+	/** Default serialization UID */
+	private static final long serialVersionUID = 1L;
+	
 	/** is the delete caused by a drop (not "normal" removing) */
 	private boolean drop;
 

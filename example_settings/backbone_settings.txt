@@ -1,0 +1,19 @@
+
+Scenario.name = backbone-interface-test
+
+
+# Backbone interface for groups 4, 5, and 6
+Group4.nrofInterfaces = 2
+Group4.interface2 = backboneInterface
+Group5.nrofInterfaces = 2
+Group5.interface2 = backboneInterface
+Group6.nrofInterfaces = 2
+Group6.interface2 = backboneInterface
+
+backboneInterface.type = StaticInterface
+backboneInterface.transmitSpeed = 10M
+
+# The events needed to create the backbone
+Events.nrof = 2
+Events2.class = ExternalEventsQueue
+Events2.filePath = ee/basic_backbone_events.txt

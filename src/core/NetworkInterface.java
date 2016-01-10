@@ -92,8 +92,8 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 
 		this.transmitRange = s.getDouble(TRANSMIT_RANGE_S);
 		this.transmitSpeed = s.getInt(TRANSMIT_SPEED_S);
-		ensurePositiveValue(transmitRange, TRANSMIT_RANGE_S);
-		ensurePositiveValue(transmitSpeed, TRANSMIT_SPEED_S);
+		s.ensurePositiveValue(transmitRange, TRANSMIT_RANGE_S);
+		s.ensurePositiveValue(transmitSpeed, TRANSMIT_SPEED_S);
 	}
 
 	/**
@@ -365,9 +365,9 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	}
 
 	/**
-	 * Returns true if the given NetworkInterface is connected to this host.
+	 * Returns true if the given NetworkInterface is connected to this interface.
 	 * @param netinterface The other NetworkInterface to check
-	 * @return True if the two hosts are connected
+	 * @return True if the two network interfaces are connected
 	 */
 	protected boolean isConnected(NetworkInterface netinterface) {
 		for (int i = 0; i < this.connections.size(); i++) {
@@ -377,19 +377,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Makes sure that a value is positive
-	 * @param value Value to check
-	 * @param settingName Name of the setting (for error's message)
-	 * @throws SettingsError if the value was not positive
-	 */
-	protected void ensurePositiveValue(double value, String settingName) {
-		if (value < 0) {
-			throw new SettingsError("Negative value (" + value +
-					") not accepted for setting " + settingName);
-		}
 	}
 
 	/**

@@ -19,9 +19,9 @@ import core.World;
 
 /**
  * <P>
- * Overlay grid of the world where each interface is put on a cell depending
- * of its location. This is used in cell-based optimization of connecting
- * the interfaces.</P>
+ * Simple connectivity check optimizer based on an overlay grid of the world 
+ * where each interface is put on a cell depending of its location. This is
+ * used in cell-based optimization of connecting the interfaces.</P>
  *
  * <P>The idea in short:<BR>
  * Instead of checking for every interface if some of the other interfaces are close

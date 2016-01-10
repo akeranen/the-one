@@ -14,3 +14,4 @@ doc/package-list
 .classpath
 .project
 /target/
+.settings/org.eclipse.*

@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-
 import core.Application;
 import core.Connection;
 import core.DTNHost;
@@ -21,10 +20,8 @@ import core.Settings;
 import core.SettingsError;
 import core.SimClock;
 import core.SimError;
-
 import routing.util.RoutingInfo;
 import util.Tuple;
-
 
 /**
  * Superclass for message routers.
@@ -120,9 +117,11 @@ public abstract class MessageRouter {
 		if (s.contains(B_SIZE_S)) {
 			this.bufferSize = s.getInt(B_SIZE_S);
 		}
+
 		if (s.contains(MSG_TTL_S)) {
 			this.msgTtl = s.getInt(MSG_TTL_S);
 		}
+
 		if (s.contains(SEND_QUEUE_MODE_S)) {
 
 			String mode = s.getSetting(SEND_QUEUE_MODE_S);

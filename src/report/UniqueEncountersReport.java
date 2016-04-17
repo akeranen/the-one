@@ -44,6 +44,11 @@ public class UniqueEncountersReport extends Report implements
 	@Override
 	public void done() {
 		int[] distribution = new int[1000];
+		
+		if (nodeRelationships == null) {
+			super.done();
+			return;
+		}
 
 		for (int i=0; i<nodeRelationships.length; i++) {
 			int count = 0;

@@ -73,6 +73,9 @@ public class CommunityBasedMovement extends MovementModel {
 	/* Probabilities of local or roaming epoch */
 	private static double p_l = 0.8, p_r = 0.2;
 	
+	/* Probability that a give epoch of node is a local one */
+	private static double pi_l;
+	
 	/* Selecting not the current community */
 	private int rnd_i;
 	private double [] not_selected_community = null;
@@ -105,6 +108,8 @@ public class CommunityBasedMovement extends MovementModel {
 			p_r = plr[1];
 		}
 		
+		/* Calculate the probability according to Markov Chain */
+		pi_l = (1 - p_r)/(2 - p_l - p_r);
 		
 		/* According to the setting parameters to initiate the coordinates information of each community */
 		assert (community_id.length == (this.community_x_number) * 
@@ -204,7 +209,7 @@ public class CommunityBasedMovement extends MovementModel {
 	 * @return Final destination 
 	 */
 	protected Coord local_roaming_selection() {
-		 if (((rng.nextDouble()) * 100) < (p_l * 100)) {
+		 if (((rng.nextDouble()) * 100) < (pi_l * 100)) {
 			 return randomCoord(selected_community);
 		 } else {
 			 

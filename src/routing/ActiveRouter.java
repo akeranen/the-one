@@ -652,7 +652,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		RoutingInfo top = super.getRoutingInfo();
 		if (energy != null) {
 			top.addMoreInfo(new RoutingInfo("Energy level: " +
-					String.format("%.2f mAh", energy.getEnergy() / 3600)));
+					String.format("%.2f", energy.getEnergy())));
 		}
 		return top;
 	}

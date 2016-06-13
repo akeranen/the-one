@@ -270,7 +270,7 @@ public class ExternalPathMovementReader {
 
 	/**
 	 * Sets normalizing of read values on/off. If on, values returned by
-	 * {@link #readNextMovements()} are decremented by minimum values of the
+	 * readNextMovements() are decremented by minimum values of the
 	 * offsets. Default is on (normalize).
 	 * @param normalize If true, normalizing is on (false -> off).
 	 */
@@ -333,7 +333,8 @@ public class ExternalPathMovementReader {
 	 * already been read previously it will not be read again and instead the
 	 * previous instance of the reader will be returned.
 	 *
-	 * @param filePath	path where the file is read from
+	 * @param traceFilePath path where the trace file is read from
+	 * @param activeFilePath path where the activity file is read from
 	 * @return instance of the reader that has loaded all the paths from the
 	 * 			given trace file.
 	 */

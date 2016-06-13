@@ -14,7 +14,7 @@ import core.VBRConnection;
  * A Network Interface that that takes in to account he distance from the
  * other (connected) interface when determining the capacity of the links.
  * The distance-dependent transmission speeds are given as comma-separated
- * values using setting {@link this#TRANSMIT_SPEEDS_S}.
+ * values using setting {@link #TRANSMIT_SPEEDS_S}.
  */
 public class DistanceCapacityInterface extends NetworkInterface {
 

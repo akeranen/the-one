@@ -68,7 +68,7 @@ public class MessageAvailabilityReport extends MessageLocationReport {
 
 	/**
 	 * Creates a snapshot of message availability
-	 * @param trackedHosts The list of hosts in the world
+	 * @param hosts The list of tracked hosts in the world
 	 */
 	@Override
 	protected void createSnapshot(List<DTNHost> hosts) {

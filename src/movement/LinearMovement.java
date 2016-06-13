@@ -71,7 +71,7 @@ public class LinearMovement extends MovementModel {
 
 	/**
 	 * Copy constructor.
-	 * @param lf The LinearFormation prototype
+	 * @param ilm The LinearFormation prototype
 	 */
 	public LinearMovement(LinearMovement ilm) {
 		super(ilm);

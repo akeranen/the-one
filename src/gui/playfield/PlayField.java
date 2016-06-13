@@ -157,10 +157,10 @@ public class PlayField extends JPanel {
 	}
 
 	/**
-	 * Enables or disables the automatic clearing of overlay graphics.
-	 * If enabled, overlay graphics are cleared every time a new graphics
-	 * object is set to be drawn.
-	 * @param clear Auto clear is enabled if this is true, disabled on false
+	 * Enables or disables the automatic focus on click.
+	 * If enabled, the node that is closest to the clicked location is 
+	 * set on focus
+	 * @param focus Auto focus is enabled if this is true, disabled on false
 	 */
 	public void setFocusOnClick(boolean focus) {
 		this.focusOnClick = focus;

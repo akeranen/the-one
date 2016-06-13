@@ -27,7 +27,7 @@ import util.Tuple;
  * Superclass for message routers.
  */
 public abstract class MessageRouter {
-	/** Message buffer size -setting id ({@value}). Integer value in bytes.*/
+	/** Message buffer size -setting id ({@value}). Long value in bytes.*/
 	public static final String B_SIZE_S = "bufferSize";
 	/**
 	 * Message TTL -setting id ({@value}). Value is in minutes and must be
@@ -94,7 +94,7 @@ public abstract class MessageRouter {
 	/** Host where this router belongs to */
 	private DTNHost host;
 	/** size of the buffer */
-	private int bufferSize;
+	private long bufferSize;
 	/** TTL for all messages */
 	protected int msgTtl;
 	/** Queue mode for sending messages */
@@ -115,7 +115,7 @@ public abstract class MessageRouter {
 		this.applications = new HashMap<String, Collection<Application>>();
 
 		if (s.contains(B_SIZE_S)) {
-			this.bufferSize = s.getInt(B_SIZE_S);
+			this.bufferSize = s.getLong(B_SIZE_S);
 		}
 
 		if (s.contains(MSG_TTL_S)) {
@@ -262,7 +262,7 @@ public abstract class MessageRouter {
 	 * Returns the size of the message buffer.
 	 * @return The size or Integer.MAX_VALUE if the size isn't defined.
 	 */
-	public int getBufferSize() {
+	public long getBufferSize() {
 		return this.bufferSize;
 	}
 
@@ -273,8 +273,8 @@ public abstract class MessageRouter {
 	 * @return The amount of free space (Integer.MAX_VALUE if the buffer
 	 * size isn't defined)
 	 */
-	public int getFreeBufferSize() {
-		int occupancy = 0;
+	public long getFreeBufferSize() {
+		long occupancy = 0;
 
 		if (this.getBufferSize() == Integer.MAX_VALUE) {
 			return Integer.MAX_VALUE;

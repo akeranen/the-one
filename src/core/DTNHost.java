@@ -243,9 +243,9 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @return Buffer occupancy percentage
 	 */
 	public double getBufferOccupancy() {
-		double bSize = router.getBufferSize();
-		double freeBuffer = router.getFreeBufferSize();
-		return 100*((bSize-freeBuffer)/bSize);
+		long bSize = router.getBufferSize();
+		long freeBuffer = router.getFreeBufferSize();
+		return 100*((bSize-freeBuffer)/(bSize * 1.0));
 	}
 
 	/**

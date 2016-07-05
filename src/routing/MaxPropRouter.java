@@ -259,7 +259,7 @@ public class MaxPropRouter extends ActiveRouter {
 
 	/**
 	 * Returns the next message that should be dropped, according to MaxProp's
-	 * message ordering scheme (see {@link MaxPropTupleComparator}).
+	 * message ordering scheme (see MaxPropTupleComparator).
 	 * @param excludeMsgBeingSent If true, excludes message(s) that are
 	 * being sent from the next-to-be-dropped check (i.e., if next message to
 	 * drop is being sent, the following message is returned)

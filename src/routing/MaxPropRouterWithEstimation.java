@@ -388,7 +388,7 @@ public class MaxPropRouterWithEstimation extends ActiveRouter {
 
 	/**
 	 * Returns the next message that should be dropped, according to MaxProp's
-	 * message ordering scheme (see {@link MaxPropTupleComparator}).
+	 * message ordering scheme (see MaxPropTupleComparator).
 	 * @param excludeMsgBeingSent If true, excludes message(s) that are
 	 * being sent from the next-to-be-dropped check (i.e., if next message to
 	 * drop is being sent, the following message is returned)
@@ -660,7 +660,7 @@ public class MaxPropRouterWithEstimation extends ActiveRouter {
 
 	/**
 	 * Message-Connection tuple comparator for the MaxProp routing
-	 * module. Uses {@link MaxPropComparator} on the messages of the tuples
+	 * module. Uses MaxPropComparator on the messages of the tuples
 	 * setting the "from" host for that message to be the one in the connection
 	 * tuple (i.e., path is calculated starting from the host on the other end
 	 * of the connection).

@@ -92,7 +92,7 @@ public class ProphetV2Router extends ActiveRouter {
 
 	/**
 	 * Copyc onstructor.
-	 * @param The router prototype where setting values are copied from
+	 * @param r The router prototype where setting values are copied from
 	 */
 	protected ProphetV2Router(ProphetV2Router r) {
 		super(r);

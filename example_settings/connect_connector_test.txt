@@ -1,0 +1,4 @@
+Report.nrofReports = 1
+Report.report1 = ConnectivityReportConnector
+ConnectivityReportConnector.address = localhost
+ConnectivityReportConnector.port = 50042

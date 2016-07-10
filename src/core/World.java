@@ -84,11 +84,9 @@ public class World {
 	 */
 	private void initSettings() {
 		Settings s = new Settings(OPTIMIZATION_SETTINGS_NS);
-		boolean randomizeUpdates = DEF_RANDOMIZE_UPDATES;
+		boolean randomizeUpdates = s.getBoolean(RANDOMIZE_UPDATES_S, 
+				DEF_RANDOMIZE_UPDATES);
 
-		if (s.contains(RANDOMIZE_UPDATES_S)) {
-			randomizeUpdates = s.getBoolean(RANDOMIZE_UPDATES_S);
-		}
 		simulateConOnce = s.getBoolean(SIMULATE_CON_ONCE_S, false);
 
 		if(randomizeUpdates) {

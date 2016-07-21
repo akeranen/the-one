@@ -511,29 +511,7 @@ public class Settings {
 	 */
 	private double parseDouble(String value, String setting) {
 		double number;
-		int multiplier = 1;
-
-		if (value.endsWith("k")) {
-			multiplier = 1000;
-		}
-		else if (value.endsWith("M")) {
-			multiplier = 1000000;
-		}
-		else if (value.endsWith("G")) {
-			multiplier = 1000000000;
-		}
-		else if (value.endsWith("kiB")) {
-			//2^10
-			multiplier = 1024;
-		}
-		else if (value.endsWith("MiB")) {
-			//2^20
-			multiplier = 1048576;
-		}
-		else if (value.endsWith("GiB")) {
-			//2^30
-			multiplier = 1073741824;
-		}
+		int multiplier = getMultiplier(value);
 
 		if (multiplier > 1) { // take the suffix away before parsing
 			value = value.replaceAll("[^\\d.]","");
@@ -547,6 +525,66 @@ public class Settings {
 					"' for '" + setting +"'\n" + e.getMessage());
 		}
 		return number;
+	}
+	
+	/**
+	 * Parses a long value from a String valued setting. Supports
+	 * kilo (k), mega (M) and giga (G) suffixes.
+	 * @param value String value to parse
+	 * @param setting The setting where this value was from (for error msgs)
+	 * @return The value as a long
+	 * @throws SettingsError if the value wasn't a numeric value
+	 * (or the suffix wasn't recognized)
+	 */
+	private long parseLong(String value, String setting) {
+		long number;
+		int multiplier = getMultiplier(value);
+
+		if (multiplier > 1) { // take the suffix away before parsing
+			value = value.replaceAll("[^\\d.]","");
+		}
+
+		try {
+			number = Long.parseLong(value) * multiplier;
+		} catch (NumberFormatException e) {
+			throw new SettingsError("Invalid numeric setting '" + value +
+					"' for '" + setting +"'\n" + e.getMessage());
+		}
+		return number;
+	}
+	
+	/**
+	 * Parses the multiplier suffix from numeric setting
+	 * @param value The setting value
+	 * @return The muliplier as a number
+	 */
+	private int getMultiplier(String value) {
+		value = value.trim();
+		
+		if (value.endsWith("k")) {
+			return 1000;
+		}
+		else if (value.endsWith("M")) {
+			return 1000000;
+		}
+		else if (value.endsWith("G")) {
+			return 1000000000;
+		}
+		else if (value.endsWith("kiB")) {
+			//2^10
+			return 1024;
+		}
+		else if (value.endsWith("MiB")) {
+			//2^20
+			return 1048576;
+		}
+		else if (value.endsWith("GiB")) {
+			//2^30
+			return 1073741824;
+		} else {
+			// no multiplier
+			return 1;
+		}
 	}
 
 	/**
@@ -677,6 +715,15 @@ public class Settings {
 	 */
 	public int getInt(String name) {
 		return convertToInt(getDouble(name), name);
+	}
+	
+	/**
+	 * Returns a long-valued setting
+	 * @param name Name of the setting to get
+	 * @return Value of the setting as an integer
+	 */
+	public long getLong(String name) {
+		return parseLong(getSetting(name), name);
 	}
 
 	/**

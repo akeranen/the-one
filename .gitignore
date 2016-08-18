@@ -15,3 +15,4 @@ doc/package-list
 .project
 /target/
 .settings/org.eclipse.*
+/bin/

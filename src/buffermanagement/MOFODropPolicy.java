@@ -27,7 +27,7 @@ public class MOFODropPolicy extends DropPolicy {
 	@Override
 	public boolean makeRoomForMessage(ActiveRouter router, Message incomingMessage) {
 		
-		int size = incomingMessage.getSize();
+		int size = incomingMessage == null ? 0 : incomingMessage.getSize();
 		
 		if (size > router.getBufferSize()) {
 			return false; // message too big for the buffer

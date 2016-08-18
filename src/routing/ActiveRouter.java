@@ -678,7 +678,8 @@ public abstract class ActiveRouter extends MessageRouter {
 		// Use the connection copy of the message to retrieve the 
 		// local copy of the message and then increment the forward count
 		Message msg = this.getMessage(con.getMessage().getId());
-		msg.incrementForwardCount();
+		if (msg != null)
+			msg.incrementForwardCount();
 	}
 
 	@Override

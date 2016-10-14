@@ -291,7 +291,7 @@ public abstract class MessageRouter {
 	 * Returns the host this router is in
 	 * @return The host object
 	 */
-	protected DTNHost getHost() {
+	public DTNHost getHost() {
 		return this.host;
 	}
 

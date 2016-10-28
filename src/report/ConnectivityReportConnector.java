@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import core.Connection;
 import core.ConnectionListener;
 import core.DTNHost;
 import core.Settings;
@@ -19,7 +20,8 @@ import core.SimError;
  * Link connectivity report connector that sends simulated connection events
  * to the specified remote server. The server needs to listen for TCP 
  * connections on the defined address and port. Report connector sends a 
- * line based stream of time stamped ONE connectivity events. 
+ * line based stream of time stamped ONE connectivity events, with 
+ * connection speed as last/extra value, formatted with {@link #format(double)}. 
  */
 public class ConnectivityReportConnector extends Report
 	implements ConnectionListener {
@@ -75,7 +77,19 @@ public class ConnectivityReportConnector extends Report
 	}
 	
 	public void hostsConnected(DTNHost h1, DTNHost h2) {
-		write(createTimeStamp() + " CONN " + connectionString(h1, h2) + " up");
+		Connection con = null;
+		
+		/* look for the corresponding connection object 
+		 * TODO: extend interface to include the connection object? */
+		for (Connection c : h1.getConnections()) {
+			if (c.getOtherNode(h1).equals(h2)) {
+				con = c;
+				break;
+			}
+		}
+		
+		write(createTimeStamp() + " CONN " + connectionString(h1, h2) + 
+				" up " + format(con.getSpeed()));
 	}
 
 	public void hostsDisconnected(DTNHost h1, DTNHost h2) {

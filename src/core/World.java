@@ -69,7 +69,7 @@ public class World {
 	private boolean simulateConOnce;
 	
 	private boolean realtimeSimulation;
-	private long lastUpdateRealtime;
+	private long simStartRealtime;
 
 	/**
 	 * Constructor.
@@ -89,7 +89,7 @@ public class World {
 		this.scheduledUpdates = new ScheduledUpdatesQueue();
 		this.isCancelled = false;
 
-		this.lastUpdateRealtime = System.currentTimeMillis();
+		this.simStartRealtime = -1;
 		
 		setNextEventQueue();
 		initSettings();
@@ -167,8 +167,13 @@ public class World {
 		double runUntil = SimClock.getTime() + this.updateInterval;
 		
 		if (realtimeSimulation) {
-			long sleepTime = (long)(this.updateInterval * 1000 - 
-					(System.currentTimeMillis() - this.lastUpdateRealtime));
+			if (this.simStartRealtime < 0) {
+				/* first update round */
+				this.simStartRealtime = System.currentTimeMillis();
+			}
+
+			long sleepTime = (long) (SimClock.getTime() * 1000 
+					- (System.currentTimeMillis() - this.simStartRealtime));
 			if (sleepTime > 0) {
 				try {
 					Thread.sleep(sleepTime);
@@ -178,8 +183,6 @@ public class World {
 			}
 		}
 		
-		lastUpdateRealtime = System.currentTimeMillis();
-
 		setNextEventQueue();
 
 		/* process all events that are due until next interval update */

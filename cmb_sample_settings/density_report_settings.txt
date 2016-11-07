@@ -1,0 +1,9 @@
+Report.nrofReports = 3
+Report.report3 = NodeDensityReport
+
+Scenario.endTime = 10000
+NodeDensityReport.sampleInterval = 100
+NodeDensityReport.outputGnuplot = true
+NodeDensityReport.xCount = 100
+NodeDensityReport.yCount = 100
+NodeDensityReport.onlyAverage = true

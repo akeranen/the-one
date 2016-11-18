@@ -568,7 +568,11 @@ public abstract class MessageRouter {
 		switch (sendQueueMode) {
 		case Q_MODE_RANDOM:
 			/* return randomly (enough) but consistently -1, 0 or 1 */
-			return (m1.hashCode()/2 + m2.hashCode()/2) % 3 - 1;
+			int hash_diff = m1.hashCode() - m2.hashCode();
+			if (hash_diff == 0) {
+				return 0;
+			}
+			return (hash_diff < 0 ? -1 : 1);
 		case Q_MODE_FIFO:
 			double diff = m1.getReceiveTime() - m2.getReceiveTime();
 			if (diff == 0) {

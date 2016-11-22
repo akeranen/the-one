@@ -38,6 +38,8 @@ extends SamplingReport {
 	private final int[] sampleCounts;
 
 	private final int bucketCount;
+
+	private final boolean outputRawData;
 	//========================================================================//
 
 
@@ -72,10 +74,24 @@ extends SamplingReport {
 				= (int) Math.ceil(Math.sqrt(nodeCount * numSamples));
 		this.bucketCount
 				= settings.getInt(BUCKET_COUNT_SETTING, defaultBucketCount);
+
+		this.outputRawData = settings.getBoolean("outputRawData", false);
 	}
 
 	@Override
 	public final void done() {
+		if (this.outputRawData) {
+			for (int host = 0; host < this.samples.length; host++) {
+				final int sampleCount = this.sampleCounts[host];
+				for (int sample = 0; sample < sampleCount; sample++) {
+					final double jumpLength = this.samples[host][sample];
+					super.write("" + jumpLength);
+				}
+			}
+			super.done();
+			return;
+		}
+
 		final double maxJumpLength = maxJump(this.samples, this.sampleCounts);
 		// Extend the range 1% beyond the maximum value so that the max value
 		// falls into the last bucket.

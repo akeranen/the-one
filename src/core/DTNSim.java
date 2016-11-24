@@ -74,10 +74,17 @@ public class DTNSim {
 			confFiles = args;
 		}
 		else {
+			// No settings file provided, using default
 			confFiles = new String[] { DEF_SETTINGS_FILE };
-			System.out.println("No settings file provided. Using default [" + DEF_SETTINGS_FILE + "].");
 		}
 
+		boolean use_default = false;
+		for (int i = firstConfIndex; i < confFiles.length; ++i) {
+			if (confFiles[i].equals(DEF_SETTINGS_FILE)) {
+				use_default = true;
+				break;
+			}
+		}
 		initSettings(confFiles, firstConfIndex);
 
 		if (batchMode) {

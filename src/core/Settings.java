@@ -18,11 +18,7 @@ import util.Range;
 
 /**
  * Interface for simulation settings stored in setting file(s). Settings
- * class should be initialized before using (with {@link #init(String)}). If
- * Settings isn't initialized, only settings in {@link #DEF_SETTINGS_FILE}
- * are read. Normally, after initialization, settings in the given file can
- * override any settings defined in the default settings file and/or define
- * new settings.
+ * class should be initialized before using (with {@link #init(String)}).
  * <P> All settings are key-value pairs. For parsing details see
  * {@link java.util.Properties#getProperty(String)}. Value can be a single
  * value or comma separated list of values. With CSV values, CSV methods
@@ -35,8 +31,6 @@ import util.Range;
 public class Settings {
 	/** properties object where the setting files are read into */
 	protected static Properties props;
-	/** file name of the default settings file ({@value}) */
-	public static final String DEF_SETTINGS_FILE ="default_settings.txt";
 
 	/**
 	 * Setting to define the file name where all read settings are written
@@ -238,7 +232,6 @@ public class Settings {
 	 * Initializes the settings all Settings objects will use. This should be
 	 * called before any setting requests. Subsequent calls replace all
 	 * old settings and then Settings contains only the new settings.
-	 * The file {@link #DEF_SETTINGS_FILE}, if exists, is always read.
 	 * @param propFile Path to the property file where additional settings
 	 * are read from or null if no additional settings files are needed.
 	 * @throws SettingsError If loading the settings file(s) didn't succeed
@@ -246,14 +239,7 @@ public class Settings {
 	public static void init(String propFile) throws SettingsError {
 		String outFile;
 		try {
-			if (new File(DEF_SETTINGS_FILE).exists()) {
-				Properties defProperties = new Properties();
-				defProperties.load(new FileInputStream(DEF_SETTINGS_FILE));
-				props = new Properties(defProperties);
-			}
-			else {
-				props = new Properties();
-			}
+			props = new Properties();
 			if (propFile != null) {
 				props.load(new FileInputStream(propFile));
 			}

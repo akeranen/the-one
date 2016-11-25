@@ -8,11 +8,22 @@ import core.SimScenario;
 import java.util.List;
 
 /**
- * <p>Calculates the jump size probability density function. The simulation is
- * sampled at fixed intervals (defined by the
+ * <p>Calculates the jump size probability density function. The measure is
+ * widely used for characterising human mobility, e.g., in Marta C. Gonzaléz,
+ * César A. Hidalgo & Albert-László Barabási, "Understanding individual human
+ * mobility patterns", Nature. 5. June 2008.</p>
+ *
+ *
+ * <p>The simulation is sampled at fixed intervals (defined by the
  * '{@link SamplingReport#SAMPLE_INTERVAL_SETTING}' setting), and the
  * distance from the previous sample location is calculated for every active
- * node.</p>
+ * node. I.e., the result is the distribution of displacements at the sampling
+ * interval</p>
+ *
+ * <p>Note that picking too short sample interval will skew the distribution
+ * since it limits the maximum observable displacement. For human mobility,
+ * the sample interval should be in the order of a few hours to get prevent
+ * skewing.</p>
  *
  * <p>Output line format is: "jump_length probability sample_count"</p>
  *

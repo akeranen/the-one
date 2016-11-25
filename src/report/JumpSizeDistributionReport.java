@@ -39,6 +39,10 @@ extends SamplingReport {
 	 * the probability density function ({@value}). Default is the square
 	 * root of the sample count.*/
 	public static final String BUCKET_COUNT_SETTING = "bucketCount";
+
+	/** Set to {@code true} to output the raw jump sizes instead of the
+	 * distributions ({@value}).*/
+	public static final String RAW_OUTPUT_SETTING = "outputRawData";
 	//========================================================================//
 
 	//========================================================================//
@@ -86,7 +90,7 @@ extends SamplingReport {
 		this.bucketCount
 				= settings.getInt(BUCKET_COUNT_SETTING, defaultBucketCount);
 
-		this.outputRawData = settings.getBoolean("outputRawData", false);
+		this.outputRawData = settings.getBoolean(RAW_OUTPUT_SETTING, false);
 	}
 
 	@Override

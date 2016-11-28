@@ -85,6 +85,8 @@ public class DTNSim {
 				break;
 			}
 		}
+		if (!use_default)
+			System.out.println("Compatibility warning: starting simulation without loading '" + DEF_SETTINGS_FILE + "'.");
 		initSettings(confFiles, firstConfIndex);
 
 		if (batchMode) {

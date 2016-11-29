@@ -7,7 +7,7 @@ RUN mkdir /home/one \
 
 RUN  curl -sL https://codeload.github.com/akeranen/the-one/legacy.tar.gz/master \
    | tar xvz \
-  && mv akeranen-the-one-cc4cac7 /home/one/the-one_1.6.0 \
+  && mv akeranen-the-one-* /home/one/the-one_1.6.0 \
   && cd /home/one/the-one_1.6.0 \
   && ./compile.sh \
   && chown -R one:one /home/one
@@ -15,4 +15,4 @@ RUN  curl -sL https://codeload.github.com/akeranen/the-one/legacy.tar.gz/master 
 WORKDIR /home/one/the-one_1.6.0
 USER one
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["one.sh"]

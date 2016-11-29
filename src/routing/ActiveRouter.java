@@ -90,7 +90,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Called when a connection's state changes. If energy modeling is enabled,
 	 * and a new connection is created to this node, reduces the energy for the
 	 * device discovery (scan response) amount
-	 * @param @con The connection whose state changed
+	 * @param con The connection whose state changed
 	 */
 	@Override
 	public void changedConnection(Connection con) {
@@ -270,7 +270,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return false; // message too big for the buffer
 		}
 
-		int freeBuffer = this.getFreeBufferSize();
+		long freeBuffer = this.getFreeBufferSize();
 		/* delete messages from the buffer until there's enough space */
 		while (freeBuffer < size) {
 			Message m = getNextMessageToRemove(true); // don't remove msgs being sent
@@ -652,7 +652,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		RoutingInfo top = super.getRoutingInfo();
 		if (energy != null) {
 			top.addMoreInfo(new RoutingInfo("Energy level: " +
-					String.format("%.2f mAh", energy.getEnergy() / 3600)));
+					String.format("%.2f", energy.getEnergy())));
 		}
 		return top;
 	}

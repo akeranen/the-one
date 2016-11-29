@@ -11,11 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-
-import routing.util.RoutingInfo;
-
-import util.Tuple;
-
 import core.Application;
 import core.Connection;
 import core.DTNHost;
@@ -25,12 +20,14 @@ import core.Settings;
 import core.SettingsError;
 import core.SimClock;
 import core.SimError;
+import routing.util.RoutingInfo;
+import util.Tuple;
 
 /**
  * Superclass for message routers.
  */
 public abstract class MessageRouter {
-	/** Message buffer size -setting id ({@value}). Integer value in bytes.*/
+	/** Message buffer size -setting id ({@value}). Long value in bytes.*/
 	public static final String B_SIZE_S = "bufferSize";
 	/**
 	 * Message TTL -setting id ({@value}). Value is in minutes and must be
@@ -54,6 +51,11 @@ public abstract class MessageRouter {
 	public static final int Q_MODE_RANDOM = 1;
 	/** Setting value for FIFO queue mode */
 	public static final int Q_MODE_FIFO = 2;
+
+	/** Setting string for random queue mode */
+	public static final String STR_Q_MODE_RANDOM = "RANDOM";
+	/** Setting string for FIFO queue mode */
+	public static final String STR_Q_MODE_FIFO = "FIFO";
 
 	/* Return values when asking to start a transmission:
 	 * RCV_OK (0) means that the host accepts the message and transfer started,
@@ -92,7 +94,7 @@ public abstract class MessageRouter {
 	/** Host where this router belongs to */
 	private DTNHost host;
 	/** size of the buffer */
-	private int bufferSize;
+	private long bufferSize;
 	/** TTL for all messages */
 	protected int msgTtl;
 	/** Queue mode for sending messages */
@@ -113,22 +115,32 @@ public abstract class MessageRouter {
 		this.applications = new HashMap<String, Collection<Application>>();
 
 		if (s.contains(B_SIZE_S)) {
-			this.bufferSize = s.getInt(B_SIZE_S);
+			this.bufferSize = s.getLong(B_SIZE_S);
 		}
+
 		if (s.contains(MSG_TTL_S)) {
 			this.msgTtl = s.getInt(MSG_TTL_S);
 		}
+
 		if (s.contains(SEND_QUEUE_MODE_S)) {
-			this.sendQueueMode = s.getInt(SEND_QUEUE_MODE_S);
-			if (sendQueueMode < 1 || sendQueueMode > 2) {
-				throw new SettingsError("Invalid value for " +
-						s.getFullPropertyName(SEND_QUEUE_MODE_S));
+
+			String mode = s.getSetting(SEND_QUEUE_MODE_S);
+
+			if (mode.trim().toUpperCase().equals(STR_Q_MODE_FIFO)) {
+				this.sendQueueMode = Q_MODE_FIFO;
+			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_RANDOM)){
+				this.sendQueueMode = Q_MODE_RANDOM;
+			} else {
+				this.sendQueueMode = s.getInt(SEND_QUEUE_MODE_S);
+				if (sendQueueMode < 1 || sendQueueMode > 2) {
+					throw new SettingsError("Invalid value for " +
+							s.getFullPropertyName(SEND_QUEUE_MODE_S));
+				}
 			}
 		}
 		else {
 			sendQueueMode = Q_MODE_RANDOM;
 		}
-
 	}
 
 	/**
@@ -250,7 +262,7 @@ public abstract class MessageRouter {
 	 * Returns the size of the message buffer.
 	 * @return The size or Integer.MAX_VALUE if the size isn't defined.
 	 */
-	public int getBufferSize() {
+	public long getBufferSize() {
 		return this.bufferSize;
 	}
 
@@ -261,8 +273,8 @@ public abstract class MessageRouter {
 	 * @return The amount of free space (Integer.MAX_VALUE if the buffer
 	 * size isn't defined)
 	 */
-	public int getFreeBufferSize() {
-		int occupancy = 0;
+	public long getFreeBufferSize() {
+		long occupancy = 0;
 
 		if (this.getBufferSize() == Integer.MAX_VALUE) {
 			return Integer.MAX_VALUE;

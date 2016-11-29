@@ -259,7 +259,7 @@ public class MaxPropRouter extends ActiveRouter {
 
 	/**
 	 * Returns the next message that should be dropped, according to MaxProp's
-	 * message ordering scheme (see {@link MaxPropTupleComparator}).
+	 * message ordering scheme (see MaxPropTupleComparator).
 	 * @param excludeMsgBeingSent If true, excludes message(s) that are
 	 * being sent from the next-to-be-dropped check (i.e., if next message to
 	 * drop is being sent, the following message is returned)
@@ -395,9 +395,9 @@ public class MaxPropRouter extends ActiveRouter {
 	 */
 	public int calcThreshold() {
 		/* b, x and p refer to respective variables in the paper's equations */
-		int b = this.getBufferSize();
-		int x = this.avgTransferredBytes;
-		int p;
+		long b = this.getBufferSize();
+		long x = this.avgTransferredBytes;
+		long p;
 
 		if (x == 0) {
 			/* can't calc the threshold because there's no transfer data */

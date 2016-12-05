@@ -567,8 +567,8 @@ public abstract class MessageRouter {
 	protected int compareByQueueMode(Message m1, Message m2) {
 		switch (sendQueueMode) {
 		case Q_MODE_RANDOM:
-			/* return randomly (enough) but consistently -1, 0 or 1 */
-			return (m1.hashCode()/2 + m2.hashCode()/2) % 3 - 1;
+			// return randomly (enough) but consistently
+			return Integer.compare(m1.hashCode(), m2.hashCode());
 		case Q_MODE_FIFO:
 			double diff = m1.getReceiveTime() - m2.getReceiveTime();
 			if (diff == 0) {

@@ -15,4 +15,4 @@ RUN  curl -sL https://codeload.github.com/akeranen/the-one/legacy.tar.gz/master 
 WORKDIR /home/one/the-one_1.6.0
 USER one
 
-ENTRYPOINT ["one.sh"]
+ENTRYPOINT ["./one.sh"]

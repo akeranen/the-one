@@ -189,6 +189,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		retVal = con.startTransfer(getHost(), m);
 		if (retVal == RCV_OK) { // started transfer
 			addToSendingConnections(con);
+			m.incrementForwardingCounter();
 		}
 		else if (deleteDelivered && retVal == DENIED_OLD &&
 				m.getTo() == con.getOtherNode(this.getHost())) {
@@ -459,6 +460,28 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		return tryMessagesToConnections(messages, connections);
 	}
+
+	/**
+         * Tries to send selected messages that this router is carrying to all
+         * connections this node has. Messages are identified based on 
+	 * selection of routing protocol - epidemic or ImprovedProphet. Messages are 
+	 * ordered using the {@link MessageRouter#sortByQueueMode(List)}. See
+         * {@link #tryMessagesToConnections(List, List)} for sending details.
+         * @return The connections that started a transfer or null if no connection
+         * accepted a message.
+         */
+
+        protected Connection trySelectedMessagesToAllConnections(List<Message> messages) {
+                List<Connection> connections = getConnections();
+                if (connections.size() == 0 || messages.size() == 0) {
+                        return null;
+                }
+
+                this.sortByQueueMode(messages);
+
+                return tryMessagesToConnections(messages, connections);
+        }
+	
 
 	/**
 	 * Exchanges deliverable (to final recipient) messages between this host

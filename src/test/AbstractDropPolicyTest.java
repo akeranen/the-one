@@ -1,7 +1,15 @@
+/*
+ * Copyright 2016, Michael D. Silva (micdoug.silva@gmail.com)
+ * Released under GPLv3. See LICENSE.txt for details.
+ */
+
 package test;
 
 import routing.EpidemicRouter;
 
+/**
+ * Basic tests of the message drop policies implementations.
+ */
 public class AbstractDropPolicyTest extends AbstractRouterTest {
 	
 	private String dropPolicyClass;

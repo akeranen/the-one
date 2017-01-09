@@ -1,19 +1,8 @@
 /*
- * Copyright (C) 2016 Michael Dougras da Silva
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2016, Michael D. Silva (micdoug.silva@gmail.com)
+ * Released under GPLv3. See LICENSE.txt for details.
  */
+
 package routing;
 
 import core.DTNHost;
@@ -22,11 +11,13 @@ import core.MessageListener;
 import core.Settings;
 import java.util.List;
 import routing.centrality.Centrality;
+import routing.centrality.ReportCentrality;
+import routing.community.ReportCommunity;
 
 /**
  * BubbleRap routing implementation.
  */
-public class BubbleRapRouter extends CommunityAndRankRouter {
+public class BubbleRapRouter extends CommunityAndRankRouter implements ReportCentrality, ReportCommunity {
 
     /**
      * Base namespace for configuration parameters.
@@ -96,7 +87,18 @@ public class BubbleRapRouter extends CommunityAndRankRouter {
         this.centrality.setHost(host);
         this.comdetect.setHost(host);
     }
-    
+
+    // Report interface implementation
+
+    public double getLocalCentrality()
+    {
+        return this.getLocalRank();
+    }
+
+    public double getGlobalCentrality()
+    { 
+        return this.getGlobalRank();
+    }
 }
 
 

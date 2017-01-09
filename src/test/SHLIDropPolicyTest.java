@@ -1,3 +1,8 @@
+/*
+ * Copyright 2016, Michael D. Silva (micdoug.silva@gmail.com)
+ * Released under GPLv3. See LICENSE.txt for details.
+ */
+
 package test;
 
 import buffermanagement.PassiveDropPolicy;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Aalto University, ComNet
+ * Copyright 2016, Michael D. Silva (micdoug.silva@gmail.com)
  * Released under GPLv3. See LICENSE.txt for details.
  */
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Aalto University, ComNet
+ * Copyright 2016, Michael D. Silva (micdoug.silva@gmail.com)
  * Released under GPLv3. See LICENSE.txt for details.
  */
 
@@ -11,7 +11,7 @@ import routing.ActiveRouter;
 
 
 /**
- * Defines the basic structure for implementing a message drop policy. These policies can be used by the hosts
+ * Defines the basic structure for implementing a message drop policy. A message drop policy is used by the hosts
  * when their buffers haven't enough space to receive an incoming message.
  */
 public abstract class DropPolicy {
@@ -29,7 +29,7 @@ public abstract class DropPolicy {
 	
 	/**
 	 * Constructor with the signature required to be instantiated by the simulator.
-	 * @param s
+	 * @param s Settings applied
 	 */
 	public DropPolicy(Settings s) {
 		if (s.contains(DROP_MSG_BEING_SENT)) {

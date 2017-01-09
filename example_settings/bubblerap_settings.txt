@@ -1,0 +1,15 @@
+Scenario.nrofHostGroups = 1
+Group1.router = BubbleRapRouter
+Group1.nrofHosts = 126
+
+# Configure the community detection algorithm
+BubbleRapRouter.communityAlg = DistributedKCliqueCommunityDetection
+BubbleRapRouter.k = 3
+BubbleRapRouter.familiarThreshold = 3600
+
+# Configure the centrality algorithm
+BubbleRapRouter.centralityAlg = CWindowCentrality
+BubbleRapRouter.timeWindow = 86400
+
+Report.report1 = CommunityReport
+Report.report2 = CentralityReport

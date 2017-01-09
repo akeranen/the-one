@@ -1,0 +1,4 @@
+# Configure the drop policy used
+Group.dropPolicy = MOFODropPolicy
+# Defines if messages being sent can be dropped, the default value is true
+Group.dropMsgBeingSent = false

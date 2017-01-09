@@ -7,8 +7,8 @@ Scenario.name = default_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
-Scenario.endTime = 10000000
-Scenario.endTime = 43200
+Scenario.endTime = 259200
+#Scenario.endTime = 43200
 
 ## Interface-specific settings:
 # type : which interface class the interface belongs to
@@ -117,7 +117,7 @@ Group6.nrofHosts = 2
 # How many event generators
 Events.nrof = 1
 # Class of the first event generator
-Events1.class = MessagePerNodeEventGenerator
+Events1.class = MessageEventGenerator
 # (following settings are specific for the MessageEventGenerator class)
 # Creation interval in seconds (one new message every 25 to 35 seconds)
 Events1.interval = 25,35

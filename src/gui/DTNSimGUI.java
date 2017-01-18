@@ -330,7 +330,7 @@ public class DTNSimGUI extends DTNSimUI {
 		}
 
 		public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
-			guiControls.changeZoom(e.getWheelRotation());
+			guiControls.changeZoom(-e.getWheelRotation());
 		}
 	}
 

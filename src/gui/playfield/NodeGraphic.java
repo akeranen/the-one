@@ -111,6 +111,12 @@ public class NodeGraphic extends PlayFieldGraphic {
 			}
 		}
 
+		if (drawNodeName) {
+			g2.setColor(hostNameColor);
+			// Draw node's address next to it
+			g2.drawString(node.toString(), scale(loc.getX()),
+					scale(loc.getY()));
+		}
 
 		/* draw node rectangle */
 		g2.setColor(hostColor);
@@ -120,13 +126,6 @@ public class NodeGraphic extends PlayFieldGraphic {
 		if (isHighlighted()) {
 			g2.setColor(highlightedNodeColor);
 			g2.fillRect(scale(loc.getX()) - 3 ,scale(loc.getY()) - 3, 6, 6);
-		}
-
-		if (drawNodeName) {
-			g2.setColor(hostNameColor);
-			// Draw node's address next to it
-			g2.drawString(node.toString(), scale(loc.getX()),
-					scale(loc.getY()));
 		}
 	}
 

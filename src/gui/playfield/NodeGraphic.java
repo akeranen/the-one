@@ -94,6 +94,12 @@ public class NodeGraphic extends PlayFieldGraphic {
 			conList.addAll(node.getConnections());
 			for (Connection c : conList) {
 				DTNHost otherNode = c.getOtherNode(node);
+				if(c != null) {
+					otherNode = c.getOtherNode(node);
+				}
+				else {
+					continue; /* disconnected before drawn */
+				}
 				Coord c2;
 
 				if (otherNode == null) {

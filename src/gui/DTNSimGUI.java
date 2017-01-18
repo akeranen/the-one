@@ -235,10 +235,11 @@ public class DTNSimGUI extends DTNSimUI {
 
     /**
      * Sets a node's graphical presentation in the center of the playfield view
+	 * EDIT: does not center any longer, only displays information
      * @param host The node to center
      */
     public void setFocus(DTNHost host) {
-	centerViewAt(host.getLocation());
+	//centerViewAt(host.getLocation());
 	infoPanel.showInfo(host);
 	showPath(host.getPath()); // show path on the playfield
     }

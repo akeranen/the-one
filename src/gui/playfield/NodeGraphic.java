@@ -93,7 +93,7 @@ public class NodeGraphic extends PlayFieldGraphic {
 			// create a copy to prevent concurrent modification exceptions
 			conList.addAll(node.getConnections());
 			for (Connection c : conList) {
-				DTNHost otherNode = c.getOtherNode(node);
+				DTNHost otherNode = null;
 				if(c != null) {
 					otherNode = c.getOtherNode(node);
 				}

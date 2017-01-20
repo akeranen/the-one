@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.LinkedList;
 
 import javax.swing.JPanel;
 
@@ -50,6 +51,8 @@ public class PlayField extends JPanel {
 	private AffineTransform curTransform;
 	private double underlayImgDx;
 	private double underlayImgDy;
+	
+	private List<DTNHost> highlightedHosts;
 
 	/**
 	 * Creates a playfield
@@ -69,11 +72,15 @@ public class PlayField extends JPanel {
         this.imageTransform = null;
         this.autoClearOverlay = true;
 
+		highlightedHosts = new LinkedList<DTNHost>();
+		
         this.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (focusOnClick) {
-					focusClosestNode(e.getX(), e.getY());
+				if(e.getButton() == MouseEvent.BUTTON1) { //only on leftclick
+					if (focusOnClick) {
+						focusClosestNode(e.getX(), e.getY());
+					}
 				}
 			}
 		});
@@ -194,6 +201,11 @@ public class PlayField extends JPanel {
 		for (DTNHost h : w.getHosts()) {
 			new NodeGraphic(h).draw(g2);
 		}
+		
+		// draw highlited hosts
+		for (DTNHost h : highlightedHosts) {
+			new NodeGraphic(h).draw(g2);
+		}
 
 		// draw overlay graphics
 		for (int i=0, n=overlayGraphics.size(); i<n; i++) {
@@ -304,6 +316,9 @@ public class PlayField extends JPanel {
 				closestDist = dist;
 			}
 		}
+		highlightedHosts.clear();
+		highlightedHosts.add(closest);
+		NodeGraphic.setHighlightedNodes(highlightedHosts);
 
 		gui.setFocus(closest);
 	}

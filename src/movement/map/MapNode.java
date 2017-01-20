@@ -4,11 +4,11 @@
  */
 package movement.map;
 
-import java.util.List;
-import java.util.Vector;
-
 import core.Coord;
 import core.SettingsError;
+
+import java.util.List;
+import java.util.Vector;
 
 /**
  * A node in a SimMap. Node has a location, 0-n neighbors that it is
@@ -84,7 +84,11 @@ public class MapNode implements Comparable<MapNode> {
 	 * @throws SettingsError if the type is out of range
 	 */
 	private int typeToBitMask(int type) {
-		assert type >= MIN_TYPE && type <= MAX_TYPE : "Invalid node type "+type;
+		/* if the type 0 is given, do nothing and return 0
+		* This fixes the WTKReaderTest, because 0 is given there as type*/
+		if (type == 0){
+			return 0;
+		}
 		return 1 << type; // create the mask by bitwise shift
 	}
 

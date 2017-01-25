@@ -1,10 +1,4 @@
-# This template uses the java:8 docker image because there isn't any
-# official Gradle image at this moment
-#
-# This is the Gradle build system for JVM applications
-# https://gradle.org/
-# https://github.com/gradle/gradle
-image: java:8
+image: frekele/gradle:latest
 
 # Make the gradle wrapper executable. This essentially downloads a copy of
 # Gradle to build the project with.
@@ -31,4 +25,4 @@ build:
 test:
   stage: test
   script:
-- ./gradlew -g /cache/.gradle check
+    - ./gradlew -g /cache/.gradle check

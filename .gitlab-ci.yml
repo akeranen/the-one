@@ -54,6 +54,12 @@ build:
     paths:
     - lib/
     - target/
+    - data/
+    - ee/
+    - example_settings/
+    - reports/
+    - toolkit/
+    - wdm_settings/
   allow_failure: false
 
 # Use the generated build output to run the tests.

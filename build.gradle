@@ -32,6 +32,8 @@ sourceSets {
         java {
             srcDirs = ["src/applications", "src/core", "src/gui", "src/input", "src/interfaces", "src/main", "src/movement", "src/report", "src/routing", "src/ui", "src/util"]
         }
+        output.resourcesDir = 'target'
+        output.classesDir   = 'target'
     }
     test {
         java {
@@ -42,6 +44,10 @@ sourceSets {
 
 jar {
     destinationDir = new File('lib')
+    manifest {
+        attributes 'Main-Class': 'core.DTNSim'
+        attributes 'Class-Path': "ECLA.jar DTNConsoleConnection.jar ../target"
+    }
 }
 
 dependencies {
@@ -51,4 +57,13 @@ dependencies {
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
+}
+
+task copyGui(type: Copy){
+    from 'src/gui/buttonGraphics'
+    into 'target/gui/buttonGraphics'
+}
+
+clean.doFirst{
+    delete 'target'
 }

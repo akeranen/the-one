@@ -49,10 +49,10 @@ sonarqube_preview:
 build:
   stage: build
   script:
-    - ./gradlew -g /cache/.gradle clean assemble
+    - ./gradlew -g /cache/.gradle clean assemble copyGui
   artifacts:
     paths:
-    - lib/Simulator.jar
+    - lib/
     - target/
   allow_failure: false
 

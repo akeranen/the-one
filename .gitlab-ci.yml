@@ -76,5 +76,6 @@ test:
   script:
     - ./gradlew -g /cache/.gradle check
   artifacts:
+    when: on_failure
     paths:
     - build/reports/

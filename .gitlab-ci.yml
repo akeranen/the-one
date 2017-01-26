@@ -15,6 +15,37 @@ before_script:
 # cleaning removes reminants of any cached builds.
 # The assemble task actually builds the project.
 # If it fails here, the tests can't run.
+stages:
+  - analyze
+  - build
+  - test
+   
+sonarqube:
+  stage: analyze
+  only:
+    - master
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.projectVersion=$CI_BUILD_REF
+
+sonarqube_manual:
+  stage: analyze
+  when: manual
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator
+  
+sonarqube_preview:
+  stage: analyze
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.analysis.mode=preview -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.issuesReport.console.enable=true -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref=$CI_BUILD_REF_NAME
+  allow_failure: true
+
+
 build:
   stage: build
   script:

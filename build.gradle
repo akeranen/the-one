@@ -1,9 +1,45 @@
-apply plugin: 'java'
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.3'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1"
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
 
-repositories {
-    // Use jcenter for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+plugins {
+    id "org.sonarqube" version "2.2.1"
+}
+apply plugin: 'java'
+apply plugin: "org.sonarqube"
+
+allprojects {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+}
+
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/applications", "src/core", "src/gui", "src/input", "src/interfaces", "src/main", "src/movement", "src/report", "src/routing", "src/ui", "src/util"]
+        }
+    }
+    test {
+        java {
+            srcDirs = ["src/test"]
+        }
+    }
 }
 
 dependencies {
@@ -13,4 +49,3 @@ dependencies {
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
 }
-

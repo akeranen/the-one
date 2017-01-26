@@ -57,9 +57,17 @@ build:
     - data/
     - ee/
     - example_settings/
-    - reports/
     - toolkit/
     - wdm_settings/
+    - one.bat
+    - one.sh
+    - LICENSE.txt
+    - README.md
+    - README.txt
+    - default_settings
+    - CONTRIBUTING.md
+    - HISTORY.txt
+    
   allow_failure: false
 
 # Use the generated build output to run the tests.

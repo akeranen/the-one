@@ -18,3 +18,5 @@ doc/package-list
 .idea/
 .gradle/
 build/
+target/
+lib/Simulator.jar

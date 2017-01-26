@@ -27,7 +27,6 @@ allprojects {
     }
 }
 
-
 sourceSets {
     main {
         java {
@@ -39,6 +38,10 @@ sourceSets {
             srcDirs = ["src/test"]
         }
     }
+}
+
+jar {
+    destinationDir = new File('lib')
 }
 
 dependencies {

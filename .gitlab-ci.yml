@@ -50,6 +50,10 @@ build:
   stage: build
   script:
     - ./gradlew -g /cache/.gradle clean assemble
+  artifacts:
+    paths:
+    - lib/Simulator.jar
+    - target/
   allow_failure: false
 
 # Use the generated build output to run the tests.

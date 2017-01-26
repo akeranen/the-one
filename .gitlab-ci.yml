@@ -64,7 +64,7 @@ build:
     - LICENSE.txt
     - README.md
     - README.txt
-    - default_settings
+    - default_settings.txt
     - CONTRIBUTING.md
     - HISTORY.txt
     
@@ -75,3 +75,6 @@ test:
   stage: test
   script:
     - ./gradlew -g /cache/.gradle check
+  artifacts:
+    paths:
+    - build/reports/

@@ -15,62 +15,60 @@ import core.Settings;
  */
 public class FirstContactRouter extends ActiveRouter {
 
-    /**
-     * Constructor. Creates a new message router based on the settings in
-     * the given Settings object.
-     *
-     * @param s The settings object
-     */
-    public FirstContactRouter(Settings s) {
-        super(s);
-    }
+	/**
+	 * Constructor. Creates a new message router based on the settings in
+	 * the given Settings object.
+	 * @param s The settings object
+	 */
+	public FirstContactRouter(Settings s) {
+		super(s);
+	}
 
-    /**
-     * Copy constructor.
-     *
-     * @param r The router prototype where setting values are copied from
-     */
-    protected FirstContactRouter(FirstContactRouter r) {
-        super(r);
-    }
+	/**
+	 * Copy constructor.
+	 * @param r The router prototype where setting values are copied from
+	 */
+	protected FirstContactRouter(FirstContactRouter r) {
+		super(r);
+	}
 
-    @Override
-    protected int checkReceiving(Message m, DTNHost from) {
-        int recvCheck = super.checkReceiving(m, from);
+	@Override
+	protected int checkReceiving(Message m, DTNHost from) {
+		int recvCheck = super.checkReceiving(m, from);
 
-        if (recvCheck == RCV_OK) {
-            /* don't accept a message that has already traversed this node */
-            if (m.getHops().contains(getHost())) {
-                recvCheck = DENIED_OLD;
-            }
-        }
+		if (recvCheck == RCV_OK) {
+			/* don't accept a message that has already traversed this node */
+			if (m.getHops().contains(getHost())) {
+				recvCheck = DENIED_OLD;
+			}
+		}
 
-        return recvCheck;
-    }
+		return recvCheck;
+	}
 
-    @Override
-    public void update() {
-        super.update();
-        if (isTransferring() || !canStartTransfer()) {
-            return;
-        }
+	@Override
+	public void update() {
+		super.update();
+		if (isTransferring() || !canStartTransfer()) {
+			return;
+		}
 
-        if (exchangeDeliverableMessages() != null) {
-            return;
-        }
+		if (exchangeDeliverableMessages() != null) {
+			return;
+		}
 
-        tryAllMessagesToAllConnections();
-    }
+		tryAllMessagesToAllConnections();
+	}
 
-    @Override
-    protected void transferDone(Connection con) {
+	@Override
+	protected void transferDone(Connection con) {
 		/* don't leave a copy for the sender */
-        this.deleteMessage(con.getMessage().getId(), false);
-    }
+		this.deleteMessage(con.getMessage().getId(), false);
+	}
 
-    @Override
-    public FirstContactRouter replicate() {
-        return new FirstContactRouter(this);
-    }
+	@Override
+	public FirstContactRouter replicate() {
+		return new FirstContactRouter(this);
+	}
 
 }

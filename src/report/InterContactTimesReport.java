@@ -13,23 +13,23 @@ import core.DTNHost;
  */
 public class InterContactTimesReport extends ContactTimesReport {
 
-    @Override
-    public void hostsConnected(DTNHost host1, DTNHost host2) {
-        ConnectionInfo ci = this.removeConnection(host1, host2);
+	@Override
+	public void hostsConnected(DTNHost host1, DTNHost host2) {
+		ConnectionInfo ci = this.removeConnection(host1, host2);
 
-        if (ci != null) { // connected again
-            newEvent();
-            ci.connectionEnd();
-            increaseTimeCount(ci.getConnectionTime());
-        }
-    }
+		if (ci != null) { // connected again
+			newEvent();
+			ci.connectionEnd();
+			increaseTimeCount(ci.getConnectionTime());
+		}
+	}
 
-    @Override
-    public void hostsDisconnected(DTNHost host1, DTNHost host2) {
-        if (isWarmup()) {
-            return;
-        }
-        // start counting time to next connection
-        this.addConnection(host1, host2);
-    }
+	@Override
+	public void hostsDisconnected(DTNHost host1, DTNHost host2) {
+		if (isWarmup()) {
+			return;
+		}
+		// start counting time to next connection
+		this.addConnection(host1, host2);
+	}
 }

@@ -10,9 +10,9 @@ import core.Coord;
  * MovementModels used for transportation should implement this interface
  *
  * @author Frans Ekman
- */
+  */
 public interface TransportMovement extends SwitchableMovement {
 
-    public void setNextRoute(Coord nodeLocation, Coord nodeDestination);
+	public void setNextRoute(Coord nodeLocation, Coord nodeDestination);
 
 }

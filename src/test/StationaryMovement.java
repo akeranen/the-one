@@ -13,51 +13,50 @@ import core.Coord;
  * purposes
  */
 public class StationaryMovement extends MovementModel {
-    private Coord loc;
+	private Coord loc;
 
-    public StationaryMovement(Coord location) {
-        if (location == null) {
-            this.loc = new Coord(0, 0);
-        } else {
-            this.loc = location;
-        }
-    }
+	public StationaryMovement(Coord location) {
+		if (location == null) {
+			this.loc = new Coord(0,0);
+		}
+		else {
+			this.loc = location;
+		}
+	}
 
-    /**
-     * Returns the only location of this movement model
-     *
-     * @return the only location of this movement model
-     */
-    @Override
-    public Coord getInitialLocation() {
-        return loc;
-    }
+	/**
+	 * Returns the only location of this movement model
+	 * @return the only location of this movement model
+	 */
+	@Override
+	public Coord getInitialLocation() {
+		return loc;
+	}
 
-    @Override
-    public boolean isActive() {
-        return true;
-    }
+	@Override
+	public boolean isActive() {
+		return true;
+	}
 
-    /**
-     * Returns a single coordinate path (using the only possible coordinate)
-     *
-     * @return a single coordinate path
-     */
-    @Override
-    public Path getPath() {
-        Path p = new Path(0);
-        p.addWaypoint(loc);
-        return p;
-    }
+	/**
+	 * Returns a single coordinate path (using the only possible coordinate)
+	 * @return a single coordinate path
+	 */
+	@Override
+	public Path getPath() {
+		Path p = new Path(0);
+		p.addWaypoint(loc);
+		return p;
+	}
 
-    @Override
-    public double nextPathAvailable() {
-        return Double.MAX_VALUE;    // no new paths available
-    }
+	@Override
+	public double nextPathAvailable() {
+		return Double.MAX_VALUE;	// no new paths available
+	}
 
-    @Override
-    public StationaryMovement replicate() {
-        return new StationaryMovement(loc);
-    }
+	@Override
+	public StationaryMovement replicate() {
+		return new StationaryMovement(loc);
+	}
 
 }

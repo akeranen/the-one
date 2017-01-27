@@ -11,29 +11,29 @@ import core.Settings;
  */
 public class DirectDeliveryRouter extends ActiveRouter {
 
-    public DirectDeliveryRouter(Settings s) {
-        super(s);
-    }
+	public DirectDeliveryRouter(Settings s) {
+		super(s);
+	}
 
-    protected DirectDeliveryRouter(DirectDeliveryRouter r) {
-        super(r);
-    }
+	protected DirectDeliveryRouter(DirectDeliveryRouter r) {
+		super(r);
+	}
 
-    @Override
-    public void update() {
-        super.update();
-        if (isTransferring() || !canStartTransfer()) {
-            return; // can't start a new transfer
-        }
+	@Override
+	public void update() {
+		super.update();
+		if (isTransferring() || !canStartTransfer()) {
+			return; // can't start a new transfer
+		}
 
-        // Try only the messages that can be delivered to final recipient
-        if (exchangeDeliverableMessages() != null) {
-            return; // started a transfer
-        }
-    }
+		// Try only the messages that can be delivered to final recipient
+		if (exchangeDeliverableMessages() != null) {
+			return; // started a transfer
+		}
+	}
 
-    @Override
-    public DirectDeliveryRouter replicate() {
-        return new DirectDeliveryRouter(this);
-    }
+	@Override
+	public DirectDeliveryRouter replicate() {
+		return new DirectDeliveryRouter(this);
+	}
 }

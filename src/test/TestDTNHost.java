@@ -20,56 +20,56 @@ import core.SimClock;
  * easily read from test cases.
  */
 public class TestDTNHost extends DTNHost {
-    public double lastUpdate = 0;
-    public int nrofConnect = 0;
-    public int nrofUpdate = 0;
-    public Message recvMessage;
-    public DTNHost recvFrom;
-    public String abortedId;
-    public DTNHost abortedFrom;
-    public int abortedBytesRemaining;
+	public double lastUpdate = 0;
+	public int nrofConnect = 0;
+	public int nrofUpdate = 0;
+	public Message recvMessage;
+	public DTNHost recvFrom;
+	public String abortedId;
+	public DTNHost abortedFrom;
+	public int abortedBytesRemaining;
 
-    public String transferredId;
-    public DTNHost transferredFrom;
+	public String transferredId;
+	public DTNHost transferredFrom;
 
 
-    public TestDTNHost(List<NetworkInterface> li,
-                       ModuleCommunicationBus comBus, Settings testSettings) {
-        super(null, null, "TST", li, comBus,
-                new StationaryMovement(new Coord(0, 0)),
-                new PassiveRouter(
-                        (testSettings == null ? new TestSettings() :
-                                testSettings)));
-    }
+	public TestDTNHost(List<NetworkInterface> li,
+			ModuleCommunicationBus comBus, Settings testSettings) {
+		super(null,null,"TST", li, comBus,
+				new StationaryMovement(new Coord(0,0)),
+				new PassiveRouter(
+						(testSettings == null ? new TestSettings() :
+							testSettings)));
+	}
 
-    @Override
-    public void connect(DTNHost anotherHost) {
-        this.nrofConnect++;
-    }
+	@Override
+	public void connect(DTNHost anotherHost) {
+		this.nrofConnect++;
+	}
 
-    @Override
-    public void update(boolean up) {
-        this.nrofUpdate++;
-        this.lastUpdate = SimClock.getTime();
-    }
+	@Override
+	public void update(boolean up) {
+		this.nrofUpdate++;
+		this.lastUpdate = SimClock.getTime();
+	}
 
-    @Override
-    public int receiveMessage(Message m, DTNHost from) {
-        this.recvMessage = m;
-        this.recvFrom = from;
-        return routing.MessageRouter.RCV_OK;
-    }
+	@Override
+	public int receiveMessage(Message m, DTNHost from) {
+		this.recvMessage = m;
+		this.recvFrom = from;
+		return routing.MessageRouter.RCV_OK;
+	}
 
-    @Override
-    public void messageAborted(String id, DTNHost from, int bytesRemaining) {
-        this.abortedId = id;
-        this.abortedFrom = from;
-        this.abortedBytesRemaining = bytesRemaining;
-    }
+	@Override
+	public void messageAborted(String id, DTNHost from, int bytesRemaining) {
+		this.abortedId = id;
+		this.abortedFrom = from;
+		this.abortedBytesRemaining = bytesRemaining;
+	}
 
-    @Override
-    public void messageTransferred(String id, DTNHost from) {
-        this.transferredId = id;
-        this.transferredFrom = from;
-    }
+	@Override
+	public void messageTransferred(String id, DTNHost from) {
+		this.transferredId = id;
+		this.transferredFrom = from;
+	}
 }

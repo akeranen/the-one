@@ -32,75 +32,63 @@ import core.Settings;
  * is loaded when the name of the class is defined with
  * <code>CLASS_SETTING</code>.
  */
-public class EventQueueHandler {
-    /**
-     * Event queue settings main namespace ({@value})
-     */
-    public static final String SETTINGS_NAMESPACE = "Events";
-    /**
-     * number of event queues -setting id ({@value})
-     */
-    public static final String NROF_SETTING = "nrof";
+public class EventQueueHandler  {
+	/** Event queue settings main namespace ({@value})*/
+	public static final String SETTINGS_NAMESPACE = "Events";
+	/** number of event queues -setting id ({@value})*/
+	public static final String NROF_SETTING = "nrof";
 
-    /**
-     * name of the events class (for class based events) -setting id
-     * ({@value})
-     */
-    public static final String CLASS_SETTING = "class";
-    /**
-     * name of the package where event generator classes are looked from
-     */
-    public static final String CLASS_PACKAGE = "input";
+	/** name of the events class (for class based events) -setting id
+	 * ({@value}) */
+	public static final String CLASS_SETTING = "class";
+	/** name of the package where event generator classes are looked from */
+	public static final String CLASS_PACKAGE = "input";
 
-    /**
-     * number of events to preload from file -setting id ({@value})
-     */
-    public static final String PRELOAD_SETTING = "nrofPreload";
-    /**
-     * path of external events file -setting id ({@value})
-     */
-    public static final String PATH_SETTING = "filePath";
+	/** number of events to preload from file -setting id ({@value})*/
+	public static final String PRELOAD_SETTING = "nrofPreload";
+	/** path of external events file -setting id ({@value})*/
+	public static final String PATH_SETTING = "filePath";
 
-    private List<EventQueue> queues;
+	private List<EventQueue> queues;
 
-    /**
-     * Creates a new EventQueueHandler which can be queried for
-     * event queues.
-     */
-    public EventQueueHandler() {
-        Settings settings = new Settings(SETTINGS_NAMESPACE);
-        int nrof = settings.getInt(NROF_SETTING);
-        this.queues = new ArrayList<EventQueue>();
+	/**
+	 * Creates a new EventQueueHandler which can be queried for
+	 * event queues.
+	 */
+	public EventQueueHandler() {
+		Settings settings = new Settings(SETTINGS_NAMESPACE);
+		int nrof = settings.getInt(NROF_SETTING);
+		this.queues = new ArrayList<EventQueue>();
 
-        for (int i = 1; i <= nrof; i++) {
-            Settings s = new Settings(SETTINGS_NAMESPACE + i);
+		for (int i=1; i <= nrof; i++) {
+			Settings s = new Settings(SETTINGS_NAMESPACE + i);
 
-            if (s.contains(PATH_SETTING)) { // external events file
-                int preload = 0;
-                String path = "";
-                if (s.contains(PRELOAD_SETTING)) {
-                    preload = s.getInt(PRELOAD_SETTING);
-                }
-                path = s.getSetting(PATH_SETTING);
+			if (s.contains(PATH_SETTING)) { // external events file
+				int preload = 0;
+				String path = "";
+				if (s.contains(PRELOAD_SETTING)) {
+					preload = s.getInt(PRELOAD_SETTING);
+				}
+				path = s.getSetting(PATH_SETTING);
 
-                queues.add(new ExternalEventsQueue(path, preload));
-            } else if (s.contains(CLASS_SETTING)) { // event generator class
-                String className = CLASS_PACKAGE + "." +
-                        s.getSetting(CLASS_SETTING);
-                EventQueue eq = (EventQueue) s.createIntializedObject(className);
+				queues.add(new ExternalEventsQueue(path, preload));
+			}
+			else if (s.contains(CLASS_SETTING)) { // event generator class
+				String className = CLASS_PACKAGE + "." +
+					s.getSetting(CLASS_SETTING);
+				EventQueue eq = (EventQueue)s.createIntializedObject(className);
 
-                queues.add(eq);
-            }
-        }
-    }
+				queues.add(eq);
+			}
+		}
+	}
 
-    /**
-     * Returns all the loaded event queues
-     *
-     * @return all the loaded event queues
-     */
-    public List<EventQueue> getEventQueues() {
-        return this.queues;
-    }
+	/**
+	 * Returns all the loaded event queues
+	 * @return all the loaded event queues
+	 */
+	public List<EventQueue> getEventQueues() {
+		return this.queues;
+	}
 
 }

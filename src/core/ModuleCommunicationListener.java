@@ -10,13 +10,12 @@ package core;
  */
 public interface ModuleCommunicationListener {
 
-    /**
-     * This method is called whenever a variable, whose changes the module has
-     * registered to, changes.
-     *
-     * @param key      The name of the variable
-     * @param newValue New value for the variable
-     */
-    public void moduleValueChanged(String key, Object newValue);
+	/**
+	 * This method is called whenever a variable, whose changes the module has
+	 * registered to, changes.
+	 * @param key The name of the variable
+	 * @param newValue New value for the variable
+	 */
+	public void moduleValueChanged(String key, Object newValue);
 
 }

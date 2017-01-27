@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1"
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+plugins {
+    id "org.sonarqube" version "2.2.1"
+}
+apply plugin: 'java'
+apply plugin: "org.sonarqube"
+
+allprojects {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/applications", "src/core", "src/gui", "src/input", "src/interfaces", "src/main", "src/movement", "src/report", "src/routing", "src/ui", "src/util"]
+        }
+        output.resourcesDir = 'target'
+        output.classesDir   = 'target'
+    }
+    test {
+        java {
+            srcDirs = ["src/test"]
+        }
+    }
+}
+
+jar {
+    destinationDir = new File('lib')
+    manifest {
+        attributes 'Main-Class': 'core.DTNSim'
+        attributes 'Class-Path': "ECLA.jar DTNConsoleConnection.jar ../target"
+    }
+}
+
+dependencies {
+    // The production code uses Guava
+    compile 'com.google.guava:guava:20.0'
+    compile files("lib/ECLA.jar", "lib/DTNConsoleConnection.jar")
+
+    // Use JUnit test framework
+    testCompile 'junit:junit:4.12'
+}
+
+task copyGui(type: Copy){
+    from 'src/gui/buttonGraphics'
+    into 'target/gui/buttonGraphics'
+}
+
+clean.doFirst{
+    delete 'target'
+}

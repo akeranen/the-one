@@ -20,87 +20,87 @@ import core.Coord;
 import core.DTNHost;
 
 public class AdjacencyGraphvizReportTest extends TestCase {
-	private File outFile;
-	private TestUtils utils;
-	private AdjacencyGraphvizReport r;
+    private File outFile;
+    private TestUtils utils;
+    private AdjacencyGraphvizReport r;
 
-	private static final int NROF = 3;
+    private static final int NROF = 3;
 
-	public void setUp() throws IOException {
-		TestSettings ts = new TestSettings();
-		outFile = File.createTempFile("adjgvtest", ".tmp");
-		outFile.deleteOnExit();
+    public void setUp() throws IOException {
+        TestSettings ts = new TestSettings();
+        outFile = File.createTempFile("adjgvtest", ".tmp");
+        outFile.deleteOnExit();
 
-		ts.putSetting("AdjacencyGraphvizReport.output", outFile.getAbsolutePath());
-		ts.putSetting("AdjacencyGraphvizReport.interval" , "");
-		r = new AdjacencyGraphvizReport();
-		Vector<ConnectionListener> cl = new Vector<ConnectionListener>();
-		cl.add(r);
+        ts.putSetting("AdjacencyGraphvizReport.output", outFile.getAbsolutePath());
+        ts.putSetting("AdjacencyGraphvizReport.interval", "");
+        r = new AdjacencyGraphvizReport();
+        Vector<ConnectionListener> cl = new Vector<ConnectionListener>();
+        cl.add(r);
 
-		utils = new TestUtils(cl, null, ts);
-	}
+        utils = new TestUtils(cl, null, ts);
+    }
 
-	private void generateConnections() {
-		Coord c1 = new Coord(0,0);
-		Coord c2 = new Coord(1,0);
-		Coord c3 = new Coord(2,0);
-		Coord c4 = new Coord(0,2);
+    private void generateConnections() {
+        Coord c1 = new Coord(0, 0);
+        Coord c2 = new Coord(1, 0);
+        Coord c3 = new Coord(2, 0);
+        Coord c4 = new Coord(0, 2);
 
-		utils.setTransmitRange(2);
-		DTNHost h1 = utils.createHost(c1,"h1");
-		DTNHost h2 = utils.createHost(c2,"h2");
-		DTNHost h3 = utils.createHost(c3,"h3");
-		DTNHost h4 = utils.createHost(c4,"h4");
+        utils.setTransmitRange(2);
+        DTNHost h1 = utils.createHost(c1, "h1");
+        DTNHost h2 = utils.createHost(c2, "h2");
+        DTNHost h3 = utils.createHost(c3, "h3");
+        DTNHost h4 = utils.createHost(c4, "h4");
 
-		h1.connect(h2);
-		h2.connect(h3);
-		// h1--h2--h3
+        h1.connect(h2);
+        h2.connect(h3);
+        // h1--h2--h3
 
-		h2.setLocation(new Coord(1,10));
-		h2.update(true);
-		//       h2
-		// h1          h3
+        h2.setLocation(new Coord(1, 10));
+        h2.update(true);
+        //       h2
+        // h1          h3
 
-		h2.setLocation(c2);
-		h2.connect(h3); // reconnect
-		// h1  h2--h3
+        h2.setLocation(c2);
+        h2.connect(h3); // reconnect
+        // h1  h2--h3
 
-		h1.connect(h4);
+        h1.connect(h4);
 
-		c4.translate(-5, 0);
-		h1.update(true); // disconnect h1-h4
-		c4.translate(5, 0);
-		h1.connect(h4); // reconnect h1-h4
-	}
+        c4.translate(-5, 0);
+        h1.update(true); // disconnect h1-h4
+        c4.translate(5, 0);
+        h1.connect(h4); // reconnect h1-h4
+    }
 
-	public void testDone() throws IOException {
-		BufferedReader reader;
-		List<String> lines = new ArrayList<String>();
+    public void testDone() throws IOException {
+        BufferedReader reader;
+        List<String> lines = new ArrayList<String>();
 
-		generateConnections();
-		r.done();
+        generateConnections();
+        r.done();
 
-		reader = new BufferedReader(new FileReader(outFile));
+        reader = new BufferedReader(new FileReader(outFile));
 
-		// check the first line of output
-		assertEquals("graph " + AdjacencyGraphvizReport.GRAPH_NAME +
-				" {", reader.readLine());
+        // check the first line of output
+        assertEquals("graph " + AdjacencyGraphvizReport.GRAPH_NAME +
+                " {", reader.readLine());
 
-		for (int i=0; i<NROF; i++) {
-			lines.add(reader.readLine());
-		}
+        for (int i = 0; i < NROF; i++) {
+            lines.add(reader.readLine());
+        }
 
-		// check end out output
-		assertEquals("}",reader.readLine());
+        // check end out output
+        assertEquals("}", reader.readLine());
 
-		// sort the result lines because their ordering is not deterministic
-		Collections.sort(lines);
+        // sort the result lines because their ordering is not deterministic
+        Collections.sort(lines);
 
-		assertEquals("\th1--h2 [weight=1];",lines.get(0));
-		assertEquals("\th1--h4 [weight=2];",lines.get(1));
-		assertEquals("\th2--h3 [weight=2];",lines.get(2));
+        assertEquals("\th1--h2 [weight=1];", lines.get(0));
+        assertEquals("\th1--h4 [weight=2];", lines.get(1));
+        assertEquals("\th2--h3 [weight=2];", lines.get(2));
 
-		reader.close();
-	}
+        reader.close();
+    }
 
 }

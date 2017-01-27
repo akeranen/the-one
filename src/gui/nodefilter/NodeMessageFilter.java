@@ -11,23 +11,24 @@ import core.DTNHost;
  * Node filter that filters nodes by the messages they have in their buffer
  */
 public class NodeMessageFilter implements NodeFilter {
-	private String messageId;
+    private String messageId;
 
-	/**
-	 * Creates a new filter with the given message ID
-	 * @param messageId The message ID used for filtering
-	 */
-	public NodeMessageFilter(String messageId) {
-		this.messageId = messageId;
-	}
+    /**
+     * Creates a new filter with the given message ID
+     *
+     * @param messageId The message ID used for filtering
+     */
+    public NodeMessageFilter(String messageId) {
+        this.messageId = messageId;
+    }
 
-	public boolean filterNode(DTNHost node) {
-		return node.getRouter().hasMessage(messageId);
-	}
+    public boolean filterNode(DTNHost node) {
+        return node.getRouter().hasMessage(messageId);
+    }
 
-	@Override
-	public String toString() {
-		return "Filters nodes with message ID " + messageId;
-	}
+    @Override
+    public String toString() {
+        return "Filters nodes with message ID " + messageId;
+    }
 
 }

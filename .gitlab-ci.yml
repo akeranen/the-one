@@ -27,7 +27,7 @@ sonarqube:
   variables:
     GIT_STRATEGY: clone
   script:
-    - ./gradlew sonarqube -Dsonar.projectVersion=$CI_BUILD_REF -x test
+    - ./gradlew sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.projectVersion=$CI_BUILD_REF -x test
 
 sonarqube_manual:
   stage: analyze
@@ -35,14 +35,14 @@ sonarqube_manual:
   variables:
     GIT_STRATEGY: clone
   script:
-    - ./gradlew sonarqube -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator -x test
+    - ./gradlew sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator -x test
   
 sonarqube_preview:
   stage: analyze
   variables:
     GIT_STRATEGY: clone
   script:
-    - ./gradlew sonarqube -Dsonar.analysis.mode=preview -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.issuesReport.console.enable=true -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref=$CI_BUILD_REF_NAME -x test
+    - ./gradlew sonarqube -Dsonar.analysis.mode=preview -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.issuesReport.console.enable=true -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref=$CI_BUILD_REF_NAME -x test
   allow_failure: true
 
 

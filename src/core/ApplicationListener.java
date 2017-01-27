@@ -9,7 +9,7 @@ package core;
  * Interface for classes that want to be informed about messages
  * between hosts.
  * </p>
- *
+ * <p>
  * <p>
  * Report classes wishing to receive application events should implement this
  * interface. Note that the application event names are defined by the
@@ -22,14 +22,14 @@ package core;
  */
 public interface ApplicationListener {
 
-	/**
-	 * Application has generated an event.
-	 *
-	 * @param event		Event name.
-	 * @param params	Additional parameters for the event
-	 * @param app		Application instance that generated the event.
-	 * @param host		The host this application instance is running on.
-	 */
-	public void gotEvent(String event, Object params, Application app,
-			DTNHost host);
+    /**
+     * Application has generated an event.
+     *
+     * @param event  Event name.
+     * @param params Additional parameters for the event
+     * @param app    Application instance that generated the event.
+     * @param host   The host this application instance is running on.
+     */
+    public void gotEvent(String event, Object params, Application app,
+                         DTNHost host);
 }

@@ -17,66 +17,65 @@ import core.UpdateListener;
  * @author Frans Ekman
  */
 public class UniqueEncountersReport extends Report implements
-        ConnectionListener, UpdateListener {
+	ConnectionListener, UpdateListener {
 
-    private int[][] nodeRelationships;
+	private int[][] nodeRelationships;
 
-    public UniqueEncountersReport() {
+	public UniqueEncountersReport() {
 
-    }
+	}
 
-    public void hostsConnected(DTNHost host1, DTNHost host2) {
-        if (nodeRelationships == null) {
-            return;
-        }
-        nodeRelationships[host1.getAddress()][host2.getAddress()]++;
-        nodeRelationships[host2.getAddress()][host1.getAddress()]++;
-    }
+	public void hostsConnected(DTNHost host1, DTNHost host2) {
+		if (nodeRelationships == null) {
+			return;
+		}
+		nodeRelationships[host1.getAddress()][host2.getAddress()]++;
+		nodeRelationships[host2.getAddress()][host1.getAddress()]++;
+	}
 
-    public void hostsDisconnected(DTNHost host1, DTNHost host2) {
-    }
+	public void hostsDisconnected(DTNHost host1, DTNHost host2) {}
 
-    public void updated(List<DTNHost> hosts) {
-        if (nodeRelationships == null) {
-            nodeRelationships = new int[hosts.size()][hosts.size()];
-        }
-    }
+	public void updated(List<DTNHost> hosts) {
+		if (nodeRelationships == null) {
+			nodeRelationships = new int[hosts.size()][hosts.size()];
+		}
+	}
 
-    @Override
-    public void done() {
-        int[] distribution = new int[1000];
+	@Override
+	public void done() {
+		int[] distribution = new int[1000];
+		
+		if (nodeRelationships == null) {
+			super.done();
+			return;
+		}
 
-        if (nodeRelationships == null) {
-            super.done();
-            return;
-        }
+		for (int i=0; i<nodeRelationships.length; i++) {
+			int count = 0;
+			for (int j=0; j<nodeRelationships.length; j++) {
+				if (nodeRelationships[i][j] > 0) {
+					count++;
+				}
+			}
 
-        for (int i = 0; i < nodeRelationships.length; i++) {
-            int count = 0;
-            for (int j = 0; j < nodeRelationships.length; j++) {
-                if (nodeRelationships[i][j] > 0) {
-                    count++;
-                }
-            }
+			int promille = (count * 1000)/nodeRelationships.length;
+			distribution[promille]++;
+		}
 
-            int promille = (count * 1000) / nodeRelationships.length;
-            distribution[promille]++;
-        }
+		// print distribution
+		for (int i=0; i<distribution.length; i++) {
+			write(i + " " + distribution[i]);
+		}
 
-        // print distribution
-        for (int i = 0; i < distribution.length; i++) {
-            write(i + " " + distribution[i]);
-        }
+		super.done();
+	}
 
-        super.done();
-    }
+	public int[][] getNodeRelationships() {
+		return nodeRelationships;
+	}
 
-    public int[][] getNodeRelationships() {
-        return nodeRelationships;
-    }
-
-    public void setNodeRelationships(int[][] nodeRelationships) {
-        this.nodeRelationships = nodeRelationships;
-    }
+	public void setNodeRelationships(int[][] nodeRelationships) {
+		this.nodeRelationships = nodeRelationships;
+	}
 
 }

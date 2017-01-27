@@ -14,31 +14,30 @@ import core.Settings;
  */
 public class PassiveRouter extends MessageRouter {
 
-    public PassiveRouter(Settings s) {
-        super(s);
-    }
+	public PassiveRouter(Settings s) {
+		super(s);
+	}
 
-    /**
-     * Copy-constructor.
-     *
-     * @param r Router to copy the settings from.
-     */
-    protected PassiveRouter(PassiveRouter r) {
-        super(r);
-    }
+	/**
+	 * Copy-constructor.
+	 * @param r Router to copy the settings from.
+	 */
+	protected PassiveRouter(PassiveRouter r) {
+		super(r);
+	}
 
-    @Override
-    public void update() {
-        super.update();
-    }
+	@Override
+	public void update() {
+		super.update();
+	}
 
-    @Override
-    public void changedConnection(Connection con) {
-        // -"-
-    }
+	@Override
+	public void changedConnection(Connection con) {
+		// -"-
+	}
 
-    @Override
-    public MessageRouter replicate() {
-        return new PassiveRouter(this);
-    }
+	@Override
+	public MessageRouter replicate() {
+		return new PassiveRouter(this);
+	}
 }

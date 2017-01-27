@@ -18,44 +18,44 @@ import core.SimClock;
  */
 public class ContactsPerHourReport extends Report implements ConnectionListener {
 
-    private LinkedList<Integer> contactCounts;
-    private int currentHourCount;
-    private int currentHour;
+	private LinkedList<Integer> contactCounts;
+	private int currentHourCount;
+	private int currentHour;
 
-    public ContactsPerHourReport() {
-        init();
-    }
+	public ContactsPerHourReport() {
+		init();
+	}
 
-    @Override
-    public void init() {
-        super.init();
-        contactCounts = new LinkedList<Integer>();
-    }
+	@Override
+	public void init() {
+		super.init();
+		contactCounts = new LinkedList<Integer>();
+	}
 
-    public void hostsConnected(DTNHost host1, DTNHost host2) {
-        int time = SimClock.getIntTime() / 3600;
-        while (Math.floor(time) > currentHour) {
-            contactCounts.add(new Integer(currentHourCount));
-            currentHourCount = 0;
-            currentHour++;
-        }
+	public void hostsConnected(DTNHost host1, DTNHost host2) {
+		int time = SimClock.getIntTime() / 3600;
+		while (Math.floor(time) > currentHour) {
+			contactCounts.add(new Integer(currentHourCount));
+			currentHourCount = 0;
+			currentHour++;
+		}
 
-        currentHourCount++;
-    }
+		currentHourCount++;
+	}
 
-    public void hostsDisconnected(DTNHost host1, DTNHost host2) {
-        // Do nothing
-    }
+	public void hostsDisconnected(DTNHost host1, DTNHost host2) {
+		// Do nothing
+	}
 
-    public void done() {
-        Iterator<Integer> iterator = contactCounts.iterator();
-        int hour = 0;
-        while (iterator.hasNext()) {
-            Integer count = (Integer) iterator.next();
-            write(hour + "\t" + count);
-            hour++;
-        }
-        super.done();
-    }
+	public void done() {
+		Iterator<Integer> iterator = contactCounts.iterator();
+		int hour = 0;
+		while (iterator.hasNext()) {
+			Integer count = (Integer)iterator.next();
+			write(hour + "\t" + count);
+			hour++;
+		}
+		super.done();
+	}
 
 }

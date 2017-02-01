@@ -1,4 +1,4 @@
-image: frekele/gradle:latest
+image: openjdk:8-jdk
 
 # Make the gradle wrapper executable. This essentially downloads a copy of
 # Gradle to build the project with.

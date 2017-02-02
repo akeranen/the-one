@@ -15,10 +15,59 @@ before_script:
 # cleaning removes reminants of any cached builds.
 # The assemble task actually builds the project.
 # If it fails here, the tests can't run.
+stages:
+  - analyze
+  - build
+  - test
+   
+sonarqube:
+  stage: analyze
+  only:
+    - master
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.projectVersion=$CI_BUILD_REF -x test
+
+sonarqube_manual:
+  stage: analyze
+  when: manual
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator -x test
+  
+sonarqube_preview:
+  stage: analyze
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.analysis.mode=preview -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.issuesReport.console.enable=true -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref=$CI_BUILD_REF_NAME -x test
+  allow_failure: true
+
+
 build:
   stage: build
   script:
-    - ./gradlew -g /cache/.gradle clean assemble
+    - ./gradlew -g /cache/.gradle clean assemble copyGui
+  artifacts:
+    paths:
+    - lib/
+    - target/
+    - data/
+    - ee/
+    - example_settings/
+    - toolkit/
+    - wdm_settings/
+    - one.bat
+    - one.sh
+    - LICENSE.txt
+    - README.md
+    - README.txt
+    - default_settings.txt
+    - CONTRIBUTING.md
+    - HISTORY.txt
+    
   allow_failure: false
 
 # Use the generated build output to run the tests.
@@ -26,3 +75,7 @@ test:
   stage: test
   script:
     - ./gradlew -g /cache/.gradle check
+  artifacts:
+    when: on_failure
+    paths:
+    - build/reports/

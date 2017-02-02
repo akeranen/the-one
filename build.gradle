@@ -23,7 +23,7 @@ repositories {
 	flatDir {
         dirs 'lib'
 	}
-
+}
 	
 sourceSets {
     main {

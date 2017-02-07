@@ -51,7 +51,7 @@ Scenario.nrofHostGroups = 6
 
 
 # Common settings for all groups
-Group.movementModel = ShortestPathMapBasedMovement
+Group.movementModel = PanicMovement
 Group.router = EpidemicRouter
 Group.bufferSize = 5M
 Group.waitTime = 0, 120
@@ -81,7 +81,7 @@ Group3.groupID = w
 # The Tram groups
 Group4.groupID = t
 Group4.bufferSize = 50M
-Group4.movementModel = MapRouteMovement
+Group4.movementModel = PanicMovement
 Group4.routeFile = data/tram3.wkt
 Group4.routeType = 1
 Group4.waitTime = 10, 30
@@ -93,7 +93,7 @@ Group4.interface2 = highspeedInterface
 
 Group5.groupID = t
 Group5.bufferSize = 50M
-Group5.movementModel = MapRouteMovement
+Group5.movementModel = PanicMovement
 Group5.routeFile = data/tram4.wkt
 Group5.routeType = 2
 Group5.waitTime = 10, 30
@@ -102,7 +102,7 @@ Group5.nrofHosts = 2
 
 Group6.groupID = t
 Group6.bufferSize = 50M
-Group6.movementModel = MapRouteMovement
+Group6.movementModel = PanicMovement
 Group6.routeFile = data/tram10.wkt
 Group6.routeType = 2
 Group6.waitTime = 10, 30
@@ -132,7 +132,7 @@ MovementModel.rngSeed = 1
 # World's size for Movement Models without implicit size (width, height; meters)
 MovementModel.worldSize = 4500, 3400
 # How long time to move hosts in the world before real simulation
-MovementModel.warmup = 1000
+MovementModel.warmup = 0
 
 ## Map based movement -movement model specific settings
 MapBasedMovement.nrofMapFiles = 4

@@ -121,10 +121,10 @@ public class MapBasedMovementTest extends TestCase {
 		p = mbm.getPath();
 		coords = p.getCoords();
 
-		assertEquals(c1, coords.get(0)); // starts from n2
+		assertEquals(c2, coords.get(0)); // starts from n2
 
 		// should move route n1-n2-n6-n2-n1-n2 ...
-		for (int i=0; i<coords.size()-4; i+= 4) {
+		for (int i=1; i<coords.size()-4; i+= 4) {
 			assertEquals(c1, coords.get(i));
 			assertEquals(c2, coords.get(i+1));
 			assertEquals(c6, coords.get(i+2));
@@ -142,8 +142,8 @@ public class MapBasedMovementTest extends TestCase {
 		List<Coord> coords = p.getCoords();
 		// should move between n1 and n2
 		for (int i=0; i<coords.size()-1; i+= 2) {
-			assertEquals(c2, coords.get(i));
-			assertEquals(c1, coords.get(i+1));
+			assertEquals(c2, coords.get(i+1));
+			assertEquals(c1, coords.get(i));
 		}
 
 		n6.addType(1); // n6 is both 1 and 2
@@ -152,13 +152,13 @@ public class MapBasedMovementTest extends TestCase {
 		p = mbm.getPath();
 		coords = p.getCoords();
 
-		assertEquals(c1, coords.get(0)); // starts from n1
+		assertEquals(c2, coords.get(0)); // starts from n2
 		// should move route n6-n2-n1-n2...
 		for (int i=1; i<coords.size()-4; i+= 4) {
-			assertEquals(c2, coords.get(i));
-			assertEquals(c6, coords.get(i+1));
-			assertEquals(c2, coords.get(i+2));
-			assertEquals(c1, coords.get(i+3));
+			assertEquals(c6, coords.get(i));
+			assertEquals(c2, coords.get(i+1));
+			assertEquals(c1, coords.get(i+2));
+			assertEquals(c2, coords.get(i+3));
 		}
 
 	}

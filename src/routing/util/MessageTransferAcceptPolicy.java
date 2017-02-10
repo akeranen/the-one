@@ -115,8 +115,6 @@ public class MessageTransferAcceptPolicy {
 
 	private Range[] toSendPolicy = null;
 	private Range[] fromSendPolicy = null;
-	private Range[] toReceivePolicy = null;
-	private Range[] fromReceivePolicy = null;
 	private ArithmeticCondition hopCountSendPolicy = null;
 	private ArithmeticCondition hopCountReceivePolicy = null;
 
@@ -135,12 +133,6 @@ public class MessageTransferAcceptPolicy {
 		}
 		if (s.contains(FROM_SPOLICY_S)) {
 			this.fromSendPolicy = s.getCsvRanges(FROM_SPOLICY_S);
-		}
-		if (s.contains(TO_RPOLICY_S)) {
-			this.toReceivePolicy = s.getCsvRanges(TO_RPOLICY_S);
-		}
-		if (s.contains(FROM_RPOLICY_S)) {
-			this.fromReceivePolicy = s.getCsvRanges(FROM_RPOLICY_S);
 		}
 		if (s.contains(HOPCOUNT_SPOLICY_S)) {
 			hopCountSendPolicy = s.getCondition(HOPCOUNT_SPOLICY_S);

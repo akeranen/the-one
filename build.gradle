@@ -68,3 +68,11 @@ task copyGui(type: Copy){
 clean.doFirst{
     delete 'target'
 }
+
+test {
+    filter {
+        //we just want to use a single test suite
+        includeTestsMatching "*AllTests"
+
+    }
+}

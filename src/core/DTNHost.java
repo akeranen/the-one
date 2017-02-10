@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import movement.MovementModel;
+import movement.PanicMovement;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
@@ -414,8 +415,20 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * should wait
 	 */
 	private boolean setNextWaypoint() {
+		Class c;
+		try {
+			c = Class.forName("movement.PanicMovement");
+		}
+		catch (ClassNotFoundException cnfe) {
+			c = null;
+		}
 		if (path == null) {
-			path = movement.getPath();
+			if (movement.getClass().equals(c)) {
+				path = ((PanicMovement)movement).getPath(this);
+			}
+			else {
+				path = movement.getPath();
+			}
 		}
 
 		if (path == null || !path.hasNext()) {

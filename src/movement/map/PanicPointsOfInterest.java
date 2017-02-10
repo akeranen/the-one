@@ -11,32 +11,18 @@ import core.Coord;
 
 public class PanicPointsOfInterest extends PointsOfInterest {
     
-	private Coord locationNode;
+	public static final double SECURITY_ZONE = 1000.0;
+	public static final double OUTER_ZONE = 1100.0;
 	private Coord locationEvent;
 	
 	public PanicPointsOfInterest(SimMap parentMap, int [] okMapNodeTypes, 
-			Settings settings, Random rng, Coord locationNode, Coord locationEvent) {
+			Settings settings, Random rng, Coord locationEvent) {
 		super(parentMap, okMapNodeTypes, settings, rng);
-		this.locationNode = locationNode;
 		this.locationEvent = locationEvent;
-		/*this.poiLists = new ArrayList<List<MapNode>>();
-		this.poiProbs = new LinkedList<Tuple<Double, Integer>>();
-		this.map = parentMap;
-		this.okMapNodeTypes = okMapNodeTypes;
-		this.rng = rng;
-		readPois(settings);*/
-	}
-	
-	public Coord getLocationNode() {
-		return locationNode;
 	}
 	
 	public Coord getLocationEvent() {
 		return locationEvent;
-	}
-	
-	public void setLocationNode(Coord locationNode) {
-		this.locationNode = locationNode;
 	}
 	
 	public void setLocationEvent(Coord locationEvent) {
@@ -48,37 +34,48 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 	 * i.e. the angle between locationNode -> location Event and 
 	 * locationEvent -> locationPOI should be as close to 180° as possible
 	 */
-	@Override
-	public MapNode selectDestination() {
+	
+	public MapNode selectDestination(MapNode lastMapNode) {
 		
-		double bestAngle = 0, angle = 0;
-		
+		double angle = 0;
 		MapNode bestNode = null;
+		double bestDistance = 0;
 		
-		// if List of Points of Interest is empty, add all nodes
-		if (poiLists.size() == 0) {	
-			poiLists.add(map.getNodes());
+		if (getDistance(locationEvent, lastMapNode.getLocation()) < OUTER_ZONE &&
+			getDistance(locationEvent, lastMapNode.getLocation()) > SECURITY_ZONE) {
+			return lastMapNode; //everything's fine
 		}
 		
-		for (List<MapNode> list : poiLists) {
-			for (MapNode node : list) {
-				if (bestNode == null) {
-					bestNode = node;
-					bestAngle = Math.acos(scalarProduct(locationEvent, locationNode, bestNode.getLocation()) /
-							              lengthProduct(locationEvent, locationNode, bestNode.getLocation())) * 180/Math.PI;
+		for (MapNode node : map.getNodes()) {
+			if (getDistance(locationEvent,node.getLocation()) < SECURITY_ZONE) {
+				continue; // point is not far enough away from the event
+			}
+			if (getDistance(locationEvent,node.getLocation()) > OUTER_ZONE) {
+				continue; // point is not close enough to the event to search for help
+			}
+			if (bestNode != null) {
+				if (getDistance(lastMapNode.getLocation(), node.getLocation()) > bestDistance) {
+					continue; //nearer node is already known		
 				}
-				else {
-					angle = Math.acos(scalarProduct(locationEvent, locationNode, node.getLocation()) /
-				              		  lengthProduct(locationEvent, locationNode, node.getLocation())) * 180/Math.PI;
-					if (Math.abs(angle - 180) < Math.abs(bestAngle - 180)) {
-						bestNode = node;
-						bestAngle = angle;
-					}
-				}
+			}
+			if (lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) == 0) {
+				continue; // otherwise, division by zero
+			}
+			angle = Math.acos(scalarProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) /
+				              lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation())) * 180/Math.PI;
+			if (Math.abs(angle - 180) < 90) {
+				bestNode = node; // node meets all conditions
+				bestDistance = getDistance(lastMapNode.getLocation(), node.getLocation());
 			}
 		}
 		
-		return bestNode;
+		// if no better node is found, the node can stay at the current location
+		if (bestNode == null) {
+			return lastMapNode;
+		}
+		else {
+			return bestNode;
+		}
 	}
 	
 	/**
@@ -98,22 +95,21 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 	}
 	
 	/**
-	 * Computes the lenght product between the vectors v1 (source -> target1) and v2 (source -> target2)
+	 * Computes the length product between the vectors v1 (source -> target1) and v2 (source -> target2)
 	 */
 	private static double lengthProduct(Coord target1, Coord source, Coord target2) {
-		double discriminante1 = 0;
-		double discriminante2 = 0;
-		double[] v1 = {target1.getX() - source.getX(), target1.getY() - source.getY()}; 
-		double[] v2 = {target2.getX() - source.getX(), target2.getY() - source.getY()};
 		
-		for (int i = 0; i < v1.length; i++) {
-			discriminante1 += v1[i]*v1[i];
+		return getDistance(source, target1) * getDistance(source, target2);
+	}
+	
+	public static double getDistance(Coord source, Coord target) {
+		double discriminante = 0;
+		double[] v = {target.getX() - source.getX(), target.getY() - source.getY()};
+		
+		for (int i = 0; i < v.length; i++) {
+			discriminante += v[i]*v[i];
 		}
 		
-		for (int i = 0; i < v2.length; i++) {
-			discriminante2 += v2[i]*v2[i];
-		}
-		
-		return Math.sqrt(discriminante1) * Math.sqrt(discriminante2);
+		return Math.sqrt(discriminante);
 	}
 }

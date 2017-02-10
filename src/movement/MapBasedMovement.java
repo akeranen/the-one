@@ -30,7 +30,7 @@ import core.SimError;
  */
 public class MapBasedMovement extends MovementModel implements SwitchableMovement {
 	/** sim map for the model */
-	private SimMap map = null;
+	protected SimMap map = null;
 	/** node where the last path ended or node next to initial placement */
 	protected MapNode lastMapNode;
 	/**  max nrof map nodes to travel/path */

@@ -10,6 +10,7 @@ import util.Range;
 import util.Tuple;
 
 import core.ArithmeticCondition;
+import core.BroadcastMessage;
 import core.Connection;
 import core.DTNHost;
 import core.Message;
@@ -219,6 +220,19 @@ public class MessageTransferAcceptPolicy {
 		return true;
 	}
 
+    /**
+     * Checks both recipient and sender simple policy conditions and returns false
+     * if at least one of the two failed.
+     * @param m The message to sent.
+     * @param ownAddress The node's own address.
+     * @return true if both conditions evaluated to true
+     */
+    private boolean checkSimplePolicy(Message m, int ownAddress) {
+        boolean checkRecipients = (m instanceof  BroadcastMessage)
+                || checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress);
+        return checkRecipients && checkSimplePolicy(m.getFrom(), this.fromSendPolicy, ownAddress);
+    }
+
 	/**
 	 * Checks if the host's address is contained in the policy list
 	 * (or {@value #TO_ME_VALUE} is contained and the address matches to
@@ -281,14 +295,11 @@ public class MessageTransferAcceptPolicy {
 			return false;
 		}
 
-		int myAddr = from.getAddress();
-		if (! (checkSimplePolicy(m.getTo(), this.toSendPolicy, myAddr) &&
-			checkSimplePolicy(m.getFrom(), this.fromSendPolicy,	myAddr)) ) {
+		if (!checkSimplePolicy (m, from.getAddress())) {
 			return false;
 		}
 
-		if (m.getTo() != to &&
-				!checkHopCountPolicy(m, this.hopCountSendPolicy)){
+		if (!m.isFinalRecipient(to) && !checkHopCountPolicy(m, this.hopCountSendPolicy)){
 			return false;
 		}
 
@@ -308,14 +319,11 @@ public class MessageTransferAcceptPolicy {
 			return false;
 		}
 
-		int myAddr = to.getAddress();
-		if (! (checkSimplePolicy(m.getTo(), this.toReceivePolicy,myAddr) &&
-			checkSimplePolicy(m.getFrom(), this.fromReceivePolicy, myAddr)) ) {
+		if (!checkSimplePolicy (m, to.getAddress())) {
 			return false;
 		}
 
-		if (m.getTo() != to &&
-				!checkHopCountPolicy(m, this.hopCountReceivePolicy)) {
+		if (!m.isFinalRecipient(to) && !checkHopCountPolicy(m, this.hopCountReceivePolicy)) {
 			return false;
 		}
 

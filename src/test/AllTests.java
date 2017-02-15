@@ -42,7 +42,8 @@ import org.junit.runners.Suite;
 		ScheduledUpdatesQueueTest.class,
 		MessageTest.class,
 		ModuleCommunicationBusTest.class,
-		DTNHostTest.class
+		DTNHostTest.class,
+		LevyWalkTest.class
 })
 
 public class AllTests {
@@ -86,6 +87,7 @@ public class AllTests {
 		suite.addTestSuite(MessageTest.class);
 		suite.addTestSuite(ModuleCommunicationBusTest.class);
 		suite.addTestSuite(DTNHostTest.class);
+		suite.addTestSuite(LevyWalkTest.class);
 		//$JUnit-END$
 		return suite;
 	}

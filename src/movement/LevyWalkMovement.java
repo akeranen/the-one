@@ -9,11 +9,13 @@ import util.LevyDistribution;
  * Uses Levy Distribution by Mark N. Read to chose distance
  *
  */
-public class LevyWalkMovement extends MovementModel {
+public class LevyWalkMovement extends MovementModel implements SwitchableMovement {
 
     private Coord lastWaypoint;
-    //Set max Path Length to the min(maxX,maxY)
-    private double maxPathLength=(getMaxX()>getMaxY()) ? getMaxY() : getMaxX();
+    //Initially set radius to half of max(maxX,maxY)
+    private double radius =((getMaxX()>getMaxY()) ? getMaxX() : getMaxY())/(double)2;
+    //Initially set center to center of the map
+    private Coord center=new Coord(getMaxX()/2, getMaxY()/(double)2);
 
     public LevyWalkMovement(Settings settings){
         super(settings);
@@ -34,25 +36,33 @@ public class LevyWalkMovement extends MovementModel {
         Path p;
         p = new Path(generateSpeed());
         p.addWaypoint(lastWaypoint.clone());
-        double maxX = getMaxX();
-        double maxY = getMaxY();
 
-        Coord c;
-        while (true) {
+        //Set impossible value so we notice if the actual choosing of
+        // coordinates breaks
+        Coord c = new Coord(-1,-1);
+
+        boolean pointFound=false;
+        while (!pointFound) {
+
+            //Choose distance using Levy Distribution
+            double distance = LevyDistribution.samplePositive(2);
 
             //Get a random value from [0, 2*Pi]
             double angle = rng.nextDouble() * 2 * Math.PI;
-
-            //Choose distance using Levy Distribution
-            double distance = LevyDistribution.sample_positive(2, maxPathLength);
 
             double x = lastWaypoint.getX() + distance * Math.cos(angle);
             double y = lastWaypoint.getY() + distance * Math.sin(angle);
 
             c = new Coord(x,y);
 
-            if (x > 0 && y > 0 && x < maxX && y < maxY) {
-                break;
+            //Is our new point not within the simulation area?
+            // Then we need to change the angle again
+            if (x < 0 || y < 0 || x > getMaxX() || y > getMaxY()) {
+                continue;
+            }
+            // Is our new point and within our radius? Then we can stop searching and add it.
+            if (c.distance(center)<=radius){
+                pointFound = true;
             }
         }
 
@@ -64,12 +74,8 @@ public class LevyWalkMovement extends MovementModel {
 
     @Override
     public Coord getInitialLocation() {
-        Coord c
-                = new Coord( MovementModel.rng.nextDouble() * super.getMaxX(),
-                MovementModel.rng.nextDouble() * super.getMaxY() );
-        this.lastWaypoint = c;
-
-        return c;
+        this.lastWaypoint = center;
+        return center;
     }
 
     @Override
@@ -77,4 +83,35 @@ public class LevyWalkMovement extends MovementModel {
         return new LevyWalkMovement(this);
     }
 
+    public boolean setRadius(double radius){
+        double maxDistance = (getMaxX()>getMaxY()) ? getMaxX() : getMaxY();
+        if (radius>0 && radius<=maxDistance){
+            this.radius=radius;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setCenter(Coord center){
+        if (center.getX()>=0 && center.getX() <= getMaxX() && center.getY()>=0 && center.getY() <=getMaxY()){
+            this.center=center;
+            return true;
+        }
+        else return false;
+    }
+
+    @Override
+    public void setLocation(Coord lastWaypoint) {
+        this.lastWaypoint = lastWaypoint;
+    }
+
+    @Override
+    public Coord getLastLocation() {
+        return lastWaypoint;
+    }
+
+    @Override
+    public boolean isReady() {
+        return true;
+    }
 }

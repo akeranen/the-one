@@ -34,7 +34,7 @@ public class LevyDistribution
 {
 	private static Random rnd = new Random();
 
-	private static double bounded_uniform(double low, double high)
+	private static double boundedUniform(double low, double high)
 	{
 		// returns a double in inverval (0,1). IE, neither zero nor one will be returned. 		
 		double x = nextDouble();
@@ -57,19 +57,19 @@ public class LevyDistribution
 	 * @param mu must lie between 1 and 3. Corresponds to 1/x and 1/x^3
 	 * @return A levy-distributed double. May be negative.
 	 */
-	public static double sample(double mu)
+	private static double sample(double mu)
 	{
-		double X = bounded_uniform(-Math.PI/2.0, Math.PI/2.0);
-		double Y = -Math.log(nextDouble());
+		double x = boundedUniform(-Math.PI/2.0, Math.PI/2.0);
+		double y = -Math.log(nextDouble());
 		double alpha = mu - 1.0;
 		// there's a lot going on here, written over several lines to aid clarity.
-		return 	(	Math.sin(alpha * X)
+		return 	(	Math.sin(alpha * x)
 				/
-				Math.pow( Math.cos(X) , 1.0 / alpha )
+				Math.pow( Math.cos(x) , 1.0 / alpha )
 		)
 				*
 				Math.pow(
-						Math.cos((1.0-alpha) * X) / Y,
+						Math.cos((1.0-alpha) * x) / y,
 						(1.0 - alpha) / alpha)
 				;
 	}
@@ -80,7 +80,7 @@ public class LevyDistribution
 	 * @param mu
 	 * @return
 	 */
-	public static double sample_positive(double mu, double scale)
+	public static double samplePositive(double mu, double scale)
 	{
 		double l = sample(mu) * scale;
 		if (l < 0.0)
@@ -89,8 +89,8 @@ public class LevyDistribution
 	}
 
 	/** Default value case, scale=1 */
-	public static double sample_positive(double mu)
-	{	return sample_positive(mu, 1.0);		}
+	public static double samplePositive(double mu)
+	{	return samplePositive(mu, 1.0);		}
 
 
     /**

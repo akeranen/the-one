@@ -11,11 +11,12 @@ import util.LevyDistribution;
  */
 public class LevyWalkMovement extends MovementModel implements SwitchableMovement {
 
+    private static final double TWO = 2.0;
     private Coord lastWaypoint;
     //Initially set radius to half of max(maxX,maxY)
-    private double radius =((getMaxX()>getMaxY()) ? getMaxX() : getMaxY())/(double)2;
+    private double radius = Math.max(getMaxX(), getMaxY())/TWO;
     //Initially set center to center of the map
-    private Coord center=new Coord(getMaxX()/2, getMaxY()/(double)2);
+    private Coord center=new Coord(getMaxX()/TWO, getMaxY()/TWO);
 
     public LevyWalkMovement(Settings settings){
         super(settings);
@@ -45,10 +46,10 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
         while (!pointFound) {
 
             //Choose distance using Levy Distribution
-            double distance = LevyDistribution.samplePositive(2, rng);
+            double distance = LevyDistribution.samplePositive(TWO, rng);
 
             //Get a random value from [0, 2*Pi]
-            double angle = rng.nextDouble() * 2 * Math.PI;
+            double angle = rng.nextDouble() * TWO * Math.PI;
 
             double x = lastWaypoint.getX() + distance * Math.cos(angle);
             double y = lastWaypoint.getY() + distance * Math.sin(angle);
@@ -84,7 +85,7 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
     }
 
     public boolean setRadius(double radius){
-        double maxDistance = (getMaxX()>getMaxY()) ? getMaxX() : getMaxY();
+        double maxDistance = Math.max(getMaxX(),getMaxY());
         if (radius>0 && radius<=maxDistance){
             this.radius=radius;
             return true;
@@ -96,8 +97,9 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
         if (center.getX()>=0 && center.getX() <= getMaxX() && center.getY()>=0 && center.getY() <=getMaxY()){
             this.center=center;
             return true;
+        } else {
+            return false;
         }
-        else return false;
     }
 
     @Override

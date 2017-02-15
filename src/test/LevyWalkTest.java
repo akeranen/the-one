@@ -2,13 +2,15 @@ package test;
 
 import core.Coord;
 import core.Settings;
-import junit.framework.TestCase;
 import movement.LevyWalkMovement;
 import movement.Path;
 import org.junit.Before;
-import util.LevyDistribution;
+import org.junit.Test;
 
 import java.util.List;
+
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -17,12 +19,16 @@ import java.util.List;
  *
  * @author MelanieBruns
  */
-public class LevyWalkTest extends TestCase{
+public class LevyWalkTest{
 
     private LevyWalkMovement levy;
+    private static final int MAX_COORD = 1000;
+    private static final int TEST_RUNS = 2000;
+    private static final int TEST_RADIUS = 100;
+    private static final int CENTER_COORD = 500;
+    private static final int EDGE_COORD = 50;
 
     @Before
-    @Override
     public void setUp(){
         Settings.init(null);
         java.util.Locale.setDefault(java.util.Locale.US);
@@ -31,6 +37,7 @@ public class LevyWalkTest extends TestCase{
         levy.getInitialLocation();
     }
 
+    @Test
     public void testGetPath(){
         Path path = levy.getPath();
         assertNotNull(path);
@@ -41,12 +48,13 @@ public class LevyWalkTest extends TestCase{
         //Bounds in test Settings are 1000x1000
         assertTrue( nextWaypoint.getX()>=0);
         assertTrue( nextWaypoint.getY()>=0);
-        assertTrue( nextWaypoint.getX()<=1000);
-        assertTrue( nextWaypoint.getY()<=1000);
+        assertTrue( nextWaypoint.getX()<=MAX_COORD);
+        assertTrue( nextWaypoint.getY()<=MAX_COORD);
     }
 
+    @Test
     public void testStaysWithinDefaultBounds(){
-        for (int i=1; i<2000; i++){
+        for (int i=1; i<TEST_RUNS; i++){
             Path p = levy.getPath();
             List<Coord> coords = p.getCoords();
             Coord nextWaypoint = coords.get(1);
@@ -54,48 +62,47 @@ public class LevyWalkTest extends TestCase{
             //Bounds in test Settings are 1000x1000
             assertTrue( nextWaypoint.getX()>=0);
             assertTrue( nextWaypoint.getY()>=0);
-            assertTrue( nextWaypoint.getX()<=1000);
-            assertTrue( nextWaypoint.getY()<=1000);
+            assertTrue( nextWaypoint.getX()<=MAX_COORD);
+            assertTrue( nextWaypoint.getY()<=MAX_COORD);
         }
     }
 
+    @Test
     public void testStaysWithinRadius(){
-        double radius = 100;
-        boolean success = levy.setRadius(radius);
+        boolean success = levy.setRadius(TEST_RADIUS);
         assertTrue(success);
-        Coord center = new Coord(400,500);
+        Coord center = new Coord(CENTER_COORD, CENTER_COORD);
         success = levy.setCenter(center);
         assertTrue(success);
-        for (int i=1; i<2000; i++){
+        for (int i=1; i<TEST_RUNS; i++){
             Path p = levy.getPath();
             List<Coord> coords = p.getCoords();
             Coord nextWaypoint = coords.get(1);
             assertNotNull(nextWaypoint);
             //Bounds in test Settings are 1000x1000
-            assertTrue(center.distance(nextWaypoint)<=radius);
+            assertTrue(center.distance(nextWaypoint)<=TEST_RADIUS);
         }
     }
 
-
+    @Test
     public void testStaysWithinRadiusAndSimulationArea(){
         //Set movement area, so that it is partially cut by simulation area bounds
-        double radius = 100;
-        boolean success = levy.setRadius(radius);
+        boolean success = levy.setRadius(TEST_RADIUS);
         assertTrue(success);
-        Coord center = new Coord(50,500);
+        Coord center = new Coord(EDGE_COORD, CENTER_COORD);
         success = levy.setCenter(center);
         assertTrue(success);
-        for (int i=1; i<2000; i++){
+        for (int i=1; i<TEST_RUNS; i++){
             Path p = levy.getPath();
             List<Coord> coords = p.getCoords();
             Coord nextWaypoint = coords.get(1);
             assertNotNull(nextWaypoint);
             //Bounds in test Settings are 1000x1000
-            assertTrue(center.distance(nextWaypoint)<=radius);
+            assertTrue(center.distance(nextWaypoint)<=TEST_RADIUS);
             assertTrue( nextWaypoint.getX()>=0);
             assertTrue( nextWaypoint.getY()>=0);
-            assertTrue( nextWaypoint.getX()<=1000);
-            assertTrue( nextWaypoint.getY()<=1000);
+            assertTrue( nextWaypoint.getX()<=MAX_COORD);
+            assertTrue( nextWaypoint.getY()<=MAX_COORD);
         }
     }
 

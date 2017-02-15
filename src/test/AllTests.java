@@ -33,6 +33,7 @@ import org.junit.runners.Suite;
 		TotalContactTimeReportTest.class,
 		EpidemicRouterTest.class,
 		ProphetRouterTest.class,
+		MessageRouterTest.class,
 		SettingsTest.class,
 		DijkstraPathFinderTest.class,
 		PointsOfInterestTest.class,

@@ -55,7 +55,7 @@ public class DeliveredMessagesReport extends Report implements MessageListener {
 			write(format(getSimTime()) + " " + m.getId() + " " +
 					m.getSize() + " " + m.getHopCount() + " " +
 					format(getSimTime() - m.getCreationTime()) + " " +
-					m.getFrom() + " " + m.recipientsToString() + " " +
+					m.getFrom() + " " + to + " " +
 					(ttl != Integer.MAX_VALUE ? ttl : "n/a") +
 					(m.isResponse() ? " Y " : " N ") + getPathString(m));
 		}

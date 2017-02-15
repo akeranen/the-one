@@ -89,6 +89,7 @@ public class PanicMovementTest extends TestCase {
 		pm.getInitialLocation();
 		Path path = pm.getPath();
 		c = path.getNextWaypoint();
+		assert c != null;
 
 		while (path.hasNext()) {
 			c2 = path.getNextWaypoint();
@@ -103,6 +104,7 @@ public class PanicMovementTest extends TestCase {
 
 		setupMapData(null, "1,1", null);
 		DTNHost[] h = new DTNHost[NROF];
+		assert h != null;
 		
 		for (int i=0; i<NROF; i++) {
 			h[i] = setupHost();

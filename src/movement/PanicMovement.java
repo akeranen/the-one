@@ -12,6 +12,9 @@ import movement.map.SimMap;
 public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
     
 	private Coord eventLocation;
+	private static final double c1000 = 1000.0;
+	private static final double INNER_ZONE = 300.0;
+	private static final double OUTER_ZONE = 500.0;
 	
 	public PanicMovement (Settings settings, Coord eventLocation, double securityZone, double outerZone) {
 		super(settings);
@@ -22,9 +25,9 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	
 	public PanicMovement (Settings settings) {
 		super(settings);
-		this.eventLocation = new Coord(1000,1000);
+		this.eventLocation = new Coord(c1000, c1000);
 		this.pois = new PanicPointsOfInterest(getMap(), getOkMapNodeTypes(),
-				settings, rng, eventLocation, 300, 500);
+				settings, rng, eventLocation, INNER_ZONE, OUTER_ZONE);
 	}
 	
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
@@ -44,7 +47,8 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, to);
 
 		// this assertion should never fire if the map is checked in read phase
-		assert nodePath.size() > 0 : "No path from " + hostNode + " to " +
+		int pathSize = nodePath.size();
+		assert pathSize > 0 : "No path from " + hostNode + " to " +
 			to + ". The simulation map isn't fully connected";
 
 		for (MapNode node : nodePath) { // create a Path from the shortest path
@@ -82,7 +86,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	private MapNode getNextNode(SimMap map, Coord location) {
 		List<MapNode> list = map.getNodes();
 		MapNode bestNode = null;
-		double distance = 0, bestDistance = 0;
+		double distance, bestDistance = 0;
 		
 		for (MapNode node : list) {
 			distance = location.distance(node.getLocation());

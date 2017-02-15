@@ -14,6 +14,10 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 	public double securityZone;
 	public double outerZone;
 	private Coord locationEvent;
+	public static final double C90 = 90.0;
+	public static final double C180 = 180.0;
+	public static final double C360 = 360.0;
+	
 	
 	public PanicPointsOfInterest(SimMap parentMap, int [] okMapNodeTypes, 
 			Settings settings, Random rng, Coord locationEvent,
@@ -60,41 +64,37 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 		MapNode bestNode = null;
 		double bestDistance = 0;
 		
+		
 		if (locationEvent.distance(lastMapNode.getLocation()) < outerZone &&
 			locationEvent.distance(lastMapNode.getLocation()) > securityZone) {
-			return lastMapNode; //everything's fine
+			 //everything's fine
+			return lastMapNode;
 		}
 		
 		for (MapNode node : map.getNodes()) {
-			if (locationEvent.distance(node.getLocation()) < securityZone) {
-				continue; // point is not far enough away from the event
-			}
-			if (locationEvent.distance(node.getLocation()) > outerZone) {
-				continue; // point is not close enough to the event to search for help
-			}
-			if (bestNode != null) {
-				if (lastMapNode.getLocation().distance(node.getLocation()) > bestDistance) {
-					continue; //nearer node is already known		
-				}
-			}
-			if (lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) == 0) {
-				angle = 180; // otherwise, division by zero. Every angle should be fine
-			}
-			else {
-			angle = Math.acos(scalarProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) /
-				              lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation())) * 360/Math.PI;
-			}
-			if (Math.abs(angle - 180) < 90) {
-				bestNode = node; // node meets all conditions
-				bestDistance = lastMapNode.getLocation().distance(node.getLocation());
-			}
+			if (locationEvent.distance(node.getLocation()) >= securityZone 
+				&& locationEvent.distance(node.getLocation()) <= outerZone 
+				&& (bestNode == null || lastMapNode.getLocation().distance(node.getLocation()) < bestDistance))
+					if (lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) == 0.0) {
+						// otherwise, division by zero. Every angle should be fine
+						angle = 180; 
+					}
+					else {
+					angle = Math.acos(scalarProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) /
+						              lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation())) * C360/Math.PI;
+					}
+						
+					if (Math.abs(angle - C180) < C90) {
+						// node meets all conditions
+						bestNode = node; 
+						bestDistance = lastMapNode.getLocation().distance(node.getLocation());
+					}
 		}
 		
 		// if no better node is found, the node can stay at the current location
 		if (bestNode == null) {
 			return lastMapNode;
-		}
-		else {
+		} else {
 			return bestNode;
 		}
 	}

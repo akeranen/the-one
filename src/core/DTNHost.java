@@ -418,15 +418,13 @@ public class DTNHost implements Comparable<DTNHost> {
 		Class c;
 		try {
 			c = Class.forName("movement.PanicMovement");
-		}
-		catch (ClassNotFoundException cnfe) {
-			c = null;
+		} catch (ClassNotFoundException cnfe) {
+			throw new SimError("Class PanicMovement not found!");
 		}
 		if (path == null) {
 			if (movement.getClass().equals(c)) {
 				path = ((PanicMovement)movement).getPath(this);
-			}
-			else {
+			} else {
 				path = movement.getPath();
 			}
 		}

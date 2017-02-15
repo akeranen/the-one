@@ -45,7 +45,7 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
         while (!pointFound) {
 
             //Choose distance using Levy Distribution
-            double distance = LevyDistribution.samplePositive(2);
+            double distance = LevyDistribution.samplePositive(2, rng);
 
             //Get a random value from [0, 2*Pi]
             double angle = rng.nextDouble() * 2 * Math.PI;

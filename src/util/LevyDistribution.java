@@ -2,6 +2,7 @@ package util;
 
 import java.util.Random;
 
+
 /**
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,15 +33,14 @@ import java.util.Random;
  */
 public class LevyDistribution
 {
-	private static Random rnd = new Random();
 
 	private LevyDistribution(){
 		//Empty constructor so no one tries to make an object from this util class
 	}
-	private static double boundedUniform(double low, double high)
+	private static double boundedUniform(double low, double high, Random rng)
 	{
 		// returns a double in inverval (0,1). IE, neither zero nor one will be returned. 		
-		double x = nextDouble();
+		double x = nextDouble(rng);
 
 		double range = high - low;
 		x *= range;	// scale onto the required range of values
@@ -60,10 +60,10 @@ public class LevyDistribution
 	 * @param mu must lie between 1 and 3. Corresponds to 1/x and 1/x^3
 	 * @return A levy-distributed double. May be negative.
 	 */
-	private static double sample(double mu)
+	private static double sample(double mu, Random rng)
 	{
-		double x = boundedUniform(-Math.PI/2.0, Math.PI/2.0);
-		double y = -Math.log(nextDouble());
+		double x = boundedUniform(-Math.PI/2.0, Math.PI/2.0, rng);
+		double y = -Math.log(nextDouble(rng));
 		double alpha = mu - 1.0;
 		// there's a lot going on here, written over several lines to aid clarity.
 		return 	(	Math.sin(alpha * x)
@@ -81,17 +81,17 @@ public class LevyDistribution
 	 * Same as above, but ensures all values are positive. Negative values are simply negated, as the Levy distribution
 	 * represented is symmetrical around zero.
 	 */
-	public static double samplePositive(double mu, double scale)
+	public static double samplePositive(double mu, double scale, Random rng)
 	{
-		double l = sample(mu) * scale;
+		double l = sample(mu, rng) * scale;
 		if (l < 0.0)
 		{	return -1.0 * l;	}
 		return l;
 	}
 
 	/** Default value case, scale=1 */
-	public static double samplePositive(double mu)
-	{	return samplePositive(mu, 1.0);		}
+	public static double samplePositive(double mu, Random rng)
+	{	return samplePositive(mu, 1.0, rng);		}
 
 
     /**
@@ -99,17 +99,17 @@ public class LevyDistribution
      * another library just for that
      * @return A double value uniformly chosen from (0,1)
      */
-	private static double nextDouble(){
+	private static double nextDouble(Random rng){
 		//Use Java.Util.Random to generate values between 0 and 1
-		double nextDouble=rnd.nextDouble();
+		double nextDouble=rng.nextDouble();
 
 		//We have trouble with 0 and 1 so we check if we got one of those
-		if (nextDouble<=0 && nextDouble >=1){
+		if (nextDouble>0 && nextDouble <1){
 			return nextDouble;
 		}
 		else{
 			//In the unlikely case we got precisely 0 or 1, we just try again until we find another value
-			return nextDouble();
+			return nextDouble(rng);
 		}
 	}
 

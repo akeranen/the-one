@@ -3,10 +3,47 @@
  * Released under GPLv3. See LICENSE.txt for details.
  */
 package test;
+import core.SettingsError;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import core.SettingsError;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
+
+
+
+@RunWith(Suite.class)
+
+@Suite.SuiteClasses({
+		WorldTest.class,
+		ConnectionTest.class,
+		ExternalMovementReaderTest.class,
+		ExternalMovementTest.class,
+		WKTReaderTest.class,
+		WKTPointReaderTest.class,
+		MapNodeTest.class,
+		MapBasedMovementTest.class,
+		CoordTest.class,
+		DistanceDelayReportTest.class,
+		AdjacencyGraphvizReportTest.class,
+		MessageGraphvizReportTest.class,
+		ExternalEventsQueueTest.class,
+		ContactTimesReportTest.class,
+		TotalContactTimeReportTest.class,
+		EpidemicRouterTest.class,
+		ProphetRouterTest.class,
+		SettingsTest.class,
+		DijkstraPathFinderTest.class,
+		PointsOfInterestTest.class,
+		ActivenessHandlerTest.class,
+		MaxPropDijkstraTest.class,
+		MaxPropRouterTest.class,
+		ScheduledUpdatesQueueTest.class,
+		MessageTest.class,
+		ModuleCommunicationBusTest.class,
+		DTNHostTest.class
+})
 
 public class AllTests {
 
@@ -16,7 +53,6 @@ public class AllTests {
 			TestSettings.init(null);
 		} catch (SettingsError e) {
 			e.printStackTrace();
-			System.exit(-1);
 		}
 
 		// set US locale to parse decimals in consistent way

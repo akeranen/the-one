@@ -32,6 +32,7 @@ public class WKTPointReaderTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
+		java.util.Locale.setDefault(java.util.Locale.US);
 		r = new WKTReader();
 	}
 

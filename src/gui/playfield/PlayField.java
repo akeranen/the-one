@@ -202,9 +202,10 @@ public class PlayField extends JPanel {
 			new NodeGraphic(h).draw(g2);
 		}
 		
-		// draw highlited hosts
+		// draw highlighted hosts and their paths
 		for (DTNHost h : highlightedHosts) {
 			new NodeGraphic(h).draw(g2);
+			new PathGraphic(h.getPath()).draw(g2);
 		}
 
 		// draw overlay graphics

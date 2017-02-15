@@ -41,6 +41,7 @@ import org.junit.runners.Suite;
 		MaxPropRouterTest.class,
 		ScheduledUpdatesQueueTest.class,
 		MessageTest.class,
+		BroadcastMessageTest.class,
 		ModuleCommunicationBusTest.class,
 		DTNHostTest.class
 })

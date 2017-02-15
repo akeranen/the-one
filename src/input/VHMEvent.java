@@ -18,42 +18,10 @@ public class VHMEvent extends ExternalEvent {
         HOSPITAL
     }
 
-    public VHMEventType getType() {
-        return type;
-    }
-
-    public double getStartTime() {
-        return startTime;
-    }
-
-    public double getEndTime() {
-        return endTime;
-    }
-
-    public Coord getLocation() {
-        return location;
-    }
-
-    public double getEventRange() {
-        return eventRange;
-    }
-
-    public double getSafeRange() {
-        return safeRange;
-    }
-
-    public double getMaxRange() {
-        return maxRange;
-    }
-
-    public int getIntensity() {
-        return intensity;
-    }
-
     private VHMEventType type;
     private double startTime;
     private double endTime;
-    private Coord location;
+    private transient Coord location;
     private double eventRange;
     private double safeRange;
     private double maxRange;
@@ -73,6 +41,43 @@ public class VHMEvent extends ExternalEvent {
         assert intensity >= MIN_INTENSITY && intensity <= MAX_INTENSITY : "Intensity must be integer between " + MIN_INTENSITY
                 + " and " + MAX_INTENSITY;
         this.intensity = intensity;
+    }
+
+    public VHMEvent(VHMEvent event){
+        this(event.type,event.startTime,event.endTime,event.location.clone(),event.eventRange,event.safeRange,
+                event.maxRange,event.intensity);
+    }
+
+    public VHMEventType getType() {
+        return type;
+    }
+
+    public double getStartTime() {
+        return startTime;
+    }
+
+    public double getEndTime() {
+        return endTime;
+    }
+
+    public Coord getLocation() {
+        return location.clone();
+    }
+
+    public double getEventRange() {
+        return eventRange;
+    }
+
+    public double getSafeRange() {
+        return safeRange;
+    }
+
+    public double getMaxRange() {
+        return maxRange;
+    }
+
+    public int getIntensity() {
+        return intensity;
     }
 
 }

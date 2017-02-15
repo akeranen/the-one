@@ -55,8 +55,17 @@ public class Message implements Comparable<Message> {
 		DTNSim.registerForReset(Message.class.getCanonicalName());
 	}
 
+    /**
+     * Type of the message.
+     */
     public enum MessageType {
+        /**
+         * Message with single sender and recipient.
+         */
         ONE_TO_ONE,
+        /**
+         * Message which should be sent to everyone.
+         */
         BROADCAST
     }
 

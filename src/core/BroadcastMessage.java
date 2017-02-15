@@ -3,7 +3,7 @@ package core;
 /**
  * Message which should be delivered to every node.
  *
- * Created by Britta on 10.02.2017.
+ * Created by Britta Heymann on 10.02.2017.
  */
 public class BroadcastMessage extends Message {
     /**

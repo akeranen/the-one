@@ -34,6 +34,9 @@ public class LevyDistribution
 {
 	private static Random rnd = new Random();
 
+	private LevyDistribution(){
+		//Empty constructor so no one tries to make an object from this util class
+	}
 	private static double boundedUniform(double low, double high)
 	{
 		// returns a double in inverval (0,1). IE, neither zero nor one will be returned. 		
@@ -76,9 +79,7 @@ public class LevyDistribution
 
 	/**
 	 * Same as above, but ensures all values are positive. Negative values are simply negated, as the Levy distribution
-	 * represented is symmetrical around zero.  
-	 * @param mu
-	 * @return
+	 * represented is symmetrical around zero.
 	 */
 	public static double samplePositive(double mu, double scale)
 	{
@@ -103,7 +104,7 @@ public class LevyDistribution
 		double nextDouble=rnd.nextDouble();
 
 		//We have trouble with 0 and 1 so we check if we got one of those
-		if (nextDouble!=0 && nextDouble !=1){
+		if (nextDouble<=0 && nextDouble >=1){
 			return nextDouble;
 		}
 		else{
@@ -111,4 +112,5 @@ public class LevyDistribution
 			return nextDouble();
 		}
 	}
+
 }

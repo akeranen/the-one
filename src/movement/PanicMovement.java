@@ -13,14 +13,26 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
     
 	private Coord eventLocation;
 	
+	public PanicMovement (Settings settings, Coord eventLocation, double securityZone, double outerZone) {
+		super(settings);
+		this.eventLocation = eventLocation;
+		this.pois = new PanicPointsOfInterest(getMap(), getOkMapNodeTypes(),
+					settings, rng, eventLocation, securityZone, outerZone);
+	}
+	
 	public PanicMovement (Settings settings) {
 		super(settings);
-		// Only temporary solution for testing issues!
-		//eventLocation = new Coord(getMaxX() / 4, getMaxY() / 4);
-		eventLocation = new Coord(1000.0, 1000.0);
-		
+		this.eventLocation = new Coord(1000,1000);
 		this.pois = new PanicPointsOfInterest(getMap(), getOkMapNodeTypes(),
-					settings, rng, eventLocation);
+				settings, rng, eventLocation, 300, 500);
+	}
+	
+	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
+			Coord eventLocation, double securityZone, double outerZone) {
+		super(settings, newMap, nrofMaps );
+		this.eventLocation = eventLocation;
+		this.pois = new PanicPointsOfInterest(newMap, getOkMapNodeTypes(),
+					settings, rng, eventLocation, securityZone, outerZone);
 	}
 	
 	public Path getPath(DTNHost host) {
@@ -73,7 +85,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		double distance = 0, bestDistance = 0;
 		
 		for (MapNode node : list) {
-			distance = PanicPointsOfInterest.getDistance(location, node.getLocation());
+			distance = location.distance(node.getLocation());
 			if (bestNode == null) {
 				bestNode = node;
 				bestDistance = distance;

@@ -4,7 +4,7 @@ import core.World;
 import movement.VoluntaryHelperMovement;
 
 /**
- * Created by mellich on 15.02.17.
+ * Created by Marius Meyer on 15.02.17.
  */
 public class VHMEventEndEvent extends VHMEvent {
 

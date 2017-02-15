@@ -381,7 +381,9 @@ public abstract class MessageRouter {
             // not the (last) final recipient and app doesn't want to drop the message
 			// -> put to buffer
 			addToMessages(aMessage, false);
-		} else if (isFirstDelivery) {
+		}
+
+		if (isFirstDelivery) {
 			this.deliveredMessages.put(id, aMessage);
 		} else if (outgoing == null) {
 			// Blacklist messages that an app wants to drop.

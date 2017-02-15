@@ -11,6 +11,7 @@ import report.MovementListenerTestReport;
 import report.Report;
 import ui.DTNSimUI;
 
+import java.io.ByteArrayInputStream;
 import java.io.StringBufferInputStream;
 import java.net.URLClassLoader;
 
@@ -72,7 +73,7 @@ public class MovementListenerTest {
 
 		// Setup the settings
 		Settings.initFromStream(
-				new StringBufferInputStream(INITIAL_LOC_TEST_SETTINGS));
+				new ByteArrayInputStream(INITIAL_LOC_TEST_SETTINGS.getBytes("UTF-8")));
 		final DTNSimUI ui = new DTNSimUI() {
 			@Override
 			protected void runSim() {

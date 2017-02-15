@@ -42,6 +42,7 @@ import org.junit.runners.Suite;
 		ScheduledUpdatesQueueTest.class,
 		MessageTest.class,
 		BroadcastMessageTest.class,
+		BroadcastCreateEventTest.class,
 		ModuleCommunicationBusTest.class,
 		DTNHostTest.class
 })

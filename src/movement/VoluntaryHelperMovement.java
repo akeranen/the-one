@@ -66,6 +66,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
         return true;
     }
 
+    /**
+     * Returns the SimMap this movement model uses
+     * @return The SimMap this movement model uses
+     */
     public SimMap getMap() {
         return spmbm.getMap();
     }

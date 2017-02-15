@@ -2,6 +2,7 @@ package movement;
 
 import core.Coord;
 import core.Settings;
+import movement.map.SimMap;
 
 /**
  * This movement model simulates the movement of voluntary helpers in a disaster region.
@@ -12,12 +13,7 @@ import core.Settings;
  */
 public class VoluntaryHelperMovement extends ExtendedMovementModel{
 
-    /**
-     * Creates a new VoluntaryHelperMovement
-     */
-    public VoluntaryHelperMovement() {
-        super();
-    }
+    private ShortestPathMapBasedMovement spmbm;
 
     /**
      * Creates a new VoluntaryHelperMovement
@@ -25,6 +21,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     public VoluntaryHelperMovement(Settings settings) {
         super(settings);
+        spmbm = new ShortestPathMapBasedMovement(settings);
+        setCurrentMovementModel(spmbm);
     }
 
     /**
@@ -33,18 +31,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     public VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
         super(prototype);
-    }
-
-    /**
-     * Returns a new path by this movement model or null if no new path could
-     * be constructed at the moment (node should wait where it is). A new
-     * path should not be requested before the destination of the previous
-     * path has been reached.
-     * @return A new path or null
-     */
-    @Override
-    public Path getPath(){
-        return null;
+        spmbm = new ShortestPathMapBasedMovement(prototype.spmbm);
+        setCurrentMovementModel(spmbm);
     }
 
     /**
@@ -53,7 +41,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     @Override
     public Coord getInitialLocation(){
-        return null;
+        return spmbm.getInitialLocation();
     }
 
     /**
@@ -62,7 +50,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     @Override
     public MovementModel replicate(){
-        return null;
+        return new VoluntaryHelperMovement(this);
     }
 
     /**
@@ -74,6 +62,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     @Override
     public boolean newOrders(){
-        return false;
+
+        return true;
+    }
+
+    public SimMap getMap() {
+        return spmbm.getMap();
     }
 }

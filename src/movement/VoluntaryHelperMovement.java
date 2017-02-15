@@ -2,7 +2,12 @@ package movement;
 
 import core.Coord;
 import core.Settings;
+import core.VHMListener;
+import input.VHMEvent;
 import movement.map.SimMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This movement model simulates the movement of voluntary helpers in a disaster region.
@@ -11,9 +16,10 @@ import movement.map.SimMap;
  * Created by Ansgar Mährlein on 08.02.2017.
  * @author Ansgar Mährlein
  */
-public class VoluntaryHelperMovement extends ExtendedMovementModel{
+public class VoluntaryHelperMovement extends ExtendedMovementModel implements VHMListener {
 
     private ShortestPathMapBasedMovement spmbm;
+    private static List<VHMListener> listeners = new ArrayList<>();
 
     /**
      * Creates a new VoluntaryHelperMovement
@@ -23,6 +29,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
         super(settings);
         spmbm = new ShortestPathMapBasedMovement(settings);
         setCurrentMovementModel(spmbm);
+        VoluntaryHelperMovement.addListener(this);
     }
 
     /**
@@ -33,6 +40,33 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
         super(prototype);
         spmbm = new ShortestPathMapBasedMovement(prototype.spmbm);
         setCurrentMovementModel(spmbm);
+        VoluntaryHelperMovement.addListener(this);
+    }
+
+    /**
+     * Adds a VHMListener that will be notified of events starting and ending.
+     * @param listener The listener that is added.
+     */
+    public static void addListener(VHMListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Informs all registered VHMListeners, that a VHMEvent started
+     * @param event The VHMEvent.
+     */
+    public static void eventStarted(VHMEvent event) {
+        for (VHMListener l : listeners)
+            l.vhmEventStarted(event);
+    }
+
+    /**
+     * Informs all registered VHMListeners, that a VHMEvent ended
+     * @param event The VHMEvent.
+     */
+    public static void eventEnded(VHMEvent event) {
+        for (VHMListener l : listeners)
+            l.vhmEventEnded(event);
     }
 
     /**
@@ -62,7 +96,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     @Override
     public boolean newOrders(){
-
         return true;
     }
 
@@ -72,5 +105,25 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel{
      */
     public SimMap getMap() {
         return spmbm.getMap();
+    }
+
+    /**
+     * This Method is called when a VHMEvent starts
+     *
+     * @param event The VHMEvent
+     */
+    @Override
+    public void vhmEventStarted(VHMEvent event) {
+        //TODO handle the event
+    }
+
+    /**
+     * This Method is called when a VHMEvent ends
+     *
+     * @param event The VHMEvent
+     */
+    @Override
+    public void vhmEventEnded(VHMEvent event) {
+        //TODO handle the event
     }
 }

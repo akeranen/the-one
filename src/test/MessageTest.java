@@ -15,6 +15,8 @@ import org.junit.Test;
 import test.TestUtils;
 import test.TestSettings;
 
+import static org.junit.Assert.assertEquals;
+
 public class MessageTest extends TestCase {
 
     private TestUtils utils;
@@ -101,4 +103,12 @@ public class MessageTest extends TestCase {
     public void testGetTypeReturnsOneToOne() {
 	    assertEquals(Message.MessageType.ONE_TO_ONE, this.msg.getType());
     }
+
+	@Test
+	public void testRecipientsToString() {
+		assertEquals(
+				"Recipient description should have been different.",
+				this.to.toString(),
+				this.msg.recipientsToString());
+	}
 }

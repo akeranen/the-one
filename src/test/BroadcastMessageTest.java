@@ -62,4 +62,12 @@ public class BroadcastMessageTest {
                 "Replicated message should have been of type BroadcastMessage.",
                 replicate instanceof BroadcastMessage);
     }
+
+    @Test
+    public void testRecipientsToString() {
+        assertEquals(
+                "Recipients descriptions should have been different.",
+                "everyone",
+                this.msg.recipientsToString());
+    }
 }

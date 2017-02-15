@@ -2,7 +2,6 @@ package input;
 
 import core.BroadcastMessage;
 import core.DTNHost;
-import core.Message;
 import core.World;
 
 /**
@@ -24,7 +23,7 @@ public class BroadcastCreateEvent extends MessageEvent {
      * @param time Time, when the message is created
      */
     public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time) {
-        super(from, -1, id, time, Message.MessageType.BROADCAST);
+        super(from, -1, id, time);
         this.size = size;
         this.responseSize = responseSize;
     }

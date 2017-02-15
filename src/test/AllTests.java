@@ -87,7 +87,6 @@ public class AllTests {
 		suite.addTestSuite(MessageTest.class);
 		suite.addTestSuite(ModuleCommunicationBusTest.class);
 		suite.addTestSuite(DTNHostTest.class);
-		suite.addTestSuite(LevyWalkTest.class);
 		//$JUnit-END$
 		return suite;
 	}

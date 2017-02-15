@@ -67,4 +67,13 @@ public class BroadcastMessage extends Message {
         m.copyFrom(this);
         return m;
     }
+
+    /**
+     * Gets the message type.
+     * @return The message type.
+     */
+    @Override
+    public MessageType getType() {
+        return MessageType.BROADCAST;
+    }
 }

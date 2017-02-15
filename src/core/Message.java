@@ -55,6 +55,11 @@ public class Message implements Comparable<Message> {
 		DTNSim.registerForReset(Message.class.getCanonicalName());
 	}
 
+    public enum MessageType {
+        ONE_TO_ONE,
+        BROADCAST
+    }
+
 	/**
 	 * Creates a new Message.
 	 * @param from Who the message is (originally) from
@@ -365,6 +370,12 @@ public class Message implements Comparable<Message> {
 	public int compareTo(Message m) {
 		return toString().compareTo(m.toString());
 	}
+
+	/**
+	 * Gets the message type.
+	 * @return The message type.
+	 */
+    public MessageType getType() { return MessageType.ONE_TO_ONE; }
 
 	/**
 	 * Resets all static fields to default values

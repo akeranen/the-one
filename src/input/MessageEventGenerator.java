@@ -6,6 +6,7 @@ package input;
 
 import java.util.Random;
 
+import core.Message;
 import core.Settings;
 import core.SettingsError;
 
@@ -193,8 +194,8 @@ public class MessageEventGenerator implements EventQueue {
      * Generates a (random) message type
      * @return message type
      */
-    private MessageEvent.MessageType drawMessageType() {
-        MessageEvent.MessageType[] messageTypes = MessageEvent.MessageType.values();
+    private Message.MessageType drawMessageType() {
+        Message.MessageType[] messageTypes = Message.MessageType.values();
         return messageTypes[rng.nextInt(messageTypes.length)];
     }
 
@@ -216,7 +217,7 @@ public class MessageEventGenerator implements EventQueue {
 		msgSize = drawMessageSize();
 		interval = drawNextEventTimeDiff();
 
-        MessageEvent.MessageType type = MessageEvent.MessageType.ONE_TO_ONE;
+        Message.MessageType type = Message.MessageType.ONE_TO_ONE;
         if (this.differentMessageTypesEnabled) {
             type = drawMessageType();
         }

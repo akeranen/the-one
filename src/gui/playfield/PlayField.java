@@ -322,5 +322,7 @@ public class PlayField extends JPanel {
 		NodeGraphic.setHighlightedNodes(highlightedHosts);
 
 		gui.setFocus(closest);
+
+		this.updateField();
 	}
 }

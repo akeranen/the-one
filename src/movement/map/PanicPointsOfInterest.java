@@ -74,10 +74,10 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 		for (MapNode node : map.getNodes()) {
 			if (locationEvent.distance(node.getLocation()) >= securityZone 
 				&& locationEvent.distance(node.getLocation()) <= outerZone 
-				&& (bestNode == null || lastMapNode.getLocation().distance(node.getLocation()) < bestDistance))
-					if (lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) == 0.0) {
+				&& (bestNode == null || lastMapNode.getLocation().distance(node.getLocation()) < bestDistance)) {
+					if (lengthProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) <= 0.0) {
 						// otherwise, division by zero. Every angle should be fine
-						angle = 180; 
+						angle = C180; 
 					}
 					else {
 					angle = Math.acos(scalarProduct(locationEvent, lastMapNode.getLocation(), node.getLocation()) /
@@ -89,6 +89,7 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 						bestNode = node; 
 						bestDistance = lastMapNode.getLocation().distance(node.getLocation());
 					}
+			}
 		}
 		
 		// if no better node is found, the node can stay at the current location

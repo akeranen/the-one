@@ -415,13 +415,9 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * should wait
 	 */
 	private boolean setNextWaypoint() {
-		Class c;
-		try {
-			c = Class.forName("movement.PanicMovement");
-		} catch (ClassNotFoundException cnfe) {
-			throw new SimError("Class PanicMovement not found!");
-		}
 		if (path == null) {
+			Class c = movement.PanicMovement.class;
+			
 			if (movement.getClass().equals(c)) {
 				path = ((PanicMovement)movement).getPath(this);
 			} else {

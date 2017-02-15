@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.List;
 
-import junit.framework.TestCase;
+import junit.framework.*;
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.Path;
@@ -89,7 +89,7 @@ public class PanicMovementTest extends TestCase {
 		pm.getInitialLocation();
 		Path path = pm.getPath();
 		c = path.getNextWaypoint();
-		assert c != null;
+		assertNotNull(c);
 
 		while (path.hasNext()) {
 			c2 = path.getNextWaypoint();
@@ -104,7 +104,7 @@ public class PanicMovementTest extends TestCase {
 
 		setupMapData(null, "1,1", null);
 		DTNHost[] h = new DTNHost[NROF];
-		assert h != null;
+		assertNotNull(h);
 		
 		for (int i=0; i<NROF; i++) {
 			h[i] = setupHost();

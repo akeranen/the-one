@@ -12,7 +12,7 @@ import movement.map.SimMap;
 public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
     
 	private Coord eventLocation;
-	private static final double c1000 = 1000.0;
+	private static final double C1000 = 1000.0;
 	private static final double INNER_ZONE = 300.0;
 	private static final double OUTER_ZONE = 500.0;
 	
@@ -25,7 +25,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	
 	public PanicMovement (Settings settings) {
 		super(settings);
-		this.eventLocation = new Coord(c1000, c1000);
+		this.eventLocation = new Coord(C1000, C1000);
 		this.pois = new PanicPointsOfInterest(getMap(), getOkMapNodeTypes(),
 				settings, rng, eventLocation, INNER_ZONE, OUTER_ZONE);
 	}

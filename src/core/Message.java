@@ -17,12 +17,12 @@ import java.util.Set;
 public class Message implements Comparable<Message> {
 	/** Value for infinite TTL of message */
 	public static final int INFINITE_TTL = -1;
-	protected DTNHost from;
+    protected DTNHost from;
 	private DTNHost to;
 	/** Identifier of the message */
-	protected String id;
+    protected String id;
 	/** Size of the message (bytes) */
-	protected int size;
+    protected int size;
 	/** List of nodes this message has passed */
 	private List<DTNHost> path;
 	/** Next unique identifier to be given */
@@ -314,7 +314,7 @@ public class Message implements Comparable<Message> {
 	 */
 	public Object getProperty(String key) {
 		if (this.properties == null) {
-			return null;
+            return null;
 		}
 		return this.properties.get(key);
 	}
@@ -336,7 +336,7 @@ public class Message implements Comparable<Message> {
 		this.properties.put(key, value);
 	}
 
-	/**
+    /**
      * Determines whether the provided node is a final recipient of the message.
      * @param host Node to check.
      * @return Whether the node is a final recipient of the message.
@@ -380,11 +380,13 @@ public class Message implements Comparable<Message> {
 		return toString().compareTo(m.toString());
 	}
 
-	/**
-	 * Gets the message type.
-	 * @return The message type.
-	 */
-    public MessageType getType() { return MessageType.ONE_TO_ONE; }
+    /**
+     * Gets the message type.
+     * @return The message type.
+     */
+    public MessageType getType() {
+        return MessageType.ONE_TO_ONE;
+    }
 
 	/**
 	 * Resets all static fields to default values

@@ -34,6 +34,7 @@ import org.junit.runners.Suite;
 		EpidemicRouterTest.class,
 		ProphetRouterTest.class,
 		MessageRouterTest.class,
+		MessageTransferAcceptPolicyTest.class,
 		SettingsTest.class,
 		DijkstraPathFinderTest.class,
 		PointsOfInterestTest.class,

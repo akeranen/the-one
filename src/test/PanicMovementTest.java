@@ -102,7 +102,7 @@ public class PanicMovementTest extends TestCase {
 			c = c2;
 		}
 	}
-	
+
 	@org.junit.Test
 	public void testHostMoving() {
 		final int NROF = 15;

@@ -99,7 +99,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 				bestDistance = distance;
 			}
 		}
-			return bestNode;
+			return bestNode;	
 	}
 	
 }

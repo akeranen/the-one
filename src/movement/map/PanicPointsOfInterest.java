@@ -1,18 +1,13 @@
 package movement.map;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
-
 import core.Settings;
-import util.Tuple;
 import core.Coord;
 
 public class PanicPointsOfInterest extends PointsOfInterest {
     
-	public double securityZone;
-	public double outerZone;
+	private double securityZone;
+	private double outerZone;
 	private Coord locationEvent;
 	public static final double C90 = 90.0;
 	public static final double C180 = 180.0;
@@ -22,7 +17,7 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 	public PanicPointsOfInterest(SimMap parentMap, int [] okMapNodeTypes, 
 			Settings settings, Random rng, Coord locationEvent,
 			double securityZone, double outerZone) {
-		super(parentMap, okMapNodeTypes, settings, rng);
+        super(parentMap, okMapNodeTypes, settings, rng);
 		this.locationEvent = locationEvent;
 		this.securityZone = securityZone;
 		this.outerZone = outerZone;
@@ -60,16 +55,29 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 	
 	public MapNode selectDestination(MapNode lastMapNode) {
 		
-		double angle = 0;
-		MapNode bestNode = null;
-		double bestDistance = 0;
-		
+		MapNode bestNode;	
 		
 		if (locationEvent.distance(lastMapNode.getLocation()) < outerZone &&
 			locationEvent.distance(lastMapNode.getLocation()) > securityZone) {
 			 //everything's fine
 			return lastMapNode;
 		}
+		
+		bestNode = iterateNodes(map, lastMapNode);
+		
+		
+		// if no better node is found, the node can stay at the current location
+		if (bestNode == null) {
+			return lastMapNode;
+		} else {
+			return bestNode;
+		}
+	}
+	
+	private MapNode iterateNodes(SimMap map, MapNode lastMapNode) {
+		double angle;
+		MapNode bestNode = null;
+		double bestDistance = 0;
 		
 		for (MapNode node : map.getNodes()) {
 			if (locationEvent.distance(node.getLocation()) >= securityZone 
@@ -92,14 +100,8 @@ public class PanicPointsOfInterest extends PointsOfInterest {
 			}
 		}
 		
-		// if no better node is found, the node can stay at the current location
-		if (bestNode == null) {
-			return lastMapNode;
-		} else {
-			return bestNode;
-		}
+		return bestNode;
 	}
-	
 	/**
 	 * Computes the scalar product between the vectors v1 (source -> target1) and v2 (source -> target2)
 	 */

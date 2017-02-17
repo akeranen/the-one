@@ -21,12 +21,13 @@ import static org.junit.Assert.assertNotNull;
  */
 public class LevyWalkTest{
 
-    private LevyWalkMovement levy;
+    private LevyWalkMovement levy = new LevyWalkMovement(new TestSettings());
     private static final int MAX_COORD = 1000;
     private static final int TEST_RUNS = 2000;
     private static final int TEST_RADIUS = 100;
     private static final int CENTER_COORD = 500;
     private static final int EDGE_COORD = 50;
+
 
     @Before
     public void setUp(){

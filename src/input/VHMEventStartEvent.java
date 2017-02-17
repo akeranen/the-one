@@ -4,6 +4,9 @@ import core.World;
 import movement.VoluntaryHelperMovement;
 
 /**
+ * This is an event class that will be used for starting VHMEvents by
+ * the VHMEventGenerator
+ *
  * Created by Marius Meyer on 15.02.17.
  */
 public class VHMEventStartEvent extends VHMEvent {

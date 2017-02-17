@@ -3,6 +3,8 @@ package input;
 import core.Coord;
 
 /**
+ * This is a container that includes all parameters of a VHMEvent
+ *
  * Created by Marius Meyer on 15.02.17.
  */
 public class VHMEvent extends ExternalEvent {
@@ -18,6 +20,7 @@ public class VHMEvent extends ExternalEvent {
         HOSPITAL
     }
 
+    //Parameters as defined in the specification of the VHM
     private VHMEventType type;
     private double startTime;
     private double endTime;

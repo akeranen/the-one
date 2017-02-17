@@ -97,9 +97,12 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 
 	/**
 	 * Reads the OK map node types from settings
-	 * @param settings The settings where the types are read
+	 * @param settings The settings where the types are reado
+	 * 
+	 * 
+	 * i
 	 */
-	protected void readOkMapNodeTypes(Settings settings) {
+	private void readOkMapNodeTypes(Settings settings) {
 		if (settings.contains(MAP_SELECT_S)) {
 			this.okMapNodeTypes = settings.getCsvInts(MAP_SELECT_S);
 			for (int i : okMapNodeTypes) {

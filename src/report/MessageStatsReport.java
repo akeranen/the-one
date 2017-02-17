@@ -78,7 +78,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 			this.nrofDropped++;
 		}
 		else {
-			this.nrofRemoved++;
+            this.nrofRemoved++;
 		}
 
 		this.msgBufferTime.add(getSimTime() - m.getReceiveTime());
@@ -129,7 +129,7 @@ public class MessageStatsReport extends Report implements MessageListener {
                 numberOfRecipients = 1;
                 break;
             case BROADCAST:
-                numberOfRecipients = this.simScenario.getHosts().size();
+                numberOfRecipients = this.simScenario.getHosts().size() - 1;
                 break;
             default:
                 throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
@@ -137,7 +137,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 
 		this.nrofCreated += numberOfRecipients;
 		if (m.getResponseSize() > 0) {
-			this.nrofResponseReqCreated += numberOfRecipients;
+            this.nrofResponseReqCreated += numberOfRecipients;
 		}
 	}
 
@@ -160,7 +160,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 		double overHead = Double.NaN;	// overhead ratio
 
 		if (this.nrofCreated > 0) {
-			deliveryProb = (1.0 * this.nrofDelivered) / this.nrofCreated;
+            deliveryProb = (1.0 * this.nrofDelivered) / this.nrofCreated;
 		}
 		if (this.nrofDelivered > 0) {
 			overHead = (1.0 * (this.nrofRelayed - this.nrofDelivered)) /

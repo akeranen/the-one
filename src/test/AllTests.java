@@ -28,6 +28,7 @@ import org.junit.runners.Suite;
 		DistanceDelayReportTest.class,
 		AdjacencyGraphvizReportTest.class,
 		MessageGraphvizReportTest.class,
+		MessageStatsReportTest.class,
 		ExternalEventsQueueTest.class,
 		ContactTimesReportTest.class,
 		TotalContactTimeReportTest.class,

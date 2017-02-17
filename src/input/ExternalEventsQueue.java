@@ -4,11 +4,11 @@
  */
 package input;
 
+import core.Settings;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import core.Settings;
 
 /**
  * Queue of external events. This class also takes care of buffering
@@ -80,7 +80,10 @@ public class ExternalEventsQueue implements EventQueue {
 		if (BinaryEventsReader.isBinaryEeFile(eventsFile)) {
 			this.reader = new BinaryEventsReader(eventsFile);
 		}
-		else {
+		else if (VHMEventReader.isVHMEventsFile(eventsFile)) {
+			this.reader = new VHMEventReader(eventsFile);
+		}
+		else{
 			this.reader = new StandardEventsReader(eventsFile);
 		}
 

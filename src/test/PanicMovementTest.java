@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import junit.framework.*;
+import org.junit.*;
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.Path;
@@ -32,6 +33,8 @@ public class PanicMovementTest extends TestCase {
 	"LINESTRING (1.0 1.0, 1.0 2.0)\n"+
 	//              n2       n7       n3       n6
 	"LINESTRING (2.0 1.0, 2.0 0.0, 3.0 0.0, 3.0 1.0)\n";
+    
+	
 	
 	private MapNode n1;
 	private Coord c1 = new Coord(1,1);
@@ -83,6 +86,7 @@ public class PanicMovementTest extends TestCase {
 		n6 = map.getNodeByCoord(c6);
 	}
 	
+	@org.junit.Test
 	public void testGetPath() {
 		setupMapData(null,null,null);
 		Coord c,c2;
@@ -99,6 +103,7 @@ public class PanicMovementTest extends TestCase {
 		}
 	}
 	
+	@org.junit.Test
 	public void testHostMoving() {
 		final int NROF = 15;
 

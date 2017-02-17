@@ -20,13 +20,15 @@ import core.Coord;
 import core.DTNHost;
 import core.Settings;
 
+/** This class tests the PanicMovement class using this
+ * topology:  n7--n5
+ *            |   |
+ *        n1--n2--n6--n3
+ *         |
+ *        n4
+ **/
 public class PanicMovementTest extends TestCase {
-	/* Topology:  n7--n5
-	 *            |   |
-	 *        n1--n2--n6--n3
-	 *         |
-	 *        n4
-	 */
+
 	//										   n1       n2       n6        n3
 	private final String WKT = "LINESTRING (1.0 1.0, 2.0 1.0, 3.0 1.0, 4.0 1.0) \n" +
 	//              n1        n4

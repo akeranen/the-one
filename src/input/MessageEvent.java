@@ -4,8 +4,6 @@
  */
 package input;
 
-import core.Message;
-
 /**
  * A message related external event
  */

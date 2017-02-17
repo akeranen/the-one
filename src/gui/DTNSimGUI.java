@@ -254,9 +254,9 @@ public class DTNSimGUI extends DTNSimUI {
 	 * @param host The node to center
 	 */
 	public void setFocus(DTNHost host) {
-		//centerViewAt(host.getLocation());
 		infoPanel.showInfo(host);
-		showPath(host.getPath()); // show path on the playfield
+        // show path on the playfield
+        showPath(host.getPath());
 	}
 
 	/**

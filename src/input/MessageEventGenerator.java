@@ -6,6 +6,7 @@ package input;
 
 import java.util.Random;
 
+import core.Message;
 import core.Settings;
 import core.SettingsError;
 
@@ -45,6 +46,11 @@ public class MessageEventGenerator implements EventQueue {
 	 * whole simulation time. */
 	public static final String MESSAGE_TIME_S = "time";
 
+    /** Whether message types can be set randomly or messages should always be 1-to-1 -setting id ({@value}).
+     * By default, only 1-to-1 messages are created. If this is set to true, broadcast and group messages may be
+     * created, too. */
+	public static final String ENABLE_DIFFERENT_TYPES_S = "differentmessagetypes";
+
 	/** Time of the next event (simulated seconds) */
 	protected double nextEventsTime = 0;
 	/** Range of host addresses that can be senders or receivers */
@@ -61,6 +67,8 @@ public class MessageEventGenerator implements EventQueue {
 	private int[] msgInterval;
 	/** Time range for message creation (min, max) */
 	protected double[] msgTime;
+	/** Whether message types can be set randomly or messages should always be 1-to-1 */
+	private boolean differentMessageTypesEnabled;
 
 	/** Random number generator for this Class */
 	protected Random rng;
@@ -89,6 +97,7 @@ public class MessageEventGenerator implements EventQueue {
 		else {
 			this.toHostRange = null;
 		}
+        this.differentMessageTypesEnabled = s.getBoolean(ENABLE_DIFFERENT_TYPES_S, false);
 
 		/* if prefix is unique, so will be the rng's sequence */
 		this.rng = new Random(idPrefix.hashCode());
@@ -181,6 +190,15 @@ public class MessageEventGenerator implements EventQueue {
 		return to;
 	}
 
+    /**
+     * Generates a (random) message type
+     * @return message type
+     */
+    private Message.MessageType drawMessageType() {
+        Message.MessageType[] messageTypes = Message.MessageType.values();
+        return messageTypes[rng.nextInt(messageTypes.length)];
+    }
+
 	/**
 	 * Returns the next message creation event
 	 * @see input.EventQueue#nextEvent()
@@ -199,9 +217,26 @@ public class MessageEventGenerator implements EventQueue {
 		msgSize = drawMessageSize();
 		interval = drawNextEventTimeDiff();
 
+        Message.MessageType type = Message.MessageType.ONE_TO_ONE;
+        if (this.differentMessageTypesEnabled) {
+            type = drawMessageType();
+        }
+
 		/* Create event and advance to next event */
-		MessageCreateEvent mce = new MessageCreateEvent(from, to, this.getID(),
-				msgSize, responseSize, this.nextEventsTime);
+        ExternalEvent messageCreateEvent;
+        switch (type) {
+            case BROADCAST:
+                messageCreateEvent = new BroadcastCreateEvent(
+                        from, this.getID(), msgSize, responseSize, this.nextEventsTime);
+                break;
+            case ONE_TO_ONE:
+                messageCreateEvent = new MessageCreateEvent(
+                        from, to, this.getID(), msgSize, responseSize, this.nextEventsTime);
+                break;
+            default:
+                throw new UnsupportedOperationException("No implementation for message type " + type + ".");
+		}
+
 		this.nextEventsTime += interval;
 
 		if (this.msgTime != null && this.nextEventsTime > this.msgTime[1]) {
@@ -209,7 +244,7 @@ public class MessageEventGenerator implements EventQueue {
 			this.nextEventsTime = Double.MAX_VALUE;
 		}
 
-		return mce;
+		return messageCreateEvent;
 	}
 
 	/**

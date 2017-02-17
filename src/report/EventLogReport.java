@@ -64,7 +64,7 @@ public class EventLogReport extends Report
 		if (firstDelivery) {
 			extra = MESSAGE_TRANS_DELIVERED;
 		}
-		else if (to == m.getTo()) {
+		else if (m.isFinalRecipient(to)) {
 			extra = MESSAGE_TRANS_DELIVERED_AGAIN;
 		}
 		else {

@@ -57,7 +57,19 @@ public class MessageChecker implements MessageListener {
 	}
 
 	public void newMessage(Message m) {
-		this.add(m, m.getFrom(), m.getTo(), TYPE_CREATE, null, null);
+		DTNHost recipient;
+		switch (m.getType()) {
+			case ONE_TO_ONE:
+				recipient = m.getTo();
+				break;
+			case BROADCAST:
+				recipient = null;
+				break;
+			default:
+				throw new UnsupportedOperationException("No implementation for message type " + m.getType());
+		}
+
+		this.add(m, m.getFrom(), recipient, TYPE_CREATE, null, null);
 	}
 
 

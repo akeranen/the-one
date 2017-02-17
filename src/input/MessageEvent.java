@@ -16,7 +16,7 @@ public abstract class MessageEvent extends ExternalEvent {
 	protected String id;
 
 	/**
-	 * Creates a message  event
+	 * Creates a message event.
 	 * @param from Where the message comes from
 	 * @param to Who the message goes to
 	 * @param id ID of the message

@@ -7,9 +7,9 @@ import movement.map.MapNode;
 public class TransportingMovement extends ShortestPathMapBasedMovement{
 	
 	/** the destination of the transport */
-	private MapNode transportDestination;
+	protected MapNode transportDestination;
 	/** the location of the event */
-	private MapNode eventLocation;
+	protected MapNode eventLocation;
 	
 	/**
 	 * Creates a new TransportingMovement model based on a Settings object's settings.
@@ -17,7 +17,7 @@ public class TransportingMovement extends ShortestPathMapBasedMovement{
 	 */
 	public TransportingMovement(Settings settings){
 		super(settings);
-		//to choose some specific points, need to change pois from settings
+		//to choose locations, specify pois in settings
 		this.transportDestination = pois.selectDestination();
 		this.eventLocation = pois.selectDestination();
 	}
@@ -35,25 +35,17 @@ public class TransportingMovement extends ShortestPathMapBasedMovement{
 	@Override
 	public Path getPath(){
 		Path path = new Path(generateSpeed());
-		MapNode to = selectDestination();
+		MapNode destination = selectDestination();
 		
-		List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, to);
-		 //this assertion should never fire if the map is checked in read phase
-		assert nodePath.size() > 0 : "No path from " + lastMapNode + " to " +
-			to + ". The simulation map isn't fully connected";
+		List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, destination);
 
 		for (MapNode node : nodePath) { // create a Path from the shortest path
 			path.addWaypoint(node.getLocation());
 		}
 		
-		lastMapNode = to;
+		lastMapNode = destination;
 		
 		return path;
-	}
-	
-	@Override
-	public TransportingMovement replicate(){
-		return new TransportingMovement(this);
 	}
 	
 	public MapNode selectDestination(){
@@ -70,5 +62,10 @@ public class TransportingMovement extends ShortestPathMapBasedMovement{
 				destination = transportDestination;
 			}
 		return destination;
+	}
+	
+	@Override
+	public TransportingMovement replicate(){
+		return new TransportingMovement(this);
 	}
 }

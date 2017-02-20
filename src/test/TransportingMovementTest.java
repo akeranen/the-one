@@ -1,6 +1,7 @@
 package test;
 
 import core.Coord;
+import core.DTNHost;
 import core.Settings;
 import movement.TransportingMovement;
 import movement.Path;
@@ -11,12 +12,14 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class TransportingMovementTest {
     
 	private TransportingMovement transport = new TransportingMovement(new TestSettings());
     private static final int MAX_COORD = 1000;
     private static final int TEST_RUNS = 2000;
+    private TestSettings setting;
 	
 	@Before
     public void setUp(){
@@ -25,6 +28,7 @@ public class TransportingMovementTest {
         TestSettings testSettings = new TestSettings();
         transport = new TransportingMovement(testSettings);
         transport.getInitialLocation();
+        setting = new TestSettings();
     }
 	
    @Test
@@ -56,4 +60,25 @@ public class TransportingMovementTest {
             assert( nextWaypoint.getY()<=MAX_COORD);
         }
     }
+	
+	@Test
+	public void testHostMoving() {
+		DTNHost host = setupHost();
+		Path path;
+		while(host.getLocation() != transport.getTransportDestination().getLocation()){
+			path = transport.getPath();
+			host.setLocation(path.getCoords().get(path.getCoords().size() -1));
+		}
+		assert(host.getLocation().equals(transport.getTransportDestination().getLocation()));
+	}
+	
+	private DTNHost setupHost() {
+		TestUtils utils = new TestUtils(null, null, setting);
+		DTNHost host = utils.createHost(transport, null);
+
+		host.move(0); // get a path for the node
+		// move node directly to first waypoint
+		host.setLocation(host.getPath().getCoords().get(0));
+		return host;
+	}
 }

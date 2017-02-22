@@ -340,6 +340,6 @@ public class PlayField extends JPanel implements VHMListener {
 
 	@Override
 	public void vhmEventEnded(VHMEvent event) {
-		vhmEventGraphics.remove(event);
+		vhmEventGraphics.remove(new VHMEventGraphic(event));
 	}
 }

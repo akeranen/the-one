@@ -71,8 +71,6 @@ public class VHMEventGraphic extends PlayFieldGraphic {
     public boolean equals(Object o){
         if (o instanceof VHMEventGraphic) {
             return ((VHMEventGraphic) o).event.getIdentifier().equals(this.event.getIdentifier());
-        }else if (o instanceof VHMEvent){
-            return ((VHMEvent)o).getIdentifier().equals(this.event.getIdentifier());
-        } else return false;
+        }else return false;
     }
 }

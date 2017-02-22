@@ -2,31 +2,31 @@
 	"vhm_events_version" : 1,
 	"event1" :{
 		"type" : "DISASTER",
-		"event_range" : 2,
+		"event_range" : 300,
 		"location" : {
-			"x" : 1,
-			"y" : 1
+			"x" : 1000,
+			"y" : 1000
 		}
 	},
 	"hospital1" :{
 		"type" : "HOSPITAL",
-		"event_range" : 2,
+		"event_range" : 200,
 		"location" : {
-			"x" : 1,
-			"y" : 1
+			"x" : 2000,
+			"y" : 2000
 		}
 	},
 	"event2" :{
 		"type" : "DISASTER",
-		"event_range" : 1,
-		"safe_range" : 2,
-		"max_range" : 3,
+		"event_range" : 100,
+		"safe_range" : 200,
+		"max_range" : 300,
 		"intensity" : 5,
-		"start" : 0.2,
-		"end" : 0.6,
+		"start" : 1,
+		"end" : 5000,
 		"location" : {
-			"x" : 2.3,
-			"y" : 2.3
+			"x" : 3000,
+			"y" : 3000
 		}
 	}
 }

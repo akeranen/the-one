@@ -18,7 +18,6 @@ public class VHMEventEndEvent extends VHMEvent {
 
     @Override
     public void processEvent(World world){
-        System.out.println("Event ended: "+this.getIdentifier());
         VoluntaryHelperMovement.eventEnded(this);
     }
 }

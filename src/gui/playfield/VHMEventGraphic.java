@@ -56,7 +56,7 @@ public class VHMEventGraphic extends PlayFieldGraphic {
         if (drawEventName) {
             g2.setColor(eventNameColor);
             // Draw event's identifier next to it
-            g2.drawString("event", scale(event.getLocation().getX()),
+            g2.drawString(event.getIdentifier(), scale(event.getLocation().getX()),
                     scale(event.getLocation().getY()));
         }
 
@@ -70,9 +70,9 @@ public class VHMEventGraphic extends PlayFieldGraphic {
     @Override
     public boolean equals(Object o){
         if (o instanceof VHMEventGraphic) {
-            return ((VHMEventGraphic) o).event.equals(this.event);
+            return ((VHMEventGraphic) o).event.getIdentifier().equals(this.event.getIdentifier());
         }else if (o instanceof VHMEvent){
-            return ((VHMEvent)o).equals(this.event);
+            return ((VHMEvent)o).getIdentifier().equals(this.event.getIdentifier());
         } else return false;
     }
 }

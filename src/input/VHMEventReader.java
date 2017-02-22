@@ -66,6 +66,8 @@ public class VHMEventReader implements ExternalEventsReader {
             jsonReader.close();
             fileReader.close();
         } catch (Exception e) {
+            if(jsonReader != null)
+                jsonReader.close();
             return false;
         }
         return correct;
@@ -101,7 +103,6 @@ public class VHMEventReader implements ExternalEventsReader {
                     break;
                 }
                 if (root.get(name).getValueType() == JsonValue.ValueType.OBJECT){
-                    System.out.print(" "+name);
                     eventList.add(new VHMEvent(name,(JsonObject) root.get(name)));
                 }
             }

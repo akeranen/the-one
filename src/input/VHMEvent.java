@@ -120,6 +120,7 @@ public class VHMEvent extends ExternalEvent{
 
     public VHMEvent(VHMEvent event){
         super(0);
+        this.identifier = event.identifier;
         this.type = event.type;
         this.startTime = event.startTime;
         this.endTime = event.endTime;

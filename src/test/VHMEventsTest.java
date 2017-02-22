@@ -1,5 +1,7 @@
 package test;
 
+import core.ConnectionListener;
+import core.MessageListener;
 import core.SimError;
 import input.ExternalEvent;
 import input.VHMEvent;
@@ -24,6 +26,8 @@ public class VHMEventsTest {
 
     public static final int MAX_EVENT_COUNT = 3;
 
+    TestUtils utils;
+
     File correctFile;
     File incorrectFile;
 
@@ -31,6 +35,9 @@ public class VHMEventsTest {
     public void setUp() throws Exception{
         correctFile = new File(CORRECT_FILE);
         incorrectFile = new File(MISSING_VERSION);
+        TestSettings settings = new TestSettings();
+        this.addSettingsToEnableSimScenario(settings);
+        utils = new TestUtils(new ArrayList<ConnectionListener>(), new ArrayList<MessageListener>(), settings);
     }
 
     @Test
@@ -52,6 +59,15 @@ public class VHMEventsTest {
         }
 
 
+    }
+
+    private void addSettingsToEnableSimScenario(TestSettings settings) {
+        settings.putSetting("Group.groupID", "group");
+        settings.putSetting("Group.nrofHosts", "3");
+        settings.putSetting("Group.nrofInterfaces", "0");
+        settings.putSetting("Group.movementModel", "StationaryMovement");
+        settings.putSetting("Group.nodeLocation", "0, 0");
+        settings.putSetting("Group.router", "EpidemicRouter");
     }
 
     @Test (expected = SimError.class)

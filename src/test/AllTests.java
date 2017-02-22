@@ -48,7 +48,8 @@ import org.junit.runners.Suite;
 		BroadcastCreateEventTest.class,
 		MessageEventGeneratorTest.class,
 		ModuleCommunicationBusTest.class,
-		DTNHostTest.class
+		DTNHostTest.class,
+		VHMEventsTest.class
 })
 
 public class AllTests {

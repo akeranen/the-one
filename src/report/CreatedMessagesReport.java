@@ -38,7 +38,7 @@ public class CreatedMessagesReport extends Report implements MessageListener {
 
 		int ttl = m.getTtl();
 		write(format(getSimTime()) + " " + m.getId() + " " +
-				m.getSize() + " " + m.getFrom() + " " + m.getTo() + " " +
+				m.getSize() + " " + m.getFrom() + " " + m.recipientsToString() + " " +
 				(ttl != Integer.MAX_VALUE ? ttl : "n/a") +
 				(m.isResponse() ? " Y " : " N "));
 	}

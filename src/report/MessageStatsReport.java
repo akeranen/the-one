@@ -12,6 +12,7 @@ import java.util.Map;
 import core.DTNHost;
 import core.Message;
 import core.MessageListener;
+import core.SimScenario;
 
 /**
  * Report for generating different kind of total statistics about message
@@ -22,6 +23,8 @@ import core.MessageListener;
  * double values and zero for integer median(s).
  */
 public class MessageStatsReport extends Report implements MessageListener {
+    private final SimScenario simScenario = SimScenario.getInstance();
+
 	private Map<String, Double> creationTimes;
 	private List<Double> latencies;
 	private List<Integer> hopCounts;
@@ -75,7 +78,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 			this.nrofDropped++;
 		}
 		else {
-			this.nrofRemoved++;
+            this.nrofRemoved++;
 		}
 
 		this.msgBufferTime.add(getSimTime() - m.getReceiveTime());
@@ -119,9 +122,22 @@ public class MessageStatsReport extends Report implements MessageListener {
 		}
 
 		this.creationTimes.put(m.getId(), getSimTime());
-		this.nrofCreated++;
+
+		int numberOfRecipients;
+		switch (m.getType()) {
+            case ONE_TO_ONE:
+                numberOfRecipients = 1;
+                break;
+            case BROADCAST:
+                numberOfRecipients = this.simScenario.getHosts().size() - 1;
+                break;
+            default:
+                throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
+        }
+
+		this.nrofCreated += numberOfRecipients;
 		if (m.getResponseSize() > 0) {
-			this.nrofResponseReqCreated++;
+            this.nrofResponseReqCreated += numberOfRecipients;
 		}
 	}
 
@@ -144,7 +160,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 		double overHead = Double.NaN;	// overhead ratio
 
 		if (this.nrofCreated > 0) {
-			deliveryProb = (1.0 * this.nrofDelivered) / this.nrofCreated;
+            deliveryProb = (1.0 * this.nrofDelivered) / this.nrofCreated;
 		}
 		if (this.nrofDelivered > 0) {
 			overHead = (1.0 * (this.nrofRelayed - this.nrofDelivered)) /

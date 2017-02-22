@@ -374,15 +374,16 @@ public abstract class MessageRouter {
 		Message aMessage = (outgoing==null)?(incoming):(outgoing);
 		// If the application re-targets the message (changes 'to')
 		// then the message is not considered as 'delivered' to this host.
-		isFinalRecipient = aMessage.getTo() == this.host;
-		isFirstDelivery = isFinalRecipient &&
-		!isDeliveredMessage(aMessage);
+        isFinalRecipient = aMessage.isFinalRecipient(this.host);
+        isFirstDelivery = isFinalRecipient && !isDeliveredMessage(aMessage);
 
-		if (!isFinalRecipient && outgoing!=null) {
-			// not the final recipient and app doesn't want to drop the message
+        if (!aMessage.completesDelivery(this.host) && outgoing!=null) {
+            // not the (last) final recipient and app doesn't want to drop the message
 			// -> put to buffer
 			addToMessages(aMessage, false);
-		} else if (isFirstDelivery) {
+		}
+
+		if (isFirstDelivery) {
 			this.deliveredMessages.put(id, aMessage);
 		} else if (outgoing == null) {
 			// Blacklist messages that an app wants to drop.

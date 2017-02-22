@@ -13,6 +13,8 @@ import util.LevyDistribution;
  *
  * This class uses the Levy Distribution class by Mark N. Read to chose the distance
  *
+ * @author Melanie Bruns
+ *
  */
 public class LevyWalkMovement extends MovementModel implements SwitchableMovement {
 

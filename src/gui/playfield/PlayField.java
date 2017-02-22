@@ -4,34 +4,32 @@
  */
 package gui.playfield;
 
+import core.Coord;
+import core.DTNHost;
+import core.VHMListener;
+import core.World;
 import gui.DTNSimGUI;
+import input.VHMEvent;
+import movement.Path;
+import movement.VoluntaryHelperMovement;
+import movement.map.SimMap;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.LinkedList;
-
-import javax.swing.JPanel;
-
-import movement.Path;
-import movement.map.SimMap;
-import core.Coord;
-import core.DTNHost;
-import core.World;
+import java.util.List;
 
 /**
  * The canvas where node graphics and message visualizations are drawn.
  *
  */
-public class PlayField extends JPanel {
+public class PlayField extends JPanel implements VHMListener {
 	public static final int PLAYFIELD_OFFSET = 10;
 
 	private World w;
@@ -40,6 +38,7 @@ public class PlayField extends JPanel {
 	private Color bgColor = Color.WHITE;
 
 	private List<PlayFieldGraphic> overlayGraphics;
+	private List<VHMEventGraphic> vhmEventGraphics;
 	private boolean autoClearOverlay;	// automatically clear overlay graphics
 	private MapGraphic mapGraphic;
 	private boolean showMapGraphic;
@@ -67,12 +66,15 @@ public class PlayField extends JPanel {
         this.setBackground(bgColor);
         this.overlayGraphics = Collections.synchronizedList(
 		new ArrayList<PlayFieldGraphic>());
+		this.vhmEventGraphics = Collections.synchronizedList(
+				new ArrayList<VHMEventGraphic>());
         this.mapGraphic = null;
         this.underlayImage = null;
         this.imageTransform = null;
         this.autoClearOverlay = true;
 
 		highlightedHosts = new LinkedList<DTNHost>();
+		VoluntaryHelperMovement.addListener(this);
 		
         this.addMouseListener(new MouseAdapter() {
 			@Override
@@ -208,6 +210,10 @@ public class PlayField extends JPanel {
 			new PathGraphic(h.getPath()).draw(g2);
 		}
 
+		for (VHMEventGraphic vg: vhmEventGraphics){
+		    vg.draw(g2);
+        }
+
 		// draw overlay graphics
 		for (int i=0, n=overlayGraphics.size(); i<n; i++) {
 			overlayGraphics.get(i).draw(g2);
@@ -244,6 +250,7 @@ public class PlayField extends JPanel {
 		this.overlayGraphics.add(new PathGraphic(path));
 		this.updateField();
 	}
+
 
 	/**
 	 * Clears overlay graphics if autoclear is requested
@@ -324,5 +331,15 @@ public class PlayField extends JPanel {
 		gui.setFocus(closest);
 
 		this.updateField();
+	}
+
+	@Override
+	public void vhmEventStarted(VHMEvent event) {
+		this.vhmEventGraphics.add(new VHMEventGraphic(event));
+	}
+
+	@Override
+	public void vhmEventEnded(VHMEvent event) {
+		vhmEventGraphics.remove(event);
 	}
 }

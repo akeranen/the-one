@@ -49,6 +49,11 @@ public class Settings {
 	 * @see #valueFillString(String) */
 	public static final String FILL_DELIMITER = "%%";
 
+	/**
+	 * The size of an array describing a range.
+	 */
+	public static final int ARRAY_SIZE_FOR_RANGE = 2;
+
 	/** Stream where all read settings are written to */
 	private static PrintStream out = null;
 	private static Set<String> writtenSettings = new HashSet<String>();

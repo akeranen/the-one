@@ -45,11 +45,11 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     protected static final int NUMBER_HOSTS_NEEDED_FOR_COMMUNICATION = 2;
 
     /** Time of the next event (simulated seconds) */
-    protected double nextEventsTime = 0;
+    protected double nextEventsTime;
     /** Range of host addresses that can be senders or receivers */
     protected int[] hostRange = {0, 0};
     /** Next identifier for a message */
-    private int id = 0;
+    private int id;
     /** Prefix for the messages */
     protected String idPrefix;
     /** Size range of the messages (min, max) */
@@ -73,13 +73,12 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     public AbstractMessageEventGenerator(Settings s, boolean checkForSufficientHostRange){
         this.sizeRange = s.getCsvInts(MESSAGE_SIZE_S);
         this.msgInterval = s.getCsvInts(MESSAGE_INTERVAL_S);
-        this.hostRange = s.getCsvInts(HOST_RANGE_S, 2);
+        this.hostRange = s.getCsvInts(HOST_RANGE_S, Settings.ARRAY_SIZE_FOR_RANGE);
         this.idPrefix = s.getSetting(MESSAGE_ID_PREFIX_S);
 
         if (s.contains(MESSAGE_TIME_S)) {
-            this.msgTime = s.getCsvDoubles(MESSAGE_TIME_S, 2);
-        }
-        else {
+            this.msgTime = s.getCsvDoubles(MESSAGE_TIME_S, Settings.ARRAY_SIZE_FOR_RANGE);
+        } else {
             this.msgTime = null;
         }
 
@@ -89,15 +88,13 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         if (this.sizeRange.length == 1) {
             /* convert single value to range with 0 length */
             this.sizeRange = new int[] {this.sizeRange[0], this.sizeRange[0]};
-        }
-        else {
+        } else {
             s.assertValidRange(this.sizeRange, MESSAGE_SIZE_S);
         }
         if (this.msgInterval.length == 1) {
             this.msgInterval = new int[] {this.msgInterval[0],
                     this.msgInterval[0]};
-        }
-        else {
+        } else {
             s.assertValidRange(this.msgInterval, MESSAGE_INTERVAL_S);
         }
         s.assertValidRange(this.hostRange, HOST_RANGE_S);
@@ -108,10 +105,15 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         }
 
         /* calculate the first event's time */
-        this.nextEventsTime = (this.msgTime != null ? this.msgTime[0] : 0)
-            + msgInterval[0] +
-            (msgInterval[0] == msgInterval[1] ? 0 :
-            rng.nextInt(msgInterval[1] - msgInterval[0]));
+        double earliestMessageTime = 0;
+        if (this.msgTime != null) {
+            earliestMessageTime = this.msgTime[0];
+        }
+        int additionalWaitTime = 0;
+        if (msgInterval[0] != msgInterval[1]) {
+            additionalWaitTime = rng.nextInt(msgInterval[1] - msgInterval[0]);
+        }
+        this.nextEventsTime = earliestMessageTime + msgInterval[0] + additionalWaitTime;
     }
 
     /**
@@ -119,7 +121,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * @param hostRange The range of hosts
      * @return A random host address
      */
-    protected int drawHostAddress(int hostRange[]) {
+    protected int drawHostAddress(int[] hostRange) {
         if (hostRange[1] == hostRange[0]) {
             return hostRange[0];
         }
@@ -131,8 +133,10 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * @return message size
      */
     protected int drawMessageSize() {
-        int sizeDiff = sizeRange[0] == sizeRange[1] ? 0 :
-            rng.nextInt(sizeRange[1] - sizeRange[0]);
+        int sizeDiff = 0;
+        if (sizeRange[0] != sizeRange[1]) {
+            sizeDiff = rng.nextInt(sizeRange[1] - sizeRange[0]);
+        }
         return sizeRange[0] + sizeDiff;
     }
 
@@ -141,8 +145,10 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * @return the time difference
      */
     protected int drawNextEventTimeDiff() {
-        int timeDiff = msgInterval[0] == msgInterval[1] ? 0 :
-            rng.nextInt(msgInterval[1] - msgInterval[0]);
+        int timeDiff = 0;
+        if (msgInterval[0] != msgInterval[1]) {
+            timeDiff = rng.nextInt(msgInterval[1] - msgInterval[0]);
+        }
         return msgInterval[0] + timeDiff;
     }
 

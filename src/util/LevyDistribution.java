@@ -39,7 +39,7 @@ public final class LevyDistribution {
     }
 
     private static double boundedUniform(Random rng) {
-        // returns a double in inverval (0,1). IE, neither zero nor one will be returned.
+        // returns a double in interval (0,1). IE, neither zero nor one will be returned.
         double x = nextDouble(rng);
 
         // scale onto the required range of values

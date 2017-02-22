@@ -111,7 +111,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		ArrayList<Message> temp =
 			new ArrayList<Message>(this.getMessageCollection());
 		for (Message m : temp) {
-			if (other == m.getTo()) {
+			if (m.isFinalRecipient(other)) {
 				if (startTransfer(m, con) == RCV_OK) {
 					return true;
 				}
@@ -147,7 +147,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		 *  to zero.
 		 */
 		// check if msg was for this host and a response was requested
-		if (m.getTo() == getHost() && m.getResponseSize() > 0) {
+		if (m.isFinalRecipient(getHost()) && m.getResponseSize() > 0) {
 			// generate a response message
 			Message res = new Message(this.getHost(),m.getFrom(),
 					RESPONSE_PREFIX+m.getId(), m.getResponseSize());
@@ -191,7 +191,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			addToSendingConnections(con);
 		}
 		else if (deleteDelivered && retVal == DENIED_OLD &&
-				m.getTo() == con.getOtherNode(this.getHost())) {
+				m.completesDelivery(con.getOtherNode(this.getHost()))) {
 			/* final recipient has already received the msg -> delete it */
 			this.deleteMessage(m.getId(), false);
 		}
@@ -237,7 +237,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return DENIED_OLD; // already seen this message -> reject it
 		}
 
-		if (m.getTtl() <= 0 && m.getTo() != getHost()) {
+		if (m.getTtl() <= 0 && !m.isFinalRecipient(getHost())) {
 			/* TTL has expired and this host is not the final recipient */
 			return DENIED_TTL;
 		}
@@ -358,7 +358,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		for (Message m : getMessageCollection()) {
 			for (Connection con : getConnections()) {
 				DTNHost to = con.getOtherNode(getHost());
-				if (m.getTo() == to) {
+				if (m.isFinalRecipient(to)) {
 					forTuples.add(new Tuple<Message, Connection>(m,con));
 				}
 			}

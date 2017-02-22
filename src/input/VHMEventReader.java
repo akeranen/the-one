@@ -94,7 +94,7 @@ public class VHMEventReader implements ExternalEventsReader {
                     break;
                 }
                 if (root.get(name).getValueType() == JsonValue.ValueType.OBJECT){
-                    eventList.add(new VHMEvent((JsonObject) root.get(name)));
+                    eventList.add(new VHMEvent(name,(JsonObject) root.get(name)));
                 }
             }
         }

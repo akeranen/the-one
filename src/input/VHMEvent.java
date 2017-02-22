@@ -37,6 +37,7 @@ public class VHMEvent extends ExternalEvent{
     }
 
     //Parameters as defined in the specification of the VHM
+    private String identifier;
     private VHMEventType type;
     private double startTime;
     private double endTime;
@@ -46,10 +47,12 @@ public class VHMEvent extends ExternalEvent{
     private double maxRange;
     private int intensity;
 
-    public VHMEvent(JsonObject object) throws IOException{
+    public VHMEvent(String identifier,JsonObject object) throws IOException{
         super(0);
         try {
             //Parse mandatory parameters
+
+            this.identifier = identifier;
 
             //parse event type
             this.type = VHMEventType.valueOf(((JsonString) object.get(EVENT_TYPE)).getString());
@@ -157,6 +160,10 @@ public class VHMEvent extends ExternalEvent{
 
     public int getIntensity() {
         return intensity;
+    }
+
+    public String getIdentifier(){
+        return identifier;
     }
 
 }

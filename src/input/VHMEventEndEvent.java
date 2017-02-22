@@ -13,10 +13,12 @@ public class VHMEventEndEvent extends VHMEvent {
 
     public VHMEventEndEvent(VHMEvent event){
         super(event);
+        setTime(event.getEndTime());
     }
 
     @Override
     public void processEvent(World world){
+        System.out.println("Event ended: "+this.getIdentifier());
         VoluntaryHelperMovement.eventEnded(this);
     }
 }

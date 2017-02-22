@@ -22,7 +22,7 @@
 		"safe_range" : 200,
 		"max_range" : 300,
 		"intensity" : 5,
-		"start" : 1,
+		"start" : 100,
 		"end" : 5000,
 		"location" : {
 			"x" : 3000,

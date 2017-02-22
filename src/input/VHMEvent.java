@@ -1,6 +1,7 @@
 package input;
 
 import core.Coord;
+import core.SimError;
 import core.SimScenario;
 import javax.json.*;
 
@@ -15,6 +16,9 @@ public class VHMEvent extends ExternalEvent{
 
     public static final int MIN_INTENSITY = 1;
     public static final int MAX_INTENSITY = 10;
+
+    public static final int ZERO = 0;
+    public static final double INVALID_DOUBLE = -1.0;
 
     public static final String EVENT_TYPE = "type";
     public static final String START_TIME = "start";
@@ -51,8 +55,9 @@ public class VHMEvent extends ExternalEvent{
         super(0);
         try {
             //Parse mandatory parameters
-
-            this.identifier = identifier;
+            if (identifier != null) {
+                this.identifier = identifier;
+            } else throw new SimError("Event must have an identifier!");
 
             //parse event type
             this.type = VHMEventType.valueOf(((JsonString) object.get(EVENT_TYPE)).getString());
@@ -71,7 +76,7 @@ public class VHMEvent extends ExternalEvent{
                 this.safeRange = ((JsonNumber)object.get(SAFE_RANGE)).doubleValue();
             }
             else{
-                this.safeRange = 0;
+                this.safeRange = ZERO;
             }
 
             //parse max range or take maximum distance as max range
@@ -79,10 +84,8 @@ public class VHMEvent extends ExternalEvent{
                 this.maxRange = ((JsonNumber)object.get(MAX_RANGE)).doubleValue();
             }
             else{
-                this.maxRange = Math.sqrt(SimScenario.getInstance().getWorldSizeY() *
-                        SimScenario.getInstance().getWorldSizeY() +
-                        SimScenario.getInstance().getWorldSizeX() *
-                                SimScenario.getInstance().getWorldSizeX());
+                this.maxRange = INVALID_DOUBLE;
+
             }
 
             //parse start time or set default
@@ -90,7 +93,7 @@ public class VHMEvent extends ExternalEvent{
                 this.startTime = ((JsonNumber)object.get(START_TIME)).doubleValue();
             }
             else{
-                this.startTime = 0;
+                this.startTime = ZERO;
             }
 
             //parse end time or set default
@@ -98,7 +101,7 @@ public class VHMEvent extends ExternalEvent{
                 this.endTime = ((JsonNumber)object.get(END_TIME)).doubleValue();
             }
             else{
-                this.endTime = SimScenario.getInstance().getEndTime();
+                this.endTime = INVALID_DOUBLE;
             }
 
             //parse intensity or set it to min intensity
@@ -110,9 +113,6 @@ public class VHMEvent extends ExternalEvent{
             else{
                 this.intensity = MIN_INTENSITY;
             }
-
-            assert this.startTime <= this.endTime : "End time of an event must be after or at the same time as the start time";
-
         }catch (Exception e){
             throw new IOException("VHMEvent could not be parsed from JSON: " + e.getMessage());
         }
@@ -139,7 +139,10 @@ public class VHMEvent extends ExternalEvent{
     }
 
     public double getEndTime() {
-        return endTime;
+        if (endTime == INVALID_DOUBLE){
+            return Double.MAX_VALUE;
+            // SimScenario.getInstance().getEndTime();
+        }else return endTime;
     }
 
     public Coord getLocation() {
@@ -155,7 +158,13 @@ public class VHMEvent extends ExternalEvent{
     }
 
     public double getMaxRange() {
-        return maxRange;
+        if (maxRange == INVALID_DOUBLE){
+            return Math.sqrt(SimScenario.getInstance().getWorldSizeY() *
+                    SimScenario.getInstance().getWorldSizeY() +
+                    SimScenario.getInstance().getWorldSizeX() *
+                            SimScenario.getInstance().getWorldSizeX());
+        }
+        else return maxRange;
     }
 
     public int getIntensity() {
@@ -163,7 +172,7 @@ public class VHMEvent extends ExternalEvent{
     }
 
     public String getIdentifier(){
-        return identifier;
+        return this.identifier;
     }
 
 }

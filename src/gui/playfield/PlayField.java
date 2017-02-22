@@ -210,8 +210,8 @@ public class PlayField extends JPanel implements VHMListener {
 			new PathGraphic(h.getPath()).draw(g2);
 		}
 
-		for (VHMEventGraphic vg: vhmEventGraphics){
-		    vg.draw(g2);
+		for (int i=0, n=vhmEventGraphics.size();i<n; i++){
+		    vhmEventGraphics.get(i).draw(g2);
         }
 
 		// draw overlay graphics

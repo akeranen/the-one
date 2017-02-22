@@ -1,13 +1,14 @@
 package input;
 
 import core.SimError;
-import javax.json.*;
 
+import javax.json.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,6 +37,8 @@ public class VHMEventReader implements ExternalEventsReader {
      */
     private FileReader fileReader;
 
+    private boolean allEventsRead;
+
     public VHMEventReader(File eventFile){
         if (!isVHMEventsFile(eventFile)){
             throw new SimError("VHM events file is not valid: " + eventFile.getAbsolutePath());
@@ -43,6 +46,7 @@ public class VHMEventReader implements ExternalEventsReader {
         try{
             fileReader = new FileReader(eventFile);
             reader = Json.createReader(fileReader);
+            allEventsRead = false;
         } catch (FileNotFoundException e) {
             throw new SimError(e.getMessage());
         }
@@ -69,11 +73,14 @@ public class VHMEventReader implements ExternalEventsReader {
 
     @Override
     public List<ExternalEvent> readEvents(int nrof) {
+        if (allEventsRead) {
+            return new ArrayList<>();
+        }
         List<VHMEvent> events = null;
         try {
             events = extractEvents(nrof);
-        }
-        catch (IOException e){
+            allEventsRead = true;
+        } catch (IOException e) {
             throw new SimError(e.getMessage());
         }
         return generateEventList(events);
@@ -94,6 +101,7 @@ public class VHMEventReader implements ExternalEventsReader {
                     break;
                 }
                 if (root.get(name).getValueType() == JsonValue.ValueType.OBJECT){
+                    System.out.print(" "+name);
                     eventList.add(new VHMEvent(name,(JsonObject) root.get(name)));
                 }
             }
@@ -117,6 +125,7 @@ public class VHMEventReader implements ExternalEventsReader {
             allEvents.add(new VHMEventStartEvent(ev));
             allEvents.add(new VHMEventEndEvent(ev));
         }
+        Collections.sort(allEvents);
         return allEvents;
     }
 

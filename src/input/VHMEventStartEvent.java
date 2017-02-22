@@ -14,10 +14,12 @@ public class VHMEventStartEvent extends VHMEvent {
 
     public VHMEventStartEvent(VHMEvent event){
         super(event);
+        setTime(event.getStartTime());
     }
 
     @Override
     public void processEvent(World world){
+        System.out.println("Event started: "+this.getIdentifier());
         VoluntaryHelperMovement.eventStarted(this);
     }
 

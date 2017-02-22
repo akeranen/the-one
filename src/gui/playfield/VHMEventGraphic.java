@@ -55,8 +55,8 @@ public class VHMEventGraphic extends PlayFieldGraphic {
 
         if (drawEventName) {
             g2.setColor(eventNameColor);
-            // Draw node's address next to it
-            g2.drawString(event.getIdentifier(), scale(event.getLocation().getX()),
+            // Draw event's identifier next to it
+            g2.drawString("event", scale(event.getLocation().getX()),
                     scale(event.getLocation().getY()));
         }
 

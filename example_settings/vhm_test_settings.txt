@@ -9,12 +9,12 @@ Scenario.updateInterval = 0.1
 # 43200s == 12h
 Scenario.endTime = 43200
 
-Events.nrof = 0
+Events.nrof = 1
 
 # max number of external events to preload (default = 500)
-ExternalEvents.nrofPreload = 3
+Events1.nrofPreload = 3
 # path to external events file
-ExternalEvents.filePath = ee/test/VHMTestEvents.json
+Events1.filePath = ee/test/VHMTestEvents.json
 
 
 ## Interface-specific settings:

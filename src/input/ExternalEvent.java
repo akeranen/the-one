@@ -4,9 +4,9 @@
  */
 package input;
 
-import java.io.Serializable;
-
 import core.World;
+
+import java.io.Serializable;
 
 /**
  * Super class for all external events. All new classes of external events
@@ -35,6 +35,15 @@ public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
 	 */
 	public double getTime() {
 		return this.time;
+	}
+
+	/**
+	 * Set new time for event
+	 *
+	 * @param newTime the new time
+	 */
+	protected void setTime(double newTime){
+		this.time = newTime;
 	}
 
 	/**

@@ -46,10 +46,10 @@ public class MessageEventGenerator implements EventQueue {
 	 * whole simulation time. */
 	public static final String MESSAGE_TIME_S = "time";
 
-    /** Whether message types can be set randomly or messages should always be 1-to-1 -setting id ({@value}).
-     * By default, only 1-to-1 messages are created. If this is set to true, broadcast and group messages may be
-     * created, too. */
-	public static final String ENABLE_DIFFERENT_TYPES_S = "differentmessagetypes";
+    /**
+     * The minimum number of hosts needed for communication.
+     */
+    private static final int NUMBER_HOSTS_NEEDED_FOR_COMMUNICATION = 2;
 
 	/** Time of the next event (simulated seconds) */
 	protected double nextEventsTime = 0;
@@ -67,8 +67,6 @@ public class MessageEventGenerator implements EventQueue {
 	private int[] msgInterval;
 	/** Time range for message creation (min, max) */
 	protected double[] msgTime;
-	/** Whether message types can be set randomly or messages should always be 1-to-1 */
-	private boolean differentMessageTypesEnabled;
 
 	/** Random number generator for this Class */
 	protected Random rng;
@@ -97,7 +95,6 @@ public class MessageEventGenerator implements EventQueue {
 		else {
 			this.toHostRange = null;
 		}
-        this.differentMessageTypesEnabled = s.getBoolean(ENABLE_DIFFERENT_TYPES_S, false);
 
 		/* if prefix is unique, so will be the rng's sequence */
 		this.rng = new Random(idPrefix.hashCode());
@@ -118,20 +115,7 @@ public class MessageEventGenerator implements EventQueue {
 		}
 		s.assertValidRange(this.hostRange, HOST_RANGE_S);
 
-		if (this.hostRange[1] - this.hostRange[0] < 2) {
-			if (this.toHostRange == null) {
-				throw new SettingsError("Host range must contain at least two "
-						+ "nodes unless toHostRange is defined");
-			}
-			else if (toHostRange[0] == this.hostRange[0] &&
-					toHostRange[1] == this.hostRange[1]) {
-				// XXX: teemuk: Since (X,X) == (X,X+1) in drawHostAddress()
-				// there's still a boundary condition that can cause an
-				// infinite loop.
-				throw new SettingsError("If to and from host ranges contain" +
-						" only one host, they can't be the equal");
-			}
-		}
+		this.checkHostRanges();
 
 		/* calculate the first event's time */
 		this.nextEventsTime = (this.msgTime != null ? this.msgTime[0] : 0)
@@ -140,6 +124,24 @@ public class MessageEventGenerator implements EventQueue {
 			rng.nextInt(msgInterval[1] - msgInterval[0]));
 	}
 
+    /**
+     * Checks host ranges' validity and throws errors on invalid configurations.
+     */
+    private void checkHostRanges() {
+        if (this.hostRange[1] - this.hostRange[0] < NUMBER_HOSTS_NEEDED_FOR_COMMUNICATION) {
+            if (this.toHostRange == null) {
+                throw new SettingsError("Host range must contain at least two "
+                        + "nodes unless toHostRange is defined");
+            } else if (toHostRange[0] == this.hostRange[0] &&
+                    toHostRange[1] == this.hostRange[1]) {
+                // XXX: teemuk: Since (X,X) == (X,X+1) in drawHostAddress()
+                // there's still a boundary condition that can cause an
+                // infinite loop.
+                throw new SettingsError("If to and from host ranges contain" +
+                		" only one host, they can't be the equal");
+            }
+        }
+    }
 
 	/**
 	 * Draws a random host address from the configured address range
@@ -190,15 +192,6 @@ public class MessageEventGenerator implements EventQueue {
 		return to;
 	}
 
-    /**
-     * Generates a (random) message type
-     * @return message type
-     */
-    private Message.MessageType drawMessageType() {
-        Message.MessageType[] messageTypes = Message.MessageType.values();
-        return messageTypes[rng.nextInt(messageTypes.length)];
-    }
-
 	/**
 	 * Returns the next message creation event
 	 * @see input.EventQueue#nextEvent()
@@ -217,37 +210,28 @@ public class MessageEventGenerator implements EventQueue {
 		msgSize = drawMessageSize();
 		interval = drawNextEventTimeDiff();
 
-        Message.MessageType type = Message.MessageType.ONE_TO_ONE;
-        if (this.differentMessageTypesEnabled) {
-            type = drawMessageType();
-        }
-
 		/* Create event and advance to next event */
-        ExternalEvent messageCreateEvent;
-        switch (type) {
-            case BROADCAST:
-                messageCreateEvent = new BroadcastCreateEvent(
-                        from, this.getID(), msgSize, responseSize, this.nextEventsTime);
-                break;
-            case ONE_TO_ONE:
-                messageCreateEvent = new MessageCreateEvent(
-                        from, to, this.getID(), msgSize, responseSize, this.nextEventsTime);
-                break;
-            default:
-                throw new UnsupportedOperationException("No implementation for message type " + type + ".");
-		}
+        ExternalEvent messageCreateEvent = new MessageCreateEvent(
+                from, to, this.getID(), msgSize, responseSize, this.nextEventsTime);
 
-		this.nextEventsTime += interval;
-
-		if (this.msgTime != null && this.nextEventsTime > this.msgTime[1]) {
-			/* next event would be later than the end time */
-			this.nextEventsTime = Double.MAX_VALUE;
-		}
+        this.advanceToNextEvent(interval);
 
 		return messageCreateEvent;
 	}
 
 	/**
+     * Updates time for next event considering the time needed for current event.
+     * @param eventInterval Time needed for current event.
+     */
+    protected void advanceToNextEvent(int eventInterval) {
+        this.nextEventsTime += eventInterval;
+        if (this.msgTime != null && this.nextEventsTime > this.msgTime[1]) {
+            /* next event would be later than the end time */
+            this.nextEventsTime = Double.MAX_VALUE;
+        }
+    }
+
+    /**
 	 * Returns next message creation event's time
 	 * @see input.EventQueue#nextEventsTime()
 	 */

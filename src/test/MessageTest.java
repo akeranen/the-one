@@ -4,16 +4,22 @@
  */
 package test;
 
+import java.util.ArrayList;
+
+import core.*;
 import junit.framework.TestCase;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import core.DTNHost;
-import core.Message;
-import core.SimClock;
+import test.TestUtils;
+import test.TestSettings;
+
+import static org.junit.Assert.assertEquals;
 
 public class MessageTest extends TestCase {
+
+    private TestUtils utils;
 
 	private Message msg;
 	private DTNHost from;
@@ -24,6 +30,12 @@ public class MessageTest extends TestCase {
 	public void setUp() throws Exception {
 		sc = SimClock.getInstance();
 		sc.setTime(10);
+
+		this.utils = new TestUtils(
+				new ArrayList<ConnectionListener>(),
+				new ArrayList<MessageListener>(),
+				new TestSettings());
+		this.to = this.utils.createHost();
 
 		msg = new Message(from, to, "M", 100);
 		msg.setTtl(10);
@@ -60,5 +72,43 @@ public class MessageTest extends TestCase {
 		assertEquals(value2, msg.getProperty("bar"));
 	}
 
+	@Test
+	public void testGetTo() {
+		assertEquals(this.to, this.msg.getTo());
+    }
 
+    @Test
+    public void testIsFinalRecipientReturnsTrueForSingleRecipient() {
+		assertTrue(this.msg.isFinalRecipient(this.to));
+    }
+
+    @Test
+    public void testIsFinalRecipientReturnsFalseForHostDifferentFromRecipient() {
+		DTNHost otherHost = this.utils.createHost();
+		assertFalse(this.msg.isFinalRecipient(otherHost));
+    }
+
+    @Test
+    public void testCompletesDeliveryReturnsTrueForSingleRecipient() {
+	    assertTrue(this.msg.completesDelivery(this.to));
+    }
+
+    @Test
+    public void testCompletesDeliveryReturnsFalseForHostDifferentFromRecipient() {
+	    DTNHost otherHost = this.utils.createHost();
+	    assertFalse(this.msg.completesDelivery(otherHost));
+    }
+
+    @Test
+    public void testGetTypeReturnsOneToOne() {
+	    assertEquals(Message.MessageType.ONE_TO_ONE, this.msg.getType());
+    }
+
+	@Test
+	public void testRecipientsToString() {
+		assertEquals(
+				"Recipient description should have been different.",
+				this.to.toString(),
+				this.msg.recipientsToString());
+	}
 }

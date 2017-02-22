@@ -6,7 +6,12 @@ import util.LevyDistribution;
 
 /**
  * Implements Levy Walk movement model.
- * Uses Levy Distribution by Mark N. Read to chose distance
+ *
+ * Levy Walk is a random movement model. It is based on the Levy distribution, a heavy-tailed distribution.
+ * The direction is chosen at random and the step lengths are chosen based on the Levy distribution.
+ * Speed is not mentioned in the original concept. In our simulations, speed is chosen at random from a preset range.
+ *
+ * This class uses the Levy Distribution class by Mark N. Read to chose the distance
  *
  */
 public class LevyWalkMovement extends MovementModel implements SwitchableMovement {

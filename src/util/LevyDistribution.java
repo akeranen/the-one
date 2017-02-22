@@ -100,7 +100,7 @@ public final class LevyDistribution {
      * @return A double value uniformly chosen from (0,1)
      */
     private static double nextDouble(Random rng){
-        //Use Java.Util.Random to generate values between 0 and 1
+        //Use random number generator to generate values between 0 and 1
         double nextDouble=rng.nextDouble();
 
         //We have trouble with 0 and 1 so we check if we got one of those
@@ -109,6 +109,7 @@ public final class LevyDistribution {
         } else{
             //In the unlikely case we got precisely 0 or 1, we just try again until we find another value
             return nextDouble(rng);
+
         }
     }
 

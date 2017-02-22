@@ -6,20 +6,20 @@ import core.SettingsError;
 
 import input.BroadcastCreateEvent;
 import input.BroadcastEventGenerator;
-import input.MessageEventGenerator;
+import input.AbstractMessageEventGenerator;
 
 import static org.junit.Assert.assertTrue;
 
 /**
- * Contains tests for the BroadcastEventGenerator class.
+ * Contains tests for the {@link BroadcastEventGenerator} class.
  *
  * Created by Britta Heymann on 22.02.2017.
  */
 public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTest {
     @Test
     public void testNextEventCreatesBroadcastMessages() {
-        MessageEventGenerator generator = new BroadcastEventGenerator(this.settings);
-        for(int i = 0; i < NR_TRIALS_IN_TEST; i++) {
+        AbstractMessageEventGenerator generator = new BroadcastEventGenerator(this.settings);
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
             assertTrue(
                     "Event should have been the creation of a broadcast message.",
                     generator.nextEvent() instanceof BroadcastCreateEvent);
@@ -27,8 +27,8 @@ public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     }
 
     @Test(expected = SettingsError.class)
-    public void testBroadcastEventGeneratorConstructorThrowsOnRecipientSpecification() {
-        this.settings.putSetting(MessageEventGenerator.TO_HOST_RANGE_S, "1, 24");
+    public void testBroadcastEventGeneratorConstructorThrowsErrorIfSingleHostIsSpecified() {
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,1");
         new BroadcastEventGenerator(this.settings);
     }
 

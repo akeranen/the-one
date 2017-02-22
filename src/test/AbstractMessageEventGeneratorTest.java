@@ -1,11 +1,10 @@
 package test;
 
-import input.BroadcastEventGenerator;
-import input.MessageEventGenerator;
+import input.AbstractMessageEventGenerator;
 import org.junit.Before;
 
 /**
- * Contains common initialization for both MessageEventGeneratorTest and BroadcastEventGeneratorTest.
+ * Contains common initialization for both {@link MessageEventGeneratorTest} and {@link BroadcastEventGeneratorTest}.
  *
  * Created by Britta Heymann on 22.02.2017.
  */
@@ -22,10 +21,10 @@ public abstract class AbstractMessageEventGeneratorTest {
         this.settings.putSetting("Events.nrof", "1");
 
         this.settings.putSetting("class", this.getMessageEventGeneratorClassName());
-        this.settings.putSetting(MessageEventGenerator.MESSAGE_INTERVAL_S, "1,2");
-        this.settings.putSetting(MessageEventGenerator.MESSAGE_SIZE_S, "500k,1M");
-        this.settings.putSetting(MessageEventGenerator.HOST_RANGE_S, "0,126");
-        this.settings.putSetting(MessageEventGenerator.MESSAGE_ID_PREFIX_S, "M");
+        this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_INTERVAL_S, "1,2");
+        this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_SIZE_S, "500k,1M");
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,126");
+        this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_ID_PREFIX_S, "M");
     }
 
     /**

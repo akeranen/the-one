@@ -1,7 +1,6 @@
 package input;
 
 import core.Settings;
-import core.SettingsError;
 
 /**
  * Broadcast creation external events generator. Creates uniformly distributed
@@ -10,13 +9,9 @@ import core.SettingsError;
  *
  * Created by Britta Heymann on 22.02.2017.
  */
-public class BroadcastEventGenerator extends MessageEventGenerator {
+public class BroadcastEventGenerator extends AbstractMessageEventGenerator {
     public BroadcastEventGenerator(Settings s) {
-        super(s);
-
-        if (this.toHostRange != null) {
-            throw new SettingsError("Cannot handle receiver host range for broadcasts.");
-        }
+        super(s, true);
     }
 
     /**

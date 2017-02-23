@@ -20,7 +20,7 @@ public class BroadcastEventGenerator extends AbstractMessageEventGenerator {
      */
     @Override
     public ExternalEvent nextEvent() {
-        /* Message is a one way messages */
+        /* Message is a one way message */
         int responseSize = 0;
 
         /* Draw additional message properties and create message. */

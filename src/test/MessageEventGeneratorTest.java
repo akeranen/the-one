@@ -11,6 +11,7 @@ import input.AbstractMessageEventGenerator;
 
 /**
  * Contains tests for the {@link MessageEventGenerator} class.
+ * Test set up is handled by the extended {@link AbstractMessageEventGeneratorTest} class.
  *
  * Created by Britta Heymann on 16.02.2017.
  */

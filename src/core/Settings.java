@@ -50,9 +50,9 @@ public class Settings {
 	public static final String FILL_DELIMITER = "%%";
 
 	/**
-	 * The size of an array describing a range.
+	 * The number of expected values for a setting describing a range, e.g. "Events1.hosts = 0,17".
 	 */
-	public static final int ARRAY_SIZE_FOR_RANGE = 2;
+	public static final int EXPECTED_VALUE_NUMBER_FOR_RANGE = 2;
 
 	/** Stream where all read settings are written to */
 	private static PrintStream out = null;

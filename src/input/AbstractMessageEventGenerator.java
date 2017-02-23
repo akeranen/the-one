@@ -73,11 +73,11 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     public AbstractMessageEventGenerator(Settings s, boolean checkForSufficientHostRange){
         this.sizeRange = s.getCsvInts(MESSAGE_SIZE_S);
         this.msgInterval = s.getCsvInts(MESSAGE_INTERVAL_S);
-        this.hostRange = s.getCsvInts(HOST_RANGE_S, Settings.ARRAY_SIZE_FOR_RANGE);
+        this.hostRange = s.getCsvInts(HOST_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         this.idPrefix = s.getSetting(MESSAGE_ID_PREFIX_S);
 
         if (s.contains(MESSAGE_TIME_S)) {
-            this.msgTime = s.getCsvDoubles(MESSAGE_TIME_S, Settings.ARRAY_SIZE_FOR_RANGE);
+            this.msgTime = s.getCsvDoubles(MESSAGE_TIME_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         } else {
             this.msgTime = null;
         }
@@ -104,16 +104,20 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
             throw new SettingsError("Host range must contain at least two nodes.");
         }
 
-        /* calculate the first event's time */
+        /* Calculate the first event's time:
+        It should be shortly after the earliest message time, ... */
         double earliestMessageTime = 0;
         if (this.msgTime != null) {
             earliestMessageTime = this.msgTime[0];
         }
-        int additionalWaitTime = 0;
+        /* ...but happens only after the usual interval between messages.
+        That interval is not fixed; we randomly choose a interval duration between msgInterval[0] and msgInterval[1]
+        to select it.*/
+        int diffToShortestPossibleInterval = 0;
         if (msgInterval[0] != msgInterval[1]) {
-            additionalWaitTime = rng.nextInt(msgInterval[1] - msgInterval[0]);
+            diffToShortestPossibleInterval = rng.nextInt(msgInterval[1] - msgInterval[0]);
         }
-        this.nextEventsTime = earliestMessageTime + msgInterval[0] + additionalWaitTime;
+        this.nextEventsTime = earliestMessageTime + msgInterval[0] + diffToShortestPossibleInterval;
     }
 
     /**
@@ -153,13 +157,14 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     }
 
     /**
-     * Updates time for next event considering the time needed for current event.
-     * @param eventInterval Time needed for current event.
+     * Increases point in time for next event by the provided time span.
+     * If the next event time would then be later than the maximum time as specified by this.msgTime[1], it is set to
+     * {@see Double.MAX_VALUE} instead.
+     * @param noEventsInterval Time span in which no events should happen.
      */
-    protected void advanceToNextEvent(int eventInterval) {
-        this.nextEventsTime += eventInterval;
+    protected void advanceToNextEvent(int noEventsInterval) {
+        this.nextEventsTime += noEventsInterval;
         if (this.msgTime != null && this.nextEventsTime > this.msgTime[1]) {
-            /* next event would be later than the end time */
             this.nextEventsTime = Double.MAX_VALUE;
         }
     }

@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Contains tests for the {@link BroadcastEventGenerator} class.
+ * Test set up is handled by the extended {@link AbstractMessageEventGeneratorTest} class.
  *
  * Created by Britta Heymann on 22.02.2017.
  */

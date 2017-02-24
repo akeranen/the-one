@@ -281,7 +281,7 @@ public class EventLogPanel extends JPanel
 		if (firstDelivery) {
 			processEvent(msgDeliveredCheck, "Message delivered", from, to, m);
 		}
-		else if (to == m.getTo()) {
+        else if (m.isFinalRecipient(to)) {
 			processEvent(msgDeliveredCheck, "Message delivered again",
 					from, to, m);
 		}

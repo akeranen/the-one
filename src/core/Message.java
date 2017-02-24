@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -16,12 +17,12 @@ import java.util.Set;
 public class Message implements Comparable<Message> {
 	/** Value for infinite TTL of message */
 	public static final int INFINITE_TTL = -1;
-	private DTNHost from;
+    protected DTNHost from;
 	private DTNHost to;
 	/** Identifier of the message */
-	private String id;
+    protected String id;
 	/** Size of the message (bytes) */
-	private int size;
+    protected int size;
 	/** List of nodes this message has passed */
 	private List<DTNHost> path;
 	/** Next unique identifier to be given */
@@ -53,6 +54,20 @@ public class Message implements Comparable<Message> {
 		reset();
 		DTNSim.registerForReset(Message.class.getCanonicalName());
 	}
+
+    /**
+     * Type of the message.
+     */
+    public enum MessageType {
+        /**
+         * Message with single sender and recipient.
+         */
+        ONE_TO_ONE,
+        /**
+         * Message which should be sent to everyone.
+         */
+        BROADCAST
+    }
 
 	/**
 	 * Creates a new Message.
@@ -299,7 +314,7 @@ public class Message implements Comparable<Message> {
 	 */
 	public Object getProperty(String key) {
 		if (this.properties == null) {
-			return null;
+            return null;
 		}
 		return this.properties.get(key);
 	}
@@ -321,6 +336,32 @@ public class Message implements Comparable<Message> {
 		this.properties.put(key, value);
 	}
 
+    /**
+     * Determines whether the provided node is a final recipient of the message.
+     * @param host Node to check.
+     * @return Whether the node is a final recipient of the message.
+     */
+    public boolean isFinalRecipient(DTNHost host) {
+        return Objects.equals(this.to, host);
+    }
+
+    /**
+     * Checks whether a successful sending to the provided DTNHost would mean a completed message delivery.
+     * @param receiver The node that the message is sent to.
+     * @return Whether or not delivery will be completed by a successful send operation.
+     */
+    public boolean completesDelivery(DTNHost receiver) {
+        return Objects.equals(this.to, receiver);
+    }
+
+    /**
+     * Returns a string representation of the message's recipient(s).
+     * @return a string representation of the message's recipient(s).
+     */
+    public String recipientsToString() {
+        return this.to.toString();
+    }
+
 	/**
 	 * Returns a replicate of this message (identical except for the unique id)
 	 * @return A replicate of the message
@@ -338,6 +379,14 @@ public class Message implements Comparable<Message> {
 	public int compareTo(Message m) {
 		return toString().compareTo(m.toString());
 	}
+
+    /**
+     * Gets the message type.
+     * @return The message type.
+     */
+    public MessageType getType() {
+        return MessageType.ONE_TO_ONE;
+    }
 
 	/**
 	 * Resets all static fields to default values

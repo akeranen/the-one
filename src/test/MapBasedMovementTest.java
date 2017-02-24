@@ -96,7 +96,7 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 		while (path.hasNext()) {
 			c2 = path.getNextWaypoint();
 			// adjacent nodes are always 1 meter apart (in the test topology)
-			assertTrue(c.distance(c2)<=1 && c.distance(c2)>=1);
+			assertTrue("Distance between nodes was wrong.",c.distance(c2)<=1 && c.distance(c2)>=1);
 			c = c2;
 		}
 	}
@@ -111,7 +111,7 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 		for (int i=0; i<NROF; i++) {
 			Coord next = p.getNextWaypoint();
 			// 	only allowed location is c1
-			assertEquals(c1, next);
+			assertEquals("Node did not stay in its place when it should.",c1, next);
 		}
 
 		// add n2 to allowed nodes
@@ -220,7 +220,8 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 			h1.move(2);
 			// should move 2 steps away from previous location
 			double dist = loc.distance(h1.getLocation());
-			assertTrue(dist == 2 || dist == 0 || dist == Math.sqrt(2));
+			assertTrue("Nodes should move two steps away from previous location",
+					dist == 2 || dist == 0 || dist == Math.sqrt(2));
 			loc = h1.getLocation().clone();
 		}
 
@@ -230,7 +231,8 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 			h1.move(3);
 			// should move 3 steps away from previous location
 			double dist = loc.distance(h1.getLocation());
-			assertTrue(dist == 3 || dist == 1 || dist == Math.sqrt(1+2*2) ||
+			assertTrue("Nodes should move three steps away from previous location",
+					dist == 3 || dist == 1 || dist == Math.sqrt(1+2*2) ||
 					dist == Math.sqrt(2));
 			loc = h1.getLocation().clone();
 		}

@@ -91,6 +91,13 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
         return new LevyWalkMovement(this);
     }
 
+    /**
+     * Set the radius in which a node is able to move around the center point.
+     * The radius may not be higher than the maximum distance between the opposing
+     * simulation bounds and it may not be zero or smaller.
+     * @param radius The radius in which a node should be allowed to move around the center
+     * @return A boolean indicating whether the radius has successfully been set
+     */
     public boolean setRadius(double radius){
         double maxDistance = Math.max(getMaxX(),getMaxY());
         if (radius>0 && radius<=maxDistance){
@@ -100,6 +107,12 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
         return false;
     }
 
+    /**
+     * Set the center around which the node can move within a set radius.
+     * The center has to lie within the simulation bounds
+     * @param center A coordinate around which the node may move within the radius
+     * @return A boolean indicating whether the center has successfully been set
+     */
     public boolean setCenter(Coord center){
         if (center.getX()>=0 && center.getX() <= getMaxX() && center.getY()>=0 && center.getY() <=getMaxY()){
             this.center=center;

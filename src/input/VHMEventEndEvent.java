@@ -5,12 +5,16 @@ import movement.VoluntaryHelperMovement;
 
 /**
  * This is an event class that will be used for ending VHMEvents by
- * the VHMEventGenerator
+ * the {@link VHMEventReader}
  *
  * Created by Marius Meyer on 15.02.17.
  */
 public class VHMEventEndEvent extends VHMEvent {
 
+    /**
+     * Creates a new event for the end of a specified VHMEvent
+     * @param event the VHMEvent
+     */
     public VHMEventEndEvent(VHMEvent event){
         super(event);
         setTime(event.getEndTime());

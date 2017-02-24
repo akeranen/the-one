@@ -19,10 +19,10 @@ import core.Settings;
 public class ShortestPathMapBasedMovement extends MapBasedMovement implements
 	SwitchableMovement {
 	/** the Dijkstra shortest path finder */
-	protected DijkstraPathFinder pathFinder;
+	private DijkstraPathFinder pathFinder;
 
 	/** Points Of Interest handler */
-	protected PointsOfInterest pois;
+	private PointsOfInterest pois;
 
 	/**
 	 * Creates a new movement model based on a Settings object's settings.

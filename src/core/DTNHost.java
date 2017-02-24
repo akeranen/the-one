@@ -415,7 +415,9 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * should wait
 	 */
 	private boolean setNextWaypoint() {
-		path = movement.getPath();
+		if (path == null) {
+			path = movement.getPath();
+		}
 
 		if (path == null || !path.hasNext()) {
 			this.nextTimeToMove = movement.nextPathAvailable();

@@ -10,18 +10,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import core.*;
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
 import routing.util.RoutingInfo;
 import util.Tuple;
-
-import core.Connection;
-import core.DTNHost;
-import core.Message;
-import core.MessageListener;
-import core.NetworkInterface;
-import core.Settings;
-import core.SimClock;
 
 /**
  * Superclass of active routers. Contains convenience methods (e.g.
@@ -48,6 +41,8 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
+
+	private List<EnergyListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -78,6 +73,23 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
 	}
+
+	/**
+	 * Adds a EnergyListener that will be notified of the battery going empty.
+	 * @param listener The listener that is added.
+	 */
+	public void addListener(EnergyListener listener) {
+		listeners.add(listener);
+	}
+
+	/**
+	 * Informs all registered EnergyListeners, that the battery went empty.
+	 */
+	public void batteryDied() {
+		for (EnergyListener l : listeners)
+			l.batteryDied();
+	}
+
 
 	@Override
 	public void init(DTNHost host, List<MessageListener> mListeners) {
@@ -580,6 +592,11 @@ public abstract class ActiveRouter extends MessageRouter {
 	@Override
 	public void update() {
 		super.update();
+
+		//check if the battery has died and notify listeners in that case
+		if(!hasEnergy()) {
+			batteryDied();
+		}
 
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */

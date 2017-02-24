@@ -33,7 +33,7 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
      * Replicates a LevyWalkMovement
      * @param other LevyWalkMovement to replicate
      */
-    private LevyWalkMovement(LevyWalkMovement other){
+    public LevyWalkMovement(LevyWalkMovement other){
         super(other);
     }
 

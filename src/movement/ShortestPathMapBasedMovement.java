@@ -35,6 +35,12 @@ public class ShortestPathMapBasedMovement extends MapBasedMovement implements
 				settings, rng);
 	}
 	
+	/**
+	 * Creates a new movement model adapting the map and number of files passed to the constructor
+	 * @param settings The Settings object where the settings are read from
+	 * @param newMap The map the movement model is based on
+	 * @param nrofMaps Number of WKT Files that are relevant
+	 */
 	public ShortestPathMapBasedMovement(Settings settings, SimMap newMap, int nrofMaps) {
 		super(settings, newMap, nrofMaps);
 		this.pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());

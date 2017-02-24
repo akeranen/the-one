@@ -415,15 +415,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * should wait
 	 */
 	private boolean setNextWaypoint() {
-		if (path == null) {
-			Class c = movement.PanicMovement.class;
-			
-			if (movement.getClass().equals(c)) {
-				path = ((PanicMovement)movement).getPath(this);
-			} else {
-				path = movement.getPath();
-			}
-		}
+		path = movement.getPath();
 
 		if (path == null || !path.hasNext()) {
 			this.nextTimeToMove = movement.nextPathAvailable();

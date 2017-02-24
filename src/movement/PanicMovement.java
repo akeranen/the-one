@@ -3,53 +3,74 @@ package movement;
 import java.util.List;
 
 import core.Coord;
-import core.DTNHost;
 import core.Settings;
 import movement.map.MapNode;
-import movement.map.PanicPointsOfInterest;
+import movement.map.PanicMovementUtil;
 import movement.map.SimMap;
 
 public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
     
-	private Coord eventLocation;
-	private static final double C1000 = 1000.0;
-	private static final double INNER_ZONE = 300.0;
-	private static final double OUTER_ZONE = 500.0;
+	private Coord eventLocation;	
+	//TODO Define a way to set this attribute
+	private static double safeRangeRadius;
+	//TODO Define a way to set this attribute
+	private static double eventRangeRadius;
 	
-	public PanicMovement (Settings settings, Coord eventLocation, double securityZone, double outerZone) {
+	private static final double SAFE_RANGE_RADIUS = 300.0;
+	private static final double EVENT_RANGE_RADIUS = 500.0;
+	
+	
+	public PanicMovement (Settings settings, Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings);
-		this.eventLocation = eventLocation;
-		this.pois = new PanicPointsOfInterest(getMap(), getOkMapNodeTypes(),
-					settings, rng, eventLocation, securityZone, outerZone);
+		eventLocation = location;
+		PanicMovementUtil.init(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
 	
+	/**
+	 * Constructor setting values for the event and the minimum and maximum distance to 
+	 * an event (INNER_ZONE, OUTER_ZONE). 
+	 * @param settings Settings for the map, hosts etc.
+	 */
 	public PanicMovement (Settings settings) {
-		super(settings);
-		this.eventLocation = new Coord(C1000, C1000);
-		this.pois = new PanicPointsOfInterest(getMap(), getOkMapNodeTypes(),
-				settings, rng, eventLocation, INNER_ZONE, OUTER_ZONE);
+		this(settings, null, SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
+		safeRangeRadius = SAFE_RANGE_RADIUS;
+		eventRangeRadius = EVENT_RANGE_RADIUS;
+		PanicMovementUtil.init(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
 	
+	/**
+	 * Additional constructor for JUnit Tests
+	 * @param settings Settings for the map, hosts etc.
+	 * @param newMap Map passed instead of reading it from a file
+	 * @param nrofMaps Number of WKT files
+	 * @param eventLocation Coordinates of an event that occurred
+	 * @param securityZone minimum distance from the event to be safe
+	 * @param outerZone maximum distance to the event to get help
+	 */
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
-			Coord eventLocation, double securityZone, double outerZone) {
-		super(settings, newMap, nrofMaps );
-		this.eventLocation = eventLocation;
-		this.pois = new PanicPointsOfInterest(newMap, getOkMapNodeTypes(),
-					settings, rng, eventLocation, securityZone, outerZone);
+			Coord location, double srRadius, double erRadius) {
+		super(settings, newMap, nrofMaps);
+		eventLocation = location;
+		safeRangeRadius = srRadius;
+		eventRangeRadius = erRadius;
+		PanicMovementUtil.init(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
 	
-	public Path getPath(DTNHost host) {
+	/**
+	 * Determines a path to the most suitable node in the security zone
+	 */
+	public Path getPath() {
 		Path p = new Path(generateSpeed());
 		Coord hostLocation = host.getLocation();
-		MapNode hostNode = getNextNode(map, hostLocation);
-		MapNode to = ((PanicPointsOfInterest)pois).selectDestination(hostNode);
+		MapNode hostNode = getNearestNode(map, hostLocation);
+		MapNode to = PanicMovementUtil.selectDestination(map, hostNode);
 		
 		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, to);
 
 		// this assertion should never fire if the map is checked in read phase
 		int pathSize = nodePath.size();
 		assert pathSize > 0 : "No path from " + hostNode + " to " +
-			to + ". The simulation map isn't fully connected";
+			to + ". The simulation map isn't fully connected.";
 
 		for (MapNode node : nodePath) { // create a Path from the shortest path
 			p.addWaypoint(node.getLocation());
@@ -62,12 +83,12 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	
 	/**
 	 * Copyconstructor.
-	 * @param mbm The ShortestPathMapBasedMovement prototype to base
+	 * @param mbm The PanicMovement prototype to base
 	 * the new object to
 	 */
 	protected PanicMovement(PanicMovement pm) {
 		super(pm);
-		this.eventLocation = pm.eventLocation;
+		eventLocation = pm.eventLocation;
 	}
 	
 	public void setEventLocation(Coord eventLocation) {
@@ -83,18 +104,36 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		return new PanicMovement(this);
 	}
 	
-	private MapNode getNextNode(SimMap map, Coord location) {
+	public static double getSafeRangeRadius() {
+		return safeRangeRadius;
+	}
+	
+	public static double getEventRangeRadius() {
+		return eventRangeRadius;
+	}
+	
+	public static void setSafeRangeRadius(double radius) {
+		safeRangeRadius = radius;
+	}
+	
+	public static void setEventRangeRadius(double radius) {
+		eventRangeRadius = radius;
+	}
+	
+	/**
+	 * Determines the next node to a given location
+	 * @param map Map which contains coordinates
+	 * @param location Location to find the next node to
+	 * @return the next node to parameter location
+	 */
+	private MapNode getNearestNode(SimMap map, Coord location) {
 		List<MapNode> list = map.getNodes();
 		MapNode bestNode = null;
 		double distance, bestDistance = 0;
 		
 		for (MapNode node : list) {
 			distance = location.distance(node.getLocation());
-			if (bestNode == null) {
-				bestNode = node;
-				bestDistance = distance;
-			}
-			else if (distance < bestDistance){
+			if (bestNode == null || distance < bestDistance) {
 				bestNode = node;
 				bestDistance = distance;
 			}

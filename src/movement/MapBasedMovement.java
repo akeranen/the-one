@@ -97,7 +97,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 
 	/**
 	 * Reads the OK map node types from settings
-	 * @param settings The settings where the types are reado
+	 * @param settings The settings where the types are read
 	 * 
 	 * 
 	 * i

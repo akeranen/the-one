@@ -45,7 +45,8 @@ import org.junit.runners.Suite;
 		ModuleCommunicationBusTest.class,
 		DTNHostTest.class,
 		VHMEventsTest.class,
-		LevyWalkTest.class
+		LevyWalkTest.class,
+		TransportingMovementTest.class
 })
 
 public class AllTests {

@@ -9,6 +9,7 @@ import java.util.List;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.PointsOfInterest;
+import movement.map.SimMap;
 import core.Settings;
 
 /**
@@ -33,6 +34,13 @@ public class ShortestPathMapBasedMovement extends MapBasedMovement implements
 		this.pois = new PointsOfInterest(getMap(), getOkMapNodeTypes(),
 				settings, rng);
 	}
+	
+    public ShortestPathMapBasedMovement(Settings settings, SimMap newMap, int nrofMaps) {
+        super(settings, newMap, nrofMaps);
+        this.pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
+        this.pois = new PointsOfInterest(getMap(), getOkMapNodeTypes(),
+				settings, rng);
+    }
 
 	/**
 	 * Copyconstructor.

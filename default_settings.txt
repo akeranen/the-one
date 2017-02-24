@@ -51,7 +51,7 @@ Scenario.nrofHostGroups = 6
 
 
 # Common settings for all groups
-Group.movementModel = TransportingMovement
+Group.movementModel = ShortestPathMapBasedMovement
 Group.router = EpidemicRouter
 Group.bufferSize = 5M
 Group.waitTime = 0, 120

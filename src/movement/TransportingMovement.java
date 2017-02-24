@@ -31,7 +31,7 @@ public class TransportingMovement extends ShortestPathMapBasedMovement{
         this.transportDestination = pois.selectDestination();
         this.eventLocation = pois.selectDestination();
     }
-    
+
     public TransportingMovement(Settings settings, SimMap newMap, int nrofMaps){
         super(settings, newMap, nrofMaps);
         this.transportDestination = pois.selectDestination();
@@ -52,9 +52,9 @@ public class TransportingMovement extends ShortestPathMapBasedMovement{
     public Path getPath(){
         Path path = new Path(generateSpeed());
         MapNode destination = selectDestination();
-         
+
         List<MapNode> nodePath = pathFinder.getShortestPath(lastMapNode, destination);
-         
+
         for (MapNode node : nodePath) {
             path.addWaypoint(node.getLocation());
         }
@@ -73,7 +73,7 @@ public class TransportingMovement extends ShortestPathMapBasedMovement{
      */
     public MapNode selectDestination(){
         MapNode destination;
-        if(!host.getLocation().equals(eventLocation.getLocation()) && 
+        if(!host.getLocation().equals(eventLocation.getLocation()) &&
                 !host.getLocation().equals(transportDestination.getLocation())){
             destination = eventLocation;
         } else if(host.getLocation().equals(eventLocation.getLocation())){

@@ -63,6 +63,40 @@ public class SimMap implements Serializable {
 	}
 
 	/**
+	 * Returns a MapNode closest to the given coordinates or null if there are no MapNodes.
+	 * @param c The coordinate
+	 * @return MapNode closest to that location or null if no MapNodes exist.
+	 */
+	public MapNode getClosestNodeByCoord(Coord c) {
+		// some coordinates may have changed after creating hash
+		if (needsRehash) {
+			// re-hash
+			nodesMap.clear();
+			for (MapNode node : getNodes()) {
+				nodesMap.put(node.getLocation(), node);
+			}
+		}
+
+		//find and return the closest node
+		if(nodesMap.size() == 0)
+			return null;
+
+		MapNode closest = nodesMap.get(c);
+		if(closest != null)
+			return closest;
+
+		double closestDist = Double.MAX_VALUE;
+		for (MapNode node : getNodes()) {
+			if(node.getLocation().distance(c) < closestDist) {
+				closest = node;
+				closestDist = node.getLocation().distance(c);
+			}
+		}
+
+		return closest;
+	}
+
+	/**
 	 * Returns the upper left corner coordinate of the map
 	 * @return the upper left corner coordinate of the map
 	 */

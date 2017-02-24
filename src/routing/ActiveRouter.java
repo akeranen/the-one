@@ -657,4 +657,12 @@ public abstract class ActiveRouter extends MessageRouter {
 		return top;
 	}
 
+	/**
+	 * Returns the EnergyModel of this ActiveRouter.
+	 * @return the EnergyModel of this ActiveRouter.
+	 */
+	public EnergyModel getEnergyModel() {
+		return energy;
+	}
+
 }

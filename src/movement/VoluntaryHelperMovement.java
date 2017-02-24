@@ -126,4 +126,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     public void vhmEventEnded(VHMEvent event) {
         //TODO handle the event
     }
+
+    /**
+     * Switches the movement model and resets the host to use it after the next update
+     *
+     * @param mm the new movement model
+     */
+    private void switchToMovement(SwitchableMovement mm){
+        this.setCurrentMovementModel(mm);
+        this.host.interruptMovement();
+    }
 }

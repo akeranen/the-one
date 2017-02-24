@@ -4,14 +4,14 @@
  */
 package core;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static core.Constants.DEBUG;
 
@@ -434,6 +434,16 @@ public class DTNHost implements Comparable<DTNHost> {
 		}
 
 		return true;
+	}
+
+	/**
+	 * removes the current movement destination and path such that the host will
+	 * request a new path from the movement model.
+	 * Call this, when the movement model changed.
+	 */
+	public void interruptMovement(){
+		this.destination = null;
+		this.path = null;
 	}
 
 	/**

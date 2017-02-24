@@ -20,8 +20,12 @@ import java.util.List;
  */
 public class VHMEventReader implements ExternalEventsReader {
 
-
     public static final String READER_VERSION = "vhm_events_version";
+
+    /**
+     * The current version of the JSON event files.
+     * This class will only read in files, where the vhm_events_version equals this value
+     */
     public static final int CURRENT_VERSION = 1;
 
 
@@ -37,8 +41,17 @@ public class VHMEventReader implements ExternalEventsReader {
      */
     private FileReader fileReader;
 
+    /**
+     * Is set to true the first time, events are read in from the file
+     */
     private boolean allEventsRead;
 
+    /**
+     * Creates a new reader for a specified file
+     *
+     * @param eventFile file the reader should read in
+     *
+     */
     public VHMEventReader(File eventFile){
         if (!isVHMEventsFile(eventFile)){
             throw new SimError("VHM events file is not valid: " + eventFile.getAbsolutePath());
@@ -52,6 +65,11 @@ public class VHMEventReader implements ExternalEventsReader {
         }
     }
 
+    /**
+     * Checks if a file is a JSON events file
+     * @param eventFile the file that should be checked
+     * @return true, if the file is an JSON event file
+     */
     public static boolean isVHMEventsFile(File eventFile){
         FileReader fileReader = null;
         JsonReader jsonReader = null;

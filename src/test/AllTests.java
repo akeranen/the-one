@@ -43,6 +43,7 @@ import org.junit.runners.Suite;
 		MessageTest.class,
 		ModuleCommunicationBusTest.class,
 		DTNHostTest.class,
+		LevyWalkTest.class,
 		TransportingMovementTest.class
 })
 

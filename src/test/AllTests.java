@@ -42,7 +42,8 @@ import org.junit.runners.Suite;
 		ScheduledUpdatesQueueTest.class,
 		MessageTest.class,
 		ModuleCommunicationBusTest.class,
-		DTNHostTest.class
+		DTNHostTest.class,
+		TransportingMovementTest.class
 })
 
 public class AllTests {

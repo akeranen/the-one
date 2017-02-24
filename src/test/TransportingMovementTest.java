@@ -48,7 +48,7 @@ public class TransportingMovementTest extends TestCase {
 		setupMapData(null, "1,1", null);
 		transport = new TransportingMovement(settings, map, 3);
 		transport.setHost(setupHost());
-		transport.setLocation(transport.getInitialLocation());
+		transport.getInitialLocation();
 	}
 	
 	private void setupMapData(String okTypes, String speed, String wTime) {

@@ -5,6 +5,7 @@ import input.VHMEvent;
 import movement.map.SimMap;
 import routing.ActiveRouter;
 import routing.MessageRouter;
+import routing.util.EnergyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     private static final int PANIC_MODE = 6;
 
     private boolean isLocalHelper;
+    private boolean energyModelled;
+    private double initialEnergy;
     private double hospitalWaitTime;
     private double helpTime;
     private double injuryProbability;
@@ -80,6 +83,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         super(settings);
 
         isLocalHelper = settings.getBoolean(IS_LOCAL_HELPER_SETTING, false);
+        energyModelled = checkEnergyModelled(settings);
+        if(energyModelled) {
+            //make sure the values are positive
+            settings.ensurePositiveValue(settings.getDouble(EnergyModel.INIT_ENERGY_S), EnergyModel.INIT_ENERGY_S);
+            settings.ensurePositiveValue(settings.getDouble(EnergyModel.SCAN_ENERGY_S), EnergyModel.SCAN_ENERGY_S);
+            settings.ensurePositiveValue(settings.getDouble(EnergyModel.TRANSMIT_ENERGY_S), EnergyModel.TRANSMIT_ENERGY_S);
+            settings.ensurePositiveValue(settings.getDouble(EnergyModel.SCAN_RSP_ENERGY_S), EnergyModel.SCAN_RSP_ENERGY_S);
+            //get the initial energy of a node
+            initialEnergy = settings.getDouble(EnergyModel.INIT_ENERGY_S);
+        }
         helpTime = settings.getDouble(HELP_TIME_SETTING, DEFAULT_HELP_TIME);
         hospitalWaitTime = settings.getDouble(HOSPITAL_WAIT_TIME_SETTING, DEFAULT_HOSPITAL_WAIT_TIME);
         injuryProbability = settings.getDouble(INJURY_PROBABILITY_SETTING, DEFAULT_INJURY_PROBABILITY);
@@ -110,6 +123,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         super(prototype);
 
         isLocalHelper = prototype.isLocalHelper;
+        energyModelled = prototype.energyModelled;
         helpTime = prototype.helpTime;
         hospitalWaitTime = prototype.hospitalWaitTime;
         injuryProbability = prototype.injuryProbability;
@@ -194,10 +208,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     private void initEnergyListener() {
-        //TODO only register if energy modeling active for this node's Group
-        MessageRouter router = this.host.getRouter();
-        if(router instanceof ActiveRouter) {
-            ((ActiveRouter) router).addEnergyListener(this);
+        //only register the listener if energy modeling active for this node
+        if(energyModelled) {
+            //register the EnergyListener
+            System.out.println(host);
+            MessageRouter router = this.host.getRouter();
+            if (router instanceof ActiveRouter) {
+                ((ActiveRouter) router).addEnergyListener(this);
+            }
         }
     }
 
@@ -348,9 +366,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                     switchToMovement(stationaryMM);
                 } else {
                     mode = PANIC_MODE;
-                    //TODO panic
+                    //TODO panic and tell the panicMM all about the disaster
                     /*panicMM.setLocation(host.getLocation());
-                    //TODO tell the panicMM all about the disaster
                     switchToMovement(panicMM);*/
                 }
             } else if(host != null && mode == RANDOM_MAP_BASED_MODE && selectNextEvent()){
@@ -456,15 +473,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
     /**
      * This Method is called when the battery of the node ran empty.
+     * Only called if the node has energy modelling enabled, as only then the Listener is registered.
      * It resets the node's battery and movement model.
      */
     @Override
     public void batteryDied() {
         //do not call "super.reset();" or the rng seed will be reset, so the new random location would always be the same
         //reset the energy value. Yes, it has to be done like this.
-        //TODO only do this, if host has energy modelling enabled
-        //TODO get initial value from settings
-        host.getComBus().updateProperty("Energy.value", new Double(100));
+        host.getComBus().updateProperty("Energy.value", new Double(initialEnergy));
 
         //reset the Location to a new random one
         host.setLocation(shortestPathMapBasedMM.getInitialLocation());
@@ -490,5 +506,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
             shortestPathMapBasedMM.setLocation(host.getLocation());
             switchToMovement(shortestPathMapBasedMM);
         }
+    }
+
+    private boolean checkEnergyModelled(Settings settings) {
+        return settings.contains(EnergyModel.INIT_ENERGY_S)
+                && settings.contains(EnergyModel.SCAN_ENERGY_S)
+                && settings.contains(EnergyModel.TRANSMIT_ENERGY_S)
+                && settings.contains(EnergyModel.SCAN_RSP_ENERGY_S);
     }
 }

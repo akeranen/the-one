@@ -124,6 +124,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
         isLocalHelper = prototype.isLocalHelper;
         energyModelled = prototype.energyModelled;
+        initialEnergy = prototype.initialEnergy;
         helpTime = prototype.helpTime;
         hospitalWaitTime = prototype.hospitalWaitTime;
         injuryProbability = prototype.injuryProbability;
@@ -211,7 +212,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         //only register the listener if energy modeling active for this node
         if(energyModelled) {
             //register the EnergyListener
-            System.out.println(host);
             MessageRouter router = this.host.getRouter();
             if (router instanceof ActiveRouter) {
                 ((ActiveRouter) router).addEnergyListener(this);

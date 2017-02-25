@@ -59,8 +59,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     private VHMEvent chosenEvent;
     private VHMEvent chosenHospital;
 
-    private List<VHMEvent> events = new ArrayList<>();
-
+    private static List<VHMEvent> events = Collections.synchronizedList(new ArrayList<>());
     private static List<VHMEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
 
     private ShortestPathMapBasedMovement shortestPathMapBasedMM;
@@ -144,18 +143,21 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     /**
-     * Informs all registered VHMListeners, that a VHMEvent started
+     * Informs all registered VHMListeners, that a VHMEvent started and adds it to the appropriate List
      * @param event The VHMEvent.
      */
     public static void eventStarted(VHMEvent event) {
         for (VHMListener l : listeners)
             l.vhmEventStarted(event);
-        if(event.getType() == HOSPITAL)
+        if(event.getType() == HOSPITAL) {
             hospitals.add(event);
+        } else if(event.getType() == DISASTER) {
+            events.add(event);
+        }
     }
 
     /**
-     * Informs all registered VHMListeners, that a VHMEvent ended
+     * Informs all registered VHMListeners, that a VHMEvent ended and removes it from the appropriate list
      * @param event The VHMEvent.
      */
     public static void eventEnded(VHMEvent event) {
@@ -166,6 +168,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
             for(VHMEvent h : hospitals) {
                 if(h.getID() == event.getID()) {
                     hospitals.remove(h);
+                    break;
+                }
+            }
+        } else if(event.getType() == DISASTER) {
+            //remove the ended event from the list of disasters.
+            for(VHMEvent d : events) {
+                if(d.getID() == event.getID()) {
+                    events.remove(d);
                     break;
                 }
             }
@@ -331,8 +341,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     @Override
     public void vhmEventStarted(VHMEvent event) {
         if(event.getType() == DISASTER) {
-            //add the disaster to the nodes list of events
-            events.add(event);
             //check if the node is to close to the disaster
             if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
                 if(rng.nextDouble() <= injuryProbability) {
@@ -372,8 +380,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     private void handleEndedDisaster(VHMEvent event) {
+        //if the ended event was chosen...
         if(chosenEvent != null && event.getID() == chosenEvent.getID()) {
-            //handle the loss of the chosen event by starting over
+            //..handle the loss of the chosen event by starting over
             if(selectNextEvent()) {
                 mode = MOVING_TO_EVENT_MODE;
                 carMM.setLocation(host.getLocation());
@@ -383,13 +392,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                 mode = RANDOM_MAP_BASED_MODE;
                 shortestPathMapBasedMM.setLocation(host.getLocation());
                 switchToMovement(shortestPathMapBasedMM);
-            }
-        }
-        //if the ended event is in the nodes eventlist, remove it
-        for(VHMEvent e : events) {
-            if(e.getID() == event.getID()) {
-                events.remove(e);
-                break;
             }
         }
     }
@@ -416,19 +418,18 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         this.host.interruptMovement();
     }
 
-    //TODO select randomly and don't empty the list
     private boolean selectNextEvent() {
-        boolean chosen = false;
-
-        while(!events.isEmpty()) {
-            if (decideHelp(events.get(0))) {
+        if(!events.isEmpty()) {
+            //the bound for the rng mustn't be 0
+            if(events.size() == 1) {
                 chosenEvent = events.get(0);
-                chosen = true;
+            } else {
+                chosenEvent = events.get(rng.nextInt(events.size() - 1));
             }
-            events.remove(0);
+            return true;
+        } else {
+            return false;
         }
-
-        return chosen;
     }
 
     private boolean decideHelp(VHMEvent event) {
@@ -469,18 +470,15 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         //reset the Location to a new random one
         host.setLocation(shortestPathMapBasedMM.getInitialLocation());
 
-        //reset the host (message buffer and connections)
+        //reset the host (network address, name, message buffer and connections)
         //do not call "host.reset();" as it interferes with host network address assignment for all hosts
+        //TODO get a new network address, a new name and reset the routing table or whatever
         //empty the message buffer
         for(Message m: host.getMessageCollection()) {
             host.deleteMessage(m.getId(), true);
         }
         //update all connections
         host.update(true);
-
-        //TODO do we really do this??
-        //reset List of events
-        events.clear();
 
         //select an event and help there or randomly move around the map
         if(selectNextEvent()) {

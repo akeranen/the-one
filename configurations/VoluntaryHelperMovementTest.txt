@@ -70,14 +70,19 @@ Group.speed = 0.5, 1.5
 # Message TTL of 300 minutes (5 hours)
 Group.msgTtl = 300
 
-Group.nrofHosts = 50
+Group.nrofHosts = 1
 
 # group1 (pedestrians) specific settings
 Group1.groupID = p
 Group1.isLocalHelper = true
+Group1.initialEnergy = 100
+Group1.scanEnergy = 0.1
+Group1.transmitEnergy = 0.1
+Group1.scanResponseEnergy = 0.1
 
 # group2 (cars) specific settings
 Group2.groupID = c
+Group2.nrofHosts = 100
 Group2.speed = 10, 30
 
 

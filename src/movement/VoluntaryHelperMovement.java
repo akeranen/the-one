@@ -2,8 +2,9 @@ package movement;
 
 import core.*;
 import input.VHMEvent;
-import movement.map.MapNode;
 import movement.map.SimMap;
+import routing.ActiveRouter;
+import routing.MessageRouter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,22 +20,23 @@ import static input.VHMEvent.VHMEventType.HOSPITAL;
  * Created by Ansgar Mährlein on 08.02.2017.
  * @author Ansgar Mährlein
  */
-//TODO implement reaction to dead battery
+//TODO implement Panic Movement
+    //TODO chose event randomly and don't delete events from list
     //TODO comments + javadoc
-public class VoluntaryHelperMovement extends ExtendedMovementModel implements VHMListener {
+public class VoluntaryHelperMovement extends ExtendedMovementModel implements VHMListener, EnergyListener {
 
-    public static final String IS_LOCAL_HELPER_SETTING = "isLocalHelper";
-    public static final String HELP_TIME_SETTING = "helpTime";
-    public static final String HOSPITAL_WAIT_TIME_SETTING = "hospitalWaitTime";
-    public static final String INJURY_PROBABILITY_SETTING = "injuryProbability";
-    public static final String HOSPITAL_WAIT_PROBABILITY_SETTING = "hospitalWaitProbability";
-    public static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
+    private static final String IS_LOCAL_HELPER_SETTING = "isLocalHelper";
+    private static final String HELP_TIME_SETTING = "helpTime";
+    private static final String HOSPITAL_WAIT_TIME_SETTING = "hospitalWaitTime";
+    private static final String INJURY_PROBABILITY_SETTING = "injuryProbability";
+    private static final String HOSPITAL_WAIT_PROBABILITY_SETTING = "hospitalWaitProbability";
+    private static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
 
-    public static final double DEFAULT_HELP_TIME = 3600;
-    public static final double DEFAULT_HOSPITAL_WAIT_TIME = 3600;
-    public static final double DEFAULT_INJURY_PROBABILITY = 0.5;
-    public static final double DEFAULT_HOSPITAL_WAIT_PROBABILITY = 0.5;
-    public static final double DEFAULT_INTENSITY_WEIGHT = 0.5;
+    private static final double DEFAULT_HELP_TIME = 3600;
+    private static final double DEFAULT_HOSPITAL_WAIT_TIME = 3600;
+    private static final double DEFAULT_INJURY_PROBABILITY = 0.5;
+    private static final double DEFAULT_HOSPITAL_WAIT_PROBABILITY = 0.5;
+    private static final double DEFAULT_INTENSITY_WEIGHT = 0.5;
 
 
     private int mode;
@@ -55,6 +57,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     private double startTime;
 
     private VHMEvent chosenEvent;
+    private VHMEvent chosenHospital;
 
     private List<VHMEvent> events = new ArrayList<>();
 
@@ -64,19 +67,20 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     private CarMovement carMM;
     private LevyWalkMovement levyWalkMM;
     private SwitchableStationaryMovement stationaryMM;
+    //private panicMovement panicMM;
 
     private SimMap simMap;
 
     private static List<VHMListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
     /**
-     * Creates a new VoluntaryHelperMovement
+     * Creates a new VoluntaryHelperMovement.
+     * Only called once per nodegroup to create a prototype.
      * @param settings the settings from the settings file
      */
     public VoluntaryHelperMovement(Settings settings) {
         super(settings);
 
-        //TODO check if settings namespace works out
         isLocalHelper = settings.getBoolean(IS_LOCAL_HELPER_SETTING, false);
         helpTime = settings.getDouble(HELP_TIME_SETTING, DEFAULT_HELP_TIME);
         hospitalWaitTime = settings.getDouble(HOSPITAL_WAIT_TIME_SETTING, DEFAULT_HOSPITAL_WAIT_TIME);
@@ -88,18 +92,20 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         carMM = new CarMovement(settings);
         levyWalkMM = new LevyWalkMovement(settings);
         stationaryMM = new SwitchableStationaryMovement(settings);
+        //panicMM = new panicMovement(settings);
 
         simMap = this.getMap();
 
-        VoluntaryHelperMovement.addListener(this);
-
         startTime = SimClock.getTime();
+
+        //There shouldn't be any events here at this point, so no need to check for them
         mode = RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
     /**
-     * Creates a new VoluntaryHelperMovement from a prototype
+     * Creates a new VoluntaryHelperMovement from a prototype.
+     * Called once per node.
      * @param prototype The prototype MovementModel
      */
     public VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
@@ -116,13 +122,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         carMM = prototype.carMM;
         levyWalkMM = new LevyWalkMovement(prototype.levyWalkMM);
         stationaryMM = new SwitchableStationaryMovement(prototype.stationaryMM);
+        //panicMM = new panicMovement(prototype.panicMM);
 
         simMap = prototype.getMap();
 
         VoluntaryHelperMovement.addListener(this);
 
         startTime = prototype.startTime;
-        mode = prototype.mode;
+
+        //There shouldn't be any events here at this point (hopefully), so no need to check for them
+        mode = RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
@@ -152,8 +161,15 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     public static void eventEnded(VHMEvent event) {
         for (VHMListener l : listeners)
             l.vhmEventEnded(event);
-        //TODO remove from hospitals
-        if(event.getType() == HOSPITAL);
+        if(event.getType() == HOSPITAL) {
+            //remove the ended event from the list of hospitals. Yes i know how that sounds XD.
+            for(VHMEvent h : hospitals) {
+                if(h.getID() == event.getID()) {
+                    hospitals.remove(h);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -162,7 +178,18 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
      */
     @Override
     public Coord getInitialLocation(){
+        //TODO find a better place for this?
+        initEnergyListener();
+
         return shortestPathMapBasedMM.getInitialLocation();
+    }
+
+    private void initEnergyListener() {
+        //TODO only register if energy modeling active for this node's Group
+        MessageRouter router = this.host.getRouter();
+        if(router instanceof ActiveRouter) {
+            ((ActiveRouter) router).addEnergyListener(this);
+        }
     }
 
     /**
@@ -176,9 +203,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
     /**
      * Method is called between each getPath() request when the current MM is
-     * ready (isReady() method returns true). Subclasses should implement all
-     * changes of state that need to be made here, for example switching
-     * mobility model, etc.
+     * ready (isReady() method returns true).
      * @return true if success
      */
     @Override
@@ -202,11 +227,18 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                     startTime = SimClock.getTime();
                     setCurrentMovementModel(levyWalkMM);
                 } else {
-                    mode = TRANSPORTING_MODE;
-                    carMM.setLocation(host.getLocation());
-                    //TODO make it chose the closest hospital/random instead of the first in the list
-                    carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(hospitals.get(0).getLocation()).getLocation());
-                    setCurrentMovementModel(carMM);
+                    if(chooseNextHospital()) {
+                        mode = TRANSPORTING_MODE;
+                        carMM.setLocation(host.getLocation());
+                        carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
+                        setCurrentMovementModel(carMM);
+                    } else {
+                        //if choosing a new hospital fails because there are no hospitals...
+                        //...just move on with your day
+                        mode = RANDOM_MAP_BASED_MODE;
+                        shortestPathMapBasedMM.setLocation(host.getLocation());
+                        switchToMovement(shortestPathMapBasedMM);
+                    }
                 }
                 break;
             }
@@ -234,9 +266,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                 } else {
                     mode = HOSPITAL_WAIT_MODE;
                     levyWalkMM.setLocation(host.getLocation());
-                    //TODO make it chose the closest hospital/random instead of the first in the list
-                    levyWalkMM.setCenter(hospitals.get(0).getLocation());
-                    levyWalkMM.setRadius(hospitals.get(0).getEventRange());
+                    levyWalkMM.setCenter(chosenHospital.getLocation());
+                    levyWalkMM.setRadius(chosenHospital.getEventRange());
                     startTime = SimClock.getTime();
                     setCurrentMovementModel(levyWalkMM);
                 }
@@ -298,17 +329,29 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
      * @param event The VHMEvent
      */
     @Override
-    //TODO force MM change
     public void vhmEventStarted(VHMEvent event) {
         if(event.getType() == DISASTER) {
+            //add the disaster to the nodes list of events
             events.add(event);
-            if(host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
+            //check if the node is to close to the disaster
+            if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
                 if(rng.nextDouble() <= injuryProbability) {
                     mode = INJURED_MODE;
-                    setCurrentMovementModel(stationaryMM);
+                    stationaryMM.setLocation(host.getLocation());
+                    switchToMovement(stationaryMM);
                 } else {
+                    mode = PANIC_MODE;
                     //TODO panic
+                    /*panicMM.setLocation(host.getLocation());
+                    //TODO tell the panicMM all about the disaster
+                    switchToMovement(panicMM);*/
                 }
+            } else if(host != null && mode == RANDOM_MAP_BASED_MODE && selectNextEvent()){
+                //if the node is not already busy, decide if it helps with the new disaster
+                mode = MOVING_TO_EVENT_MODE;
+                carMM.setLocation(host.getLocation());
+                carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenEvent.getLocation()).getLocation());
+                switchToMovement(carMM);
             }
         }
 
@@ -321,8 +364,45 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
      */
     @Override
     public void vhmEventEnded(VHMEvent event) {
-        //TODO remove from List and handle
-        if(event.getType() == DISASTER);
+        if(event.getType() == DISASTER) {
+            handleEndedDisaster(event);
+        } else if(event.getType() == HOSPITAL) {
+            handleEndedHospital(event);
+        }
+    }
+
+    private void handleEndedDisaster(VHMEvent event) {
+        if(chosenEvent != null && event.getID() == chosenEvent.getID()) {
+            //handle the loss of the chosen event by starting over
+            if(selectNextEvent()) {
+                mode = MOVING_TO_EVENT_MODE;
+                carMM.setLocation(host.getLocation());
+                carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenEvent.getLocation()).getLocation());
+                switchToMovement(carMM);
+            } else {
+                mode = RANDOM_MAP_BASED_MODE;
+                shortestPathMapBasedMM.setLocation(host.getLocation());
+                switchToMovement(shortestPathMapBasedMM);
+            }
+        }
+        //if the ended event is in the nodes eventlist, remove it
+        for(VHMEvent e : events) {
+            if(e.getID() == event.getID()) {
+                events.remove(e);
+                break;
+            }
+        }
+    }
+
+    private void handleEndedHospital(VHMEvent event) {
+        //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
+        //if choosing a new one fails because there are no hospitals anymore...
+        if(chosenHospital != null && chosenHospital.getID() == event.getID() && !chooseNextHospital()) {
+            //...just move on with your day
+            mode = RANDOM_MAP_BASED_MODE;
+            shortestPathMapBasedMM.setLocation(host.getLocation());
+            switchToMovement(shortestPathMapBasedMM);
+        }
     }
 
 
@@ -336,10 +416,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         this.host.interruptMovement();
     }
 
+    //TODO select randomly and don't empty the list
     private boolean selectNextEvent() {
         boolean chosen = false;
 
-        while(events.size() > 0) {
+        while(!events.isEmpty()) {
             if (decideHelp(events.get(0))) {
                 chosenEvent = events.get(0);
                 chosen = true;
@@ -354,8 +435,63 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         boolean help;
         double distance = host.getLocation().distance(event.getLocation());
 
-        help = (rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VHMEvent.MAX_INTENSITY) + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange())));
+        help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VHMEvent.MAX_INTENSITY) + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
 
         return help;
+    }
+
+    private boolean chooseNextHospital() {
+        if(!hospitals.isEmpty()) {
+            //the bound for the rng mustn't be 0
+            if(hospitals.size() == 1) {
+                chosenHospital = hospitals.get(0);
+            } else {
+                chosenHospital = hospitals.get(rng.nextInt(hospitals.size() - 1));
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * This Method is called when the battery of the node ran empty.
+     * It resets the node's battery and movement model.
+     */
+    @Override
+    public void batteryDied() {
+        //do not call "super.reset();" or the rng seed will be reset, so the new random location would always be the same
+        //reset the energy value. Yes, it has to be done like this.
+        //TODO only do this, if host has energy modelling enabled
+        //TODO get initial value from settings
+        host.getComBus().updateProperty("Energy.value", new Double(100));
+
+        //reset the Location to a new random one
+        host.setLocation(shortestPathMapBasedMM.getInitialLocation());
+
+        //reset the host (message buffer and connections)
+        //do not call "host.reset();" as it interferes with host network address assignment for all hosts
+        //empty the message buffer
+        for(Message m: host.getMessageCollection()) {
+            host.deleteMessage(m.getId(), true);
+        }
+        //update all connections
+        host.update(true);
+
+        //TODO do we really do this??
+        //reset List of events
+        events.clear();
+
+        //select an event and help there or randomly move around the map
+        if(selectNextEvent()) {
+            mode = MOVING_TO_EVENT_MODE;
+            carMM.setLocation(host.getLocation());
+            carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenEvent.getLocation()).getLocation());
+            switchToMovement(carMM);
+        } else {
+            mode = RANDOM_MAP_BASED_MODE;
+            shortestPathMapBasedMM.setLocation(host.getLocation());
+            switchToMovement(shortestPathMapBasedMM);
+        }
     }
 }

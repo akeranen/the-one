@@ -42,6 +42,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
+	/** List of EnergyListeners for this ActiveRouter */
 	private List<EnergyListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
 	/**
@@ -51,7 +52,6 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	public ActiveRouter(Settings s) {
 		super(s);
-
 		this.policy = new MessageTransferAcceptPolicy(s);
 
 		this.deleteDelivered = s.getBoolean(DELETE_DELIVERED_S, false);
@@ -78,16 +78,17 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Adds a EnergyListener that will be notified of the battery going empty.
 	 * @param listener The listener that is added.
 	 */
-	public void addListener(EnergyListener listener) {
+	public void addEnergyListener(EnergyListener listener) {
 		listeners.add(listener);
 	}
 
 	/**
 	 * Informs all registered EnergyListeners, that the battery went empty.
 	 */
-	public void batteryDied() {
-		for (EnergyListener l : listeners)
+	private void batteryDied() {
+		for (EnergyListener l : listeners) {
 			l.batteryDied();
+		}
 	}
 
 
@@ -593,8 +594,9 @@ public abstract class ActiveRouter extends MessageRouter {
 	public void update() {
 		super.update();
 
+		//TODO think about the threshold value, or getting it from the settings
 		//check if the battery has died and notify listeners in that case
-		if(!hasEnergy()) {
+		if(energy != null && energy.getEnergy() <= 0.1) {
 			batteryDied();
 		}
 
@@ -673,13 +675,4 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 		return top;
 	}
-
-	/**
-	 * Returns the EnergyModel of this ActiveRouter.
-	 * @return the EnergyModel of this ActiveRouter.
-	 */
-	public EnergyModel getEnergyModel() {
-		return energy;
-	}
-
 }

@@ -25,54 +25,99 @@ import static input.VHMEvent.VHMEventType.HOSPITAL;
     //TODO comments + javadoc
 public class VoluntaryHelperMovement extends ExtendedMovementModel implements VHMListener, EnergyListener {
 
+    //strings for the setting keys in the settings file
+    /** setting key for the node being a local helper or a "voluntary ambulance" */
     private static final String IS_LOCAL_HELPER_SETTING = "isLocalHelper";
+    /** setting key for the time the node will help at a disaster site (seconds) */
     private static final String HELP_TIME_SETTING = "helpTime";
+    /** setting key for the time the node will stay at the hospital after transporting someone to it (seconds) */
     private static final String HOSPITAL_WAIT_TIME_SETTING = "hospitalWaitTime";
+    /** setting key for the probability that the node gets injured if an event happens to close to it [0, 1] */
     private static final String INJURY_PROBABILITY_SETTING = "injuryProbability";
+    /** setting key for the probability that the node stays at the hospital after transporting someone to it [0, 1] */
     private static final String HOSPITAL_WAIT_PROBABILITY_SETTING = "hospitalWaitProbability";
+    /** setting key for the weight of a disasters intensity for determining if the node will help at the disaster site [0, 1] */
     private static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
 
+    //default values for the settings
+    /** default value for the time the node will help at a disaster site (seconds) */
     private static final double DEFAULT_HELP_TIME = 3600;
+    /** default value for the time the node will stay at the hospital after transporting someone to it (seconds) */
     private static final double DEFAULT_HOSPITAL_WAIT_TIME = 3600;
+    /** default value for the probability that the node gets injured if an event happens to close to it [0, 1] */
     private static final double DEFAULT_INJURY_PROBABILITY = 0.5;
+    /** default value for the probability that the node stays at the hospital after transporting someone to it [0, 1] */
     private static final double DEFAULT_HOSPITAL_WAIT_PROBABILITY = 0.5;
+    /** default value for the weight of a disasters intensity for determining if the node will help at the disaster site [0, 1] */
     private static final double DEFAULT_INTENSITY_WEIGHT = 0.5;
 
-
-    private int mode;
+    //the movement modes the node can be in
+    /** movement mode for randomly moving around on the map */
     private static final int RANDOM_MAP_BASED_MODE = 0;
+    /** movement mode for moving to a disaster site */
     private static final int MOVING_TO_EVENT_MODE = 1;
+    /** movement mode for helping at the disaster site */
     private static final int LOCAL_HELP_MODE = 2;
+    /** movement mode for transporting injured people from a disaster site to a hospital */
     private static final int TRANSPORTING_MODE = 3;
+    /** movement mode for helping at the hospital after transporting someone there */
     private static final int HOSPITAL_WAIT_MODE = 4;
+    /** movement mode for being injured after an event happened to close to the node */
     private static final int INJURED_MODE = 5;
+    /** movement mode for panicking after an event happened to close to the node */
     private static final int PANIC_MODE = 6;
 
+    //global variables of the movement model
+    /** tells, if the node is a local helper or a "voluntary ambulance" */
     private boolean isLocalHelper;
-    private boolean energyModelled;
-    private double initialEnergy;
+    /** how long the node will stay at the hospital (seconds) */
     private double hospitalWaitTime;
+    /** how long the node will help at a disaster site (seconds) */
     private double helpTime;
+    /** probability that the node gets injured if an event happens to close to it [0, 1] */
     private double injuryProbability;
+    /** probability that the node stays at the hospital after transporting someone to it [0, 1] */
     private double waitProbability;
+    /** weight of a disasters intensity for determining if the node will help at the disaster site [0, 1] */
     private double intensityWeight;
+    /** the current movement mode of the node */
+    private int mode;
+    /** tells, if energy modelling is enabled for this node */
+    private boolean energyModelled;
+    /** initial battery level for nodes with energy modelling enabled */
+    private double initialEnergy;
+    /** start time of waiting at the hospital or local helping movement */
     private double startTime;
+    /** tells, if the movement submodel was changed unplannedly */
     private boolean justChanged;
-
+    /** the selected disaster */
     private VHMEvent chosenDisaster;
+    /** the selected hospital */
     private VHMEvent chosenHospital;
-
-    private static List<VHMEvent> disasters = Collections.synchronizedList(new ArrayList<>());
-    private static List<VHMEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
-
-    private ShortestPathMapBasedMovement shortestPathMapBasedMM;
-    private CarMovement carMM;
-    private LevyWalkMovement levyWalkMM;
-    private SwitchableStationaryMovement stationaryMM;
-    //private panicMovement panicMM;
-
+    /** the map for map based movement */
     private SimMap simMap;
 
+    //the sub-movement-models
+    /** movement model for randomly walking around on the map */
+    private ShortestPathMapBasedMovement shortestPathMapBasedMM;
+    /** movement model for navigating from the current position to a specific target on the map */
+    private CarMovement carMM;
+    /** movement model for randomly walking around in a specified circular area (hospital or disaster site) */
+    private LevyWalkMovement levyWalkMM;
+    /** movement model for not moving at all */
+    private SwitchableStationaryMovement stationaryMM;
+    /** movement model for panically runing to a safe location */
+    //private panicMovement panicMM;
+
+    //TODO make everything local, non static?
+    //event lists
+    /** List of disasters */
+    private static List<VHMEvent> disasters = Collections.synchronizedList(new ArrayList<>());
+    /** List of hospitals */
+    private static List<VHMEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
+
+    //TODO make this non static by moving it to the appropriate class?
+    /** List of VHMListeners */
     private static List<VHMListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
     /**
@@ -83,6 +128,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     public VoluntaryHelperMovement(Settings settings) {
         super(settings);
 
+        //get all of the settings from the settings file, reverting to defaults, if setting absent in the file
         isLocalHelper = settings.getBoolean(IS_LOCAL_HELPER_SETTING, false);
         energyModelled = checkEnergyModelled(settings);
         if(energyModelled) {
@@ -100,20 +146,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         waitProbability = settings.getDouble(HOSPITAL_WAIT_PROBABILITY_SETTING, DEFAULT_HOSPITAL_WAIT_PROBABILITY);
         intensityWeight = settings.getDouble(INTENSITY_WEIGHT_SETTING, DEFAULT_INTENSITY_WEIGHT);
 
+        //create the sub-movement-models
         shortestPathMapBasedMM = new ShortestPathMapBasedMovement(settings);
         carMM = new CarMovement(settings);
         levyWalkMM = new LevyWalkMovement(settings);
         stationaryMM = new SwitchableStationaryMovement(settings);
         //panicMM = new panicMovement(settings);
-
-        simMap = this.getMap();
-
-        startTime = SimClock.getTime();
-        justChanged = false;
-
-        //There shouldn't be any disasters or hospitals here at this point, so no need to check for them
-        mode = RANDOM_MAP_BASED_MODE;
-        setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
     /**
@@ -124,6 +162,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     public VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
         super(prototype);
 
+        //copy the settings from the prototype
         isLocalHelper = prototype.isLocalHelper;
         energyModelled = prototype.energyModelled;
         initialEnergy = prototype.initialEnergy;
@@ -133,20 +172,22 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         waitProbability = prototype.waitProbability;
         intensityWeight = prototype.intensityWeight;
 
+        //create copies of the prototypes movement models
         shortestPathMapBasedMM = new ShortestPathMapBasedMovement(prototype.shortestPathMapBasedMM);
         carMM = new CarMovement(prototype.carMM);
         levyWalkMM = new LevyWalkMovement(prototype.levyWalkMM);
-        stationaryMM = new SwitchableStationaryMovement(prototype.stationaryMM);
-        //panicMM = new panicMovement(prototype.panicMM);
+        stationaryMM =  new SwitchableStationaryMovement(prototype.stationaryMM);
+        //panicMM = new PanicMovement(prototype.panicMM);
 
-        simMap = prototype.getMap();
-
+        //register the movement model as a VHMListener
         VoluntaryHelperMovement.addListener(this);
 
-        startTime = prototype.startTime;
-        justChanged = prototype.justChanged;
+        //get the map for map based movement
+        simMap = this.getMap();
+        //just make sure this is initialized
+        justChanged = false;
 
-        //There shouldn't be any events here at this point (hopefully), so no need to check for them
+        //set the movement mode and model
         mode = RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
@@ -206,11 +247,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     @Override
     public Coord getInitialLocation(){
         //TODO find a better place for this?
+        //Register the MM as an EnergyListener.
+        //This is the earliest point i could find where the host is not null
         initEnergyListener();
-
+        //do the intended stuff (generating and returning the initial location)
         return shortestPathMapBasedMM.getInitialLocation();
     }
 
+    /**
+     * Registers the movement model as an EnergyListener, if energy modelling is enabled for the host.
+     */
     private void initEnergyListener() {
         //only register the listener if energy modeling active for this node
         if(energyModelled) {
@@ -234,6 +280,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     /**
      * Method is called between each getPath() request when the current MM is
      * ready (isReady() method returns true).
+     * This is the place where the movement model (mostly) switches between the submodels.
      * @return true if success
      */
     @Override
@@ -359,8 +406,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     /**
-     * This Method is called when a VHMEvent starts
-     *
+     * This Method is called when a VHMEvent starts.
+     * It is used for handling the event, that is, make the nodes movement react to it.
      * @param event The VHMEvent
      */
     @Override
@@ -393,7 +440,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
     /**
      * This Method is called when a VHMEvent ends
-     *
+     * It is used for handling this, i.e. making the movement react to it.
      * @param event The VHMEvent
      */
     @Override
@@ -405,6 +452,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         }
     }
 
+    /**
+     * Handles the end of a disaster, i.e. makes the movement react to it.
+     * @param event the VHMEvent associated with the end of the disaster.
+     */
     private void handleEndedDisaster(VHMEvent event) {
         //if the ended event was chosen...
         if(chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
@@ -422,6 +473,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         }
     }
 
+    /**
+     * Handles the end of a hospital, i.e. makes the movement react to it.
+     * @param event the VHMEvent associated with the end of the hospital.
+     */
     private void handleEndedHospital(VHMEvent event) {
         //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
         //if choosing a new one fails because there are no hospitals anymore...
@@ -445,6 +500,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         host.interruptMovement();
     }
 
+    /**
+     * Pick a random disaster from the list of disasters, and decide for opr against helping at the disaster site.
+     * If the decision to help is made, the selected disaster is automatically set as the chosen disaster.
+     * @return true if the decision was made to help at a disaster site, false otherwise.
+     */
     private boolean chooseNextDisaster() {
         boolean helping = false;
 
@@ -465,6 +525,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         return helping;
     }
 
+    /**
+     * Decide for helping at a specific disaster site.
+     * @param event The disaster event.
+     * @return true if the decision is to help, false otherwise
+     */
     private boolean decideHelp(VHMEvent event) {
         boolean help;
         double distance = host.getLocation().distance(event.getLocation());
@@ -474,6 +539,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         return help;
     }
 
+    /**
+     * Randomly select a hospital from the list of hospitals.
+     * @return true, if a hospital was selected, false if no hospitals exist.
+     */
     private boolean chooseNextHospital() {
         if(!hospitals.isEmpty()) {
             //the bound for the rng mustn't be 0
@@ -490,7 +559,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
     /**
      * This Method is called when the battery of the node ran empty.
-     * Only called if the node has energy modelling enabled, as only then the Listener is registered.
+     * (Only if the node has energy modelling enabled, as only then the Listener is registered.)
      * It resets the node's battery and movement model.
      */
     @Override
@@ -512,11 +581,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         host.update(true);
 
         //reset the Location to a new random one
-        Coord min = getMap().getMinBound();
-        Coord max = getMap().getMaxBound();
+        Coord min = simMap.getMinBound();
+        Coord max = simMap.getMaxBound();
         double x = min.getX() + rng.nextDouble() * (max.getX() - min.getX());
         double y = min.getY() + rng.nextDouble() * (max.getY() - min.getY());
-        host.setLocation(getMap().getClosestNodeByCoord(new Coord(x, y)).getLocation());
+        host.setLocation(simMap.getClosestNodeByCoord(new Coord(x, y)).getLocation());
 
         //select an event and help there or randomly move around the map
         if(chooseNextDisaster()) {
@@ -532,7 +601,13 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         }
     }
 
+    /**
+     * Tells if energy modelling is enabled for this movement models node.
+     * @param settings The Settings object.
+     * @return true if energy modelling is enabled for this movement models node, false otherwise.
+     */
     private boolean checkEnergyModelled(Settings settings) {
+        //check if all the needed settings are in the settings object
         return settings.contains(EnergyModel.INIT_ENERGY_S)
                 && settings.contains(EnergyModel.SCAN_ENERGY_S)
                 && settings.contains(EnergyModel.TRANSMIT_ENERGY_S)

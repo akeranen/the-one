@@ -134,7 +134,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         intensityWeight = prototype.intensityWeight;
 
         shortestPathMapBasedMM = new ShortestPathMapBasedMovement(prototype.shortestPathMapBasedMM);
-        carMM = prototype.carMM;
+        carMM = new CarMovement(prototype.carMM);
         levyWalkMM = new LevyWalkMovement(prototype.levyWalkMM);
         stationaryMM = new SwitchableStationaryMovement(prototype.stationaryMM);
         //panicMM = new panicMovement(prototype.panicMM);

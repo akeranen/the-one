@@ -237,7 +237,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     public boolean newOrders(){
         switch(mode){
             case RANDOM_MAP_BASED_MODE : {
-                if(selectNextEvent()) {
+                if(chooseNextDisaster()) {
                     mode = MOVING_TO_EVENT_MODE;
                     carMM.setLocation(host.getLocation());
                     carMM.setNextRoute(shortestPathMapBasedMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
@@ -271,7 +271,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
             }
             case LOCAL_HELP_MODE : {
                 if(SimClock.getTime() - startTime >= helpTime) {
-                    if(selectNextEvent()) {
+                    if(chooseNextDisaster()) {
                         mode = MOVING_TO_EVENT_MODE;
                         carMM.setLocation(host.getLocation());
                         carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
@@ -285,7 +285,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                 break;
             }
             case TRANSPORTING_MODE : {
-                if(rng.nextDouble() <= waitProbability) {
+                if(rng.nextDouble() >= waitProbability) {
                     mode = MOVING_TO_EVENT_MODE;
                     carMM.setLocation(host.getLocation());
                     carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
@@ -302,7 +302,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
             }
             case HOSPITAL_WAIT_MODE : {
                 if(SimClock.getTime() - startTime >= hospitalWaitTime) {
-                    if(selectNextEvent()) {
+                    if(chooseNextDisaster()) {
                         mode = MOVING_TO_EVENT_MODE;
                         carMM.setLocation(host.getLocation());
                         carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
@@ -321,7 +321,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                 break;
             }
             case PANIC_MODE : {
-                if(selectNextEvent()) {
+                if(chooseNextDisaster()) {
                     mode = MOVING_TO_EVENT_MODE;
                     carMM.setLocation(host.getLocation());
                     carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
@@ -370,7 +370,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
                     /*panicMM.setLocation(host.getLocation());
                     switchToMovement(panicMM);*/
                 }
-            } else if(host != null && mode == RANDOM_MAP_BASED_MODE && selectNextEvent()){
+            } else if(host != null && mode == RANDOM_MAP_BASED_MODE && chooseNextDisaster()){
                 //if the node is not already busy, decide if it helps with the new disaster
                 mode = MOVING_TO_EVENT_MODE;
                 carMM.setLocation(host.getLocation());
@@ -399,7 +399,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         //if the ended event was chosen...
         if(chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
             //..handle the loss of the chosen event by starting over
-            if(selectNextEvent()) {
+            if(chooseNextDisaster()) {
                 mode = MOVING_TO_EVENT_MODE;
                 carMM.setLocation(host.getLocation());
                 carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
@@ -434,18 +434,24 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         this.host.interruptMovement();
     }
 
-    private boolean selectNextEvent() {
+    private boolean chooseNextDisaster() {
+        boolean helping = false;
+
         if(!disasters.isEmpty()) {
+            VHMEvent event;
             //the bound for the rng mustn't be 0
             if(disasters.size() == 1) {
-                chosenDisaster = disasters.get(0);
+                event = disasters.get(0);
             } else {
-                chosenDisaster = disasters.get(rng.nextInt(disasters.size() - 1));
+                event = disasters.get(rng.nextInt(disasters.size() - 1));
             }
-            return true;
-        } else {
-            return false;
+            if(decideHelp(event)) {
+                chosenDisaster = event;
+                helping = true;
+            }
         }
+
+        return helping;
     }
 
     private boolean decideHelp(VHMEvent event) {
@@ -480,7 +486,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     public void batteryDied() {
         //do not call "super.reset();" or the rng seed will be reset, so the new random location would always be the same
         //reset the energy value. Yes, it has to be done like this.
-        host.getComBus().updateProperty("Energy.value", new Double(initialEnergy));
+        host.getComBus().updateProperty("Energy.value", initialEnergy);
 
         //reset the Location to a new random one
         host.setLocation(shortestPathMapBasedMM.getInitialLocation());
@@ -496,7 +502,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         host.update(true);
 
         //select an event and help there or randomly move around the map
-        if(selectNextEvent()) {
+        if(chooseNextDisaster()) {
             mode = MOVING_TO_EVENT_MODE;
             carMM.setLocation(host.getLocation());
             carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());

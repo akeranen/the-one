@@ -504,7 +504,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
         //reset the host (network address, name, message buffer and connections)
         //do not call "host.reset();" as it interferes with host network address assignment for all hosts
-        //TODO get a new network address, a new name and reset the routing table or whatever
+        //get a new network address and name
+        //TODO reset the routing table or whatever
+        host.setNewAddress();
         //empty the message buffer
         for(Message m: host.getMessageCollection()) {
             host.deleteMessage(m.getId(), true);
@@ -520,7 +522,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
             switchToMovement(carMM);
         } else {
             mode = RANDOM_MAP_BASED_MODE;
-            shortestPathMapBasedMM.setLocation(host.getLocation());
+            shortestPathMapBasedMM.setLocation(shortestPathMapBasedMM.getLastLocation());
             switchToMovement(shortestPathMapBasedMM);
         }
     }

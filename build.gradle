@@ -52,8 +52,8 @@ dependencies {
     // The production code uses Guava
     compile 'com.google.guava:guava:20.0'
 	
-	//JSON framework
-	compile group: 'org.glassfish', name: 'javax.json', version: '1.0.4'
+    //JSON framework
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.0.4'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'

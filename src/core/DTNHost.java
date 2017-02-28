@@ -145,14 +145,12 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
-	 * Sets a new network-layer address for this host.
+	 * Sets a new network-layer address and name for this host.
 	 */
 	public void setNewAddress() {
-		int oldAddress = address;
+		String groupID = name.substring(0, name.lastIndexOf(Integer.toString(address)));
 		address = getNextAddress();
-		//that's the easiest way to get the new name, as groupID isn't saved
-		String newName = name.substring(0, name.lastIndexOf(Integer.toString(oldAddress)))+address;
-		name = newName;
+		name = groupID + address;
 	}
 
 	/**

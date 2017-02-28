@@ -5,7 +5,7 @@ import movement.VoluntaryHelperMovement;
 
 /**
  * This is an event class that will be used for starting VHMEvents by
- * the {@link VHMEventReader}
+ * the {@link VhmEventReader}
  *
  * Created by Marius Meyer on 15.02.17.
  */

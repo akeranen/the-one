@@ -18,7 +18,7 @@ import java.util.List;
  *
  * Created by Marius Meyer on 15.02.17.
  */
-public class VHMEventReader implements ExternalEventsReader {
+public class VhmEventReader implements ExternalEventsReader {
 
     public static final String READER_VERSION = "vhm_events_version";
 
@@ -52,7 +52,7 @@ public class VHMEventReader implements ExternalEventsReader {
      * @param eventFile file the reader should read in
      *
      */
-    public VHMEventReader(File eventFile){
+    public VhmEventReader(File eventFile){
         if (!isVHMEventsFile(eventFile)){
             throw new SimError("VHM events file is not valid: " + eventFile.getAbsolutePath());
         }

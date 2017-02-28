@@ -5,7 +5,7 @@ import core.MessageListener;
 import core.SimError;
 import input.ExternalEvent;
 import input.VhmEvent;
-import input.VHMEventReader;
+import input.VhmEventReader;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +45,7 @@ public class VhmEventsTest {
         List<ExternalEvent> eventList = new ArrayList<>();
         for (int eventCount = 0; eventCount < MAX_EVENT_COUNT; eventCount++) {
             try {
-                VHMEventReader reader = new VHMEventReader(correctFile);
+                VhmEventReader reader = new VhmEventReader(correctFile);
                 eventList = reader.readEvents(eventCount);
                 TestCase.assertTrue(eventCount + " events should be in list. Currently: " +
                         eventList.size(), eventList.size() == 2 * eventCount);
@@ -72,6 +72,6 @@ public class VhmEventsTest {
 
     @Test (expected = SimError.class)
     public void testLoadIncorrectFile(){
-        VHMEventReader reader = new VHMEventReader(incorrectFile);
+        VhmEventReader reader = new VhmEventReader(incorrectFile);
     }
 }

@@ -482,7 +482,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private void handleEndedHospital(VhmEvent event) {
         //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
         //if choosing a new one fails because there are no hospitals anymore...
-        if(chosenHospital != null && chosenHospital.getID() == event.getID() && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE) && !chooseNextHospital()) {
+        boolean affected = chosenHospital != null && chosenHospital.getID() == event.getID();
+        if(affected && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE) && !chooseNextHospital()) {
             //...just move on with your day
             mode = movementMode.RANDOM_MAP_BASED_MODE;
             switchToMovement(shortestPathMapBasedMM);

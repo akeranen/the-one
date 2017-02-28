@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 
 import movement.MovementModel;
-import movement.PanicMovement;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;

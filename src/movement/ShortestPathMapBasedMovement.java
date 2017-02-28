@@ -22,7 +22,7 @@ public class ShortestPathMapBasedMovement extends MapBasedMovement implements
 	protected DijkstraPathFinder pathFinder;
 
 	/** Points Of Interest handler */
-	protected PointsOfInterest pois;
+	private PointsOfInterest pois;
 
 	/**
 	 * Creates a new movement model based on a Settings object's settings.

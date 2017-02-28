@@ -8,32 +8,42 @@ import movement.map.MapNode;
 import movement.map.PanicMovementUtil;
 import movement.map.SimMap;
 
+/**
+ * 
+ * @author Nils Weidmann
+ * Implementation of the Panic Mobility Model. If an event occurs, all DTNHosts move towards the "Safe Zone" 
+ * between the save range radius and the event range radius. Furthermore, they do not cross the event, such that
+ * the angle between them, the event and the target is at most 90°
+ */
 public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
     
 	private Coord eventLocation;	
 	//TODO Define a way to set this attribute
-	private static double safeRangeRadius;
+	private double safeRangeRadius;
 	//TODO Define a way to set this attribute
-	private static double eventRangeRadius;
+	private double eventRangeRadius;
 	
+	private PanicMovementUtil pmu;
 	private static final double SAFE_RANGE_RADIUS = 300.0;
 	private static final double EVENT_RANGE_RADIUS = 500.0;
-	private static final double C1000 = 1000.0;
+	private static final double COORD1000 = 1000.0;
 	
 	
 	public PanicMovement (Settings settings, Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings);
 		eventLocation = location;
-		PanicMovementUtil.init(eventLocation, safeRangeRadius, eventRangeRadius);
+		this.safeRangeRadius = safeRangeRadius;
+		this.eventRangeRadius = eventRangeRadius;
+		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
 	
 	/**
 	 * Constructor setting values for the event and the minimum and maximum distance to 
-	 * an event (INNER_ZONE, OUTER_ZONE). 
+	 * an event (SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS). 
 	 * @param settings Settings for the map, hosts etc.
 	 */
 	public PanicMovement (Settings settings) {
-		this(settings, new Coord(C1000, C1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
+		this(settings, new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
 	}
 	
 	/**
@@ -46,12 +56,12 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	 * @param outerZone maximum distance to the event to get help
 	 */
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
-			Coord location, double srRadius, double erRadius) {
+			Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings, newMap, nrofMaps);
 		eventLocation = location;
-		safeRangeRadius = srRadius;
-		eventRangeRadius = erRadius;
-		PanicMovementUtil.init(eventLocation, safeRangeRadius, eventRangeRadius);
+		this.safeRangeRadius = safeRangeRadius;
+		this.eventRangeRadius = eventRangeRadius;
+		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
 	
 	/**
@@ -61,7 +71,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		Path p = new Path(generateSpeed());
 		Coord hostLocation = host.getLocation();
 		MapNode hostNode = getNearestNode(map, hostLocation);
-		MapNode to = PanicMovementUtil.selectDestination(map, hostNode);
+		MapNode to = pmu.selectDestination(map, hostNode);
 		
 		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, to);
 
@@ -87,6 +97,9 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	protected PanicMovement(PanicMovement pm) {
 		super(pm);
 		eventLocation = pm.eventLocation;
+		safeRangeRadius = pm.safeRangeRadius;
+		eventRangeRadius = pm.eventRangeRadius;
+		pmu = new PanicMovementUtil(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
 	}
 	
 	public void setEventLocation(Coord eventLocation) {
@@ -102,20 +115,24 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		return new PanicMovement(this);
 	}
 	
-	public static double getSafeRangeRadius() {
+	public double getSafeRangeRadius() {
 		return safeRangeRadius;
 	}
 	
-	public static double getEventRangeRadius() {
+	public double getEventRangeRadius() {
 		return eventRangeRadius;
 	}
 	
-	public static void setSafeRangeRadius(double radius) {
+	public void setSafeRangeRadius(double radius) {
 		safeRangeRadius = radius;
 	}
 	
-	public static void setEventRangeRadius(double radius) {
+	public void setEventRangeRadius(double radius) {
 		eventRangeRadius = radius;
+	}
+	
+	public PanicMovementUtil getPanicMovementUtil() {
+		return pmu;
 	}
 	
 	/**

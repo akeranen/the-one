@@ -47,14 +47,15 @@ public class PanicMovementTest extends TestCase {
 
 	public void setUp() throws Exception {
 		super.setUp();
-		setupMapData("1,1");
+		setupMapDataAndBasicSettings();
+		panicMovement.setHost(setupHost());
 	}
 	
 	/**
-	 * Sets up the map described above 
+	 * Sets up the map described above, as well as speed and wait time settings
 	 * @param speed Speed with which the hosts can move
 	 */
-	private void setupMapData(String speed) {
+	private void setupMapDataAndBasicSettings() {
 		Settings.init(null);
 		StringReader input = new StringReader(WKT);
 
@@ -66,12 +67,10 @@ public class PanicMovementTest extends TestCase {
 		}
 
 		settings = new TestSettings();
-		settings.putSetting(MovementModel.SPEED, (speed != null ? speed : "1,1"));
+		settings.putSetting(MovementModel.SPEED, ("1,1"));
 		settings.putSetting(MovementModel.WAIT_TIME, ("0,0"));
 
-		map = reader.getMap();
-		// accepts types 1-3, hosts must get in distance 1 to the event
-		
+		map = reader.getMap();	
 		event = map.getNodeByCoord(new Coord(2,1));
 		panicMovement = new PanicMovement(settings, map, 3, event.getLocation(), 1.0, 1.5); 
 
@@ -85,29 +84,30 @@ public class PanicMovementTest extends TestCase {
 	
 	@org.junit.Test
 	/**
-	 * Tests if the angle between source node, event and target node is smaller than 90 degrees
+	 * Tests if the angle between source node, event and target node is at least 90 degrees
 	 * to avoid running through the event 
 	 */
 	public void testAngle() {
-		panicMovement.setHost(setupHost());
+		
 		Path path = panicMovement.getPath();
 		MapNode start = map.getNodeByCoord(path.getCoords().get(0));
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
 		double angle = PanicMovementUtil.computeAngleBetween(event.getLocation(), start, end);
-		assert(angle >= 90);
+		assertTrue("Angle is at least 90 degrees", angle >= 90);
 	}
 	
 	@org.junit.Test
 	/**
 	 * Tests if the target node is inside the safe area
 	 */
-	public void testEventRange() {
-		panicMovement.setHost(setupHost());
+	public void testSafeRegion() {
+
 		Path path = panicMovement.getPath();
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
-		assert( end.getLocation().distance(event.getLocation()) >= PanicMovement.getSafeRangeRadius() );
+		assertTrue("Target node is inside the safe area", 
+				end.getLocation().distance(event.getLocation()) >= panicMovement.getSafeRangeRadius() );
 	}
 	
 	@org.junit.Test
@@ -115,14 +115,17 @@ public class PanicMovementTest extends TestCase {
 	 * Test if closest possible node to the host is selected
 	 */
 	public void testOptimizationCriterion() {
-		panicMovement.setHost(setupHost());
+		
 		Path path = panicMovement.getPath();
+		MapNode start = map.getNodeByCoord(path.getCoords().get(0));
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
 		for (int i = 0; i<node.length; i++) {
 			if (end.getLocation().distance(panicMovement.getHost().getLocation()) 
 					> node[i].getLocation().distance(panicMovement.getHost().getLocation())) {
-				assert( node[i].getLocation().distance(event.getLocation()) < PanicMovement.getSafeRangeRadius() ); 
+				assertTrue("Closest possible node to the host is selected",
+						node[i].getLocation().distance(event.getLocation()) < panicMovement.getSafeRangeRadius()
+						|| panicMovement.getPanicMovementUtil().isInEventDirection(start, node[i])); 
 			}
 		}
 	}
@@ -131,12 +134,13 @@ public class PanicMovementTest extends TestCase {
 	/**
 	 * Tests if the target node is not outside the event range
 	 */
-	public void testSafeRegion() {
-		panicMovement.setHost(setupHost());
+	public void testEventRange() {
+
 		Path path = panicMovement.getPath();
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
-		assert( end.getLocation().distance(event.getLocation()) <= PanicMovement.getEventRangeRadius() );
+		assertTrue("Target node is not outside the event range",
+				end.getLocation().distance(event.getLocation()) <= panicMovement.getEventRangeRadius() );
 	}
 	
 	/**

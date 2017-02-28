@@ -4,30 +4,23 @@ import core.Coord;
 
 public class PanicMovementUtil {
     
-	private static double safeRangeRadius;
-	private static double eventRangeRadius;
+	private double safeRangeRadius;
+	private double eventRangeRadius;
 	private static Coord eventLocation = null;
 	public static final double RIGHT_ANGLE = 90.0;
 	public static final double STRAIGHT_ANGLE = 180.0;
 	public static final double FULL_ROTATION = 360.0;
 	
 	/**
-	 * Default Constructor
-	 */
-	private PanicMovementUtil() {
-		
-	}
-	/**
-	 * Basic initialization of values
-	 * @param parentMap Map the mobility model is based on
+	 * Constructor
 	 * @param location Location where the event is located
-	 * @param srRadius radius where the safe zone starts
-	 * @param erRadius radius where the zone ends where you can help
+	 * @param safeRangeRadius radius where the safe zone starts
+	 * @param eventRangeRadius radius where the zone ends where you can help
 	 */
-	public static synchronized void init(Coord location, double srRadius, double erRadius) {
-		eventLocation = new Coord(location.getX(), location.getY());
-		safeRangeRadius = srRadius;
-		eventRangeRadius = erRadius;
+	public PanicMovementUtil(Coord location, double safeRangeRadius, double eventRangeRadius) {
+		eventLocation = location;
+		this.safeRangeRadius = safeRangeRadius;
+		this.eventRangeRadius = eventRangeRadius;
 	}
 	
 	/**
@@ -36,16 +29,14 @@ public class PanicMovementUtil {
 	 * eventLocation -> returnNode should be at least 90°. 
 	 * @param locationNode location of the node that is closest to the corresponding host
 	 */
-	public static MapNode selectDestination(SimMap map, MapNode locationNode) {
-		
-		if (eventLocation.distance(locationNode.getLocation()) <= eventRangeRadius &&
-				eventLocation.distance(locationNode.getLocation()) >= safeRangeRadius) {
+	public MapNode selectDestination(SimMap map, MapNode locationNode) {
+		double distance = eventLocation.distance(locationNode.getLocation());
+		if (distance <= eventRangeRadius && distance>= safeRangeRadius) {
 			 //everything's fine
 			return locationNode;
 		}
 		
 		MapNode bestNode = getBestNode(map, locationNode);
-		
 		
 		// if no better node is found, the node can stay at the current location
 		if (bestNode == null) {
@@ -61,16 +52,20 @@ public class PanicMovementUtil {
 	 * @param locationNode current location of the host
 	 * @return nearest safe node
 	 */
-	private static MapNode getBestNode(SimMap map, MapNode locationNode) {
+	private MapNode getBestNode(SimMap map, MapNode locationNode) {
 		MapNode nearestSafeNode = null;
 		double shortestDistance = Double.MAX_VALUE;
 		
+		if (eventLocation.distance(locationNode.getLocation()) > eventRangeRadius) {
+			// The host can stay at its position, since the event does not concern it
+			return locationNode;
+		}
+		
 		for (MapNode node : map.getNodes()) {
-			double angle;
-			if (eventLocation.distance(node.getLocation()) >= safeRangeRadius
-				&& eventLocation.distance(node.getLocation()) <= eventRangeRadius
+			double distance = eventLocation.distance(node.getLocation());
+			if ( distance >= safeRangeRadius && distance <= eventRangeRadius
 				&& (locationNode.getLocation().distance(node.getLocation()) < shortestDistance)
-				&& !isInEventDirection(eventLocation, locationNode, node)) {
+				&& !isInEventDirection(locationNode, node)) {
 						nearestSafeNode = node; 
 						shortestDistance = locationNode.getLocation().distance(node.getLocation());
 			}
@@ -86,20 +81,19 @@ public class PanicMovementUtil {
 	 * @param targetNode potential target location
 	 * @return
 	 */
-	public static boolean isInEventDirection(Coord eventLocation, MapNode sourceNode, MapNode targetNode) {
+	public boolean isInEventDirection(MapNode sourceNode, MapNode targetNode) {
 		double angle;
 		
 		if (lengthProduct(eventLocation, sourceNode.getLocation(), targetNode.getLocation()) <= 0.0) {
 			// to avoid division by zero. Every angle should be fine
-			angle = STRAIGHT_ANGLE; 
+			return true; 
 		}
 		else {
 			angle = computeAngleBetween(eventLocation, sourceNode, targetNode);
 		}
 		
 		// Does the node meet all conditions?
-		return !(Math.abs(angle - STRAIGHT_ANGLE) < RIGHT_ANGLE 
-				|| eventLocation.distance(sourceNode.getLocation()) > eventRangeRadius);
+		return (Math.abs(angle - STRAIGHT_ANGLE) < RIGHT_ANGLE);
 	}
 	
 	/**
@@ -130,7 +124,7 @@ public class PanicMovementUtil {
 		double lengthProduct = lengthProduct(angleLocation, sourceNode.getLocation(), targetNode.getLocation());
 		
 		if (lengthProduct <= 0) {
-			// This case avoids division by zeor
+			// This case avoids division by zero. Since this case is also handled at the caller, it should never happen
 			return STRAIGHT_ANGLE;
 		}
 		else {

@@ -4,6 +4,8 @@ import core.Coord;
 import core.Settings;
 
 /**
+ * A stationary movement model for nodes that should not move at all.
+ * It implements the switchable interface in order to be usable in an extended movement model.
  * Created by Ansgar Mährlein on 24.02.2017.
  * @author Ansgar Mährlein
  */
@@ -22,7 +24,7 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
 
     /**
      * Copy constructor.
-     * @param prototype The StationaryMovement prototype
+     * @param prototype The SwitchableStationaryMovement prototype
      */
     public SwitchableStationaryMovement(SwitchableStationaryMovement prototype) {
         super(prototype);
@@ -30,12 +32,8 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
     }
 
     /**
-     * Returns a new path by this movement model or null if no new path could
-     * be constructed at the moment (node should wait where it is). A new
-     * path should not be requested before the destination of the previous
-     * path has been reached.
-     *
-     * @return A new path or null
+     * Returns a new path by this movement model, which is always a one waypoint path using the nodes current location.
+     * @return A path with the node's location as the only waypoint.
      */
     @Override
     public Path getPath() {
@@ -46,7 +44,6 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
 
     /**
      * Returns a new initial placement for a node
-     *
      * @return The initial coordinates for a node
      */
     @Override
@@ -56,7 +53,6 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
 
     /**
      * Creates a replicate of the movement model.
-     *
      * @return A new movement model with the same settings as this model
      */
     @Override
@@ -66,7 +62,6 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
 
     /**
      * Tell the movement model what its current location is
-     *
      * @param coord The last location of the node.
      */
     @Override
@@ -76,7 +71,6 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
 
     /**
      * Get the last location the getPath() of this movement model has returned
-     *
      * @return the last location
      */
     @Override
@@ -88,12 +82,10 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
      * Checks if the movement model is finished doing its task and it's time to
      * switch to the next movement model. The method should be called between
      * getPath() calls.
-     *
      * @return true if ready
      */
     @Override
     public boolean isReady() {
-        //TODO determine what is best here (note: battery can die)
         return false;
     }
 }

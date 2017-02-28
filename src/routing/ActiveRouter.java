@@ -26,6 +26,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * If set to true and final recipient of a message rejects it because it
 	 * already has it, the message is deleted from buffer. Default=false. */
 	public static final String DELETE_DELIVERED_S = "deleteDelivered";
+	/** setting string for the energy threshold, below wich the battery is considered to be empty. Default = 0.01 */
+	public static final String ENERGY_THRESHOLD_S = "energyThreshold";
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
@@ -41,6 +43,8 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
+	/** the threshold below wich the battery is considered to be empty */
+	private double energyThreshold;
 
 	/** List of EnergyListeners for this ActiveRouter */
 	private List<EnergyListener> listeners = Collections.synchronizedList(new ArrayList<>());
@@ -61,6 +65,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		} else {
 			this.energy = null; /* no energy model */
 		}
+		this.energyThreshold = s.getDouble(ENERGY_THRESHOLD_S, 0.01);
 	}
 
 	/**
@@ -72,6 +77,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.deleteDelivered = r.deleteDelivered;
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
+		this.energyThreshold = r.energyThreshold;
 	}
 
 	/**
@@ -594,9 +600,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	public void update() {
 		super.update();
 
-		//TODO think about the threshold value, or getting it from the settings
 		//check if the battery has died and notify listeners in that case
-		if(energy != null && energy.getEnergy() <= 0.1) {
+		if(energy != null && energy.getEnergy() <= energyThreshold) {
 			batteryDied();
 		}
 

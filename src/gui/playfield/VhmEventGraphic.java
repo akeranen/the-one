@@ -64,7 +64,26 @@ public class VhmEventGraphic extends PlayFieldGraphic {
 
     @Override
     public void draw(Graphics2D g2) {
-        drawEvent(g2);
+        //only draw other ranges, when enabled
+        if (drawAllRanges) {
+            drawEventRange(g2, event.getMaxRange(), maxRangeColor);
+            drawEventRange(g2, event.getSafeRange(), safeRangeColor);
+        }
+
+        drawEventRange(g2, event.getEventRange(), eventRangeColor);
+
+
+        if (drawEventName) {
+            g2.setColor(eventNameColor);
+            // Draw event's name next to it
+            g2.drawString(event.getName(), scale(event.getLocation().getX()),
+                    scale(event.getLocation().getY()));
+        }
+
+		/* draw node rectangle */
+        g2.setColor(eventLocationColor);
+        g2.drawRect(scale(event.getLocation().getX() - 1), scale(event.getLocation().getY() - 1),
+                scale(2), scale(2));
     }
 
     /**
@@ -81,35 +100,6 @@ public class VhmEventGraphic extends PlayFieldGraphic {
 
         g2.setColor(c);
         g2.draw(eventRange);
-    }
-
-    /**
-     * Draws the event
-     * @param g2 The graphics to draw on
-     */
-    private void drawEvent(Graphics2D g2){
-
-        //only draw other ranges, when enabled
-        if (drawAllRanges){
-            drawEventRange(g2,event.getMaxRange(),maxRangeColor);
-            drawEventRange(g2,event.getSafeRange(),safeRangeColor);
-        }
-
-        drawEventRange(g2,event.getEventRange(),eventRangeColor);
-
-
-        if (drawEventName) {
-            g2.setColor(eventNameColor);
-            // Draw event's name next to it
-            g2.drawString(event.getName(), scale(event.getLocation().getX()),
-                    scale(event.getLocation().getY()));
-        }
-
-		/* draw node rectangle */
-        g2.setColor(eventLocationColor);
-        g2.drawRect(scale(event.getLocation().getX()-1),scale(event.getLocation().getY()-1),
-                scale(2),scale(2));
-
     }
 
     /**

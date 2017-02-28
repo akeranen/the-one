@@ -5,7 +5,6 @@ import core.SimError;
 
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.JsonString;
 import java.io.IOException;
 
 /**
@@ -154,49 +153,24 @@ public class VhmEvent extends ExternalEvent{
             } else throw new SimError("Event must have an identifier!");
 
             //parse event type
-            this.type = VhmEventType.valueOf(((JsonString) object.get(EVENT_TYPE)).getString());
+            this.type = VhmEventType.valueOf(object.getJsonString(EVENT_TYPE).getString());
 
             //parse event location
             JsonObject loc = (JsonObject) object.get(EVENT_LOCATION);
-            double x = ((JsonNumber)loc.get(EVENT_LOCATION_X)).doubleValue();
-            double y = ((JsonNumber)loc.get(EVENT_LOCATION_Y)).doubleValue();
+            double x = loc.getJsonNumber(EVENT_LOCATION_X).doubleValue();
+            double y = loc.getJsonNumber(EVENT_LOCATION_Y).doubleValue();
             this.location = new Coord(x,y);
 
             //parse event range
-            this.eventRange = ((JsonNumber)object.get(EVENT_RANGE)).doubleValue();
+            this.eventRange = object.getJsonNumber(EVENT_RANGE).doubleValue();
 
-            //parse safe range or use 0
-            if (object.containsKey(SAFE_RANGE)){
-                this.safeRange = ((JsonNumber)object.get(SAFE_RANGE)).doubleValue();
-            }
-            else{
-                this.safeRange = DEFAULT_SAFE_RANGE;
-            }
+            safeRange = getDoubleOrDefault(object,SAFE_RANGE,DEFAULT_SAFE_RANGE);
 
-            //parse max range or take maximum distance as max range
-            if (object.containsKey(MAX_RANGE)){
-                this.maxRange = ((JsonNumber)object.get(MAX_RANGE)).doubleValue();
-            }
-            else{
-                this.maxRange = DEFAULT_MAX_RANGE;
+            maxRange = getDoubleOrDefault(object,MAX_RANGE,DEFAULT_MAX_RANGE);
 
-            }
+            startTime = getDoubleOrDefault(object,START_TIME,DEFAULT_START_TIME);
 
-            //parse start time or set default
-            if (object.containsKey(START_TIME)){
-                this.startTime = ((JsonNumber)object.get(START_TIME)).doubleValue();
-            }
-            else{
-                this.startTime = DEFAULT_START_TIME;
-            }
-
-            //parse end time or set default
-            if (object.containsKey(END_TIME)){
-                this.endTime = ((JsonNumber)object.get(END_TIME)).doubleValue();
-            }
-            else{
-                this.endTime = DEFAULT_END_TIME;
-            }
+            endTime = getDoubleOrDefault(object,END_TIME,DEFAULT_END_TIME);
 
             //parse intensity or set it to min intensity
             if (object.containsKey(EVENT_INTENSITY)){
@@ -237,8 +211,25 @@ public class VhmEvent extends ExternalEvent{
      *
      * @return next event id
      */
-    private synchronized long getNextEventID(){
+    private static synchronized long getNextEventID(){
         return nextEventID++;
+    }
+
+    /**
+     * Gets a JSON object and tries to return a double with the specified key.
+     * If this key does not exist, it returns a predefined default value.
+     *
+     * @param jsonEventObject The JSON object to get the value from
+     * @param key the JSON key of the desired value
+     * @param defaultValue the default value, that is returned, if the key does not exist
+     * @return the key value or the default value
+     */
+    private double getDoubleOrDefault(JsonObject jsonEventObject, String key, double defaultValue){
+        if (jsonEventObject.containsKey(key)) {
+            return jsonEventObject.getJsonNumber(key).doubleValue();
+        } else {
+          return defaultValue;
+        }
     }
 
     /**

@@ -38,15 +38,6 @@ public class ExternalEvent implements Comparable<ExternalEvent>, Serializable {
 	}
 
 	/**
-	 * Set new time for event
-	 *
-	 * @param newTime the new time
-	 */
-	protected void setTime(double newTime){
-		this.time = newTime;
-	}
-
-	/**
 	 * Compares two external events by their time.
 	 * @return -1, zero, 1 if this event happens before, at the same time,
 	 * or after the other event

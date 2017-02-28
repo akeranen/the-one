@@ -17,7 +17,7 @@ public class VhmEventStartEvent extends VhmEvent {
      */
     public VhmEventStartEvent(VhmEvent event){
         super(event);
-        setTime(event.getStartTime());
+        time = event.getStartTime();
     }
 
     @Override

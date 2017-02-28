@@ -512,13 +512,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         boolean helping = false;
 
         if(!disasters.isEmpty()) {
-            VhmEvent event;
-            //the bound for the rng mustn't be 0
-            if(disasters.size() == 1) {
-                event = disasters.get(0);
-            } else {
-                event = disasters.get(rng.nextInt(disasters.size() - 1));
-            }
+            VhmEvent event = disasters.get(rng.nextInt(disasters.size()));
             if(decideHelp(event)) {
                 chosenDisaster = event;
                 helping = true;
@@ -548,12 +542,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private boolean chooseNextHospital() {
         if(!hospitals.isEmpty()) {
-            //the bound for the rng mustn't be 0
-            if(hospitals.size() == 1) {
-                chosenHospital = hospitals.get(0);
-            } else {
-                chosenHospital = hospitals.get(rng.nextInt(hospitals.size() - 1));
-            }
+            chosenHospital = hospitals.get(rng.nextInt(hospitals.size()));
             return true;
         } else {
             return false;

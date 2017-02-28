@@ -132,13 +132,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //get all of the settings from the settings file, reverting to defaults, if setting absent in the file
         isLocalHelper = settings.getBoolean(IS_LOCAL_HELPER_SETTING, false);
-        energyModelled = checkEnergyModelled(settings);
+        energyModelled = settings.contains(EnergyModel.INIT_ENERGY_S);
         if(energyModelled) {
-            //make sure the values are positive
-            settings.ensurePositiveValue(settings.getDouble(EnergyModel.INIT_ENERGY_S), EnergyModel.INIT_ENERGY_S);
-            settings.ensurePositiveValue(settings.getDouble(EnergyModel.SCAN_ENERGY_S), EnergyModel.SCAN_ENERGY_S);
-            settings.ensurePositiveValue(settings.getDouble(EnergyModel.TRANSMIT_ENERGY_S), EnergyModel.TRANSMIT_ENERGY_S);
-            settings.ensurePositiveValue(settings.getDouble(EnergyModel.SCAN_RSP_ENERGY_S), EnergyModel.SCAN_RSP_ENERGY_S);
             //get the initial energy of a node
             initialEnergy = settings.getDouble(EnergyModel.INIT_ENERGY_S);
         }
@@ -599,18 +594,5 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             switchToMovement(shortestPathMapBasedMM);
             shortestPathMapBasedMM.setLocation(host.getLocation());
         }
-    }
-
-    /**
-     * Tells if energy modelling is enabled for this movement models node.
-     * @param settings The Settings object.
-     * @return true if energy modelling is enabled for this movement models node, false otherwise.
-     */
-    private boolean checkEnergyModelled(Settings settings) {
-        //check if all the needed settings are in the settings object
-        return settings.contains(EnergyModel.INIT_ENERGY_S)
-                && settings.contains(EnergyModel.SCAN_ENERGY_S)
-                && settings.contains(EnergyModel.TRANSMIT_ENERGY_S)
-                && settings.contains(EnergyModel.SCAN_RSP_ENERGY_S);
     }
 }

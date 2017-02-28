@@ -448,7 +448,8 @@ public class DTNHost implements Comparable<DTNHost> {
 	/**
 	 * removes the current movement destination and path such that the host will
 	 * request a new path from the movement model.
-	 * Call this, when the movement model changed.
+	 * Call this, when the sub-movement model of a composite movement model should be changed,
+     * before the host reached the destination set by the previous sub-movement model.
 	 */
 	public void interruptMovement(){
 		this.destination = null;

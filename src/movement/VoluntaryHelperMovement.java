@@ -248,12 +248,18 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     @Override
     public Coord getInitialLocation(){
-        //TODO find a better place for this?
-        //Register the MM as an EnergyListener.
-        //This is the earliest point i could find where the host is not null
-        initEnergyListener();
-        //do the intended stuff (generating and returning the initial location)
         return shortestPathMapBasedMM.getInitialLocation();
+    }
+
+    /**
+     * Sets the host of this movement model and registers this movement model as an EnergyListener.
+     * @param host the host to set
+     */
+    @Override
+    public void setHost(DTNHost host) {
+        super.setHost(host);
+        //Register the MM as an EnergyListener.
+        initEnergyListener();
     }
 
     /**

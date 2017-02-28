@@ -90,7 +90,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private double initialEnergy;
     /** start time of waiting at the hospital or local helping movement */
     private double startTime;
-    /** tells, if the movement submodel was changed unplannedly */
+    /** tells, if the movement sub-model was changed forcefully before the set destination was reached */
     private boolean justChanged;
     /** the selected disaster */
     private VhmEvent chosenDisaster;

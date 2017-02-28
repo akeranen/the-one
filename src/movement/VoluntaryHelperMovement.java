@@ -1,7 +1,7 @@
 package movement;
 
 import core.*;
-import input.VHMEvent;
+import input.VhmEvent;
 import movement.map.SimMap;
 import routing.ActiveRouter;
 import routing.MessageRouter;
@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static input.VHMEvent.VHMEventType.DISASTER;
-import static input.VHMEvent.VHMEventType.HOSPITAL;
+import static input.VhmEvent.VhmEventType.DISASTER;
+import static input.VhmEvent.VhmEventType.HOSPITAL;
 
 /**
  * This movement model simulates the movement of voluntary helpers in a disaster region.
@@ -22,8 +22,8 @@ import static input.VHMEvent.VHMEventType.HOSPITAL;
  * @author Ansgar Mährlein
  */
 //TODO implement Panic Movement
-    //TODO comments + javadoc
-public class VoluntaryHelperMovement extends ExtendedMovementModel implements VHMListener, EnergyListener {
+//TODO comment "newOrders"
+public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, EnergyListener {
 
     //strings for the setting keys in the settings file
     /** setting key for the node being a local helper or a "voluntary ambulance" */
@@ -91,9 +91,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     /** tells, if the movement submodel was changed unplannedly */
     private boolean justChanged;
     /** the selected disaster */
-    private VHMEvent chosenDisaster;
+    private VhmEvent chosenDisaster;
     /** the selected hospital */
-    private VHMEvent chosenHospital;
+    private VhmEvent chosenHospital;
     /** the map for map based movement */
     private SimMap simMap;
 
@@ -109,16 +109,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     /** movement model for panically runing to a safe location */
     //private panicMovement panicMM;
 
-    //TODO make everything local, non static?
+    //TODO make everything local, non static? Compare performance!
     //event lists
     /** List of disasters */
-    private static List<VHMEvent> disasters = Collections.synchronizedList(new ArrayList<>());
+    private static List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<>());
     /** List of hospitals */
-    private static List<VHMEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
+    private static List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
 
     //TODO make this non static by moving it to the appropriate class?
-    /** List of VHMListeners */
-    private static List<VHMListener> listeners = Collections.synchronizedList(new ArrayList<>());
+    /** List of VhmListeners */
+    private static List<VhmListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Creates a new VoluntaryHelperMovement.
@@ -179,7 +179,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         stationaryMM =  new SwitchableStationaryMovement(prototype.stationaryMM);
         //panicMM = new PanicMovement(prototype.panicMM);
 
-        //register the movement model as a VHMListener
+        //register the movement model as a VhmListener
         VoluntaryHelperMovement.addListener(this);
 
         //get the map for map based movement
@@ -193,19 +193,19 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     /**
-     * Adds a VHMListener that will be notified of VHMEvents starting and ending.
+     * Adds a VhmListener that will be notified of VhmEvents starting and ending.
      * @param listener The listener that is added.
      */
-    public static void addListener(VHMListener listener) {
+    public static void addListener(VhmListener listener) {
         listeners.add(listener);
     }
 
     /**
-     * Informs all registered VHMListeners, that a VHMEvent started and adds it to the appropriate List
-     * @param event The VHMEvent.
+     * Informs all registered VhmListeners, that a VhmEvent started and adds it to the appropriate List
+     * @param event The VhmEvent.
      */
-    public static void eventStarted(VHMEvent event) {
-        for (VHMListener l : listeners)
+    public static void eventStarted(VhmEvent event) {
+        for (VhmListener l : listeners)
             l.vhmEventStarted(event);
         if(event.getType() == HOSPITAL) {
             hospitals.add(event);
@@ -215,15 +215,15 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     /**
-     * Informs all registered VHMListeners, that a VHMEvent ended and removes it from the appropriate list
-     * @param event The VHMEvent.
+     * Informs all registered VhmListeners, that a VhmEvent ended and removes it from the appropriate list
+     * @param event The VhmEvent.
      */
-    public static void eventEnded(VHMEvent event) {
-        for (VHMListener l : listeners)
+    public static void eventEnded(VhmEvent event) {
+        for (VhmListener l : listeners)
             l.vhmEventEnded(event);
         if(event.getType() == HOSPITAL) {
             //remove the ended event from the list of hospitals. Yes i know how that sounds XD.
-            for(VHMEvent h : hospitals) {
+            for(VhmEvent h : hospitals) {
                 if(h.getID() == event.getID()) {
                     hospitals.remove(h);
                     break;
@@ -231,7 +231,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
             }
         } else if(event.getType() == DISASTER) {
             //remove the ended event from the list of disasters.
-            for(VHMEvent d : disasters) {
+            for(VhmEvent d : disasters) {
                 if(d.getID() == event.getID()) {
                     disasters.remove(d);
                     break;
@@ -406,12 +406,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     /**
-     * This Method is called when a VHMEvent starts.
+     * This Method is called when a VhmEvent starts.
      * It is used for handling the event, that is, make the nodes movement react to it.
-     * @param event The VHMEvent
+     * @param event The VhmEvent
      */
     @Override
-    public void vhmEventStarted(VHMEvent event) {
+    public void vhmEventStarted(VhmEvent event) {
         if(event.getType() == DISASTER &&mode != INJURED_MODE) {
             //check if the node is to close to the disaster
             if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
@@ -439,12 +439,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
     }
 
     /**
-     * This Method is called when a VHMEvent ends
+     * This Method is called when a VhmEvent ends
      * It is used for handling this, i.e. making the movement react to it.
-     * @param event The VHMEvent
+     * @param event The VhmEvent
      */
     @Override
-    public void vhmEventEnded(VHMEvent event) {
+    public void vhmEventEnded(VhmEvent event) {
         if(event.getType() == DISASTER && mode != INJURED_MODE) {
             handleEndedDisaster(event);
         } else if(event.getType() == HOSPITAL && mode != INJURED_MODE) {
@@ -454,9 +454,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
     /**
      * Handles the end of a disaster, i.e. makes the movement react to it.
-     * @param event the VHMEvent associated with the end of the disaster.
+     * @param event the VhmEvent associated with the end of the disaster.
      */
-    private void handleEndedDisaster(VHMEvent event) {
+    private void handleEndedDisaster(VhmEvent event) {
         //if the ended event was chosen...
         if(chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
             //..handle the loss of the chosen event by starting over
@@ -475,9 +475,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
     /**
      * Handles the end of a hospital, i.e. makes the movement react to it.
-     * @param event the VHMEvent associated with the end of the hospital.
+     * @param event the VhmEvent associated with the end of the hospital.
      */
-    private void handleEndedHospital(VHMEvent event) {
+    private void handleEndedHospital(VhmEvent event) {
         //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
         //if choosing a new one fails because there are no hospitals anymore...
         if(chosenHospital != null && chosenHospital.getID() == event.getID() && !chooseNextHospital()) {
@@ -509,7 +509,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
         boolean helping = false;
 
         if(!disasters.isEmpty()) {
-            VHMEvent event;
+            VhmEvent event;
             //the bound for the rng mustn't be 0
             if(disasters.size() == 1) {
                 event = disasters.get(0);
@@ -530,11 +530,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
      * @param event The disaster event.
      * @return true if the decision is to help, false otherwise
      */
-    private boolean decideHelp(VHMEvent event) {
+    private boolean decideHelp(VhmEvent event) {
         boolean help;
         double distance = host.getLocation().distance(event.getLocation());
 
-        help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VHMEvent.MAX_INTENSITY) + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
+        help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY) + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
 
         return help;
     }
@@ -570,8 +570,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements VH
 
         //reset the host (network address, name, message buffer and connections)
         //do not call "host.reset();" as it interferes with host network address assignment for all hosts
+        //resetting the routing table is not possible without knowing the exact routing protocol
+        //TODO implement an interface for resetting the routing table
         //get a new network address and name
-        //TODO reset the routing table or whatever
         host.setNewAddress();
         //empty the message buffer
         for(Message m: host.getMessageCollection()) {

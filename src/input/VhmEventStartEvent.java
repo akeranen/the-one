@@ -9,15 +9,15 @@ import movement.VoluntaryHelperMovement;
  *
  * Created by Marius Meyer on 15.02.17.
  */
-public class VHMEventStartEvent extends VHMEvent {
+public class VhmEventStartEvent extends VhmEvent {
 
 
     /**
-     * Creates a new event for the start of a specified VHMEvent
+     * Creates a new event for the start of a specified VhmEvent
      *
-     * @param event the VHMEvent
+     * @param event the VhmEvent
      */
-    public VHMEventStartEvent(VHMEvent event){
+    public VhmEventStartEvent(VhmEvent event){
         super(event);
         setTime(event.getStartTime());
     }

@@ -9,11 +9,11 @@ import javax.json.JsonString;
 import java.io.IOException;
 
 /**
- * This is a container that includes all parameters of a VHMEvent
+ * This is a container that includes all parameters of a VhmEvent
  *
  * Created by Marius Meyer on 15.02.17.
  */
-public class VHMEvent extends ExternalEvent{
+public class VhmEvent extends ExternalEvent{
 
     /**
      * Minimum possible event intensity
@@ -64,9 +64,9 @@ public class VHMEvent extends ExternalEvent{
 
 
     /**
-     * Type of a VHMEvent. This event type can be requested by a node
+     * Type of a VhmEvent. This event type can be requested by a node
      */
-    public enum VHMEventType{
+    public enum VhmEventType {
         /**
          * A disaster where nodes will try to help or flee
          */
@@ -79,9 +79,9 @@ public class VHMEvent extends ExternalEvent{
     }
 
     /**
-     * Static variable to store the event ID of the next created VHMEvent.
+     * Static variable to store the event ID of the next created VhmEvent.
      * Do not access this directly because of synchronization issues.
-     * Use {@link VHMEvent#getNextEventID()} instead.
+     * Use {@link VhmEvent#getNextEventID()} instead.
      */
     private static long nextEventID = 0;
 
@@ -98,7 +98,7 @@ public class VHMEvent extends ExternalEvent{
     /**
      *  The type of an event
      */
-    private VHMEventType type;
+    private VhmEventType type;
 
     /**
      * The time point an event will start
@@ -132,19 +132,19 @@ public class VHMEvent extends ExternalEvent{
     private double maxRange;
 
     /**
-     * The intensity of an event. This is an integer between {@link VHMEvent#MIN_INTENSITY}
-     * and {@link VHMEvent#MAX_INTENSITY}
+     * The intensity of an event. This is an integer between {@link VhmEvent#MIN_INTENSITY}
+     * and {@link VhmEvent#MAX_INTENSITY}
      */
     private int intensity;
 
     /**
-     * Creates a new VHMEvent using a JSON object
+     * Creates a new VhmEvent using a JSON object
      *
      * @param name The name of the event. This should be the key value of the JSON object
      * @param object The JSON object, that represents the event
-     * @throws IOException If the JSON object could not be parsed to an VHMEvent
+     * @throws IOException If the JSON object could not be parsed to an VhmEvent
      */
-    public VHMEvent(String name,JsonObject object) throws IOException{
+    public VhmEvent(String name, JsonObject object) throws IOException{
         super(0);
         try {
             this.id = getNextEventID();
@@ -154,7 +154,7 @@ public class VHMEvent extends ExternalEvent{
             } else throw new SimError("Event must have an identifier!");
 
             //parse event type
-            this.type = VHMEventType.valueOf(((JsonString) object.get(EVENT_TYPE)).getString());
+            this.type = VhmEventType.valueOf(((JsonString) object.get(EVENT_TYPE)).getString());
 
             //parse event location
             JsonObject loc = (JsonObject) object.get(EVENT_LOCATION);
@@ -208,16 +208,16 @@ public class VHMEvent extends ExternalEvent{
                 this.intensity = DEFAULT_INTENSITY;
             }
         }catch (Exception e){
-            throw new IOException("VHMEvent could not be parsed from JSON: " + e.getMessage());
+            throw new IOException("VhmEvent could not be parsed from JSON: " + e.getMessage());
         }
     }
 
     /**
-     * Copy constructor for a VHMEvent
+     * Copy constructor for a VhmEvent
      *
      * @param event The event that should be copied
      */
-    public VHMEvent(VHMEvent event){
+    public VhmEvent(VhmEvent event){
         super(0);
         this.name = event.name;
         this.id = event.id;
@@ -244,16 +244,16 @@ public class VHMEvent extends ExternalEvent{
     /**
      * Returns the event's type
      *
-     * @return the event's {@link VHMEvent#type}
+     * @return the event's {@link VhmEvent#type}
      */
-    public VHMEventType getType() {
+    public VhmEventType getType() {
         return type;
     }
 
     /**
      * Returns the event's start time
      *
-     * @return the event's {@link VHMEvent#startTime}
+     * @return the event's {@link VhmEvent#startTime}
      */
     public double getStartTime() {
         return startTime;
@@ -261,7 +261,7 @@ public class VHMEvent extends ExternalEvent{
 
     /**
      * Returns the event's end time
-     * @return the event's {@link VHMEvent#endTime}
+     * @return the event's {@link VhmEvent#endTime}
      */
     public double getEndTime() {
         return endTime;
@@ -269,7 +269,7 @@ public class VHMEvent extends ExternalEvent{
 
     /**
      *Returns the event's location
-     * @return the event's {@link VHMEvent#location}
+     * @return the event's {@link VhmEvent#location}
      */
     public Coord getLocation() {
         return location.clone();
@@ -277,7 +277,7 @@ public class VHMEvent extends ExternalEvent{
 
     /**
      * Return the event's event range
-     * @return the event's {@link VHMEvent#eventRange}
+     * @return the event's {@link VhmEvent#eventRange}
      */
     public double getEventRange() {
         return eventRange;
@@ -285,7 +285,7 @@ public class VHMEvent extends ExternalEvent{
 
     /**
      * Return the event's safe range
-     * @return the event's {@link VHMEvent#safeRange}
+     * @return the event's {@link VhmEvent#safeRange}
      */
     public double getSafeRange() {
         return safeRange;
@@ -293,7 +293,7 @@ public class VHMEvent extends ExternalEvent{
 
     /**
      * Return the event's maximum range
-     * @return the event's {@link VHMEvent#maxRange}
+     * @return the event's {@link VhmEvent#maxRange}
      */
     public double getMaxRange() {
         return maxRange;
@@ -302,14 +302,14 @@ public class VHMEvent extends ExternalEvent{
     /**
      * Returns the intensity of an event.
      *
-     * @return the event's {@link VHMEvent#intensity}
+     * @return the event's {@link VhmEvent#intensity}
      */
     public int getIntensity() {
         return intensity;
     }
 
     /**
-     * Returns the {@link VHMEvent#name} of the event that was specified in the JSON file.
+     * Returns the {@link VhmEvent#name} of the event that was specified in the JSON file.
      * @return the event name
      */
     public String getName(){
@@ -317,7 +317,7 @@ public class VHMEvent extends ExternalEvent{
     }
 
     /**
-     * Returns the unique {@link VHMEvent#id} of the event
+     * Returns the unique {@link VhmEvent#id} of the event
      *
      * @return the unique id
      */

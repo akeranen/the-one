@@ -4,7 +4,7 @@ import core.ConnectionListener;
 import core.MessageListener;
 import core.SimError;
 import input.ExternalEvent;
-import input.VHMEvent;
+import input.VhmEvent;
 import input.VHMEventReader;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -19,7 +19,7 @@ import java.util.List;
  *
  * Created by mellich on 17.02.17.
  */
-public class VHMEventsTest {
+public class VhmEventsTest {
 
     public static final String CORRECT_FILE = "ee/test/VHMTestEvents.json";
     public static final String MISSING_VERSION = "ee/test/VHMTestMissingVersion.json";
@@ -53,7 +53,7 @@ public class VHMEventsTest {
                 TestCase.fail("Correct VHM events file could not be loaded!");
             }
             for (ExternalEvent e : eventList){
-                VHMEvent ev = (VHMEvent) e;
+                VhmEvent ev = (VhmEvent) e;
                 TestCase.assertTrue("Start time is before end time!",ev.getStartTime() <= ev.getEndTime());
             }
         }

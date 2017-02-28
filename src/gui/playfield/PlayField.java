@@ -6,10 +6,10 @@ package gui.playfield;
 
 import core.Coord;
 import core.DTNHost;
-import core.VHMListener;
+import core.VhmListener;
 import core.World;
 import gui.DTNSimGUI;
-import input.VHMEvent;
+import input.VhmEvent;
 import movement.Path;
 import movement.VoluntaryHelperMovement;
 import movement.map.SimMap;
@@ -29,7 +29,7 @@ import java.util.List;
  * The canvas where node graphics and message visualizations are drawn.
  *
  */
-public class PlayField extends JPanel implements VHMListener {
+public class PlayField extends JPanel implements VhmListener {
 	public static final int PLAYFIELD_OFFSET = 10;
 
 	private World w;
@@ -38,7 +38,7 @@ public class PlayField extends JPanel implements VHMListener {
 	private Color bgColor = Color.WHITE;
 
 	private List<PlayFieldGraphic> overlayGraphics;
-	private List<VHMEventGraphic> vhmEventGraphics;
+	private List<VhmEventGraphic> vhmEventGraphics;
 	private boolean autoClearOverlay;	// automatically clear overlay graphics
 	private MapGraphic mapGraphic;
 	private boolean showMapGraphic;
@@ -67,7 +67,7 @@ public class PlayField extends JPanel implements VHMListener {
         this.overlayGraphics = Collections.synchronizedList(
 		new ArrayList<PlayFieldGraphic>());
 		this.vhmEventGraphics = Collections.synchronizedList(
-				new ArrayList<VHMEventGraphic>());
+				new ArrayList<VhmEventGraphic>());
         this.mapGraphic = null;
         this.underlayImage = null;
         this.imageTransform = null;
@@ -334,12 +334,12 @@ public class PlayField extends JPanel implements VHMListener {
 	}
 
 	@Override
-	public void vhmEventStarted(VHMEvent event) {
-		this.vhmEventGraphics.add(new VHMEventGraphic(event));
+	public void vhmEventStarted(VhmEvent event) {
+		this.vhmEventGraphics.add(new VhmEventGraphic(event));
 	}
 
 	@Override
-	public void vhmEventEnded(VHMEvent event) {
-		vhmEventGraphics.remove(new VHMEventGraphic(event));
+	public void vhmEventEnded(VhmEvent event) {
+		vhmEventGraphics.remove(new VhmEventGraphic(event));
 	}
 }

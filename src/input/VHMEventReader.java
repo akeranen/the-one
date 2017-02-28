@@ -96,7 +96,7 @@ public class VHMEventReader implements ExternalEventsReader {
         if (allEventsRead) {
             return new ArrayList<>();
         }
-        List<VHMEvent> events = null;
+        List<VhmEvent> events = null;
         try {
             events = extractEvents(nrof);
             allEventsRead = true;
@@ -111,9 +111,9 @@ public class VHMEventReader implements ExternalEventsReader {
      *
      * @return a list of the VHMEvents
      */
-    private List<VHMEvent> extractEvents(int nrof) throws IOException{
+    private List<VhmEvent> extractEvents(int nrof) throws IOException{
         JsonStructure jsonFile = reader.read();
-        List<VHMEvent> eventList = new ArrayList<>();
+        List<VhmEvent> eventList = new ArrayList<>();
         if (jsonFile.getValueType() == JsonValue.ValueType.OBJECT){
             JsonObject root = (JsonObject) jsonFile;
             for (String name : root.keySet()){
@@ -121,7 +121,7 @@ public class VHMEventReader implements ExternalEventsReader {
                     break;
                 }
                 if (root.get(name).getValueType() == JsonValue.ValueType.OBJECT){
-                    eventList.add(new VHMEvent(name,(JsonObject) root.get(name)));
+                    eventList.add(new VhmEvent(name,(JsonObject) root.get(name)));
                 }
             }
         }
@@ -133,16 +133,16 @@ public class VHMEventReader implements ExternalEventsReader {
 
     /**
      * Takes a list of VHMEvents and generates a event list usable for the one simulator.
-     * Therefore, special start and end events are created for every VHMEvent
+     * Therefore, special start and end events are created for every VhmEvent
      *
      * @param events list of the VHMEvents
      * @return A list of events where VHMEvents start or end
      */
-    private List<ExternalEvent> generateEventList(List<VHMEvent> events){
+    private List<ExternalEvent> generateEventList(List<VhmEvent> events){
         List<ExternalEvent> allEvents = new ArrayList<>();
-        for (VHMEvent ev : events){
-            allEvents.add(new VHMEventStartEvent(ev));
-            allEvents.add(new VHMEventEndEvent(ev));
+        for (VhmEvent ev : events){
+            allEvents.add(new VhmEventStartEvent(ev));
+            allEvents.add(new VhmEventEndEvent(ev));
         }
         Collections.sort(allEvents);
         return allEvents;

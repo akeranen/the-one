@@ -9,13 +9,13 @@ import movement.VoluntaryHelperMovement;
  *
  * Created by Marius Meyer on 15.02.17.
  */
-public class VHMEventEndEvent extends VHMEvent {
+public class VhmEventEndEvent extends VhmEvent {
 
     /**
-     * Creates a new event for the end of a specified VHMEvent
-     * @param event the VHMEvent
+     * Creates a new event for the end of a specified VhmEvent
+     * @param event the VhmEvent
      */
-    public VHMEventEndEvent(VHMEvent event){
+    public VhmEventEndEvent(VhmEvent event){
         super(event);
         setTime(event.getEndTime());
     }

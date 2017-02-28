@@ -44,7 +44,7 @@ import org.junit.runners.Suite;
 		MessageEventGeneratorTest.class,
 		ModuleCommunicationBusTest.class,
 		DTNHostTest.class,
-		VHMEventsTest.class,
+		VhmEventsTest.class,
 		LevyWalkTest.class
 })
 

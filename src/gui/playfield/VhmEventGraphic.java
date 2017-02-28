@@ -1,6 +1,6 @@
 package gui.playfield;
 
-import input.VHMEvent;
+import input.VhmEvent;
 
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
@@ -10,30 +10,30 @@ import java.awt.geom.Ellipse2D;
  *
  * Created by Marius Meyer on 17.02.17.
  */
-public class VHMEventGraphic extends PlayFieldGraphic {
+public class VhmEventGraphic extends PlayFieldGraphic {
 
     /**
-     * Color of the circle around the event representing {@link VHMEvent#eventRange}
+     * Color of the circle around the event representing {@link VhmEvent#eventRange}
      */
     private static Color eventRangeColor = Color.lightGray;
 
     /**
-     * Color of the circle around the event representing {@link VHMEvent#safeRange}
+     * Color of the circle around the event representing {@link VhmEvent#safeRange}
      */
     private static Color safeRangeColor = Color.orange;
 
     /**
-     * Color of the circle around the event representing {@link VHMEvent#maxRange}
+     * Color of the circle around the event representing {@link VhmEvent#maxRange}
      */
     private static Color maxRangeColor = Color.yellow;
 
     /**
-     * Color of the event's location. {@link VHMEvent#location}
+     * Color of the event's location. {@link VhmEvent#location}
      */
     private static Color eventLocationColor = Color.red;
 
     /**
-     * Color of the event's name {@link VHMEvent#name}
+     * Color of the event's name {@link VhmEvent#name}
      */
     private static Color eventNameColor = Color.black;
 
@@ -52,13 +52,13 @@ public class VHMEventGraphic extends PlayFieldGraphic {
     /**
      * The event this graphics class is representing
      */
-    private VHMEvent event;
+    private VhmEvent event;
 
     /**
      * Creates a new event graphics
      * @param e the event this graphics object will represent
      */
-    public VHMEventGraphic(VHMEvent e){
+    public VhmEventGraphic(VhmEvent e){
         this.event = e;
     }
 
@@ -129,7 +129,7 @@ public class VHMEventGraphic extends PlayFieldGraphic {
     }
 
     /**
-     * Checks, if a event graphics is equal to anoter one by comparing the {@link VHMEvent#id}
+     * Checks, if a event graphics is equal to anoter one by comparing the {@link VhmEvent#id}
      * of the events they are representing.
      *
      * @param o the object to compare to
@@ -137,8 +137,8 @@ public class VHMEventGraphic extends PlayFieldGraphic {
      */
     @Override
     public boolean equals(Object o){
-        if (o instanceof VHMEventGraphic) {
-            return ((VHMEventGraphic) o).event.getID() == this.event.getID();
+        if (o instanceof VhmEventGraphic) {
+            return ((VhmEventGraphic) o).event.getID() == this.event.getID();
         }else return false;
     }
 }

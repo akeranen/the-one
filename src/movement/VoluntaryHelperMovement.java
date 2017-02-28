@@ -223,8 +223,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     public static void eventEnded(VhmEvent event) {
         for (VhmListener l : listeners)
             l.vhmEventEnded(event);
+        //if the event that ended was a hospital...
         if(event.getType() == HOSPITAL) {
-            //remove the ended event from the list of hospitals. Yes i know how that sounds XD.
+            //...remove it from the list of hospitals.
             for(VhmEvent h : hospitals) {
                 if(h.getID() == event.getID()) {
                     hospitals.remove(h);
@@ -232,7 +233,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                 }
             }
         } else if(event.getType() == DISASTER) {
-            //remove the ended event from the list of disasters.
+            //if the event that ended was a disaster, remove it from the list of disasters.
             for(VhmEvent d : disasters) {
                 if(d.getID() == event.getID()) {
                     disasters.remove(d);

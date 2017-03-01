@@ -60,6 +60,7 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 	}
 
 	private void setupMapData(String okTypes, String speed, String wTime) {
+		java.util.Locale.setDefault(java.util.Locale.US);
 		Settings.init(null);
 		s = new TestSettings();
 		StringReader input = new StringReader(WKT);

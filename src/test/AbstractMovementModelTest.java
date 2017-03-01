@@ -40,9 +40,7 @@ public abstract class AbstractMovementModelTest {
      */
     public void setUp(){
         Settings.init(null);
-        java.util.Locale.setDefault(java.util.Locale.US);
-        TestSettings testSettings = new TestSettings();
-        model = initializeModel(testSettings);
+        model = initializeModel(new TestSettings());
         model.getInitialLocation();
     }
 

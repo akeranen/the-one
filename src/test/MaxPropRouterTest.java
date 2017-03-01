@@ -20,6 +20,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 	private static final double INVALID_COST = Double.MAX_VALUE;
 
 	protected void setUp() throws Exception {
+		java.util.Locale.setDefault(java.util.Locale.US);
 		ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
 		ts.putSetting(SimScenario.SCENARIO_NS + "." +
 				SimScenario.NROF_GROUPS_S, "1");

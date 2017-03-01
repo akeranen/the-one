@@ -7,13 +7,9 @@ package test;
 import java.util.ArrayList;
 import java.util.List;
 
+import core.*;
 import junit.framework.TestCase;
 import routing.MessageRouter;
-import core.Coord;
-import core.DTNHost;
-import core.MessageListener;
-import core.NetworkInterface;
-import core.SimClock;
 
 /**
  * Superclass for router tests. Sets up the environment by creating

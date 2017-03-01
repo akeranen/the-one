@@ -4,6 +4,7 @@
  */
 package test;
 
+import org.junit.Test;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
@@ -28,6 +29,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests routing messages between three hosts
 	 */
+	@Test
 	public void testRouter() {
 		// nothing should have happened so far
 		assertEquals(mc.TYPE_NONE, mc.getLastType());
@@ -121,6 +123,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Checks that delivering many messages in a row works
 	 */
+	@Test
 	public void testManyMessages() {
 
 		Message m1 = new Message(h1,h2, MSG_ID1, 1);
@@ -158,6 +161,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests that messages that can be delivered right a way are delivered first
 	 */
+	@Test
 	public void testDeliverableMessageExchange() {
 		Message m1 = new Message(h1,h3, "Dummy1", 1);
 		h1.createNewMessage(m1);
@@ -199,6 +203,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	 * Tests aborting transfer when connections is disconnected during the
 	 * transfer
 	 */
+	@Test
 	public void testMessageRelayAbort() {
 		Message m1 = new Message(h1,h2, MSG_ID1, BUFFER_SIZE);
 		h1.createNewMessage(m1);
@@ -226,6 +231,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	 * try disconnecting on the same update interval when a transfer should
 	 * be finished -> should not cause abort (anymore)
 	 */
+	@Test
 	public void testAbortWhenReady() {
 		Message m1 = new Message(h2, h1, MSG_ID2, 1);
 		h2.createNewMessage(m1);
@@ -252,6 +258,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Test unexpected ordering of finalizations and message transfers.
 	 */
+	@Test
 	public void testDifferentOrdering() {
 		h1.connect(h2);
 		Message m1 = new Message(h1,h2, MSG_ID1, 1);
@@ -291,6 +298,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests if rejecting already delivered message(s) work
 	 */
+	@Test
 	public void testDoubleDelivery() {
 		Message m1 = new Message(h1,h2, MSG_ID1, 1);
 		h1.createNewMessage(m1);
@@ -324,6 +332,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests if the FIFO queue management works
 	 */
+	@Test
 	public void testQueueManagement() {
 		Message m1 = new Message(h1,h3, "dummy", BUFFER_SIZE-1);
 		h1.createNewMessage(m1);
@@ -379,6 +388,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	 * Tests creating a new message when the message buffer is full and the
 	 * message that should be removed is the message being sent
 	 */
+	@Test
 	public void testNewMessageToFullBufferWhileTransferring() {
 		int m3Size = BUFFER_SIZE-1;
 		int m1Size = BUFFER_SIZE/2;
@@ -439,6 +449,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertFalse(mc.next());
 	}
 
+	@Test
 	public void testTtlExpiry() {
 		final int TIME_STEP = 10;
 		Message m1 = new Message(h1,h3, MSG_ID1, 1);
@@ -499,6 +510,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertFalse(mc.next());
 	}
 
+	@Test
 	public void testResponse() {
 		Message m1 = new Message(h1,h3, MSG_ID1, 1);
 		m1.setResponseSize(1);
@@ -598,6 +610,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		return msgIds;
 	}
 
+	@Test
 	public void testFifoSendingQ() throws Exception {
 		ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S,
 				""+MessageRouter.Q_MODE_FIFO);
@@ -609,6 +622,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(expectedIds, runMessageExchange(false));
 	}
 
+	@Test
 	public void testRandomSendingQ() throws Exception {
 		ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S,
 				""+MessageRouter.Q_MODE_RANDOM);

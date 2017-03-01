@@ -4,6 +4,7 @@
  */
 package test;
 
+import org.junit.Test;
 import routing.MessageRouter;
 import routing.ProphetRouter;
 import core.Message;
@@ -28,6 +29,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests normal routing
 	 */
+	@Test
 	public void testRouting() {
 		Message m1 = new Message(h1,h2, MSG_ID2, 1);
 		h1.createNewMessage(m1);
@@ -128,6 +130,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
 	}
 
+	@Test
 	public void testAging() {
 		ProphetRouter r4 = (ProphetRouter)h4.getRouter();
 		ProphetRouter r5 = (ProphetRouter)h5.getRouter();

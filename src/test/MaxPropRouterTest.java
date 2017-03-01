@@ -4,6 +4,7 @@
  */
 package test;
 
+import org.junit.Test;
 import routing.MaxPropRouter;
 import routing.MessageRouter;
 import core.DTNHost;
@@ -35,6 +36,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		r4 = (MaxPropRouter)h4.getRouter();
 	}
 
+	@Test
 	public void testCostValues() {
 		/* create messages so we can ask for msg costs */
 
@@ -101,6 +103,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 
 	}
 
+	@Test
 	public void testThreshold() {
 		int msgSize = 90;
 
@@ -137,6 +140,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		assertEquals(3, r3.calcThreshold());
 	}
 
+	@Test
 	public void testAckedMessageDeleting() {
 		int msgSize = 10;
 		Message m1 = new Message(h1,h5, MSG_ID1, msgSize);
@@ -182,6 +186,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 
 	}
 
+	@Test
 	public void testRouting() {
 		int msgSize = 10;
 		DTNHost th1 = utils.createHost(c0, "temp1");
@@ -235,6 +240,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 	 * Tests that more recent meeting probability sets replace older ones
 	 * but not vice versa.
 	 */
+	@Test
 	public void testMpsTimeStamps() {
 		/* create some messages so we can ask costs to destinations */
 		int msgIndx = 1;

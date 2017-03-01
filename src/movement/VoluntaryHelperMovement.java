@@ -21,8 +21,7 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  * Created by Ansgar Mährlein on 08.02.2017.
  * @author Ansgar Mährlein
  */
-//TODO implement Panic Movement
-//TODO comment "newOrders"
+//TODO implement Panic Movement + more comments
 public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, EnergyListener {
 
     //strings for the setting keys in the settings file
@@ -291,114 +290,118 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     public boolean newOrders(){
         if(!justChanged) {
             switch (mode) {
-                case RANDOM_MAP_BASED_MODE: {
-                    if (chooseNextDisaster()) {
-                        mode = movementMode.MOVING_TO_EVENT_MODE;
-                        carMM.setLocation(host.getLocation());
-                        carMM.setNextRoute(shortestPathMapBasedMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-                        setCurrentMovementModel(carMM);
-                    }
+                case RANDOM_MAP_BASED_MODE:
+                    chooseMovementAfterRandomMapBasedMode();
                     break;
-                }
-                case MOVING_TO_EVENT_MODE: {
-                    if (isLocalHelper) {
-                        mode = movementMode.LOCAL_HELP_MODE;
-                        levyWalkMM.setLocation(host.getLocation());
-                        levyWalkMM.setCenter(chosenDisaster.getLocation());
-                        levyWalkMM.setRadius(chosenDisaster.getEventRange());
-                        startTime = SimClock.getTime();
-                        setCurrentMovementModel(levyWalkMM);
-                    } else {
-                        if (chooseNextHospital()) {
-                            mode = movementMode.TRANSPORTING_MODE;
-                            carMM.setLocation(host.getLocation());
-                            carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
-                            setCurrentMovementModel(carMM);
-                        } else {
-                            //if choosing a new hospital fails because there are no hospitals...
-                            //...just move on with your day
-                            mode = movementMode.RANDOM_MAP_BASED_MODE;
-                            shortestPathMapBasedMM.setLocation(host.getLocation());
-                            switchToMovement(shortestPathMapBasedMM);
-                        }
-                    }
+                case MOVING_TO_EVENT_MODE:
+                    chooseMovementAfterMovingToEventMode();
                     break;
-                }
-                case LOCAL_HELP_MODE: {
-                    if (SimClock.getTime() - startTime >= helpTime) {
-                        if (chooseNextDisaster()) {
-                            mode = movementMode.MOVING_TO_EVENT_MODE;
-                            carMM.setLocation(host.getLocation());
-                            carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-                            setCurrentMovementModel(carMM);
-                        } else {
-                            mode = movementMode.RANDOM_MAP_BASED_MODE;
-                            shortestPathMapBasedMM.setLocation(host.getLocation());
-                            setCurrentMovementModel(shortestPathMapBasedMM);
-                        }
-                    }
+                case LOCAL_HELP_MODE:
+                    chooseMovementAfterLocalHelpMode();
                     break;
-                }
-                case TRANSPORTING_MODE: {
-                    if (rng.nextDouble() >= waitProbability) {
-                        mode = movementMode.MOVING_TO_EVENT_MODE;
-                        carMM.setLocation(host.getLocation());
-                        carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-                        setCurrentMovementModel(carMM);
-                    } else {
-                        mode = movementMode.HOSPITAL_WAIT_MODE;
-                        levyWalkMM.setLocation(host.getLocation());
-                        levyWalkMM.setCenter(chosenHospital.getLocation());
-                        levyWalkMM.setRadius(chosenHospital.getEventRange());
-                        startTime = SimClock.getTime();
-                        setCurrentMovementModel(levyWalkMM);
-                    }
+                case TRANSPORTING_MODE:
+                    chooseMovementAfterTransportingMode();
                     break;
-                }
-                case HOSPITAL_WAIT_MODE: {
-                    if (SimClock.getTime() - startTime >= hospitalWaitTime) {
-                        if (chooseNextDisaster()) {
-                            mode = movementMode.MOVING_TO_EVENT_MODE;
-                            carMM.setLocation(host.getLocation());
-                            carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-                            setCurrentMovementModel(carMM);
-                        } else {
-                            mode = movementMode.RANDOM_MAP_BASED_MODE;
-                            setCurrentMovementModel(shortestPathMapBasedMM);
-                        }
-                    }
+                case HOSPITAL_WAIT_MODE:
+                    chooseMovementAfterHospitalWaitMode();
                     break;
-                }
-                case INJURED_MODE: {
-                    //to be safe: make sure the node stays injured
-                    mode = movementMode.INJURED_MODE;
-                    setCurrentMovementModel(stationaryMM);
+                case INJURED_MODE:
+                    //No change (unless the battery runs out, which is handled asynchronically in batteryDied())
                     break;
-                }
-                case PANIC_MODE: {
-                    //start over at the beginning
-                    if (chooseNextDisaster()) {
-                        mode = movementMode.MOVING_TO_EVENT_MODE;
-                        carMM.setLocation(host.getLocation());
-                        carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-                    } else {
-                        mode = movementMode.RANDOM_MAP_BASED_MODE;
-                        shortestPathMapBasedMM.setLocation(host.getLocation());
-                        setCurrentMovementModel(shortestPathMapBasedMM);
-                    }
+                case PANIC_MODE:
+                    chooseMovementAfterPanicMode();
                     break;
-                }
-                default: {
-                    mode = movementMode.RANDOM_MAP_BASED_MODE;
-                    shortestPathMapBasedMM.setLocation(host.getLocation());
-                    setCurrentMovementModel(shortestPathMapBasedMM);
+                default:
+                    chooseRandomMapBasedMode();
                     break;
-                }
             }
         } else {
             justChanged = false;
         }
         return true;
+    }
+
+    private void chooseMovingToEventMode() {
+        mode = movementMode.MOVING_TO_EVENT_MODE;
+        carMM.setLocation(host.getLocation());
+        carMM.setNextRoute(shortestPathMapBasedMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+        setCurrentMovementModel(carMM);
+    }
+
+    private void chooseRandomMapBasedMode() {
+        mode = movementMode.RANDOM_MAP_BASED_MODE;
+        shortestPathMapBasedMM.setLocation(host.getLocation());
+        setCurrentMovementModel(shortestPathMapBasedMM);
+    }
+
+    private void chooseMovementAfterRandomMapBasedMode() {
+        if (chooseNextDisaster()) {
+            chooseMovingToEventMode();
+        }
+    }
+
+    private void chooseMovementAfterMovingToEventMode() {
+        if (isLocalHelper) {
+            mode = movementMode.LOCAL_HELP_MODE;
+            levyWalkMM.setLocation(host.getLocation());
+            levyWalkMM.setCenter(chosenDisaster.getLocation());
+            levyWalkMM.setRadius(chosenDisaster.getEventRange());
+            startTime = SimClock.getTime();
+            setCurrentMovementModel(levyWalkMM);
+        } else {
+            if (chooseNextHospital()) {
+                mode = movementMode.TRANSPORTING_MODE;
+                carMM.setLocation(host.getLocation());
+                carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
+                setCurrentMovementModel(carMM);
+            } else {
+                //if choosing a new hospital fails because there are no hospitals...
+                //...just move on with your day
+                chooseRandomMapBasedMode();
+            }
+        }
+    }
+
+    private void chooseMovementAfterTransportingMode() {
+        if (rng.nextDouble() >= waitProbability) {
+            chooseMovingToEventMode();
+        } else {
+            mode = movementMode.HOSPITAL_WAIT_MODE;
+            levyWalkMM.setLocation(host.getLocation());
+            levyWalkMM.setCenter(chosenHospital.getLocation());
+            levyWalkMM.setRadius(chosenHospital.getEventRange());
+            startTime = SimClock.getTime();
+            setCurrentMovementModel(levyWalkMM);
+        }
+    }
+
+    private void chooseMovementAfterHospitalWaitMode() {
+        if (SimClock.getTime() - startTime >= hospitalWaitTime) {
+            if (chooseNextDisaster()) {
+                chooseMovingToEventMode();
+            } else {
+                chooseRandomMapBasedMode();
+            }
+        }
+    }
+
+    private void chooseMovementAfterLocalHelpMode() {
+        if (SimClock.getTime() - startTime >= helpTime) {
+            if (chooseNextDisaster()) {
+                chooseMovingToEventMode();
+            } else {
+                chooseRandomMapBasedMode();
+            }
+        }
+    }
+
+    private void chooseMovementAfterPanicMode() {
+        //start over at the beginning
+        if (chooseNextDisaster()) {
+            chooseMovingToEventMode();
+        } else {
+            chooseRandomMapBasedMode();
+        }
     }
 
     /**

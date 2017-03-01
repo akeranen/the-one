@@ -537,5 +537,29 @@ public class DTNHost implements Comparable<DTNHost> {
 	public int compareTo(DTNHost h) {
 		return this.getAddress() - h.getAddress();
 	}
+	/**
+	 * @return the angle in degrees[0-360) between the current host and h
+	 * @param h the Host
+	 */
+	public double getAngleofHost(DTNHost h){
+		double dy = (h.getLocation().getY() - this.getLocation().getY());
+		double dx = (h.getLocation().getX() - this.getLocation().getX());
+		if(dx == 0){
+			if (dy > 0) {
+				return 90;			
+			}
+			else{
+				return 270;
+			}
+		}
+		else{
+			double inDeg = (float)(Math.atan2(dy,dx)*180)/(float)Math.PI;
+			if( inDeg < 0){
+				return 2*180 + inDeg;
+			}
+			return inDeg;
+		}
+
+	}
 
 }

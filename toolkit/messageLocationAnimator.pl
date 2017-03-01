@@ -74,7 +74,7 @@ my ($time, $lastTime, %fileHandles, @msgIds, $nextId);
 my $gpFile = new FileHandle;
 $gpFile->open(">$animDir/$name.gnuplot");
 
-print $gpFile "set term gif animate transparent opt delay $delay size $size x000000 \n";
+print $gpFile "set term gif animate transparent opt delay $delay size $size background '#000000'\n";
 print $gpFile "set output \'$name.gif\'\n";
 print $gpFile "set xrange [$xrange]\n" if defined $xrange;
 print $gpFile "set yrange [$yrange]\n" if defined $yrange;

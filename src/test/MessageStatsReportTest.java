@@ -30,8 +30,8 @@ import java.util.ArrayList;
  * Created by Britta Heymann on 16.02.2017.
  */
 public class MessageStatsReportTest {
-    private MessageStatsReport report = new MessageStatsReport();
-    private TestUtils utils = new TestUtils(null, null, null);
+    private MessageStatsReport report;
+    private TestUtils utils;
     private File outFile;
 
     @Before

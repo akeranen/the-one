@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 public class LevyWalkTest extends AbstractMovementModelTest{
 
     private LevyWalkMovement levy = new LevyWalkMovement(new TestSettings());
-    private static final int TEST_RUNS = 2000;
     private static final int TEST_RADIUS = 100;
     private static final int CENTER_COORD = 500;
     private static final int EDGE_COORD = 50;

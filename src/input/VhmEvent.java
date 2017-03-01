@@ -316,4 +316,18 @@ public class VhmEvent extends ExternalEvent{
         return this.id;
     }
 
+    /**
+     * Checks, if two VhmEvents are equal by comparing their id
+     *
+     * @param ob the VhmEvent to compare to
+     * @return true, if the object is a VhmEvent and has the same id as the calling instance
+     */
+    @Override
+    public boolean equals(Object ob){
+        System.out.print("Hurz");
+        if (ob instanceof VhmEvent) {
+            return ((VhmEvent) ob).getID() == getID();
+        } else return false;
+    }
+
 }

@@ -119,7 +119,7 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     }
 
     /**
-     * Checks, if a event graphics is equal to anoter one by comparing the {@link VhmEvent#id}
+     * Checks, if a event graphics is equal to another one by comparing the {@link VhmEvent#id}
      * of the events they are representing.
      *
      * @param o the object to compare to
@@ -128,7 +128,7 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     @Override
     public boolean equals(Object o){
         if (o instanceof VhmEventGraphic) {
-            return ((VhmEventGraphic) o).event.getID() == this.event.getID();
+            return ((VhmEventGraphic) o).event.equals(this.event);
         }else return false;
     }
 }

@@ -113,9 +113,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     //TODO make everything local, non static? Compare performance!
     //event lists
     /** List of disasters */
-    private static List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<>());
+    private List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<>());
     /** List of hospitals */
-    private static List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
+    private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
 
     //TODO make this non static by moving it to the appropriate class?
     /** List of VhmListeners */
@@ -203,11 +203,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     public static void eventStarted(VhmEvent event) {
         for (VhmListener l : listeners)
             l.vhmEventStarted(event);
-        if(event.getType() == HOSPITAL) {
-            hospitals.add(event);
-        } else if(event.getType() == DISASTER) {
-            disasters.add(event);
-        }
     }
 
     /**
@@ -217,24 +212,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     public static void eventEnded(VhmEvent event) {
         for (VhmListener l : listeners)
             l.vhmEventEnded(event);
-        //if the event that ended was a hospital...
-        if(event.getType() == HOSPITAL) {
-            //...remove it from the list of hospitals.
-            for(VhmEvent h : hospitals) {
-                if(h.getID() == event.getID()) {
-                    hospitals.remove(h);
-                    break;
-                }
-            }
-        } else if(event.getType() == DISASTER) {
-            //if the event that ended was a disaster, remove it from the list of disasters.
-            for(VhmEvent d : disasters) {
-                if(d.getID() == event.getID()) {
-                    disasters.remove(d);
-                    break;
-                }
-            }
-        }
     }
 
     /**
@@ -509,6 +486,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     @Override
     public void vhmEventStarted(VhmEvent event) {
+        //add the event to the appropriate list
+        if(event.getType() == HOSPITAL) {
+            hospitals.add(event);
+        } else if(event.getType() == DISASTER) {
+            disasters.add(event);
+        }
+
+        //handle the event
         if(event.getType() == DISASTER &&mode != movementMode.INJURED_MODE) {
             //check if the node is to close to the disaster
             if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
@@ -539,6 +524,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     @Override
     public void vhmEventEnded(VhmEvent event) {
+        //remove the event from the appropriate list
+        if(event.getType() == HOSPITAL) {
+            hospitals.remove(event);
+        } else if(event.getType() == DISASTER) {
+            disasters.remove(event);
+        }
+
+        //handle the event
         if(event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
             handleEndedDisaster(event);
         } else if(event.getType() == HOSPITAL && mode != movementMode.INJURED_MODE) {

@@ -1,5 +1,5 @@
 #
-# Default settings for the simulation
+# Additional Settings for the Panic Movement mobility model
 #
 
 ## Scenario settings

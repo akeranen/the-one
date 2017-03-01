@@ -18,9 +18,7 @@ import movement.map.SimMap;
 public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
     
 	private Coord eventLocation;	
-	//TODO Define a way to set this attribute
 	private double safeRangeRadius;
-	//TODO Define a way to set this attribute
 	private double eventRangeRadius;
 	
 	private PanicMovementUtil pmu;
@@ -31,10 +29,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	
 	public PanicMovement (Settings settings, Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings);
-		eventLocation = location;
-		this.safeRangeRadius = safeRangeRadius;
-		this.eventRangeRadius = eventRangeRadius;
-		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
+		setFields(location, safeRangeRadius, eventRangeRadius);
 	}
 	
 	/**
@@ -58,35 +53,38 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
 			Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings, newMap, nrofMaps);
+		setFields(location, safeRangeRadius, eventRangeRadius);
+	}
+	
+	public void setFields (Coord location, double safeRangeRadius, double eventRangeRadius) {
 		eventLocation = location;
 		this.safeRangeRadius = safeRangeRadius;
 		this.eventRangeRadius = eventRangeRadius;
 		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
-	
 	/**
 	 * Determines a path to the most suitable node in the security zone
 	 */
 	public Path getPath() {
-		Path p = new Path(generateSpeed());
+		Path path = new Path(generateSpeed());
 		Coord hostLocation = host.getLocation();
 		MapNode hostNode = getNearestNode(map, hostLocation);
-		MapNode to = pmu.selectDestination(map, hostNode);
+		MapNode destNode = pmu.selectDestination(map, hostNode);
 		
-		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, to);
+		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
 
 		// this assertion should never fire if the map is checked in read phase
 		int pathSize = nodePath.size();
 		assert pathSize > 0 : "No path from " + hostNode + " to " +
-			to + ". The simulation map isn't fully connected.";
+		destNode + ". The simulation map isn't fully connected.";
 
 		for (MapNode node : nodePath) { // create a Path from the shortest path
-			p.addWaypoint(node.getLocation());
+			path.addWaypoint(node.getLocation());
 		}
 
-		lastMapNode = to;
+		lastMapNode = destNode;
 
-		return p;
+		return path;
 	}
 	
 	/**
@@ -96,10 +94,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	 */
 	protected PanicMovement(PanicMovement pm) {
 		super(pm);
-		eventLocation = pm.eventLocation;
-		safeRangeRadius = pm.safeRangeRadius;
-		eventRangeRadius = pm.eventRangeRadius;
-		pmu = new PanicMovementUtil(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
+		setFields(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
 	}
 	
 	public void setEventLocation(Coord eventLocation) {

@@ -6,7 +6,7 @@ public class PanicMovementUtil {
     
 	private double safeRangeRadius;
 	private double eventRangeRadius;
-	private static Coord eventLocation = null;
+	private Coord eventLocation = null;
 	public static final double RIGHT_ANGLE = 90.0;
 	public static final double STRAIGHT_ANGLE = 180.0;
 	public static final double FULL_ROTATION = 360.0;
@@ -17,8 +17,8 @@ public class PanicMovementUtil {
 	 * @param safeRangeRadius radius where the safe zone starts
 	 * @param eventRangeRadius radius where the zone ends where you can help
 	 */
-	public PanicMovementUtil(Coord location, double safeRangeRadius, double eventRangeRadius) {
-		eventLocation = location;
+	public PanicMovementUtil(Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
+		this.eventLocation = eventLocation;
 		this.safeRangeRadius = safeRangeRadius;
 		this.eventRangeRadius = eventRangeRadius;
 	}
@@ -31,19 +31,16 @@ public class PanicMovementUtil {
 	 */
 	public MapNode selectDestination(SimMap map, MapNode locationNode) {
 		double distance = eventLocation.distance(locationNode.getLocation());
-		if (distance <= eventRangeRadius && distance>= safeRangeRadius) {
-			 //everything's fine
+		if (distance <= eventRangeRadius && distance>= safeRangeRadius ||
+			// The host is within the safe area or
+			eventLocation.distance(locationNode.getLocation()) > eventRangeRadius) {
+			// The host is not concerned by the event 	
 			return locationNode;
 		}
 		
 		MapNode bestNode = getBestNode(map, locationNode);
 		
-		// if no better node is found, the node can stay at the current location
-		if (bestNode == null) {
-			return locationNode;
-		} else {
-			return bestNode;
-		}
+		return bestNode;
 	}
 	
 	/**
@@ -56,11 +53,6 @@ public class PanicMovementUtil {
 		MapNode nearestSafeNode = null;
 		double shortestDistance = Double.MAX_VALUE;
 		
-		if (eventLocation.distance(locationNode.getLocation()) > eventRangeRadius) {
-			// The host can stay at its position, since the event does not concern it
-			return locationNode;
-		}
-		
 		for (MapNode node : map.getNodes()) {
 			double distance = eventLocation.distance(node.getLocation());
 			if ( distance >= safeRangeRadius && distance <= eventRangeRadius
@@ -71,7 +63,13 @@ public class PanicMovementUtil {
 			}
 		}
 		
-		return nearestSafeNode;
+		// if no better node is found, the node can stay at the current location
+		if (nearestSafeNode == null) {
+			return locationNode;
+		}
+		else {
+			return nearestSafeNode;
+		}
 	}
 	
 	/**
@@ -86,13 +84,19 @@ public class PanicMovementUtil {
 		
 		if (lengthProduct(eventLocation, sourceNode.getLocation(), targetNode.getLocation()) <= 0.0) {
 			// to avoid division by zero. Every angle should be fine
-			return true; 
+			if (eventLocation.distance(targetNode.getLocation()) <= 0.0) {
+				// event = target --> IN event direction
+				return true;
+			}
+			else {
+				// event = source --> NOT IN event direction
+				return false;
+			}
 		}
 		else {
 			angle = computeAngleBetween(eventLocation, sourceNode, targetNode);
 		}
 		
-		// Does the node meet all conditions?
 		return (Math.abs(angle - STRAIGHT_ANGLE) < RIGHT_ANGLE);
 	}
 	

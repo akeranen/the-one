@@ -52,7 +52,7 @@ public class PanicMovementTest extends TestCase {
 	}
 	
 	/**
-	 * Sets up the map described above, as well as speed and wait time settings
+	 * Sets up the map described above, the panic movement and the event, as well as speed and wait time settings
 	 * @param speed Speed with which the hosts can move
 	 */
 	private void setupMapDataAndBasicSettings() {
@@ -84,7 +84,8 @@ public class PanicMovementTest extends TestCase {
 	
 	@org.junit.Test
 	/**
-	 * Tests if the angle between source node, event and target node is at least 90 degrees
+	 * Tests if the angle between source node, event and target node is between 90 and 270 degrees (so the 
+	 * absolute of the difference of straight angle and this angle should be less or equal to 90 degrees)
 	 * to avoid running through the event 
 	 */
 	public void testAngle() {
@@ -94,7 +95,7 @@ public class PanicMovementTest extends TestCase {
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
 		double angle = PanicMovementUtil.computeAngleBetween(event.getLocation(), start, end);
-		assertTrue("Angle is at least 90 degrees", angle >= 90);
+		assertTrue("Angle should be between 90 and 270 degrees", Math.abs(180 - angle)  <= 90);
 	}
 	
 	@org.junit.Test
@@ -106,7 +107,7 @@ public class PanicMovementTest extends TestCase {
 		Path path = panicMovement.getPath();
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
-		assertTrue("Target node is inside the safe area", 
+		assertTrue("Target node should be inside the safe area", 
 				end.getLocation().distance(event.getLocation()) >= panicMovement.getSafeRangeRadius() );
 	}
 	
@@ -123,7 +124,7 @@ public class PanicMovementTest extends TestCase {
 		for (int i = 0; i<node.length; i++) {
 			if (end.getLocation().distance(panicMovement.getHost().getLocation()) 
 					> node[i].getLocation().distance(panicMovement.getHost().getLocation())) {
-				assertTrue("Closest possible node to the host is selected",
+				assertTrue("Closest possible node to the host should be selected",
 						node[i].getLocation().distance(event.getLocation()) < panicMovement.getSafeRangeRadius()
 						|| panicMovement.getPanicMovementUtil().isInEventDirection(start, node[i])); 
 			}
@@ -139,7 +140,7 @@ public class PanicMovementTest extends TestCase {
 		Path path = panicMovement.getPath();
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
-		assertTrue("Target node is not outside the event range",
+		assertTrue("Target node should not be outside the event range",
 				end.getLocation().distance(event.getLocation()) <= panicMovement.getEventRangeRadius() );
 	}
 	

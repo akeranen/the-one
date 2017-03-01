@@ -32,14 +32,12 @@ public class SwitchableStationaryMovement extends MovementModel implements Switc
     }
 
     /**
-     * Returns a new path by this movement model, which is always a one waypoint path using the nodes current location.
-     * @return A path with the node's location as the only waypoint.
+     * Returns a new path by this movement model, which is always null, as the node should not move.
+     * @return null
      */
     @Override
     public Path getPath() {
-        Path p = new Path(0);
-        p.addWaypoint(loc);
-        return p;
+        return null;
     }
 
     /**

@@ -1,4 +1,4 @@
-image: frekele/gradle:latest
+image: openjdk:8-jdk
 
 # Make the gradle wrapper executable. This essentially downloads a copy of
 # Gradle to build the project with.
@@ -27,15 +27,17 @@ sonarqube:
   variables:
     GIT_STRATEGY: clone
   script:
-    - ./gradlew sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.projectVersion=$CI_BUILD_REF -x test
+    - ./gradlew clean test jacoco sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.projectVersion=$CI_BUILD_REF
 
 sonarqube_manual:
   stage: analyze
+  except:
+    - master
   when: manual
   variables:
     GIT_STRATEGY: clone
   script:
-    - ./gradlew sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator -x test
+    - ./gradlew clean test jacoco sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator
   
 sonarqube_preview:
   stage: analyze
@@ -74,8 +76,8 @@ build:
 test:
   stage: test
   script:
-    - ./gradlew -g /cache/.gradle check
+    - ./gradlew -g /cache/.gradle check jacoco
   artifacts:
-    when: on_failure
+    when: always
     paths:
     - build/reports/

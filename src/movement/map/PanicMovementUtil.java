@@ -31,10 +31,8 @@ public class PanicMovementUtil {
 	 */
 	public MapNode selectDestination(SimMap map, MapNode locationNode) {
 		double distance = eventLocation.distance(locationNode.getLocation());
-		if (distance <= eventRangeRadius && distance>= safeRangeRadius ||
-			// The host is within the safe area or
-			eventLocation.distance(locationNode.getLocation()) > eventRangeRadius) {
-			// The host is not concerned by the event 	
+		if ((distance <= eventRangeRadius && distance>= safeRangeRadius) || distance > eventRangeRadius) {
+			// The host is within the safe area or the host is not concerned by the event 	
 			return locationNode;
 		}
 		

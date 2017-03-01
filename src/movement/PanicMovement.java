@@ -22,14 +22,14 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	private double eventRangeRadius;
 	
 	private PanicMovementUtil pmu;
-	private static final double SAFE_RANGE_RADIUS = 300.0;
-	private static final double EVENT_RANGE_RADIUS = 500.0;
+	private static final double SAFE_RANGE_RADIUS = 1000.0;
+	private static final double EVENT_RANGE_RADIUS = 1500.0;
 	private static final double COORD1000 = 1000.0;
 	
 	
 	public PanicMovement (Settings settings, Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings);
-		setFields(location, safeRangeRadius, eventRangeRadius);
+		setLocalFields(location, safeRangeRadius, eventRangeRadius);
 	}
 	
 	/**
@@ -53,11 +53,17 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
 			Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings, newMap, nrofMaps);
-		setFields(location, safeRangeRadius, eventRangeRadius);
+		setLocalFields(location, safeRangeRadius, eventRangeRadius);
 	}
 	
-	public void setFields (Coord location, double safeRangeRadius, double eventRangeRadius) {
-		eventLocation = location;
+	/**
+	 * Sub routine called from the Constructors
+	 * @param eventLocation location where the event occurs 
+	 * @param safeRangeRadius distance to the event from which on the nodes are safe
+	 * @param eventRangeRadius distance within which the nodes react to an event
+	 */
+	public void setLocalFields (Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
+		this.eventLocation = eventLocation;
 		this.safeRangeRadius = safeRangeRadius;
 		this.eventRangeRadius = eventRangeRadius;
 		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
@@ -94,7 +100,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	 */
 	protected PanicMovement(PanicMovement pm) {
 		super(pm);
-		setFields(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
+		setLocalFields(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
 	}
 	
 	public void setEventLocation(Coord eventLocation) {

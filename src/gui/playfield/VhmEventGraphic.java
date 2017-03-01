@@ -64,7 +64,26 @@ public class VhmEventGraphic extends PlayFieldGraphic {
 
     @Override
     public void draw(Graphics2D g2) {
-        drawEvent(g2);
+        //only draw other ranges, when enabled
+        if (drawAllRanges) {
+            drawEventRange(g2, event.getMaxRange(), maxRangeColor);
+            drawEventRange(g2, event.getSafeRange(), safeRangeColor);
+        }
+
+        drawEventRange(g2, event.getEventRange(), eventRangeColor);
+
+
+        if (drawEventName) {
+            g2.setColor(eventNameColor);
+            // Draw event's name next to it
+            g2.drawString(event.getName(), scale(event.getLocation().getX()),
+                    scale(event.getLocation().getY()));
+        }
+
+		/* draw node rectangle */
+        g2.setColor(eventLocationColor);
+        g2.drawRect(scale(event.getLocation().getX() - 1), scale(event.getLocation().getY() - 1),
+                scale(2), scale(2));
     }
 
     /**
@@ -84,35 +103,6 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     }
 
     /**
-     * Draws the event
-     * @param g2 The graphics to draw on
-     */
-    private void drawEvent(Graphics2D g2){
-
-        //only draw other ranges, when enabled
-        if (drawAllRanges){
-            drawEventRange(g2,event.getMaxRange(),maxRangeColor);
-            drawEventRange(g2,event.getSafeRange(),safeRangeColor);
-        }
-
-        drawEventRange(g2,event.getEventRange(),eventRangeColor);
-
-
-        if (drawEventName) {
-            g2.setColor(eventNameColor);
-            // Draw event's name next to it
-            g2.drawString(event.getName(), scale(event.getLocation().getX()),
-                    scale(event.getLocation().getY()));
-        }
-
-		/* draw node rectangle */
-        g2.setColor(eventLocationColor);
-        g2.drawRect(scale(event.getLocation().getX()-1),scale(event.getLocation().getY()-1),
-                scale(2),scale(2));
-
-    }
-
-    /**
      * Sets if  all event ranges should be drawn
      * @param draw if true, all ranges are drawn
      */
@@ -129,7 +119,7 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     }
 
     /**
-     * Checks, if a event graphics is equal to anoter one by comparing the {@link VhmEvent#id}
+     * Checks, if a event graphics is equal to another one by comparing the {@link VhmEvent#id}
      * of the events they are representing.
      *
      * @param o the object to compare to
@@ -138,7 +128,7 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     @Override
     public boolean equals(Object o){
         if (o instanceof VhmEventGraphic) {
-            return ((VhmEventGraphic) o).event.getID() == this.event.getID();
+            return ((VhmEventGraphic) o).event.equals(this.event);
         }else return false;
     }
 }

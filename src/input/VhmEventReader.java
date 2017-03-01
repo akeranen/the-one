@@ -66,27 +66,20 @@ public class VhmEventReader implements ExternalEventsReader {
     }
 
     /**
-     * Checks if a file is a JSON events file
+     * Checks if a file is a JSON events file in a compatible version for this reader
      * @param eventFile the file that should be checked
      * @return true, if the file is an JSON event file
      */
     public static boolean isVHMEventsFile(File eventFile){
-        FileReader fileReader = null;
-        JsonReader jsonReader = null;
         boolean correct = false;
-        try{
-            fileReader = new FileReader(eventFile);
-            jsonReader = Json.createReader(fileReader);
+        try(FileReader fileReader = new FileReader(eventFile)){
+            try (JsonReader jsonReader = Json.createReader(fileReader)){
             JsonObject jsonFile = (JsonObject) jsonReader.read();
-            if (((JsonNumber)jsonFile.get(READER_VERSION)).intValue() == CURRENT_VERSION){
+            if (jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION){
                 correct = true;
             }
-            jsonReader.close();
-            fileReader.close();
-        } catch (Exception e) {
-            if(jsonReader != null)
-                jsonReader.close();
-            return false;
+        }} catch (Exception e) {
+            correct = false;
         }
         return correct;
     }

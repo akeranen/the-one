@@ -17,7 +17,7 @@ public class VhmEventEndEvent extends VhmEvent {
      */
     public VhmEventEndEvent(VhmEvent event){
         super(event);
-        setTime(event.getEndTime());
+        time = event.getEndTime();
     }
 
     @Override

@@ -4,6 +4,7 @@
  */
 package test;
 
+import core.Settings;
 import org.junit.Test;
 import routing.MaxPropRouter;
 import routing.MessageRouter;
@@ -21,12 +22,15 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 	private static final double INVALID_COST = Double.MAX_VALUE;
 
 	protected void setUp() throws Exception {
+		Settings.init(null);
 		java.util.Locale.setDefault(java.util.Locale.US);
 		ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
 		ts.putSetting(SimScenario.SCENARIO_NS + "." +
 				SimScenario.NROF_GROUPS_S, "1");
 		ts.putSetting(SimScenario.GROUP_NS + "." +
 				core.SimScenario.NROF_HOSTS_S, "" + NROF_HOSTS);
+		ts.putSetting(TestInterface.TRANSMIT_RANGE_S, "1");
+		ts.putSetting(TestInterface.TRANSMIT_SPEED_S, "1");
 		setRouterProto(new MaxPropRouter(ts));
 		super.setUp();
 
@@ -113,7 +117,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		h1.connect(h2);
 
 		/* thresholds should be zero before any transfers */
-		assertEquals(0, r1.calcThreshold());
+		assertEquals(0, r1.calcThreshold()); //Hat der router hier die msg?
 		assertEquals(0, r2.calcThreshold());
 
 		/* simple delivery of MSG_ID1 from h1 to h2 */

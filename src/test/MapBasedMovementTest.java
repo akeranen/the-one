@@ -12,7 +12,6 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.List;
 
-import junit.framework.TestCase;
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.Path;
@@ -21,8 +20,14 @@ import movement.map.SimMap;
 import core.Coord;
 import core.DTNHost;
 import core.Settings;
+import org.junit.Test;
 
-public class MapBasedMovementTest extends TestCase {
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+
+
+public class MapBasedMovementTest extends AbstractMovementModelTest {
 	/* Topology:  n7--n5
 	 *            |   |
 	 *        n1--n2--n6--n3
@@ -47,15 +52,16 @@ public class MapBasedMovementTest extends TestCase {
 	private SimMap map;
 	private TestSettings s;
 
+
 	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-		java.util.Locale.setDefault(java.util.Locale.US);
-		s = new TestSettings();
+	public MovementModel initializeModel(TestSettings testSettings) {
+		setupMapData(null, null, null);
+		return mbm;
 	}
 
 	private void setupMapData(String okTypes, String speed, String wTime) {
 		Settings.init(null);
+		s = new TestSettings();
 		StringReader input = new StringReader(WKT);
 
 		WKTMapReader reader = new WKTMapReader(true);
@@ -79,7 +85,8 @@ public class MapBasedMovementTest extends TestCase {
 		n6 = map.getNodeByCoord(c6);
 	}
 
-	public void testGetPath() {
+	@Test
+	public void testDistanceBetweenNodes() {
 		setupMapData(null,null,null);
 		Coord c;
 		mbm.getInitialLocation();
@@ -89,7 +96,7 @@ public class MapBasedMovementTest extends TestCase {
 		while (path.hasNext()) {
 			c2 = path.getNextWaypoint();
 			// adjacent nodes are always 1 meter apart (in the test topology)
-			assertEquals(1.0, c.distance(c2));
+			assertTrue("Distance between nodes was wrong.",c.distance(c2)<=1 && c.distance(c2)>=1);
 			c = c2;
 		}
 	}
@@ -104,7 +111,7 @@ public class MapBasedMovementTest extends TestCase {
 		for (int i=0; i<NROF; i++) {
 			Coord next = p.getNextWaypoint();
 			// 	only allowed location is c1
-			assertEquals(c1, next);
+			assertEquals("Node did not stay in its place when it should.",c1, next);
 		}
 
 		// add n2 to allowed nodes
@@ -213,7 +220,8 @@ public class MapBasedMovementTest extends TestCase {
 			h1.move(2);
 			// should move 2 steps away from previous location
 			double dist = loc.distance(h1.getLocation());
-			assertTrue(dist == 2 || dist == 0 || dist == Math.sqrt(2));
+			assertTrue("Nodes should move two steps away from previous location",
+					dist == 2 || dist == 0 || dist == Math.sqrt(2));
 			loc = h1.getLocation().clone();
 		}
 
@@ -223,7 +231,8 @@ public class MapBasedMovementTest extends TestCase {
 			h1.move(3);
 			// should move 3 steps away from previous location
 			double dist = loc.distance(h1.getLocation());
-			assertTrue(dist == 3 || dist == 1 || dist == Math.sqrt(1+2*2) ||
+			assertTrue("Nodes should move three steps away from previous location",
+					dist == 3 || dist == 1 || dist == Math.sqrt(1+2*2) ||
 					dist == Math.sqrt(2));
 			loc = h1.getLocation().clone();
 		}

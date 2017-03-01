@@ -18,15 +18,15 @@
 	},
 	"event2" :{
 		"type" : "DISASTER",
-		"event_range" : 100,
-		"safe_range" : 200,
-		"max_range" : 300,
+		"event_range" : 300,
+		"safe_range" : 300,
+		"max_range" : 3000,
 		"intensity" : 5,
 		"start" : 100,
 		"end" : 5000,
 		"location" : {
-			"x" : 3000,
-			"y" : 3000
+			"x" : 4000,
+			"y" : 1000
 		}
 	}
 }

@@ -324,7 +324,6 @@ public class VhmEvent extends ExternalEvent{
      */
     @Override
     public boolean equals(Object ob){
-        System.out.print("Hurz");
         if (ob instanceof VhmEvent) {
             return ((VhmEvent) ob).getID() == getID();
         } else return false;

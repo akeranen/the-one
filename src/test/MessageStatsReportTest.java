@@ -1,7 +1,14 @@
 package test;
 
-import core.*;
+import core.BroadcastMessage;
+import core.ConnectionListener;
+import core.DTNHost;
+import core.Message;
+import core.MessageListener;
+import core.Settings;
+import core.SimScenario;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -23,8 +30,8 @@ import java.util.ArrayList;
  * Created by Britta Heymann on 16.02.2017.
  */
 public class MessageStatsReportTest {
-    private MessageStatsReport report;
-    private TestUtils utils;
+    private MessageStatsReport report = new MessageStatsReport();
+    private TestUtils utils = new TestUtils(null, null, null);
     private File outFile;
 
     @Before
@@ -90,64 +97,68 @@ public class MessageStatsReportTest {
      * @throws IOException If the temporary file cannot be opened, read or closed.
      */
     @Test
-    public void testDoneCorrectlyCountsMessageEvents() throws IOException{
-		BufferedReader reader;
+    public void testDoneCorrectlyCountsMessageEvents(){
 
 		this.report.done();
 
-		FileReader fileReader = new FileReader(outFile);
-		reader = new BufferedReader(fileReader);
-		reader.readLine(); // read comment lines
-		reader.readLine(); // read comment lines
-		assertEquals(
-		        "Reported number of created messages should have been different.",
-                "created: 3",
-                reader.readLine());
-		assertEquals(
-		        "Reported number of started messages should have been different.",
-                "started: 4",
-                reader.readLine());
-		assertEquals(
-		        "Reported number of relayed messages should have been different.",
-                "relayed: 3",
-                reader.readLine());
-		assertEquals(
-		        "Reported number of aborted messages should have been different.",
-                "aborted: 1",
-                reader.readLine());
-        assertEquals(
-                "Reported number of dropped messages should have been different.",
-                "dropped: 1",
-                reader.readLine());
-        assertEquals(
-                "Reported number of removed messages should have been different.",
-                "removed: 1",
-                reader.readLine());
-        assertEquals(
-                "Reported number of delivered messages should have been different.",
-                "delivered: 2",
-                reader.readLine());
-        assertEquals(
-                "Reported delivery probability should have been different.",
-                "delivery_prob: 0.6667",
-                reader.readLine());
-        reader.readLine(); // responses are not tested in this scenario
-        assertEquals(
-                "Reported overhead ratio should have been different",
-                "overhead_ratio: 0.5000",
-                reader.readLine());
-        reader.readLine(); // latency is not tested in this scenario
-        reader.readLine(); // latency is not tested in this scenario
-        assertEquals(
-                "Reported average hopcount should have been different.",
-                "hopcount_avg: 1.5000",
-                reader.readLine());
-        assertEquals(
-                "Reported median hopcount should have been different.",
-                "hopcount_med: 2",
-                reader.readLine());
+		try (
+                FileReader fileReader = new FileReader(outFile);
+                BufferedReader reader = new BufferedReader(fileReader);
+                ){
 
-        fileReader.close();
-		reader.close();
+            reader.readLine(); // read comment lines
+            reader.readLine(); // read comment lines
+            assertEquals(
+                    "Reported number of created messages should have been different.",
+                    "created: 3",
+                    reader.readLine());
+            assertEquals(
+                    "Reported number of started messages should have been different.",
+                    "started: 4",
+                    reader.readLine());
+            assertEquals(
+                    "Reported number of relayed messages should have been different.",
+                    "relayed: 3",
+                    reader.readLine());
+            assertEquals(
+                    "Reported number of aborted messages should have been different.",
+                    "aborted: 1",
+                    reader.readLine());
+            assertEquals(
+                    "Reported number of dropped messages should have been different.",
+                    "dropped: 1",
+                    reader.readLine());
+            assertEquals(
+                    "Reported number of removed messages should have been different.",
+                    "removed: 1",
+                    reader.readLine());
+            assertEquals(
+                    "Reported number of delivered messages should have been different.",
+                    "delivered: 2",
+                    reader.readLine());
+            assertEquals(
+                    "Reported delivery probability should have been different.",
+                    "delivery_prob: 0.6667",
+                    reader.readLine());
+            reader.readLine(); // responses are not tested in this scenario
+            assertEquals(
+                    "Reported overhead ratio should have been different",
+                    "overhead_ratio: 0.5000",
+                    reader.readLine());
+            reader.readLine(); // latency is not tested in this scenario
+            reader.readLine(); // latency is not tested in this scenario
+            assertEquals(
+                    "Reported average hopcount should have been different.",
+                    "hopcount_avg: 1.5000",
+                    reader.readLine());
+            assertEquals(
+                    "Reported median hopcount should have been different.",
+                    "hopcount_med: 2",
+                    reader.readLine());
+        }
+        catch (IOException e){
+            Assert.fail("Could not read file, Exception occured."+  e.getMessage());
+        }
+
 	}
 }

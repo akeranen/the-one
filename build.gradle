@@ -7,26 +7,25 @@ buildscript {
     }
     dependencies {
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1"
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
-    }
+     }
 }
 
 plugins {
     id "org.sonarqube" version "2.2.1"
 }
+
 apply plugin: 'java'
+apply plugin: 'jacoco'
 apply plugin: "org.sonarqube"
 
-allprojects {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-        jcenter()
-    }
-}
 
+repositories {
+    jcenter()
+	flatDir {
+        dirs 'lib'
+	}
+}
+	
 sourceSets {
     main {
         java {
@@ -53,10 +52,13 @@ jar {
 dependencies {
     // The production code uses Guava
     compile 'com.google.guava:guava:20.0'
-    compile files("lib/ECLA.jar", "lib/DTNConsoleConnection.jar")
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
+	
+	compile name: 'DTNConsoleConnection'
+	
+	compile name: 'ECLA'
 }
 
 task copyGui(type: Copy){
@@ -66,4 +68,12 @@ task copyGui(type: Copy){
 
 clean.doFirst{
     delete 'target'
+}
+
+test {
+    filter {
+        //we just want to use a single test suite
+        includeTestsMatching "*AllTests"
+
+    }
 }

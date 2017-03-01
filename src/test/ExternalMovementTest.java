@@ -50,6 +50,7 @@ public class ExternalMovementTest extends TestCase {
 
 	protected void setUpUsing(String[] input) throws Exception {
 		super.setUp();
+		java.util.Locale.setDefault(java.util.Locale.US);
 		ExternalMovement.reset();
 		TestSettings ts = new TestSettings();
 		ts.putSetting(MovementModel.MOVEMENT_MODEL_NS + "." +

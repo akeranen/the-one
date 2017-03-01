@@ -30,7 +30,7 @@ public class MapBasedMovementTest extends TestCase {
 	 *        n4
 	 */
 	//										   n1       n2       n6        n3
-	private final String WKT = "LINESTRING (1.0 1.0, 2.0 1.0, 3.0 1.0, 4.0 1.0) \n" +
+	private static final String WKT = "LINESTRING (1.0 1.0, 2.0 1.0, 3.0 1.0, 4.0 1.0) \n" +
 	//              n1        n4
 	"LINESTRING (1.0 1.0, 1.0 2.0)\n"+
 	//              n2       n7       n3       n6
@@ -47,8 +47,10 @@ public class MapBasedMovementTest extends TestCase {
 	private SimMap map;
 	private TestSettings s;
 
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+		java.util.Locale.setDefault(java.util.Locale.US);
 		s = new TestSettings();
 	}
 
@@ -63,7 +65,6 @@ public class MapBasedMovementTest extends TestCase {
 			fail(e.toString());
 		}
 
-		s = new TestSettings();
 		s.putSetting(MovementModel.SPEED, (speed != null ? speed : "1,1"));
 		s.putSetting(MovementModel.WAIT_TIME, (wTime != null ? wTime : "0,0"));
 
@@ -80,7 +81,7 @@ public class MapBasedMovementTest extends TestCase {
 
 	public void testGetPath() {
 		setupMapData(null,null,null);
-		Coord c,c2;
+		Coord c;
 		mbm.getInitialLocation();
 		Path path = mbm.getPath();
 		c = path.getNextWaypoint();

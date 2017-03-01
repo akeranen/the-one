@@ -78,7 +78,7 @@ public class VhmEventReader implements ExternalEventsReader {
             if (jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION){
                 correct = true;
             }
-        }} catch (IOException e) {
+        }} catch (Exception e) {
             correct = false;
         }
         return correct;

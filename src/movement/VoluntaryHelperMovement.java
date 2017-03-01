@@ -21,7 +21,7 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  * Created by Ansgar Mährlein on 08.02.2017.
  * @author Ansgar Mährlein
  */
-//TODO implement Panic Movement + more comments
+//TODO implement Panic Movement + more comments + javadoc
 public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, EnergyListener {
 
     //strings for the setting keys in the settings file
@@ -324,7 +324,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private void chooseMovingToEventMode() {
         mode = movementMode.MOVING_TO_EVENT_MODE;
         carMM.setLocation(host.getLocation());
-        carMM.setNextRoute(shortestPathMapBasedMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+        carMM.setNextRoute(carMM.getLastLocation(), carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
         setCurrentMovementModel(carMM);
     }
 
@@ -335,6 +335,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     private void chooseMovementAfterRandomMapBasedMode() {
+        //this could be changed to "startOver();", but it could have a minimal negative performance impact
         if (chooseNextDisaster()) {
             chooseMovingToEventMode();
         }
@@ -352,7 +353,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             if (chooseNextHospital()) {
                 mode = movementMode.TRANSPORTING_MODE;
                 carMM.setLocation(host.getLocation());
-                carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
+                carMM.setNextRoute(carMM.getLastLocation(), carMM.getMap().getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
                 setCurrentMovementModel(carMM);
             } else {
                 //if choosing a new hospital fails because there are no hospitals...
@@ -377,25 +378,21 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     private void chooseMovementAfterHospitalWaitMode() {
         if (SimClock.getTime() - startTime >= hospitalWaitTime) {
-            if (chooseNextDisaster()) {
-                chooseMovingToEventMode();
-            } else {
-                chooseRandomMapBasedMode();
-            }
+            startOver();
         }
     }
 
     private void chooseMovementAfterLocalHelpMode() {
         if (SimClock.getTime() - startTime >= helpTime) {
-            if (chooseNextDisaster()) {
-                chooseMovingToEventMode();
-            } else {
-                chooseRandomMapBasedMode();
-            }
+            startOver();
         }
     }
 
     private void chooseMovementAfterPanicMode() {
+        startOver();
+    }
+
+    private void startOver() {
         //start over at the beginning
         if (chooseNextDisaster()) {
             chooseMovingToEventMode();
@@ -408,94 +405,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * Returns the SimMap this movement model uses
      * @return The SimMap this movement model uses
      */
+    //TODO what aboiut carMM?
     public SimMap getMap() {
         return shortestPathMapBasedMM.getMap();
     }
-
-    /**
-     * This Method is called when a VhmEvent starts.
-     * It is used for handling the event, that is, make the nodes movement react to it.
-     * @param event The VhmEvent
-     */
-    @Override
-    public void vhmEventStarted(VhmEvent event) {
-        if(event.getType() == DISASTER &&mode != movementMode.INJURED_MODE) {
-            //check if the node is to close to the disaster
-            if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
-                if(rng.nextDouble() <= injuryProbability) {
-                    mode = movementMode.INJURED_MODE;
-                    switchToMovement(stationaryMM);
-                    stationaryMM.setLocation(host.getLocation());
-                } else {
-                    mode = movementMode.PANIC_MODE;
-                    //TODO tell the panicMM all about the disaster and panic
-                    /*switchToMovement(panicMM);
-                    panicMM.setLocation(host.getLocation());*/
-                }
-            } else if(host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)){
-                //chose the disaster
-                chosenDisaster = event;
-                //if the node is not already busy, decide if it helps with the new disaster
-                mode = movementMode.MOVING_TO_EVENT_MODE;
-                switchToMovement(carMM);
-                carMM.setLocation(host.getLocation());
-                carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-            }
-        }
-
-    }
-
-    /**
-     * This Method is called when a VhmEvent ends
-     * It is used for handling this, i.e. making the movement react to it.
-     * @param event The VhmEvent
-     */
-    @Override
-    public void vhmEventEnded(VhmEvent event) {
-        if(event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
-            handleEndedDisaster(event);
-        } else if(event.getType() == HOSPITAL && mode != movementMode.INJURED_MODE) {
-            handleEndedHospital(event);
-        }
-    }
-
-    /**
-     * Handles the end of a disaster, i.e. makes the movement react to it.
-     * @param event the VhmEvent associated with the end of the disaster.
-     */
-    private void handleEndedDisaster(VhmEvent event) {
-        //if the ended event was chosen...
-        if(chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
-            //..handle the loss of the chosen event by starting over
-            if(chooseNextDisaster()) {
-                mode = movementMode.MOVING_TO_EVENT_MODE;
-                switchToMovement(carMM);
-                carMM.setLocation(host.getLocation());
-                carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-            } else {
-                mode = movementMode.RANDOM_MAP_BASED_MODE;
-                switchToMovement(shortestPathMapBasedMM);
-                shortestPathMapBasedMM.setLocation(host.getLocation());
-            }
-        }
-    }
-
-    /**
-     * Handles the end of a hospital, i.e. makes the movement react to it.
-     * @param event the VhmEvent associated with the end of the hospital.
-     */
-    private void handleEndedHospital(VhmEvent event) {
-        //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
-        //if choosing a new one fails because there are no hospitals anymore...
-        boolean affected = chosenHospital != null && chosenHospital.getID() == event.getID();
-        if(affected && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE) && !chooseNextHospital()) {
-            //...just move on with your day
-            mode = movementMode.RANDOM_MAP_BASED_MODE;
-            switchToMovement(shortestPathMapBasedMM);
-            shortestPathMapBasedMM.setLocation(host.getLocation());
-        }
-    }
-
 
     /**
      * Switches the movement model and resets the host to use it after the next update
@@ -586,16 +499,97 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         host.setLocation(simMap.getClosestNodeByCoord(new Coord(x, y)).getLocation());
 
         //select an event and help there or randomly move around the map
-        if(chooseNextDisaster()) {
-            mode = movementMode.MOVING_TO_EVENT_MODE;
-            switchToMovement(carMM);
-            carMM.setLocation(host.getLocation());
-            carMM.setNextRoute(carMM.getLastLocation(), simMap.getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+        forceStartOver();
+    }
 
+    /**
+     * This Method is called when a VhmEvent starts.
+     * It is used for handling the event, that is, make the nodes movement react to it.
+     * @param event The VhmEvent
+     */
+    @Override
+    public void vhmEventStarted(VhmEvent event) {
+        if(event.getType() == DISASTER &&mode != movementMode.INJURED_MODE) {
+            //check if the node is to close to the disaster
+            if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
+                if(rng.nextDouble() <= injuryProbability) {
+                    mode = movementMode.INJURED_MODE;
+                    switchToMovement(stationaryMM);
+                    stationaryMM.setLocation(host.getLocation());
+                } else {
+                    mode = movementMode.PANIC_MODE;
+                    //TODO tell the panicMM all about the disaster and panic
+                    /*switchToMovement(panicMM);
+                    panicMM.setLocation(host.getLocation());*/
+                }
+            } else if(host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)){
+                //chose the disaster
+                chosenDisaster = event;
+                //if the node is not already busy, decide if it helps with the new disaster
+                switchToMovingToEventMode();
+            }
+        }
+
+    }
+
+    /**
+     * This Method is called when a VhmEvent ends
+     * It is used for handling this, i.e. making the movement react to it.
+     * @param event The VhmEvent
+     */
+    @Override
+    public void vhmEventEnded(VhmEvent event) {
+        if(event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
+            handleEndedDisaster(event);
+        } else if(event.getType() == HOSPITAL && mode != movementMode.INJURED_MODE) {
+            handleEndedHospital(event);
+        }
+    }
+
+    /**
+     * Handles the end of a disaster, i.e. makes the movement react to it.
+     * @param event the VhmEvent associated with the end of the disaster.
+     */
+    private void handleEndedDisaster(VhmEvent event) {
+        //if the ended event was chosen...
+        if(chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
+            //..handle the loss of the chosen event by starting over
+            forceStartOver();
+        }
+    }
+
+    /**
+     * Handles the end of a hospital, i.e. makes the movement react to it.
+     * @param event the VhmEvent associated with the end of the hospital.
+     */
+    private void handleEndedHospital(VhmEvent event) {
+        //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
+        //if choosing a new one fails because there are no hospitals anymore...
+        boolean affected = chosenHospital != null && chosenHospital.getID() == event.getID();
+        if(affected && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE) && !chooseNextHospital()) {
+            //...just move on with your day
+            switchToRandomMapBasedMode();
+        }
+    }
+
+    private void switchToMovingToEventMode() {
+        mode = movementMode.MOVING_TO_EVENT_MODE;
+        switchToMovement(carMM);
+        carMM.setLocation(host.getLocation());
+        carMM.setNextRoute(carMM.getLastLocation(), carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+    }
+
+    private void switchToRandomMapBasedMode() {
+        mode = movementMode.RANDOM_MAP_BASED_MODE;
+        switchToMovement(shortestPathMapBasedMM);
+        shortestPathMapBasedMM.setLocation(host.getLocation());
+    }
+
+    private void forceStartOver() {
+        if(chooseNextDisaster()) {
+            switchToMovingToEventMode();
         } else {
-            mode = movementMode.RANDOM_MAP_BASED_MODE;
-            switchToMovement(shortestPathMapBasedMM);
-            shortestPathMapBasedMM.setLocation(host.getLocation());
+            switchToRandomMapBasedMode();
         }
     }
 }

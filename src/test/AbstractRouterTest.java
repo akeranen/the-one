@@ -60,6 +60,7 @@ public abstract class AbstractRouterTest extends TestCase {
 
 		ts.setNameSpace(TestUtils.IFACE_NS);
 		ts.putSetting(NetworkInterface.TRANSMIT_SPEED_S, ""+TRANSMIT_SPEED);
+		ts.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1");
 
 		this.utils = new TestUtils(null,ml,ts);
 		this.utils.setMessageRouterProto(routerProto);

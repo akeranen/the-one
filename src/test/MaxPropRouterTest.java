@@ -23,14 +23,13 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 
 	protected void setUp() throws Exception {
 		Settings.init(null);
+		ts = new TestSettings();
 		java.util.Locale.setDefault(java.util.Locale.US);
 		ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
 		ts.putSetting(SimScenario.SCENARIO_NS + "." +
 				SimScenario.NROF_GROUPS_S, "1");
 		ts.putSetting(SimScenario.GROUP_NS + "." +
 				core.SimScenario.NROF_HOSTS_S, "" + NROF_HOSTS);
-		ts.putSetting(TestInterface.TRANSMIT_RANGE_S, "1");
-		ts.putSetting(TestInterface.TRANSMIT_SPEED_S, "1");
 		setRouterProto(new MaxPropRouter(ts));
 		super.setUp();
 

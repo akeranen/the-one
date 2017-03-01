@@ -32,6 +32,7 @@ public class TotalContactTimeReportTest extends TestCase {
 	private final String SET_PREFIX = "TotalContactTimeReport.";
 
 	protected void setUp() throws Exception {
+		java.util.Locale.setDefault(java.util.Locale.US);
 		super.setUp();
 		SimClock.reset();
 		outFile = File.createTempFile("cttest", ".tmp");

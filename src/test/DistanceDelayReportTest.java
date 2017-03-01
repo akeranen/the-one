@@ -10,13 +10,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import core.*;
 import junit.framework.TestCase;
 import report.DistanceDelayReport;
-import core.Coord;
-import core.DTNHost;
-import core.Message;
-import core.MessageListener;
-import core.SimClock;
 
 public class DistanceDelayReportTest extends TestCase {
 	private SimClock clock;
@@ -27,6 +23,7 @@ public class DistanceDelayReportTest extends TestCase {
 	private TestUtils utils;
 
 	public void setUp() throws IOException {
+		java.util.Locale.setDefault(java.util.Locale.US);
 		final String NS = "DistanceDelayReport.";
 		TestSettings ts = new TestSettings();
 		outFile = File.createTempFile("ddrtest", ".tmp");
@@ -70,7 +67,8 @@ public class DistanceDelayReportTest extends TestCase {
 
 		r.done();
 
-		reader = new BufferedReader(new FileReader(outFile));
+		FileReader fileReader = new FileReader(outFile);
+		reader = new BufferedReader(fileReader);
 
 		reader.readLine(); // skip headers
 		reader.readLine(); // skip headers
@@ -78,7 +76,10 @@ public class DistanceDelayReportTest extends TestCase {
 		assertEquals("2.0 0.5 1 tst2",reader.readLine());
 		assertEquals("5.0 1.0 2 tst3",reader.readLine());
 
-		reader.close();
+		fileReader.close();
+        reader.close();
+
+
 	}
 
 

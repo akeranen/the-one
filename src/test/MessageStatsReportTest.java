@@ -29,6 +29,8 @@ public class MessageStatsReportTest {
 
     @Before
     public void init() throws IOException{
+        Settings.init(null);
+        java.util.Locale.setDefault(java.util.Locale.US);
         this.outFile = File.createTempFile("mgtest", ".tmp");
         this.outFile.deleteOnExit();
 
@@ -93,7 +95,8 @@ public class MessageStatsReportTest {
 
 		this.report.done();
 
-		reader = new BufferedReader(new FileReader(outFile));
+		FileReader fileReader = new FileReader(outFile);
+		reader = new BufferedReader(fileReader);
 		reader.readLine(); // read comment lines
 		reader.readLine(); // read comment lines
 		assertEquals(
@@ -144,6 +147,7 @@ public class MessageStatsReportTest {
                 "hopcount_med: 2",
                 reader.readLine());
 
+        fileReader.close();
 		reader.close();
 	}
 }

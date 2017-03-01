@@ -29,15 +29,15 @@ public class ProphetRouterTest extends AbstractRouterTest {
 	 * Tests normal routing
 	 */
 	public void testRouting() {
-		Message m1 = new Message(h1,h2, msgId2, 1);
+		Message m1 = new Message(h1,h2, MSG_ID2, 1);
 		h1.createNewMessage(m1);
-		Message m2 = new Message(h1,h3, msgId3, 1);
+		Message m2 = new Message(h1,h3, MSG_ID3, 1);
 		h1.createNewMessage(m2);
-		Message m3 = new Message(h1,h4, msgId4, 1);
+		Message m3 = new Message(h1,h4, MSG_ID4, 1);
 		h1.createNewMessage(m3);
 		Message m4 = new Message(h1,h6, "dummy", 1); // this message should not be fwded
 		h1.createNewMessage(m4);
-		Message m5 = new Message(h1,h5, msgId5, 1);
+		Message m5 = new Message(h1,h5, MSG_ID5, 1);
 		h1.createNewMessage(m5);
 		Message m6 = new Message(h4,h1, "d1", 1);
 		h4.createNewMessage(m6);
@@ -62,11 +62,11 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		h1.connect(h3);
 		// now h1-h3-h5 connected and h5 knows h4
 
-		// first h1 should transfer msgId2 to h3 (final recipient)
+		// first h1 should transfer MSG_ID2 to h3 (final recipient)
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId3, mc.getLastMsg().getId());
+		assertEquals(MSG_ID3, mc.getLastMsg().getId());
 		assertEquals(h1, mc.getLastFrom());
 		assertFalse(mc.next());
 
@@ -74,13 +74,13 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_RELAY, mc.getLastType()); // finished transfer
-		assertEquals(msgId3, mc.getLastMsg().getId());
+		assertEquals(MSG_ID3, mc.getLastMsg().getId());
 		assertTrue(mc.getLastFirstDelivery());
 
-		// h1 should next transfer msgId5 to h3 because h3 is connected to h5
+		// h1 should next transfer MSG_ID5 to h3 because h3 is connected to h5
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId5, mc.getLastMsg().getId());
+		assertEquals(MSG_ID5, mc.getLastMsg().getId());
 		assertEquals(h1, mc.getLastFrom());
 		assertFalse(mc.next());
 
@@ -88,21 +88,21 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_RELAY, mc.getLastType()); // finished transfer
-		assertEquals(msgId5, mc.getLastMsg().getId());
+		assertEquals(MSG_ID5, mc.getLastMsg().getId());
 		assertTrue(mc.next());
 
-		// next h1 should transfer msgId4 since h3 knows h4 trough h5
+		// next h1 should transfer MSG_ID4 since h3 knows h4 trough h5
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId4, mc.getLastMsg().getId());
+		assertEquals(MSG_ID4, mc.getLastMsg().getId());
 		assertEquals(h1, mc.getLastFrom());
 		assertFalse(mc.next());
 
 		doRelay(); // relaying should be tested by now..
 		assertTrue(mc.next());
 
-		// now h3 should transfer msgId5 to h5
+		// now h3 should transfer MSG_ID5 to h5
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId5, mc.getLastMsg().getId());
+		assertEquals(MSG_ID5, mc.getLastMsg().getId());
 		assertEquals(h3, mc.getLastFrom());
 
 		doRelay(); // id5 delivered to h5
@@ -111,7 +111,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
 
 		// next h3 should transfer id4 to h5
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId4, mc.getLastMsg().getId());
+		assertEquals(MSG_ID4, mc.getLastMsg().getId());
 		assertEquals(h3, mc.getLastFrom());
 
 		doRelay();

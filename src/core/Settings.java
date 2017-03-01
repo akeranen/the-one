@@ -49,6 +49,11 @@ public class Settings {
 	 * @see #valueFillString(String) */
 	public static final String FILL_DELIMITER = "%%";
 
+	/**
+	 * The number of expected values for a setting describing a range, e.g. "Events1.hosts = 0,17".
+	 */
+	public static final int EXPECTED_VALUE_NUMBER_FOR_RANGE = 2;
+
 	/** Stream where all read settings are written to */
 	private static PrintStream out = null;
 	private static Set<String> writtenSettings = new HashSet<String>();

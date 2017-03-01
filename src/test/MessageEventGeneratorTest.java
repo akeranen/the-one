@@ -1,75 +1,57 @@
 package test;
 
-import input.BroadcastCreateEvent;
-import input.ExternalEvent;
+import core.SettingsError;
 import input.MessageCreateEvent;
-import org.junit.Before;
+import input.MessageEventGenerator;
+import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import input.MessageEventGenerator;
-
-import test.TestSettings;
+import input.AbstractMessageEventGenerator;
 
 /**
- * Contains tests for the MessageEventGenerator class.
+ * Contains tests for the {@link MessageEventGenerator} class.
+ * Test set up is handled by the extended {@link AbstractMessageEventGeneratorTest} class.
  *
  * Created by Britta Heymann on 16.02.2017.
  */
-public class MessageEventGeneratorTest {
-    private TestSettings settings;
-
-    @Before
-    public void init() {
-        this.settings = new TestSettings();
-
-        this.settings.putSetting("Events.nrof", "1");
-
-        this.settings.putSetting("class", MessageEventGenerator.class.toString());
-        this.settings.putSetting(MessageEventGenerator.MESSAGE_INTERVAL_S, "1,2");
-        this.settings.putSetting(MessageEventGenerator.MESSAGE_SIZE_S, "500k,1M");
-        this.settings.putSetting(MessageEventGenerator.HOST_RANGE_S, "0,126");
-        this.settings.putSetting(MessageEventGenerator.MESSAGE_ID_PREFIX_S, "M");
-    }
-
+public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest {
     @Test
-    public void testNextEventOnlyCreatesOneToOneMessagesByDefault() {
-        MessageEventGenerator generator = new MessageEventGenerator(this.settings);
-        for(int i = 0; i < 10; i++) {
+    public void testNextEventCreatesOneToOneMessages() {
+        AbstractMessageEventGenerator generator = new MessageEventGenerator(this.settings);
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
             assertTrue(
                     "Event should have been the creation of a 1-to-1 message.",
                     generator.nextEvent() instanceof MessageCreateEvent);
         }
     }
 
-    @Test
-    public void testNextEventOnlyCreatesOneToOneMessagesIfDifferentMessageTypeSettingIsSetToFalse() {
-        this.settings.putSetting(MessageEventGenerator.ENABLE_DIFFERENT_TYPES_S, "false");
-        MessageEventGenerator generator = new MessageEventGenerator(this.settings);
-        for(int i = 0; i < 10; i++) {
-            assertTrue(
-                    "Event should have been the creation of a 1-to-1 message.",
-                    generator.nextEvent() instanceof MessageCreateEvent);
-        }
+    @Test(expected = SettingsError.class)
+    public void testMessageEventGeneratorConstructorThrowsErrorIfSingleHostIsSpecified() {
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,1");
+        new MessageEventGenerator(this.settings);
     }
 
     @Test
-    public void testNextEventCreatesBothBroadcastAndOneToOneMessagesIfDifferentMessageTypeSettingIsSetToTrue() {
-        this.settings.putSetting(MessageEventGenerator.ENABLE_DIFFERENT_TYPES_S, "true");
-        MessageEventGenerator generator = new MessageEventGenerator(this.settings);
+    public void testMessageEventGeneratorConstructorDoesNotThrowIfAdditionalHostIsSpecifiedViaToHosts() {
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,1");
+        this.settings.putSetting(MessageEventGenerator.TO_HOST_RANGE_S, "1,2");
+        AbstractMessageEventGenerator generator = new MessageEventGenerator(this.settings);
+        Assert.assertNotNull(generator);
+    }
 
-        boolean broadcastCreated = false;
-        boolean oneToOneCreated = false;
-        for(int i = 0; i < 20; i++) {
-            ExternalEvent event = generator.nextEvent();
-            if (event instanceof BroadcastCreateEvent) {
-                broadcastCreated = true;
-            } else if (event instanceof  MessageCreateEvent) {
-                oneToOneCreated = true;
-            }
-        }
+    @Test(expected = SettingsError.class)
+    public void testMessageEventGeneratorConstructorThrowsErrorIfSingleToHostEqualsSingleHost() {
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,1");
+        this.settings.putSetting(MessageEventGenerator.TO_HOST_RANGE_S, "0,1");
+        new MessageEventGenerator(this.settings);
+    }
 
-        assertTrue("Broadcasts should have been created.", broadcastCreated);
-        assertTrue("One to one messages should have been created.", oneToOneCreated);
+    /**
+     * Gets the class name of the class to generate message events with.
+     */
+    @Override
+    protected String getMessageEventGeneratorClassName() {
+        return MessageEventGenerator.class.toString();
     }
 }

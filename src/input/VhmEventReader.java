@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Reader for VHMEvents. This class reads VHMEvents from a defined
+ * Reader for {@link VhmEvent}s. This class reads {@link VhmEvent}s from a defined
  * file and provides an event queue
  * for the use with the ONE
  *
@@ -53,7 +53,7 @@ public class VhmEventReader implements ExternalEventsReader {
      *
      */
     public VhmEventReader(File eventFile){
-        if (!isVHMEventsFile(eventFile)){
+        if (!isVhmEventsFile(eventFile)){
             throw new SimError("VHM events file is not valid: " + eventFile.getAbsolutePath());
         }
         try{
@@ -70,7 +70,7 @@ public class VhmEventReader implements ExternalEventsReader {
      * @param eventFile the file that should be checked
      * @return true, if the file is an JSON event file
      */
-    public static boolean isVHMEventsFile(File eventFile){
+    public static boolean isVhmEventsFile(File eventFile){
         boolean correct = false;
         try(FileReader fileReader = new FileReader(eventFile)){
             try (JsonReader jsonReader = Json.createReader(fileReader)){
@@ -100,9 +100,9 @@ public class VhmEventReader implements ExternalEventsReader {
     }
 
     /**
-     * Extracts the VHMEvents from the reader and returns them as a list
+     * Extracts the VhmEvents from the reader and returns them as a list
      *
-     * @return a list of the VHMEvents
+     * @return a list of the {@link VhmEvent}s
      */
     private List<VhmEvent> extractEvents(int nrof) throws IOException{
         JsonStructure jsonFile = reader.read();
@@ -125,11 +125,11 @@ public class VhmEventReader implements ExternalEventsReader {
     }
 
     /**
-     * Takes a list of VHMEvents and generates a event list usable for the one simulator.
+     * Takes a list of {@link VhmEvent}s and generates a event list usable for the one simulator.
      * Therefore, special start and end events are created for every VhmEvent
      *
-     * @param events list of the VHMEvents
-     * @return A list of events where VHMEvents start or end
+     * @param events list of the {@link VhmEvent}s
+     * @return A list of events where {@link VhmEvent}s start or end
      */
     private List<ExternalEvent> generateEventList(List<VhmEvent> events){
         List<ExternalEvent> allEvents = new ArrayList<>();

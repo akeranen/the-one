@@ -6,7 +6,7 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 
 /**
- * Graphics class for VHMEvents
+ * Graphics class for {@link VhmEvent}s
  *
  * Created by Marius Meyer on 17.02.17.
  */

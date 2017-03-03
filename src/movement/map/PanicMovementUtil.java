@@ -7,13 +7,13 @@ public class PanicMovementUtil {
 	private double safeRangeRadius;
 	private double eventRangeRadius;
 	private Coord eventLocation = null;
-	public static final double RIGHT_ANGLE = 90.0;
-	public static final double STRAIGHT_ANGLE = 180.0;
-	public static final double FULL_ROTATION = 360.0;
+	private static final double RIGHT_ANGLE = 90.0;
+	private static final double STRAIGHT_ANGLE = 180.0;
+	private static final double FULL_ROTATION = 360.0;
 	
 	/**
 	 * Constructor
-	 * @param location Location where the event is located
+	 * @param eventLocation Location where the event is located
 	 * @param safeRangeRadius radius where the safe zone starts
 	 * @param eventRangeRadius radius where the zone ends where you can help
 	 */
@@ -70,10 +70,9 @@ public class PanicMovementUtil {
 	
 	/**
 	 * Computes if the target node is in event direction from the source node's point of view
-	 * @param eventLocation location where the event occurred
 	 * @param sourceNode current location of the node
 	 * @param targetNode potential target location
-	 * @return
+	 * @return true if the target node is in event direction from the source node's point of view, false otherwise
 	 */
 	public boolean isInEventDirection(MapNode sourceNode, MapNode targetNode) {
 		double angle;
@@ -92,13 +91,13 @@ public class PanicMovementUtil {
 			angle = computeAngleBetween(eventLocation, sourceNode, targetNode);
 		}
 		
-		return (Math.abs(angle - STRAIGHT_ANGLE) < RIGHT_ANGLE);
+		return Math.abs(angle - STRAIGHT_ANGLE) < RIGHT_ANGLE;
 	}
 	
 	/**
 	 * Computes the scalar product between the vectors v1 (source -> target1) and v2 (source -> target2)
 	 */
-	public static double scalarProduct(Coord target1, Coord source, Coord target2) {
+	private static double scalarProduct(Coord target1, Coord source, Coord target2) {
 		double scalarProduct = 0;
 		double[] v1 = {target1.getX() - source.getX(), target1.getY() - source.getY()}; 
 		double[] v2 = {target2.getX() - source.getX(), target2.getY() - source.getY()};
@@ -113,7 +112,7 @@ public class PanicMovementUtil {
 	/**
 	 * Computes the length product between the vectors v1 (source -> target1) and v2 (source -> target2)
 	 */
-	public static double lengthProduct(Coord target1, Coord source, Coord target2) {
+	private static double lengthProduct(Coord target1, Coord source, Coord target2) {
 		
 		return source.distance(target1) * source.distance(target2);
 	}

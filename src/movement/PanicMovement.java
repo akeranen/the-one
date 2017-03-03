@@ -40,15 +40,22 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	public PanicMovement (Settings settings) {
 		this(settings, new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
 	}
+
+    /**
+     * Copyconstructor.
+     * @param pm The PanicMovement prototype to base
+     * the new object to
+     */
+    protected PanicMovement(PanicMovement pm) {
+        super(pm);
+        setLocalFields(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
+    }
 	
 	/**
 	 * Additional constructor for JUnit Tests
 	 * @param settings Settings for the map, hosts etc.
 	 * @param newMap Map passed instead of reading it from a file
 	 * @param nrofMaps Number of WKT files
-	 * @param eventLocation Coordinates of an event that occurred
-	 * @param securityZone minimum distance from the event to be safe
-	 * @param outerZone maximum distance to the event to get help
 	 */
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
 			Coord location, double safeRangeRadius, double eventRangeRadius) {
@@ -71,6 +78,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	/**
 	 * Determines a path to the most suitable node in the security zone
 	 */
+	@Override
 	public Path getPath() {
 		Path path = new Path(generateSpeed());
 		Coord hostLocation = host.getLocation();
@@ -91,16 +99,6 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		lastMapNode = destNode;
 
 		return path;
-	}
-	
-	/**
-	 * Copyconstructor.
-	 * @param mbm The PanicMovement prototype to base
-	 * the new object to
-	 */
-	protected PanicMovement(PanicMovement pm) {
-		super(pm);
-		setLocalFields(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
 	}
 	
 	public void setEventLocation(Coord eventLocation) {
@@ -145,7 +143,8 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	private MapNode getNearestNode(SimMap map, Coord location) {
 		List<MapNode> list = map.getNodes();
 		MapNode bestNode = null;
-		double distance, bestDistance = 0;
+		double distance;
+		double bestDistance = 0;
 		
 		for (MapNode node : list) {
 			distance = location.distance(node.getLocation());

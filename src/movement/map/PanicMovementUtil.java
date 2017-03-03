@@ -31,14 +31,12 @@ public class PanicMovementUtil {
 	 */
 	public MapNode selectDestination(SimMap map, MapNode locationNode) {
 		double distance = eventLocation.distance(locationNode.getLocation());
-		if ((distance <= eventRangeRadius && distance>= safeRangeRadius) || distance > eventRangeRadius) {
+		if (distance >= safeRangeRadius) {
 			// The host is within the safe area or the host is not concerned by the event 	
 			return locationNode;
 		}
 		
-		MapNode bestNode = getBestNode(map, locationNode);
-		
-		return bestNode;
+		return getBestNode(map, locationNode);
 	}
 	
 	/**
@@ -80,16 +78,15 @@ public class PanicMovementUtil {
 	public boolean isInEventDirection(MapNode sourceNode, MapNode targetNode) {
 		double angle;
 		
-		if (lengthProduct(eventLocation, sourceNode.getLocation(), targetNode.getLocation()) <= 0.0) {
-			// to avoid division by zero. Every angle should be fine
-			if (eventLocation.distance(targetNode.getLocation()) <= 0.0) {
-				// event = target --> IN event direction
-				return true;
-			}
-			else {
-				// event = source --> NOT IN event direction
-				return false;
-			}
+		// to avoid division by zero. Every angle should be fine
+		
+		if (eventLocation.equals(targetNode.getLocation())) {
+		// event = target --> IN event direction
+			return true;
+		}
+		else if (eventLocation.equals(sourceNode.getLocation())) {
+		// event = source --> NOT IN event direction
+			return false;
 		}
 		else {
 			angle = computeAngleBetween(eventLocation, sourceNode, targetNode);

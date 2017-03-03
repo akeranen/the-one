@@ -24,7 +24,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	private PanicMovementUtil pmu;
 	private static final double SAFE_RANGE_RADIUS = 1000.0;
 	private static final double EVENT_RANGE_RADIUS = 1500.0;
-	private static final double COORD1000 = 1000.0;
+	private static final double COORD1000 = 1500.0;
 	
 	
 	public PanicMovement (Settings settings, Coord location, double safeRangeRadius, double eventRangeRadius) {
@@ -62,7 +62,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	 * @param safeRangeRadius distance to the event from which on the nodes are safe
 	 * @param eventRangeRadius distance within which the nodes react to an event
 	 */
-	public void setLocalFields (Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
+	private void setLocalFields (Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
 		this.eventLocation = eventLocation;
 		this.safeRangeRadius = safeRangeRadius;
 		this.eventRangeRadius = eventRangeRadius;

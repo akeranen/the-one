@@ -59,7 +59,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	private int [] okMapNodeTypes;
 
 	/** how many map files are read */
-	protected int nrofMapFilesRead = 0;
+	private int nrofMapFilesRead = 0;
 	/** map cache -- in case last mm read the same map, use it without loading*/
 	private static SimMap cachedMap = null;
 	/** names of the previously cached map's files (for hit comparison) */

@@ -26,19 +26,14 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	private static final double EVENT_RANGE_RADIUS = 1500.0;
 	private static final double COORD1000 = 1500.0;
 	
-	
-	public PanicMovement (Settings settings, Coord location, double safeRangeRadius, double eventRangeRadius) {
-		super(settings);
-		setLocalFields(location, safeRangeRadius, eventRangeRadius);
-	}
-	
 	/**
 	 * Constructor setting values for the event and the minimum and maximum distance to 
 	 * an event (SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS). 
 	 * @param settings Settings for the map, hosts etc.
 	 */
 	public PanicMovement (Settings settings) {
-		this(settings, new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
+		super(settings);
+		setLocalFields(new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
 	}
 
     /**

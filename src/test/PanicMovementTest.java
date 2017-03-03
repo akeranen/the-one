@@ -2,15 +2,10 @@ package test;
 
 import input.WKTMapReader;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
-import java.util.List;
 
 import junit.framework.*;
-import org.junit.*;
-import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.Path;
 import movement.map.MapNode;
@@ -31,7 +26,7 @@ import core.Settings;
 public class PanicMovementTest extends TestCase {
 
 	//										   n1       n2       n6        n3
-	private final String WKT = "LINESTRING (1.0 1.0, 2.0 1.0, 3.0 1.0, 4.0 1.0) \n" +
+	private static final String WKT = "LINESTRING (1.0 1.0, 2.0 1.0, 3.0 1.0, 4.0 1.0) \n" +
 	//              n1        n4
 	"LINESTRING (1.0 1.0, 1.0 2.0)\n"+
 	//              n2       n7       n3       n6
@@ -67,8 +62,8 @@ public class PanicMovementTest extends TestCase {
 		}
 
 		settings = new TestSettings();
-		settings.putSetting(MovementModel.SPEED, ("1,1"));
-		settings.putSetting(MovementModel.WAIT_TIME, ("0,0"));
+		settings.putSetting(MovementModel.SPEED, "1,1");
+		settings.putSetting(MovementModel.WAIT_TIME, "0,0");
 
 		map = reader.getMap();	
 		event = map.getNodeByCoord(new Coord(2,1));
@@ -81,8 +76,7 @@ public class PanicMovementTest extends TestCase {
 		node[4] = map.getNodeByCoord(new Coord(3,0));
 		node[5] = map.getNodeByCoord(new Coord(3,1));
 	}
-	
-	@org.junit.Test
+
 	/**
 	 * Tests if the angle between source node, event and target node is between 90 and 270 degrees (so the 
 	 * absolute of the difference of straight angle and this angle should be less or equal to 90 degrees)
@@ -98,7 +92,6 @@ public class PanicMovementTest extends TestCase {
 		assertTrue("Angle should be between 90 and 270 degrees", Math.abs(180 - angle)  <= 90);
 	}
 	
-	@org.junit.Test
 	/**
 	 * Tests if the target node is inside the safe area
 	 */
@@ -110,8 +103,7 @@ public class PanicMovementTest extends TestCase {
 		assertTrue("Target node should be inside the safe area", 
 				end.getLocation().distance(event.getLocation()) >= panicMovement.getSafeRangeRadius() );
 	}
-	
-	@org.junit.Test
+
 	/**
 	 * Test if closest possible node to the host is selected
 	 */
@@ -121,17 +113,16 @@ public class PanicMovementTest extends TestCase {
 		MapNode start = map.getNodeByCoord(path.getCoords().get(0));
 		MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 		
-		for (int i = 0; i<node.length; i++) {
+		for(MapNode m : node) {
 			if (end.getLocation().distance(panicMovement.getHost().getLocation()) 
-					> node[i].getLocation().distance(panicMovement.getHost().getLocation())) {
+					> m.getLocation().distance(panicMovement.getHost().getLocation())) {
 				assertTrue("Closest possible node to the host should be selected",
-						node[i].getLocation().distance(event.getLocation()) < panicMovement.getSafeRangeRadius()
-						|| panicMovement.getPanicMovementUtil().isInEventDirection(start, node[i])); 
+						m.getLocation().distance(event.getLocation()) < panicMovement.getSafeRangeRadius()
+						|| panicMovement.getPanicMovementUtil().isInEventDirection(start, m));
 			}
 		}
 	}
-	
-	@org.junit.Test
+
 	/**
 	 * Tests if the target node is not outside the event range
 	 */

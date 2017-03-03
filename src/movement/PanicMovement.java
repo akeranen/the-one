@@ -74,8 +74,8 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	public Path getPath() {
 		Path path = new Path(generateSpeed());
 		Coord hostLocation = host.getLocation();
-		MapNode hostNode = getNearestNode(map, hostLocation);
-		MapNode destNode = pmu.selectDestination(map, hostNode);
+		MapNode hostNode = getNearestNode(getMap(), hostLocation);
+		MapNode destNode = pmu.selectDestination(getMap(), hostNode);
 		
 		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
 

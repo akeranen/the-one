@@ -45,6 +45,7 @@ public class PanicMovementTest extends TestCase {
 	private SimMap map;
 	private TestSettings settings;
 
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 		setupMapDataAndBasicSettings();
@@ -53,7 +54,6 @@ public class PanicMovementTest extends TestCase {
 	
 	/**
 	 * Sets up the map described above, the panic movement and the event, as well as speed and wait time settings
-	 * @param speed Speed with which the hosts can move
 	 */
 	private void setupMapDataAndBasicSettings() {
 		Settings.init(null);

@@ -30,7 +30,7 @@ import core.SimError;
  */
 public class MapBasedMovement extends MovementModel implements SwitchableMovement {
 	/** sim map for the model */
-	protected SimMap map = null;
+	private SimMap map = null;
 	/** node where the last path ended or node next to initial placement */
 	protected MapNode lastMapNode;
 	/**  max nrof map nodes to travel/path */
@@ -98,9 +98,6 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	/**
 	 * Reads the OK map node types from settings
 	 * @param settings The settings where the types are read
-	 * 
-	 * 
-	 * i
 	 */
 	private void readOkMapNodeTypes(Settings settings) {
 		if (settings.contains(MAP_SELECT_S)) {

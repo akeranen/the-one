@@ -182,7 +182,7 @@ public class VhmEvent extends ExternalEvent{
                 this.intensity = DEFAULT_INTENSITY;
             }
         }catch (Exception e){
-            throw new IOException("VhmEvent could not be parsed from JSON: " + e.getMessage());
+            throw new IOException("VhmEvent could not be parsed from JSON: " + e);
         }
     }
 
@@ -327,6 +327,15 @@ public class VhmEvent extends ExternalEvent{
         if (ob instanceof VhmEvent) {
             return ((VhmEvent) ob).getID() == getID();
         } else return false;
+    }
+
+    /**
+     * Returns a hash code value vor the event. This is the event id converted to an integer.
+     * @return a hash code value
+     */
+    @Override
+    public int hashCode(){
+        return (int)this.id;
     }
 
 }

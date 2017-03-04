@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,10 +33,10 @@ public class VhmEventsTest {
     /**
      * Load the needed files for the tests
      *
-     * @throws Exception might throw an exception if the files are not found
+     * @throws FileNotFoundException might throw an exception if the files are not found
      */
     @Before
-    public void setUp() throws Exception{
+    public void setUp() throws FileNotFoundException{
         correctFile = new File(CORRECT_FILE);
         incorrectFile = new File(MISSING_VERSION);
     }
@@ -83,6 +84,7 @@ public class VhmEventsTest {
     @Test (expected = SimError.class)
     public void testLoadIncorrectFile(){
         VhmEventReader reader = new VhmEventReader(incorrectFile);
+        reader.readEvents(MAX_EVENT_COUNT);
     }
 
     /**
@@ -94,10 +96,10 @@ public class VhmEventsTest {
      */
     private List<ExternalEvent> loadVhmEventsFile(File eventFile,int eventCount){
         try {
-            VhmEventReader reader = new VhmEventReader(correctFile);
+            VhmEventReader reader = new VhmEventReader(eventFile);
             return reader.readEvents(eventCount);
         } catch (Exception e) {
-            TestCase.fail("Correct VHM events file could not be loaded!");
+            TestCase.fail("Correct VHM events file could not be loaded: " + e);
         }
         return new ArrayList<>();
     }

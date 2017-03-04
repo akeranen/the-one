@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Reader for {@link VhmEvent}s. This class reads {@link VhmEvent}s from a defined
@@ -61,7 +62,7 @@ public class VhmEventReader implements ExternalEventsReader {
             reader = Json.createReader(fileReader);
             allEventsRead = false;
         } catch (FileNotFoundException e) {
-            throw new SimError(e.getMessage());
+            throw new SimError(e);
         }
     }
 
@@ -79,6 +80,7 @@ public class VhmEventReader implements ExternalEventsReader {
                 correct = true;
             }
         }} catch (Exception e) {
+            // It is perfectly acceptable to not handle "e" here
             correct = false;
         }
         return correct;
@@ -94,7 +96,7 @@ public class VhmEventReader implements ExternalEventsReader {
             events = extractEvents(nrof);
             allEventsRead = true;
         } catch (IOException e) {
-            throw new SimError(e.getMessage());
+            throw new SimError("Events could not be extracted: "+e);
         }
         return generateEventList(events);
     }
@@ -109,12 +111,12 @@ public class VhmEventReader implements ExternalEventsReader {
         List<VhmEvent> eventList = new ArrayList<>();
         if (jsonFile.getValueType() == JsonValue.ValueType.OBJECT){
             JsonObject root = (JsonObject) jsonFile;
-            for (String name : root.keySet()){
+            for (Map.Entry<String,JsonValue> entry : root.entrySet()){
                 if (eventList.size() >= nrof){
                     break;
                 }
-                if (root.get(name).getValueType() == JsonValue.ValueType.OBJECT){
-                    eventList.add(new VhmEvent(name,(JsonObject) root.get(name)));
+                if (entry.getValue().getValueType() == JsonValue.ValueType.OBJECT){
+                    eventList.add(new VhmEvent(entry.getKey(),(JsonObject) entry.getValue()));
                 }
             }
         }
@@ -147,7 +149,7 @@ public class VhmEventReader implements ExternalEventsReader {
             reader.close();
             fileReader.close();
         } catch (IOException e) {
-            throw new SimError(e.getMessage());
+            throw new SimError("Reader could not be closed: "+e);
         }
     }
 }

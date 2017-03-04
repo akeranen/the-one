@@ -131,4 +131,13 @@ public class VhmEventGraphic extends PlayFieldGraphic {
             return ((VhmEventGraphic) o).event.equals(this.event);
         }else return false;
     }
+
+    /**
+     * Returns a hash code value for the object. This is equal to the hash code value of the used {@link VhmEvent}
+     * @return a hash code value
+     */
+    @Override
+    public int hashCode(){
+        return event.hashCode();
+    }
 }

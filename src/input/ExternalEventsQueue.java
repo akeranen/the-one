@@ -96,6 +96,7 @@ public class ExternalEventsQueue implements EventQueue {
 	 * events left
 	 * @return Next event's time
 	 */
+	@Override
 	public double nextEventsTime() {
 		if (eventsLeftInBuffer() <= 0 ) {
 			// in case user request time of an event that doesn't exist
@@ -111,6 +112,7 @@ public class ExternalEventsQueue implements EventQueue {
 	 * double.MAX_VALUE if there are no events left
 	 * @return The next event
 	 */
+	@Override
 	public ExternalEvent nextEvent() {
 		if (queue.size() == 0) { // no more events
 			return new ExternalEvent(Double.MAX_VALUE);

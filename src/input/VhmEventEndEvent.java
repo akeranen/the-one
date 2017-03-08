@@ -11,6 +11,8 @@ import movement.VoluntaryHelperMovement;
  */
 public class VhmEventEndEvent extends VhmEvent {
 
+    private static final long serialVersionUID = 1;
+
     /**
      * Creates a new event for the end of a specified VhmEvent
      * @param event the VhmEvent

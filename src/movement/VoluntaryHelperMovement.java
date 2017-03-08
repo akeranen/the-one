@@ -1,6 +1,11 @@
 package movement;
 
-import core.*;
+import core.VhmListener;
+import core.EnergyListener;
+import core.Settings;
+import core.Coord;
+import core.DTNHost;
+import core.SimClock;
 import input.VhmEvent;
 import movement.map.SimMap;
 import routing.ActiveRouter;
@@ -17,113 +22,192 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
 /**
  * This movement model simulates the movement of voluntary helpers in a disaster region.
  * It makes use of several other movement models for this.
- *
+ * <p>
  * Created by Ansgar Mährlein on 08.02.2017.
+ *
  * @author Ansgar Mährlein
  */
 //TODO implement Panic Movement + more comments + javadoc
 public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, EnergyListener {
 
     //strings for the setting keys in the settings file
-    /** setting key for the node being a local helper or a "voluntary ambulance" */
+    /**
+     * setting key for the node being a local helper or a "voluntary ambulance"
+     */
     private static final String IS_LOCAL_HELPER_SETTING = "isLocalHelper";
-    /** setting key for the time the node will help at a disaster site (seconds) */
+    /**
+     * setting key for the time the node will help at a disaster site (seconds)
+     */
     private static final String HELP_TIME_SETTING = "helpTime";
-    /** setting key for the time the node will stay at the hospital after transporting someone to it (seconds) */
+    /**
+     * setting key for the time the node will stay at the hospital after transporting someone to it (seconds)
+     */
     private static final String HOSPITAL_WAIT_TIME_SETTING = "hospitalWaitTime";
-    /** setting key for the probability that the node gets injured if an event happens to close to it [0, 1] */
+    /**
+     * setting key for the probability that the node gets injured if an event happens to close to it [0, 1]
+     */
     private static final String INJURY_PROBABILITY_SETTING = "injuryProbability";
-    /** setting key for the probability that the node stays at the hospital after transporting someone to it [0, 1] */
+    /**
+     * setting key for the probability that the node stays at the hospital after transporting someone to it [0, 1]
+     */
     private static final String HOSPITAL_WAIT_PROBABILITY_SETTING = "hospitalWaitProbability";
-    /** setting key for the weight of a disasters intensity for determining if the node will help at the disaster site [0, 1] */
+    /**
+     * setting key for the weight of a disasters intensity for determining
+     * if the node will help at the disaster site [0, 1]
+     */
     private static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
 
     //default values for the settings
-    /** default value for the time the node will help at a disaster site (seconds) */
+    /**
+     * default value for the time the node will help at a disaster site (seconds)
+     */
     private static final double DEFAULT_HELP_TIME = 3600;
-    /** default value for the time the node will stay at the hospital after transporting someone to it (seconds) */
+    /**
+     * default value for the time the node will stay at the hospital after transporting someone to it (seconds)
+     */
     private static final double DEFAULT_HOSPITAL_WAIT_TIME = 3600;
-    /** default value for the probability that the node gets injured if an event happens to close to it [0, 1] */
+    /**
+     * default value for the probability that the node gets injured if an event happens to close to it [0, 1]
+     */
     private static final double DEFAULT_INJURY_PROBABILITY = 0.5;
-    /** default value for the probability that the node stays at the hospital after transporting someone to it [0, 1] */
+    /**
+     * default value for the probability that the node stays at the hospital after transporting someone to it [0, 1]
+     */
     private static final double DEFAULT_HOSPITAL_WAIT_PROBABILITY = 0.5;
-    /** default value for the weight of a disasters intensity for determining if the node will help at the disaster site [0, 1] */
+    /**
+     * default value for the weight of a disasters intensity for determining
+     * if the node will help at the disaster site [0, 1]
+     */
     private static final double DEFAULT_INTENSITY_WEIGHT = 0.5;
 
-    /** the movement modes the node can be in */
+    /**
+     * the movement modes the node can be in
+     */
     private enum movementMode {
-        /** movement mode for randomly moving around on the map */
+        /**
+         * movement mode for randomly moving around on the map
+         */
         RANDOM_MAP_BASED_MODE,
-        /** movement mode for moving to a disaster site */
+        /**
+         * movement mode for moving to a disaster site
+         */
         MOVING_TO_EVENT_MODE,
-        /** movement mode for helping at the disaster site */
+        /**
+         * movement mode for helping at the disaster site
+         */
         LOCAL_HELP_MODE,
-        /** movement mode for transporting injured people from a disaster site to a hospital */
+        /**
+         * movement mode for transporting injured people from a disaster site to a hospital
+         */
         TRANSPORTING_MODE,
-        /** movement mode for helping at the hospital after transporting someone there */
+        /**
+         * movement mode for helping at the hospital after transporting someone there
+         */
         HOSPITAL_WAIT_MODE,
-        /** movement mode for being injured after an event happened to close to the node */
+        /**
+         * movement mode for being injured after an event happened to close to the node
+         */
         INJURED_MODE,
-        /** movement mode for panicking after an event happened to close to the node */
+        /**
+         * movement mode for panicking after an event happened to close to the node
+         */
         PANIC_MODE
     }
 
     //global variables of the movement model
-    /** tells, if the node is a local helper or a "voluntary ambulance" */
+    /**
+     * tells, if the node is a local helper or a "voluntary ambulance"
+     */
     private boolean isLocalHelper;
-    /** how long the node will stay at the hospital (seconds) */
+    /**
+     * how long the node will stay at the hospital (seconds)
+     */
     private double hospitalWaitTime;
-    /** how long the node will help at a disaster site (seconds) */
+    /**
+     * how long the node will help at a disaster site (seconds)
+     */
     private double helpTime;
-    /** probability that the node gets injured if an event happens to close to it [0, 1] */
+    /**
+     * probability that the node gets injured if an event happens to close to it [0, 1]
+     */
     private double injuryProbability;
-    /** probability that the node stays at the hospital after transporting someone to it [0, 1] */
+    /**
+     * probability that the node stays at the hospital after transporting someone to it [0, 1]
+     */
     private double waitProbability;
-    /** weight of a disasters intensity for determining if the node will help at the disaster site [0, 1] */
+    /**
+     * weight of a disasters intensity for determining if the node will help at the disaster site [0, 1]
+     */
     private double intensityWeight;
-    /** the current movement mode of the node */
+    /**
+     * the current movement mode of the node
+     */
     private movementMode mode;
-    /** tells, if energy modelling is enabled for this node */
+    /**
+     * tells, if energy modelling is enabled for this node
+     */
     private boolean energyModelled;
-    /** initial battery level for nodes with energy modelling enabled */
+    /**
+     * initial battery level for nodes with energy modelling enabled
+     */
     private double initialEnergy;
-    /** start time of waiting at the hospital or local helping movement */
+    /**
+     * start time of waiting at the hospital or local helping movement
+     */
     private double startTime;
-    /** tells, if the movement sub-model was changed forcefully before the set destination was reached */
+    /**
+     * tells, if the movement sub-model was changed forcefully before the set destination was reached
+     */
     private boolean justChanged;
-    /** the selected disaster */
+    /**
+     * the selected disaster
+     */
     private VhmEvent chosenDisaster;
-    /** the selected hospital */
+    /**
+     * the selected hospital
+     */
     private VhmEvent chosenHospital;
-    /** the map for map based movement */
-    private SimMap simMap;
 
     //the sub-movement-models
-    /** movement model for randomly walking around on the map */
+    /**
+     * movement model for randomly walking around on the map
+     */
     private ShortestPathMapBasedMovement shortestPathMapBasedMM;
-    /** movement model for navigating from the current position to a specific target on the map */
+    /**
+     * movement model for navigating from the current position to a specific target on the map
+     */
     private CarMovement carMM;
-    /** movement model for randomly walking around in a specified circular area (hospital or disaster site) */
+    /**
+     * movement model for randomly walking around in a specified circular area (hospital or disaster site)
+     */
     private LevyWalkMovement levyWalkMM;
-    /** movement model for not moving at all */
+    /**
+     * movement model for not moving at all
+     */
     private SwitchableStationaryMovement stationaryMM;
     /** movement model for panically runing to a safe location */
     //private panicMovement panicMM;
 
-    //TODO make everything local, non static? Compare performance!
     //event lists
-    /** List of disasters */
+    /**
+     * List of disasters
+     */
     private List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<>());
-    /** List of hospitals */
+    /**
+     * List of hospitals
+     */
     private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
 
     //TODO make this non static by moving it to the appropriate class?
-    /** List of VhmListeners */
+    /**
+     * List of VhmListeners
+     */
     private static List<VhmListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Creates a new VoluntaryHelperMovement.
      * Only called once per nodegroup to create a prototype.
+     *
      * @param settings the settings from the settings file
      */
     public VoluntaryHelperMovement(Settings settings) {
@@ -132,7 +216,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         //get all of the settings from the settings file, reverting to defaults, if setting absent in the file
         isLocalHelper = settings.getBoolean(IS_LOCAL_HELPER_SETTING, false);
         energyModelled = settings.contains(EnergyModel.INIT_ENERGY_S);
-        if(energyModelled) {
+        if (energyModelled) {
             //get the initial energy of a node
             initialEnergy = settings.getDouble(EnergyModel.INIT_ENERGY_S);
         }
@@ -153,6 +237,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * Creates a new VoluntaryHelperMovement from a prototype.
      * Called once per node.
+     *
      * @param prototype The prototype MovementModel
      */
     public VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
@@ -172,14 +257,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         shortestPathMapBasedMM = new ShortestPathMapBasedMovement(prototype.shortestPathMapBasedMM);
         carMM = new CarMovement(prototype.carMM);
         levyWalkMM = new LevyWalkMovement(prototype.levyWalkMM);
-        stationaryMM =  new SwitchableStationaryMovement(prototype.stationaryMM);
+        stationaryMM = new SwitchableStationaryMovement(prototype.stationaryMM);
         //panicMM = new PanicMovement(prototype.panicMM);
 
         //register the movement model as a VhmListener
         VoluntaryHelperMovement.addListener(this);
 
-        //get the map for map based movement
-        simMap = this.getMap();
         //just make sure this is initialized
         justChanged = false;
 
@@ -190,6 +273,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Adds a VhmListener that will be notified of VhmEvents starting and ending.
+     *
      * @param listener The listener that is added.
      */
     public static void addListener(VhmListener listener) {
@@ -198,33 +282,39 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Informs all registered VhmListeners, that a VhmEvent started and adds it to the appropriate List
+     *
      * @param event The VhmEvent.
      */
     public static void eventStarted(VhmEvent event) {
-        for (VhmListener l : listeners)
+        for (VhmListener l : listeners) {
             l.vhmEventStarted(event);
+        }
     }
 
     /**
      * Informs all registered VhmListeners, that a VhmEvent ended and removes it from the appropriate list
+     *
      * @param event The VhmEvent.
      */
     public static void eventEnded(VhmEvent event) {
-        for (VhmListener l : listeners)
+        for (VhmListener l : listeners) {
             l.vhmEventEnded(event);
+        }
     }
 
     /**
      * Returns a new initial placement for a node
+     *
      * @return The initial coordinates for a node
      */
     @Override
-    public Coord getInitialLocation(){
+    public Coord getInitialLocation() {
         return shortestPathMapBasedMM.getInitialLocation();
     }
 
     /**
      * Sets the host of this movement model and registers this movement model as an EnergyListener.
+     *
      * @param host the host to set
      */
     @Override
@@ -239,7 +329,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private void initEnergyListener() {
         //only register the listener if energy modeling active for this node
-        if(energyModelled) {
+        if (energyModelled) {
             //register the EnergyListener
             MessageRouter router = this.host.getRouter();
             if (router instanceof ActiveRouter) {
@@ -250,10 +340,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Creates a replicate of the movement model.
+     *
      * @return A new movement model with the same settings as this model
      */
     @Override
-    public MovementModel replicate(){
+    public MovementModel replicate() {
         return new VoluntaryHelperMovement(this);
     }
 
@@ -261,11 +352,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * Method is called between each getPath() request when the current MM is
      * ready (isReady() method returns true).
      * This is the place where the movement model (mostly) switches between the submodels.
+     *
      * @return true if success
      */
     @Override
-    public boolean newOrders(){
-        if(!justChanged) {
+    public boolean newOrders() {
+        if (!justChanged) {
             switch (mode) {
                 case RANDOM_MAP_BASED_MODE:
                     chooseMovementAfterRandomMapBasedMode();
@@ -301,7 +393,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private void chooseMovingToEventMode() {
         mode = movementMode.MOVING_TO_EVENT_MODE;
         carMM.setLocation(host.getLocation());
-        carMM.setNextRoute(carMM.getLastLocation(), carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+        carMM.setNextRoute(carMM.getLastLocation(),
+                carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
         setCurrentMovementModel(carMM);
     }
 
@@ -330,7 +423,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             if (chooseNextHospital()) {
                 mode = movementMode.TRANSPORTING_MODE;
                 carMM.setLocation(host.getLocation());
-                carMM.setNextRoute(carMM.getLastLocation(), carMM.getMap().getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
+                carMM.setNextRoute(carMM.getLastLocation(),
+                        carMM.getMap().getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
                 setCurrentMovementModel(carMM);
             } else {
                 //if choosing a new hospital fails because there are no hospitals...
@@ -380,6 +474,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Returns the SimMap this movement model uses
+     *
      * @return The SimMap this movement model uses
      */
     //TODO what aboiut carMM?
@@ -401,14 +496,15 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * Pick a random disaster from the list of disasters, and decide for opr against helping at the disaster site.
      * If the decision to help is made, the selected disaster is automatically set as the chosen disaster.
+     *
      * @return true if the decision was made to help at a disaster site, false otherwise.
      */
     private boolean chooseNextDisaster() {
         boolean helping = false;
 
-        if(!disasters.isEmpty()) {
+        if (!disasters.isEmpty()) {
             VhmEvent event = disasters.get(rng.nextInt(disasters.size()));
-            if(decideHelp(event)) {
+            if (decideHelp(event)) {
                 chosenDisaster = event;
                 helping = true;
             }
@@ -419,6 +515,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Decide for helping at a specific disaster site.
+     *
      * @param event The disaster event.
      * @return true if the decision is to help, false otherwise
      */
@@ -426,17 +523,19 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         boolean help;
         double distance = host.getLocation().distance(event.getLocation());
 
-        help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY) + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
+        help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY)
+                + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
 
         return help;
     }
 
     /**
      * Randomly select a hospital from the list of hospitals.
+     *
      * @return true, if a hospital was selected, false if no hospitals exist.
      */
     private boolean chooseNextHospital() {
-        if(!hospitals.isEmpty()) {
+        if (!hospitals.isEmpty()) {
             chosenHospital = hospitals.get(rng.nextInt(hospitals.size()));
             return true;
         } else {
@@ -449,31 +548,32 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * (Only if the node has energy modelling enabled, as only then the Listener is registered.)
      * It resets the node's battery and movement model.
      */
+    //TODO implement resetting and implement an interface for resetting the routing table
     @Override
     public void batteryDied() {
-        //do not call "super.reset();" or the rng seed will be reset, so the new random location would always be the same
+        //do not call "super.reset();" or the rng seed will be reset,
+        //so the new random location would always be the same
         //reset the energy value. Yes, it has to be done like this.
         host.getComBus().updateProperty("Energy.value", initialEnergy);
 
         //reset the host (network address, name, message buffer and connections)
         //do not call "host.reset();" as it interferes with host network address assignment for all hosts
         //resetting the routing table is not possible without knowing the exact routing protocol
-        //TODO implement an interface for resetting the routing table
         //get a new network address and name
-        host.setNewAddress();
+        //host.setNewAddress();
         //empty the message buffer
-        for(Message m: host.getMessageCollection()) {
+        /*for (Message m : host.getMessageCollection()) {
             host.deleteMessage(m.getId(), true);
-        }
+        }*/
         //update all connections
-        host.update(true);
+        //host.update(true);
 
         //reset the Location to a new random one
-        Coord min = simMap.getMinBound();
-        Coord max = simMap.getMaxBound();
+        Coord min = getMap().getMinBound();
+        Coord max = getMap().getMaxBound();
         double x = min.getX() + rng.nextDouble() * (max.getX() - min.getX());
         double y = min.getY() + rng.nextDouble() * (max.getY() - min.getY());
-        host.setLocation(simMap.getClosestNodeByCoord(new Coord(x, y)).getLocation());
+        host.setLocation(getMap().getClosestNodeByCoord(new Coord(x, y)).getLocation());
 
         //select an event and help there or randomly move around the map
         forceStartOver();
@@ -482,22 +582,28 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * This Method is called when a VhmEvent starts.
      * It is used for handling the event, that is, make the nodes movement react to it.
+     *
      * @param event The VhmEvent
      */
     @Override
     public void vhmEventStarted(VhmEvent event) {
         //add the event to the appropriate list
-        if(event.getType() == HOSPITAL) {
+        if (event.getType() == HOSPITAL) {
             hospitals.add(event);
-        } else if(event.getType() == DISASTER) {
+        } else if (event.getType() == DISASTER) {
             disasters.add(event);
         }
 
         //handle the event
-        if(event.getType() == DISASTER &&mode != movementMode.INJURED_MODE) {
+        handleStartedVhmEvent(event);
+    }
+
+    private void handleStartedVhmEvent(VhmEvent event) {
+        //handle the event
+        if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
             //check if the node is to close to the disaster
-            if(host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
-                if(rng.nextDouble() <= injuryProbability) {
+            if (host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
+                if (rng.nextDouble() <= injuryProbability) {
                     mode = movementMode.INJURED_MODE;
                     switchToMovement(stationaryMM);
                     stationaryMM.setLocation(host.getLocation());
@@ -507,45 +613,46 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     /*switchToMovement(panicMM);
                     panicMM.setLocation(host.getLocation());*/
                 }
-            } else if(host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)){
+            } else if (host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)) {
                 //chose the disaster
                 chosenDisaster = event;
                 //if the node is not already busy, decide if it helps with the new disaster
                 switchToMovingToEventMode();
             }
         }
-
     }
 
     /**
      * This Method is called when a VhmEvent ends
      * It is used for handling this, i.e. making the movement react to it.
+     *
      * @param event The VhmEvent
      */
     @Override
     public void vhmEventEnded(VhmEvent event) {
         //remove the event from the appropriate list
-        if(event.getType() == HOSPITAL) {
+        if (event.getType() == HOSPITAL) {
             hospitals.remove(event);
-        } else if(event.getType() == DISASTER) {
+        } else if (event.getType() == DISASTER) {
             disasters.remove(event);
         }
 
         //handle the event
-        if(event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
+        if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
             handleEndedDisaster(event);
-        } else if(event.getType() == HOSPITAL && mode != movementMode.INJURED_MODE) {
+        } else if (event.getType() == HOSPITAL && mode != movementMode.INJURED_MODE) {
             handleEndedHospital(event);
         }
     }
 
     /**
      * Handles the end of a disaster, i.e. makes the movement react to it.
+     *
      * @param event the VhmEvent associated with the end of the disaster.
      */
     private void handleEndedDisaster(VhmEvent event) {
         //if the ended event was chosen...
-        if(chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
+        if (chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
             //..handle the loss of the chosen event by starting over
             forceStartOver();
         }
@@ -553,13 +660,15 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Handles the end of a hospital, i.e. makes the movement react to it.
+     *
      * @param event the VhmEvent associated with the end of the hospital.
      */
     private void handleEndedHospital(VhmEvent event) {
         //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
         //if choosing a new one fails because there are no hospitals anymore...
         boolean affected = chosenHospital != null && chosenHospital.getID() == event.getID();
-        if(affected && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE) && !chooseNextHospital()) {
+        if (affected && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE)
+                && !chooseNextHospital()) {
             //...just move on with your day
             switchToRandomMapBasedMode();
         }
@@ -569,7 +678,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         mode = movementMode.MOVING_TO_EVENT_MODE;
         switchToMovement(carMM);
         carMM.setLocation(host.getLocation());
-        carMM.setNextRoute(carMM.getLastLocation(), carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+        carMM.setNextRoute(carMM.getLastLocation(),
+                carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
     }
 
     private void switchToRandomMapBasedMode() {
@@ -579,7 +689,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     private void forceStartOver() {
-        if(chooseNextDisaster()) {
+        if (chooseNextDisaster()) {
             switchToMovingToEventMode();
         } else {
             switchToRandomMapBasedMode();

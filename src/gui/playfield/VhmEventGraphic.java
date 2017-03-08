@@ -2,7 +2,8 @@ package gui.playfield;
 
 import input.VhmEvent;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
 /**
@@ -127,9 +128,7 @@ public class VhmEventGraphic extends PlayFieldGraphic {
      */
     @Override
     public boolean equals(Object o){
-        if (o instanceof VhmEventGraphic) {
-            return ((VhmEventGraphic) o).event.equals(this.event);
-        }else return false;
+        return o != null && this.getClass() == o.getClass() && ((VhmEventGraphic) o).event.equals(this.event);
     }
 
     /**

@@ -4,15 +4,10 @@
  */
 package gui.playfield;
 
-import core.Coord;
-import core.DTNHost;
 import core.VhmListener;
-import core.World;
 import gui.DTNSimGUI;
 import input.VhmEvent;
-import movement.Path;
 import movement.VoluntaryHelperMovement;
-import movement.map.SimMap;
 
 import java.awt.Color;
 import java.awt.Dimension;

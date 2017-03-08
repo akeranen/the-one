@@ -9,10 +9,12 @@ import java.io.IOException;
 
 /**
  * This is a container that includes all parameters of a VhmEvent
- *
+ * <p>
  * Created by Marius Meyer on 15.02.17.
  */
-public class VhmEvent extends ExternalEvent{
+public class VhmEvent extends ExternalEvent {
+
+    private static final long serialVersionUID = 1;
 
     /**
      * Minimum possible event intensity
@@ -82,7 +84,7 @@ public class VhmEvent extends ExternalEvent{
      * Do not access this directly because of synchronization issues.
      * Use {@link VhmEvent#getNextEventID()} instead.
      */
-    private static long nextEventID = 0;
+    private static long nextEventID;
 
     /**
      * Name of an event
@@ -95,7 +97,7 @@ public class VhmEvent extends ExternalEvent{
     private long id;
 
     /**
-     *  The type of an event
+     * The type of an event
      */
     private VhmEventType type;
 
@@ -139,18 +141,20 @@ public class VhmEvent extends ExternalEvent{
     /**
      * Creates a new VhmEvent using a JSON object
      *
-     * @param name The name of the event. This should be the key value of the JSON object
+     * @param name   The name of the event. This should be the key value of the JSON object
      * @param object The JSON object, that represents the event
      * @throws IOException If the JSON object could not be parsed to an VhmEvent
      */
-    public VhmEvent(String name, JsonObject object) throws IOException{
+    public VhmEvent(String name, JsonObject object) throws IOException {
         super(0);
         try {
             this.id = getNextEventID();
             //Parse mandatory parameters
             if (name != null) {
                 this.name = name;
-            } else throw new SimError("Event must have an identifier!");
+            } else {
+                throw new SimError("Event must have an identifier!");
+            }
 
             //parse event type
             this.type = VhmEventType.valueOf(object.getJsonString(EVENT_TYPE).getString());
@@ -159,29 +163,29 @@ public class VhmEvent extends ExternalEvent{
             JsonObject loc = (JsonObject) object.get(EVENT_LOCATION);
             double x = loc.getJsonNumber(EVENT_LOCATION_X).doubleValue();
             double y = loc.getJsonNumber(EVENT_LOCATION_Y).doubleValue();
-            this.location = new Coord(x,y);
+            this.location = new Coord(x, y);
 
             //parse event range
             this.eventRange = object.getJsonNumber(EVENT_RANGE).doubleValue();
 
-            safeRange = getDoubleOrDefault(object,SAFE_RANGE,DEFAULT_SAFE_RANGE);
+            safeRange = getDoubleOrDefault(object, SAFE_RANGE, DEFAULT_SAFE_RANGE);
 
-            maxRange = getDoubleOrDefault(object,MAX_RANGE,DEFAULT_MAX_RANGE);
+            maxRange = getDoubleOrDefault(object, MAX_RANGE, DEFAULT_MAX_RANGE);
 
-            startTime = getDoubleOrDefault(object,START_TIME,DEFAULT_START_TIME);
+            startTime = getDoubleOrDefault(object, START_TIME, DEFAULT_START_TIME);
 
-            endTime = getDoubleOrDefault(object,END_TIME,DEFAULT_END_TIME);
+            endTime = getDoubleOrDefault(object, END_TIME, DEFAULT_END_TIME);
 
             //parse intensity or set it to min intensity
-            if (object.containsKey(EVENT_INTENSITY)){
-                this.intensity = ((JsonNumber)object.get(EVENT_INTENSITY)).intValue();
-                assert intensity >= MIN_INTENSITY && intensity <= MAX_INTENSITY : "Intensity must be integer between " + MIN_INTENSITY
-                        + " and " + MAX_INTENSITY;
-            }
-            else{
+            if (object.containsKey(EVENT_INTENSITY)) {
+                this.intensity = ((JsonNumber) object.get(EVENT_INTENSITY)).intValue();
+                assert intensity >= MIN_INTENSITY &&
+                        intensity <= MAX_INTENSITY : "Intensity must be integer between "
+                        + MIN_INTENSITY + " and " + MAX_INTENSITY;
+            } else {
                 this.intensity = DEFAULT_INTENSITY;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new IOException("VhmEvent could not be parsed from JSON: " + e);
         }
     }
@@ -191,7 +195,7 @@ public class VhmEvent extends ExternalEvent{
      *
      * @param event The event that should be copied
      */
-    public VhmEvent(VhmEvent event){
+    public VhmEvent(VhmEvent event) {
         super(0);
         this.name = event.name;
         this.id = event.id;
@@ -211,7 +215,7 @@ public class VhmEvent extends ExternalEvent{
      *
      * @return next event id
      */
-    private static synchronized long getNextEventID(){
+    private static synchronized long getNextEventID() {
         return nextEventID++;
     }
 
@@ -220,15 +224,15 @@ public class VhmEvent extends ExternalEvent{
      * If this key does not exist, it returns a predefined default value.
      *
      * @param jsonEventObject The JSON object to get the value from
-     * @param key the JSON key of the desired value
-     * @param defaultValue the default value, that is returned, if the key does not exist
+     * @param key             the JSON key of the desired value
+     * @param defaultValue    the default value, that is returned, if the key does not exist
      * @return the key value or the default value
      */
-    private double getDoubleOrDefault(JsonObject jsonEventObject, String key, double defaultValue){
+    private static double getDoubleOrDefault(JsonObject jsonEventObject, String key, double defaultValue) {
         if (jsonEventObject.containsKey(key)) {
             return jsonEventObject.getJsonNumber(key).doubleValue();
         } else {
-          return defaultValue;
+            return defaultValue;
         }
     }
 
@@ -252,6 +256,7 @@ public class VhmEvent extends ExternalEvent{
 
     /**
      * Returns the event's end time
+     *
      * @return the event's {@link VhmEvent#endTime}
      */
     public double getEndTime() {
@@ -259,7 +264,8 @@ public class VhmEvent extends ExternalEvent{
     }
 
     /**
-     *Returns the event's location
+     * Returns the event's location
+     *
      * @return the event's {@link VhmEvent#location}
      */
     public Coord getLocation() {
@@ -268,6 +274,7 @@ public class VhmEvent extends ExternalEvent{
 
     /**
      * Return the event's event range
+     *
      * @return the event's {@link VhmEvent#eventRange}
      */
     public double getEventRange() {
@@ -276,6 +283,7 @@ public class VhmEvent extends ExternalEvent{
 
     /**
      * Return the event's safe range
+     *
      * @return the event's {@link VhmEvent#safeRange}
      */
     public double getSafeRange() {
@@ -284,6 +292,7 @@ public class VhmEvent extends ExternalEvent{
 
     /**
      * Return the event's maximum range
+     *
      * @return the event's {@link VhmEvent#maxRange}
      */
     public double getMaxRange() {
@@ -301,9 +310,10 @@ public class VhmEvent extends ExternalEvent{
 
     /**
      * Returns the {@link VhmEvent#name} of the event that was specified in the JSON file.
+     *
      * @return the event name
      */
-    public String getName(){
+    public String getName() {
         return this.name;
     }
 
@@ -312,7 +322,7 @@ public class VhmEvent extends ExternalEvent{
      *
      * @return the unique id
      */
-    public long getID(){
+    public long getID() {
         return this.id;
     }
 
@@ -323,19 +333,18 @@ public class VhmEvent extends ExternalEvent{
      * @return true, if the object is a VhmEvent and has the same id as the calling instance
      */
     @Override
-    public boolean equals(Object ob){
-        if (ob instanceof VhmEvent) {
-            return ((VhmEvent) ob).getID() == getID();
-        } else return false;
+    public boolean equals(Object ob) {
+        return ob != null && this.getClass() == ob.getClass() && ((VhmEvent) ob).getID() == getID();
     }
 
     /**
      * Returns a hash code value vor the event. This is the event id converted to an integer.
+     *
      * @return a hash code value
      */
     @Override
-    public int hashCode(){
-        return (int)this.id;
+    public int hashCode() {
+        return (int) this.id;
     }
 
 }

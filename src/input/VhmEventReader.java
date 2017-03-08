@@ -2,7 +2,11 @@ package input;
 
 import core.SimError;
 
-import javax.json.*;
+import javax.json.JsonReader;
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -16,7 +20,7 @@ import java.util.Map;
  * Reader for {@link VhmEvent}s. This class reads {@link VhmEvent}s from a defined
  * file and provides an event queue
  * for the use with the ONE
- *
+ * <p>
  * Created by Marius Meyer on 15.02.17.
  */
 public class VhmEventReader implements ExternalEventsReader {
@@ -28,7 +32,6 @@ public class VhmEventReader implements ExternalEventsReader {
      * This class will only read in files, where the vhm_events_version equals this value
      */
     public static final int CURRENT_VERSION = 1;
-
 
 
     /**
@@ -51,13 +54,12 @@ public class VhmEventReader implements ExternalEventsReader {
      * Creates a new reader for a specified file
      *
      * @param eventFile file the reader should read in
-     *
      */
-    public VhmEventReader(File eventFile){
-        if (!isVhmEventsFile(eventFile)){
+    public VhmEventReader(File eventFile) {
+        if (!isVhmEventsFile(eventFile)) {
             throw new SimError("VHM events file is not valid: " + eventFile.getAbsolutePath());
         }
-        try{
+        try {
             fileReader = new FileReader(eventFile);
             reader = Json.createReader(fileReader);
             allEventsRead = false;
@@ -68,18 +70,20 @@ public class VhmEventReader implements ExternalEventsReader {
 
     /**
      * Checks if a file is a JSON events file in a compatible version for this reader
+     *
      * @param eventFile the file that should be checked
      * @return true, if the file is an JSON event file
      */
-    public static boolean isVhmEventsFile(File eventFile){
+    public static boolean isVhmEventsFile(File eventFile) {
         boolean correct = false;
-        try(FileReader fileReader = new FileReader(eventFile)){
-            try (JsonReader jsonReader = Json.createReader(fileReader)){
-            JsonObject jsonFile = (JsonObject) jsonReader.read();
-            if (jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION){
-                correct = true;
+        try (FileReader fileReader = new FileReader(eventFile)) {
+            try (JsonReader jsonReader = Json.createReader(fileReader)) {
+                JsonObject jsonFile = (JsonObject) jsonReader.read();
+                if (jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION) {
+                    correct = true;
+                }
             }
-        }} catch (Exception e) {
+        } catch (Exception e) {
             // It is perfectly acceptable to not handle "e" here
             correct = false;
         }
@@ -96,7 +100,7 @@ public class VhmEventReader implements ExternalEventsReader {
             events = extractEvents(nrof);
             allEventsRead = true;
         } catch (IOException e) {
-            throw new SimError("Events could not be extracted: "+e);
+            throw new SimError("Events could not be extracted: " + e);
         }
         return generateEventList(events);
     }
@@ -106,21 +110,20 @@ public class VhmEventReader implements ExternalEventsReader {
      *
      * @return a list of the {@link VhmEvent}s
      */
-    private List<VhmEvent> extractEvents(int nrof) throws IOException{
+    private List<VhmEvent> extractEvents(int nrof) throws IOException {
         JsonStructure jsonFile = reader.read();
         List<VhmEvent> eventList = new ArrayList<>();
-        if (jsonFile.getValueType() == JsonValue.ValueType.OBJECT){
+        if (jsonFile.getValueType() == JsonValue.ValueType.OBJECT) {
             JsonObject root = (JsonObject) jsonFile;
-            for (Map.Entry<String,JsonValue> entry : root.entrySet()){
-                if (eventList.size() >= nrof){
+            for (Map.Entry<String, JsonValue> entry : root.entrySet()) {
+                if (eventList.size() >= nrof) {
                     break;
                 }
-                if (entry.getValue().getValueType() == JsonValue.ValueType.OBJECT){
-                    eventList.add(new VhmEvent(entry.getKey(),(JsonObject) entry.getValue()));
+                if (entry.getValue().getValueType() == JsonValue.ValueType.OBJECT) {
+                    eventList.add(new VhmEvent(entry.getKey(), (JsonObject) entry.getValue()));
                 }
             }
-        }
-        else{
+        } else {
             throw new SimError("Wrong JSON file format! Root value should be of type OBJECT. Aborting!");
         }
         return eventList;
@@ -133,9 +136,9 @@ public class VhmEventReader implements ExternalEventsReader {
      * @param events list of the {@link VhmEvent}s
      * @return A list of events where {@link VhmEvent}s start or end
      */
-    private List<ExternalEvent> generateEventList(List<VhmEvent> events){
+    private static List<ExternalEvent> generateEventList(List<VhmEvent> events) {
         List<ExternalEvent> allEvents = new ArrayList<>();
-        for (VhmEvent ev : events){
+        for (VhmEvent ev : events) {
             allEvents.add(new VhmEventStartEvent(ev));
             allEvents.add(new VhmEventEndEvent(ev));
         }
@@ -149,7 +152,7 @@ public class VhmEventReader implements ExternalEventsReader {
             reader.close();
             fileReader.close();
         } catch (IOException e) {
-            throw new SimError("Reader could not be closed: "+e);
+            throw new SimError("Reader could not be closed: " + e);
         }
     }
 }

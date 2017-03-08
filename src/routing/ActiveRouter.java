@@ -36,6 +36,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	public static final String DELETE_DELIVERED_S = "deleteDelivered";
 	/** setting string for the energy threshold, below wich the battery is considered to be empty. Default = 0.01 */
 	public static final String ENERGY_THRESHOLD_S = "energyThreshold";
+	/** Default value for the energy threshold */
+	public static final double ENERGY_THRESHOLD_DEFAULT = 0.01;
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
@@ -74,7 +76,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		} else {
 			this.energy = null; /* no energy model */
 		}
-		this.energyThreshold = s.getDouble(ENERGY_THRESHOLD_S, 0.01);
+		this.energyThreshold = s.getDouble(ENERGY_THRESHOLD_S, ENERGY_THRESHOLD_DEFAULT);
 	}
 
 	/**

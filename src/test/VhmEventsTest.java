@@ -22,13 +22,16 @@ import java.util.List;
  */
 public class VhmEventsTest {
 
-    public static final String CORRECT_FILE = "ee/test/VHMTestEvents.json";
-    public static final String MISSING_VERSION = "ee/test/VHMTestMissingVersion.json";
+    private static final String CORRECT_FILE = "ee/test/VHMTestEvents.json";
+    private static final String MISSING_VERSION = "ee/test/VHMTestMissingVersion.json";
 
-    public static final int MAX_EVENT_COUNT = 3;
+    private static final int MAX_EVENT_COUNT = 3;
 
-    File correctFile;
-    File incorrectFile;
+    /** number of VhmEvents (start and end) per VhmEvent */
+    private static final int EVENTS_IN_EVENTLIST_PER_VHMEVENT = 2;
+
+    private File correctFile;
+    private File incorrectFile;
 
     /**
      * Load the needed files for the tests
@@ -50,7 +53,7 @@ public class VhmEventsTest {
         for (int eventCount = 0; eventCount < MAX_EVENT_COUNT; eventCount++) {
             eventList = loadVhmEventsFile(correctFile,eventCount);
             TestCase.assertTrue(eventCount + " events should be in list. Currently: " +
-                    eventList.size(), eventList.size() == 2 * eventCount);
+                    eventList.size(), eventList.size() == EVENTS_IN_EVENTLIST_PER_VHMEVENT * eventCount);
         }
     }
 
@@ -94,7 +97,7 @@ public class VhmEventsTest {
      * @param eventCount the maximal number of loaded events
      * @return a list with events
      */
-    private List<ExternalEvent> loadVhmEventsFile(File eventFile,int eventCount){
+    private static List<ExternalEvent> loadVhmEventsFile(File eventFile,int eventCount){
         try {
             VhmEventReader reader = new VhmEventReader(eventFile);
             return reader.readEvents(eventCount);
@@ -109,7 +112,7 @@ public class VhmEventsTest {
      *
      * @param list the list that is checked
      */
-    private void testObjectEquality(List<Object> list){
+    private static void testObjectEquality(List<Object> list){
         for (int i = 0; i < list.size(); i++){
             for (int k = 0; k < list.size(); k++){
                 if (i == k){

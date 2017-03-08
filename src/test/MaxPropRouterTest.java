@@ -4,6 +4,8 @@
  */
 package test;
 
+import core.Settings;
+import org.junit.Test;
 import routing.MaxPropRouter;
 import routing.MessageRouter;
 import core.DTNHost;
@@ -20,6 +22,9 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 	private static final double INVALID_COST = Double.MAX_VALUE;
 
 	protected void setUp() throws Exception {
+		Settings.init(null);
+		ts = new TestSettings();
+		java.util.Locale.setDefault(java.util.Locale.US);
 		ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
 		ts.putSetting(SimScenario.SCENARIO_NS + "." +
 				SimScenario.NROF_GROUPS_S, "1");
@@ -34,17 +39,18 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		r4 = (MaxPropRouter)h4.getRouter();
 	}
 
+	@Test
 	public void testCostValues() {
 		/* create messages so we can ask for msg costs */
 
-		Message m1 = new Message(h1,h2, msgId2, 10);
+		Message m1 = new Message(h1,h2, MSG_ID2, 10);
 		h1.createNewMessage(m1);
-		Message m2 = new Message(h1,h3, msgId3, 10);
+		Message m2 = new Message(h1,h3, MSG_ID3, 10);
 		h1.createNewMessage(m2);
-		Message m3 = new Message(h1,h4, msgId4, 10);
+		Message m3 = new Message(h1,h4, MSG_ID4, 10);
 		h1.createNewMessage(m3);
 
-		Message m4 = new Message(h2,h1, msgId5, 10);
+		Message m4 = new Message(h2,h1, MSG_ID5, 10);
 		h2.createNewMessage(m4);
 		checkCreates(4);
 
@@ -100,10 +106,11 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 
 	}
 
+	@Test
 	public void testThreshold() {
 		int msgSize = 90;
 
-		Message m1 = new Message(h1,h5, msgId1, msgSize);
+		Message m1 = new Message(h1,h5, MSG_ID1, msgSize);
 		h1.createNewMessage(m1);
 		checkCreates(1);
 		h1.connect(h2);
@@ -112,23 +119,23 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		assertEquals(0, r1.calcThreshold());
 		assertEquals(0, r2.calcThreshold());
 
-		/* simple delivery of msgId1 from h1 to h2 */
+		/* simple delivery of MSG_ID1 from h1 to h2 */
 		updateAllNodes();
-		checkTransferStart(h1, h2, msgId1);
+		checkTransferStart(h1, h2, MSG_ID1);
 		assertFalse(mc.next());
 		clock.advance(5);
 		updateAllNodes();
 		assertFalse(mc.next()); // transfer should not be ready yet
 		clock.advance(5); // now it should be done
 		updateAllNodes();
-		checkDelivered(h1, h2, msgId1, false);
+		checkDelivered(h1, h2, MSG_ID1, false);
 
 		disconnect(h1);
 		assertEquals(1, r1.calcThreshold());
 		assertEquals(2, r2.calcThreshold());
 
 		h2.connect(h3);
-		deliverMessage(h2, h3, msgId1, msgSize, false);
+		deliverMessage(h2, h3, MSG_ID1, msgSize, false);
 		disconnect(h2);
 		assertEquals(2, r2.calcThreshold());
 		/* msg at h3 has traveled 2 hops and "bsize > avgTransferredBytes > 0"
@@ -136,51 +143,53 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		assertEquals(3, r3.calcThreshold());
 	}
 
+	@Test
 	public void testAckedMessageDeleting() {
 		int msgSize = 10;
-		Message m1 = new Message(h1,h5, msgId1, msgSize);
+		Message m1 = new Message(h1,h5, MSG_ID1, msgSize);
 		h1.createNewMessage(m1);
 		checkCreates(1);
 
 		h1.connect(h2);
-		deliverMessage(h1, h2, msgId1, msgSize, false);
+		deliverMessage(h1, h2, MSG_ID1, msgSize, false);
 		disconnect(h1);
 
 		h1.connect(h3);
-		deliverMessage(h1, h3, msgId1, msgSize, false);
+		deliverMessage(h1, h3, MSG_ID1, msgSize, false);
 		disconnect(h1);
 
 		h1.connect(h5);
-		deliverMessage(h1, h5, msgId1, msgSize, true);
+		deliverMessage(h1, h5, MSG_ID1, msgSize, true);
 		disconnect(h1);
 
 		assertFalse(mc.next());
 		h1.connect(h2); // h1 should notify h2 of the delivered msg
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 		assertEquals(h2, mc.getLastFrom());
 		// the deleted msg truly came from h1?
 		assertEquals(h1, mc.getLastMsg().getHops().get(0));
 		assertFalse(mc.next());
 
 		// new msg to h3
-		Message m2 = new Message(h3,h1, msgId2, msgSize);
+		Message m2 = new Message(h3,h1, MSG_ID2, msgSize);
 		h3.createNewMessage(m2);
 		checkCreates(1);
 
-		h3.connect(h2); // h2 should notify h3 which should delete msgId1
+		h3.connect(h2); // h2 should notify h3 which should delete MSG_ID1
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 		assertEquals(h3, mc.getLastFrom());
 		assertFalse(mc.next());
-		/* msgId2 should NOT be deleted but it should be transferred to h2
+		/* MSG_ID2 should NOT be deleted but it should be transferred to h2
 		 * during the next update*/
-		deliverMessage(h3, h2, msgId2, msgSize, false);
+		deliverMessage(h3, h2, MSG_ID2, msgSize, false);
 
 	}
 
+	@Test
 	public void testRouting() {
 		int msgSize = 10;
 		DTNHost th1 = utils.createHost(c0, "temp1");
@@ -221,7 +230,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		disconnect(h4);
 		/* h4 probs: h3:0.25, th1:0.1875, h5:0.5625
 		 * these changes should not be visible to h3! */
-		Message m1 = new Message(h1,h5, msgId1, msgSize);
+		Message m1 = new Message(h1,h5, MSG_ID1, msgSize);
 		h1.createNewMessage(m1);
 
 		/* msg with path h1 -> h2     -> h3       -> h4       -> h5  */
@@ -234,6 +243,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 	 * Tests that more recent meeting probability sets replace older ones
 	 * but not vice versa.
 	 */
+	@Test
 	public void testMpsTimeStamps() {
 		/* create some messages so we can ask costs to destinations */
 		int msgIndx = 1;

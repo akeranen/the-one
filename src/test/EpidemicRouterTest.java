@@ -4,6 +4,7 @@
  */
 package test;
 
+import org.junit.Test;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
@@ -28,11 +29,12 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests routing messages between three hosts
 	 */
+	@Test
 	public void testRouter() {
 		// nothing should have happened so far
 		assertEquals(mc.TYPE_NONE, mc.getLastType());
 
-		Message m1 = new Message(h1, h3, msgId1, 1);
+		Message m1 = new Message(h1, h3, MSG_ID1, 1);
 		h1.createNewMessage(m1);
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
@@ -74,7 +76,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		// disconnect all nodes and try to other direction
 		disconnect(h2);
 		// create message while not connected
-		Message m2 = new Message(h3,h1, msgId2, 1);
+		Message m2 = new Message(h3,h1, MSG_ID2, 1);
 		h3.createNewMessage(m2);
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
@@ -90,7 +92,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(mc.TYPE_START, mc.getLastType());
 		assertEquals(h2, mc.getLastTo());
 		assertEquals(h3, mc.getLastFrom());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 		assertFalse(mc.next());
 
 		clock.advance(10);
@@ -99,7 +101,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
 		assertEquals(h2, mc.getLastTo());
 		assertEquals(h3, mc.getLastFrom());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 		assertFalse(mc.next());
 
 		updateAllNodes();	// forwarding msg2 h2->h1
@@ -113,7 +115,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
 		assertEquals(h1, mc.getLastTo());
 		assertEquals(h2, mc.getLastFrom());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 		assertTrue(mc.getLastFirstDelivery()); // message delivered to recipient
 		assertFalse(mc.next());
 	}
@@ -121,11 +123,12 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Checks that delivering many messages in a row works
 	 */
+	@Test
 	public void testManyMessages() {
 
-		Message m1 = new Message(h1,h2, msgId1, 1);
+		Message m1 = new Message(h1,h2, MSG_ID1, 1);
 		h1.createNewMessage(m1);
-		Message m2 = new Message(h1,h2, msgId2, 1);
+		Message m2 = new Message(h1,h2, MSG_ID2, 1);
 		h1.createNewMessage(m2);
 		mc.reset();
 
@@ -158,17 +161,18 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests that messages that can be delivered right a way are delivered first
 	 */
+	@Test
 	public void testDeliverableMessageExchange() {
 		Message m1 = new Message(h1,h3, "Dummy1", 1);
 		h1.createNewMessage(m1);
 		Message m2 = new Message(h1,h3, "A_Dummy2", 1);
 		h1.createNewMessage(m2);
-		Message m3 = new Message(h1,h2, msgId1, 1);
+		Message m3 = new Message(h1,h2, MSG_ID1, 1);
 		h1.createNewMessage(m3);
 
 		Message m4 = new Message(h2,h3, "Dummy3", 1);
 		h2.createNewMessage(m4);
-		Message m5 = new Message(h2,h1, msgId2, 1);
+		Message m5 = new Message(h2,h1, MSG_ID2, 1);
 		h2.createNewMessage(m5);
 		Message m6 = new Message(h2,h3, "Dummy4", 1);
 		h2.createNewMessage(m6);
@@ -178,19 +182,19 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.connect(h2);
 		updateAllNodes();
 		assertTrue(mc.next());
-		assertEquals(mc.TYPE_START, mc.getLastType()); // starts h1->h2 msgId1
+		assertEquals(mc.TYPE_START, mc.getLastType()); // starts h1->h2 MSG_ID1
 		assertEquals(h2, mc.getLastTo());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 
 		clock.advance(10);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_RELAY, mc.getLastType()); // finished delivery
 
-		// should also start delivery of msgId2 from h2 to h1
+		// should also start delivery of MSG_ID2 from h2 to h1
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 		assertEquals(h1, mc.getLastTo());
 
 	}
@@ -199,8 +203,9 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	 * Tests aborting transfer when connections is disconnected during the
 	 * transfer
 	 */
+	@Test
 	public void testMessageRelayAbort() {
-		Message m1 = new Message(h1,h2, msgId1, BUFFER_SIZE);
+		Message m1 = new Message(h1,h2, MSG_ID1, BUFFER_SIZE);
 		h1.createNewMessage(m1);
 		checkCreates(1);
 
@@ -226,8 +231,9 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	 * try disconnecting on the same update interval when a transfer should
 	 * be finished -> should not cause abort (anymore)
 	 */
+	@Test
 	public void testAbortWhenReady() {
-		Message m1 = new Message(h2, h1, msgId2, 1);
+		Message m1 = new Message(h2, h1, MSG_ID2, 1);
 		h2.createNewMessage(m1);
 		checkCreates(1);
 
@@ -252,9 +258,10 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Test unexpected ordering of finalizations and message transfers.
 	 */
+	@Test
 	public void testDifferentOrdering() {
 		h1.connect(h2);
-		Message m1 = new Message(h1,h2, msgId1, 1);
+		Message m1 = new Message(h1,h2, MSG_ID1, 1);
 		h1.createNewMessage(m1);
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
@@ -266,7 +273,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 		clock.advance(10);
 		// h1 has transferred msg but not finalized transfer when h2 starts
-		Message m2 = new Message(h2,h1, msgId2, 1);
+		Message m2 = new Message(h2,h1, MSG_ID2, 1);
 		h2.createNewMessage(m2);
 		h2.update(true); // h2 and h1 are connected but this shouldn't start relay
 
@@ -279,11 +286,11 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
 		assertEquals(h2, mc.getLastTo());
 
-		// last transfer is finalized -> update should start transfer of msgId2
+		// last transfer is finalized -> update should start transfer of MSG_ID2
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
 		assertEquals(h1, mc.getLastTo());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 
 		assertFalse(mc.next());
 	}
@@ -291,8 +298,9 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests if rejecting already delivered message(s) work
 	 */
+	@Test
 	public void testDoubleDelivery() {
-		Message m1 = new Message(h1,h2, msgId1, 1);
+		Message m1 = new Message(h1,h2, MSG_ID1, 1);
 		h1.createNewMessage(m1);
 
 		h1.connect(h2);
@@ -324,19 +332,20 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	/**
 	 * Tests if the FIFO queue management works
 	 */
+	@Test
 	public void testQueueManagement() {
 		Message m1 = new Message(h1,h3, "dummy", BUFFER_SIZE-1);
 		h1.createNewMessage(m1);
 		assertEquals(1, h1.getNrofMessages());
-		Message m2 = new Message(h1,h3, msgId1, BUFFER_SIZE/3);
+		Message m2 = new Message(h1,h3, MSG_ID1, BUFFER_SIZE/3);
 		h1.createNewMessage(m2);
 		assertEquals(1, h1.getNrofMessages()); // message should replace dummy
-		assertEquals(msgId1, h1.getMessageCollection().iterator().next().getId());
+		assertEquals(MSG_ID1, h1.getMessageCollection().iterator().next().getId());
 
 		mc.reset();
 
 		clock.advance(10);
-		Message m3 = new Message(h1,h3, msgId2, BUFFER_SIZE/3);
+		Message m3 = new Message(h1,h3, MSG_ID2, BUFFER_SIZE/3);
 		h1.createNewMessage(m3);
 		clock.advance(10);
 		Message m4 = new Message(h1,h3, "newestMsg", BUFFER_SIZE/3);
@@ -350,15 +359,15 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 		h2.connect(h1);	// h2 starts transfer of message -> h1 makes room
 		h2.update(true);
-		// h1 should drop first msgId1 and then msgId2 (older first)
+		// h1 should drop first MSG_ID1 and then MSG_ID2 (older first)
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
 		assertEquals(h1, mc.getLastFrom());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 		assertTrue(mc.getLastDropped());
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 
 		assertEquals(1, h1.getNrofMessages());
 
@@ -379,18 +388,19 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	 * Tests creating a new message when the message buffer is full and the
 	 * message that should be removed is the message being sent
 	 */
+	@Test
 	public void testNewMessageToFullBufferWhileTransferring() {
 		int m3Size = BUFFER_SIZE-1;
 		int m1Size = BUFFER_SIZE/2;
 
-		Message m1 = new Message(h1,h3, msgId1, m1Size);
+		Message m1 = new Message(h1,h3, MSG_ID1, m1Size);
 		h1.createNewMessage(m1);
-		Message m2 = new Message(h1,h4, msgId2, BUFFER_SIZE/2);
+		Message m2 = new Message(h1,h4, MSG_ID2, BUFFER_SIZE/2);
 		h1.createNewMessage(m2);
 		checkCreates(2);
 
 		h3.connect(h1);
-		updateAllNodes(); // transfer of msgId1 should start
+		updateAllNodes(); // transfer of MSG_ID1 should start
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
@@ -398,20 +408,20 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		updateAllNodes(); // should still be transferring
 		assertFalse(mc.next());
 
-		// creating a new message should cause dropping the msgId2 but
-		// not msgId1 (which is being transferred) -> buffer should become
+		// creating a new message should cause dropping the MSG_ID2 but
+		// not MSG_ID1 (which is being transferred) -> buffer should become
 		// "over full"
-		Message m3 = new Message(h1,h4, msgId3, m3Size);
+		Message m3 = new Message(h1,h4, MSG_ID3, m3Size);
 		h1.createNewMessage(m3);
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
 		assertTrue(mc.getLastDropped());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
-		assertEquals(msgId3, mc.getLastMsg().getId());
+		assertEquals(MSG_ID3, mc.getLastMsg().getId());
 		assertTrue(h1.getBufferOccupancy() > 100); // buffer occupancy > 100%
 
 		assertFalse(mc.next());
@@ -421,27 +431,28 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 
 		assertTrue(mc.next()); // now should drop the transferred message
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
 		assertTrue(mc.getLastDropped());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 
 		 // buffer occupancy should drop back under 100 %
 		assertTrue(h1.getBufferOccupancy() < 100);
 
-		// should start transferring msgId3
+		// should start transferring MSG_ID3
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(msgId3, mc.getLastMsg().getId());
+		assertEquals(MSG_ID3, mc.getLastMsg().getId());
 
 		assertFalse(mc.next());
 	}
 
+	@Test
 	public void testTtlExpiry() {
 		final int TIME_STEP = 10;
-		Message m1 = new Message(h1,h3, msgId1, 1);
+		Message m1 = new Message(h1,h3, MSG_ID1, 1);
 		h1.createNewMessage(m1);
 		checkCreates(1);
 
@@ -464,7 +475,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		clock.advance((TTL-1)*60 - TIME_STEP*2);
 		updateAllNodes();
 		assertFalse(mc.next());
-		Message m2 = new Message(h4,h3, msgId2, 1);
+		Message m2 = new Message(h4,h3, MSG_ID2, 1);
 		h4.createNewMessage(m2);
 		checkCreates(1);
 
@@ -475,12 +486,12 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
 		assertEquals(h1, mc.getLastFrom());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
 		assertEquals(h2, mc.getLastFrom());
-		assertEquals(msgId1, mc.getLastMsg().getId());
+		assertEquals(MSG_ID1, mc.getLastMsg().getId());
 
 		assertFalse(mc.next()); // h4 shouldn't remove the msg just yet
 
@@ -494,13 +505,14 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_DELETE, mc.getLastType());
 		assertEquals(h4, mc.getLastFrom());
-		assertEquals(msgId2, mc.getLastMsg().getId());
+		assertEquals(MSG_ID2, mc.getLastMsg().getId());
 
 		assertFalse(mc.next());
 	}
 
+	@Test
 	public void testResponse() {
-		Message m1 = new Message(h1,h3, msgId1, 1);
+		Message m1 = new Message(h1,h3, MSG_ID1, 1);
 		m1.setResponseSize(1);
 		h1.createNewMessage(m1);
 		h1.connect(h2);
@@ -523,7 +535,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		// h3 should reply by creating a reply message..
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
-		assertEquals(routing.ActiveRouter.RESPONSE_PREFIX + msgId1,
+		assertEquals(routing.ActiveRouter.RESPONSE_PREFIX + MSG_ID1,
 				mc.getLastMsg().getId());
 		assertEquals(h3, mc.getLastFrom());
 		assertEquals(h1, mc.getLastTo());
@@ -531,7 +543,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		// .. and starting its transfer
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		assertEquals(routing.ActiveRouter.RESPONSE_PREFIX + msgId1,
+		assertEquals(routing.ActiveRouter.RESPONSE_PREFIX + MSG_ID1,
 				mc.getLastMsg().getId());
 		assertEquals(h3, mc.getLastFrom());
 		assertEquals(h2, mc.getLastTo());
@@ -598,6 +610,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		return msgIds;
 	}
 
+	@Test
 	public void testFifoSendingQ() throws Exception {
 		ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S,
 				""+MessageRouter.Q_MODE_FIFO);
@@ -609,6 +622,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(expectedIds, runMessageExchange(false));
 	}
 
+	@Test
 	public void testRandomSendingQ() throws Exception {
 		ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S,
 				""+MessageRouter.Q_MODE_RANDOM);

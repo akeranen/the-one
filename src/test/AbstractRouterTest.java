@@ -7,13 +7,13 @@ package test;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-import routing.MessageRouter;
 import core.Coord;
 import core.DTNHost;
 import core.MessageListener;
 import core.NetworkInterface;
 import core.SimClock;
+import junit.framework.TestCase;
+import routing.MessageRouter;
 
 /**
  * Superclass for router tests. Sets up the environment by creating
@@ -29,7 +29,8 @@ public abstract class AbstractRouterTest extends TestCase {
 	protected SimClock clock;
 
 	protected Coord c0 = new Coord(0,0);
-	protected Coord farAway = new Coord(100000,100000);
+	protected static final int FAR_AWAY_COORD=100000;
+	protected Coord farAway = new Coord(FAR_AWAY_COORD,FAR_AWAY_COORD);
 	protected static final Coord disconnectLocation = new Coord(900000,900000);
 	protected DTNHost h0;
 	protected DTNHost h1;
@@ -38,14 +39,15 @@ public abstract class AbstractRouterTest extends TestCase {
 	protected DTNHost h4;
 	protected DTNHost h5;
 	protected DTNHost h6;
-	protected static final String msgId1 = "MSG_ID1";
-	protected static final String msgId2 = "MSG_ID2";
-	protected static final String msgId3 = "MSG_ID3";
-	protected static final String msgId4 = "MSG_ID4";
-	protected static final String msgId5 = "MSG_ID5";
+	protected static final String MSG_ID1 = "MSG_ID1";
+	protected static final String MSG_ID2 = "MSG_ID2";
+	protected static final String MSG_ID3 = "MSG_ID3";
+	protected static final String MSG_ID4 = "MSG_ID4";
+	protected static final String MSG_ID5 = "MSG_ID5";
 
 	protected MessageRouter routerProto;
 
+	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		this.mc = new MessageChecker();
@@ -58,6 +60,7 @@ public abstract class AbstractRouterTest extends TestCase {
 
 		ts.setNameSpace(TestUtils.IFACE_NS);
 		ts.putSetting(NetworkInterface.TRANSMIT_SPEED_S, ""+TRANSMIT_SPEED);
+		ts.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1");
 
 		this.utils = new TestUtils(null,ml,ts);
 		this.utils.setMessageRouterProto(routerProto);
@@ -147,6 +150,7 @@ public abstract class AbstractRouterTest extends TestCase {
 		node.setLocation(loc);
 	}
 
+	@Override
 	public String toString() {
 		return "MC: " + mc.toString();
 	}

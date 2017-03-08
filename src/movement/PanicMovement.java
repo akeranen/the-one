@@ -45,7 +45,8 @@ public class PanicMovement extends MapBasedMovement {
      */
     protected PanicMovement(PanicMovement pm) {
         super(pm);
-        pmu = pm.pmu;
+        pmu = new PanicMovementUtil(pm.pmu.getEventLocation(),
+                                    pm.pmu.getSafeRangeRadius(), pm.pmu.getEventRangeRadius());
         this.pathFinder = pm.pathFinder;
     }
 

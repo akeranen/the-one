@@ -36,8 +36,10 @@ public class MessageStatsReportTest {
 
     @Before
     public void init() throws IOException{
+        SimScenario.reset();
         Settings.init(null);
         java.util.Locale.setDefault(java.util.Locale.US);
+
         this.outFile = File.createTempFile("mgtest", ".tmp");
         this.outFile.deleteOnExit();
 

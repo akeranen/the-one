@@ -5,7 +5,7 @@
 ## Scenario settings
 Scenario.name = panic_movement_test
 
-# Define 6 different node groups
+# Define 2 different node groups
 Scenario.nrofHostGroups = 2
 
 # Common settings for all groups

@@ -53,13 +53,13 @@ public class PanicMovementUtil {
         double shortestDistance = Double.MAX_VALUE;
 
         for (MapNode node : map.getNodes()) {
-            double distance = eventLocation.distance(node.getLocation());
-            double distanceToNode = locationNode.getLocation().distance(node.getLocation());
-            if (distance >= safeRangeRadius && distance <= eventRangeRadius
-                    && (distanceToNode < shortestDistance)
+            double distanceBetweenNodeAndEvent = eventLocation.distance(node.getLocation());
+            double distanceBetweenHostAndNode = locationNode.getLocation().distance(node.getLocation());
+            if (distanceBetweenNodeAndEvent >= safeRangeRadius && distanceBetweenNodeAndEvent <= eventRangeRadius
+                    && (distanceBetweenHostAndNode < shortestDistance)
                     && !isInEventDirection(locationNode, node)) {
                 nearestSafeNode = node;
-                shortestDistance = distanceToNode;
+                shortestDistance = distanceBetweenHostAndNode;
             }
         }
 

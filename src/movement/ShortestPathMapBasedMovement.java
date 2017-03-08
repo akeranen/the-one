@@ -9,7 +9,6 @@ import java.util.List;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.PointsOfInterest;
-import movement.map.SimMap;
 import core.Settings;
 
 /**
@@ -19,7 +18,7 @@ import core.Settings;
 public class ShortestPathMapBasedMovement extends MapBasedMovement implements
 	SwitchableMovement {
 	/** the Dijkstra shortest path finder */
-	protected DijkstraPathFinder pathFinder;
+	private DijkstraPathFinder pathFinder;
 
 	/** Points Of Interest handler */
 	private PointsOfInterest pois;
@@ -33,17 +32,6 @@ public class ShortestPathMapBasedMovement extends MapBasedMovement implements
 		this.pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 		this.pois = new PointsOfInterest(getMap(), getOkMapNodeTypes(),
 				settings, rng);
-	}
-	
-	/**
-	 * Creates a new movement model adapting the map and number of files passed to the constructor
-	 * @param settings The Settings object where the settings are read from
-	 * @param newMap The map the movement model is based on
-	 * @param nrofMaps Number of WKT Files that are relevant
-	 */
-	public ShortestPathMapBasedMovement(Settings settings, SimMap newMap, int nrofMaps) {
-		super(settings, newMap, nrofMaps);
-		this.pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 	}
 
 	/**

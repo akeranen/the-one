@@ -4,6 +4,7 @@ import java.util.List;
 
 import core.Coord;
 import core.Settings;
+import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.PanicMovementUtil;
 import movement.map.SimMap;
@@ -15,16 +16,15 @@ import movement.map.SimMap;
  * between the save range radius and the event range radius. Furthermore, they do not cross the event, such that
  * the angle between them, the event and the target is at most 90°
  */
-public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
-    
-	//private Coord eventLocation;	
-	//private double safeRangeRadius;
-	//private double eventRangeRadius;
+public class PanicMovement extends MapBasedMovement implements SwitchableMovement {
+
 	
 	private PanicMovementUtil pmu;
 	private static final double SAFE_RANGE_RADIUS = 1000.0;
 	private static final double EVENT_RANGE_RADIUS = 1500.0;
 	private static final double COORD1000 = 1500.0;
+
+	private DijkstraPathFinder pathFinder;
 	
 	/**
 	 * Constructor setting values for the event and the minimum and maximum distance to 
@@ -34,6 +34,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	public PanicMovement (Settings settings) {
 		super(settings);
 		setLocalFields(new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
+		pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 	}
 
     /**
@@ -43,7 +44,9 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
      */
     protected PanicMovement(PanicMovement pm) {
         super(pm);
-        setLocalFields(pm.pmu.getEventLocation(), pm.pmu.getSafeRangeRadius(), pm.pmu.getEventRangeRadius());
+        pmu = pm.pmu;
+        setLocalFields(pmu.getEventLocation(), pmu.getSafeRangeRadius(), pmu.getEventRangeRadius());
+		this.pathFinder = pm.pathFinder;
     }
 	
 	/**
@@ -56,6 +59,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 			Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings, newMap, nrofMaps);
 		setLocalFields(location, safeRangeRadius, eventRangeRadius);
+		pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 	}
 	
 	/**
@@ -73,16 +77,10 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	@Override
 	public Path getPath() {
 		Path path = new Path(generateSpeed());
-		Coord hostLocation = host.getLocation();
-		MapNode hostNode = getNearestNode(getMap(), hostLocation);
+		MapNode hostNode = getNearestNode(getMap(), getLastLocation());
 		MapNode destNode = pmu.selectDestination(getMap(), hostNode);
 		
 		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
-
-		// this assertion should never fire if the map is checked in read phase
-		int pathSize = nodePath.size();
-		assert pathSize > 0 : "No path from " + hostNode + " to " +
-		destNode + ". The simulation map isn't fully connected.";
 
 		for (MapNode node : nodePath) { // create a Path from the shortest path
 			path.addWaypoint(node.getLocation());

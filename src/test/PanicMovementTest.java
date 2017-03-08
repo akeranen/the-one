@@ -86,7 +86,7 @@ public class PanicMovementTest extends TestCase {
         node[5] = new MapNode(coord[5]);
         node[6] = new MapNode(coord[6]);
 
-        Map<Coord, MapNode> cmMap = new HashMap<Coord, MapNode>();
+        Map<Coord, MapNode> cmMap = new HashMap<>();
         cmMap.put(coord[0], node[0]);
         cmMap.put(coord[1], node[1]);
         cmMap.put(coord[2], node[2]);
@@ -125,7 +125,8 @@ public class PanicMovementTest extends TestCase {
         MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 
         assertTrue("Target node should be inside the safe area",
-                end.getLocation().distance(event.getLocation()) >= panicMovement.getPanicMovementUtil().getSafeRangeRadius());
+                end.getLocation().distance(event.getLocation())
+                        >= panicMovement.getPanicMovementUtil().getSafeRangeRadius());
     }
 
     /**
@@ -141,7 +142,8 @@ public class PanicMovementTest extends TestCase {
             if (end.getLocation().distance(panicMovement.getHost().getLocation())
                     > m.getLocation().distance(panicMovement.getHost().getLocation())) {
                 assertTrue("Closest possible node to the host should be selected",
-                        m.getLocation().distance(event.getLocation()) < panicMovement.getPanicMovementUtil().getSafeRangeRadius()
+                        m.getLocation().distance(event.getLocation())
+                                < panicMovement.getPanicMovementUtil().getSafeRangeRadius()
                                 || panicMovement.getPanicMovementUtil().isInEventDirection(start, m));
             }
         }
@@ -156,7 +158,8 @@ public class PanicMovementTest extends TestCase {
         MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
 
         assertTrue("Target node should not be outside the event range",
-                end.getLocation().distance(event.getLocation()) <= panicMovement.getPanicMovementUtil().getEventRangeRadius());
+                end.getLocation().distance(event.getLocation())
+                        <= panicMovement.getPanicMovementUtil().getEventRangeRadius());
     }
 
     /**
@@ -168,7 +171,8 @@ public class PanicMovementTest extends TestCase {
         TestUtils utils = new TestUtils(null, null, settings);
         DTNHost h1 = utils.createHost(panicMovement, null);
 
-        h1.move(0); // get a path for the node
+        // get a path for the node
+        h1.move(0);
         // move node directly to first waypoint
         h1.setLocation(h1.getPath().getCoords().get(0));
         return h1;

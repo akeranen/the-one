@@ -10,11 +10,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import core.*;
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
 import routing.util.RoutingInfo;
 import util.Tuple;
+
+import core.Connection;
+import core.DTNHost;
+import core.Message;
+import core.MessageListener;
+import core.NetworkInterface;
+import core.Settings;
+import core.SimClock;
+import core.EnergyListener;
 
 /**
  * Superclass of active routers. Contains convenience methods (e.g.
@@ -56,6 +64,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	public ActiveRouter(Settings s) {
 		super(s);
+
 		this.policy = new MessageTransferAcceptPolicy(s);
 
 		this.deleteDelivered = s.getBoolean(DELETE_DELIVERED_S, false);
@@ -96,7 +105,6 @@ public abstract class ActiveRouter extends MessageRouter {
 			l.batteryDied();
 		}
 	}
-
 
 	@Override
 	public void init(DTNHost host, List<MessageListener> mListeners) {
@@ -680,4 +688,5 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 		return top;
 	}
+
 }

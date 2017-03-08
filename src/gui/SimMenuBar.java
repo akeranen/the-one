@@ -4,21 +4,28 @@
  */
 package gui;
 
-import core.Settings;
-import core.SettingsError;
 import gui.nodefilter.NodeMessageFilter;
-import gui.playfield.NodeGraphic;
 import gui.playfield.PlayField;
+import gui.playfield.NodeGraphic;
 import gui.playfield.VhmEventGraphic;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+
+import core.Settings;
+import core.SettingsError;
 
 /**
  * Menu bar of the simulator GUI

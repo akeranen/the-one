@@ -4,9 +4,9 @@
  */
 package input;
 
-import core.World;
-
 import java.io.Serializable;
+
+import core.World;
 
 /**
  * Super class for all external events. All new classes of external events

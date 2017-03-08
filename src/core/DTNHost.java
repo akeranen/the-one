@@ -4,14 +4,14 @@
  */
 package core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import static core.Constants.DEBUG;
 

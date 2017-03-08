@@ -14,16 +14,26 @@ import movement.Path;
 import movement.VoluntaryHelperMovement;
 import movement.map.SimMap;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.LinkedList;
+
+import javax.swing.JPanel;
+
+import movement.Path;
+import movement.map.SimMap;
+import core.Coord;
+import core.DTNHost;
+import core.World;
 
 /**
  * The canvas where node graphics and message visualizations are drawn.
@@ -250,7 +260,6 @@ public class PlayField extends JPanel implements VhmListener {
 		this.overlayGraphics.add(new PathGraphic(path));
 		this.updateField();
 	}
-
 
 	/**
 	 * Clears overlay graphics if autoclear is requested

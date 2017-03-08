@@ -8,7 +8,6 @@ import core.MessageListener;
 import core.Settings;
 import core.SimScenario;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -99,16 +98,16 @@ public class MessageStatsReportTest {
      * @throws IOException If the temporary file cannot be opened, read or closed.
      */
     @Test
-    public void testDoneCorrectlyCountsMessageEvents(){
+    public void testDoneCorrectlyCountsMessageEvents() throws  IOException{
 
 		this.report.done();
 
 		try (
-                BufferedReader reader = new BufferedReader(new FileReader(outFile));
+                BufferedReader reader = new BufferedReader(new FileReader(outFile))
                 ){
 
-            reader.readLine(); // read comment lines
-            reader.readLine(); // read comment lines
+            reader.skip(2); // read comment lines
+
             assertEquals(
                     "Reported number of created messages should have been different.",
                     "created: 3",
@@ -141,13 +140,12 @@ public class MessageStatsReportTest {
                     "Reported delivery probability should have been different.",
                     "delivery_prob: 0.6667",
                     reader.readLine());
-            reader.readLine(); // responses are not tested in this scenario
+            reader.skip(1); // responses are not tested in this scenario
             assertEquals(
                     "Reported overhead ratio should have been different",
                     "overhead_ratio: 0.5000",
                     reader.readLine());
-            reader.readLine(); // latency is not tested in this scenario
-            reader.readLine(); // latency is not tested in this scenario
+            reader.skip(2); // latency is not tested in this scenario
             assertEquals(
                     "Reported average hopcount should have been different.",
                     "hopcount_avg: 1.5000",
@@ -156,9 +154,6 @@ public class MessageStatsReportTest {
                     "Reported median hopcount should have been different.",
                     "hopcount_med: 2",
                     reader.readLine());
-        }
-        catch (IOException e){
-            Assert.fail("Could not read file, Exception occured."+  e.getMessage());
         }
 
 	}

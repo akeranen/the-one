@@ -3,10 +3,10 @@ package movement.map;
 import core.Coord;
 
 public class PanicMovementUtil {
-    
+
 	private double safeRangeRadius;
 	private double eventRangeRadius;
-	private Coord eventLocation = null;
+	private Coord eventLocation;
 	private static final double RIGHT_ANGLE = 90.0;
 	private static final double STRAIGHT_ANGLE = 180.0;
 	private static final double FULL_ROTATION = 360.0;
@@ -62,8 +62,7 @@ public class PanicMovementUtil {
 		// if no better node is found, the node can stay at the current location
 		if (nearestSafeNode == null) {
 			return locationNode;
-		}
-		else {
+		} else {
 			return nearestSafeNode;
 		}
 	}
@@ -91,12 +90,10 @@ public class PanicMovementUtil {
 		if (eventLocation.equals(targetNode.getLocation())) {
 		// event = target --> IN event direction
 			return true;
-		}
-		else if (eventLocation.equals(sourceNode.getLocation())) {
+		} else if (eventLocation.equals(sourceNode.getLocation())) {
 		// event = source --> NOT IN event direction
 			return false;
-		}
-		else {
+		} else {
 			angle = computeAngleBetween(eventLocation, sourceNode, targetNode);
 		}
 		
@@ -133,8 +130,7 @@ public class PanicMovementUtil {
 		if (lengthProduct <= 0) {
 			// This case avoids division by zero. Since this case is also handled at the caller, it should never happen
 			return STRAIGHT_ANGLE;
-		}
-		else {
+		} else {
 			return Math.acos(scalarProduct / lengthProduct) * FULL_ROTATION/Math.PI;
 		}
 	}

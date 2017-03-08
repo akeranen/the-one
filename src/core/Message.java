@@ -63,6 +63,10 @@ public class Message implements Comparable<Message> {
          * Message with single sender and recipient.
          */
         ONE_TO_ONE,
+		/**
+		 * Message which should be sent to a specific group of nodes
+		 */
+		MULTICAST,
         /**
          * Message which should be sent to everyone.
          */

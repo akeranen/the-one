@@ -4,15 +4,12 @@
  */
 package report;
 
+import core.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import core.DTNHost;
-import core.Message;
-import core.MessageListener;
-import core.SimScenario;
 
 /**
  * Report for generating different kind of total statistics about message
@@ -131,6 +128,9 @@ public class MessageStatsReport extends Report implements MessageListener {
             case BROADCAST:
                 numberOfRecipients = this.simScenario.getHosts().size() - 1;
                 break;
+			case MULTICAST:
+				numberOfRecipients = ((MulticastMessage)m).getGroup().getMemberCount();
+				break;
             default:
                 throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
         }

@@ -70,6 +70,10 @@ public class SimScenario implements Serializable {
 	public static final String INTERFACENAME_S = "interface";
 	/** application name in the group -setting id ({@value})*/
 	public static final String GAPPNAME_S = "application";
+	/**
+	 *addresses of the multicast groups the nodes are joined in the group -setting id ({@value})
+	 */
+	public static final String GROUP_ADDRESSES_S = "groupAddresses";
 
 	/** package where to look for movement models */
 	private static final String MM_PACKAGE = "movement.";
@@ -329,6 +333,10 @@ public class SimScenario implements Serializable {
 			String gid = s.getSetting(GROUP_ID_S);
 			int nrofHosts = s.getInt(NROF_HOSTS_S);
 			int nrofInterfaces = s.getInt(NROF_INTERF_S);
+			int[] joinedGroups = new int[0];
+			if (s.contains(GROUP_ADDRESSES_S)){
+				joinedGroups = s.getCsvInts(GROUP_ADDRESSES_S);
+			}
 			int appCount;
 
 			// creates prototypes of MessageRouter and MovementModel
@@ -398,6 +406,10 @@ public class SimScenario implements Serializable {
 				DTNHost host = new DTNHost(this.messageListeners,
 						this.movementListeners,	gid, interfaces, comBus,
 						mmProto, mRouterProto);
+				//join the defined multicast groups
+				for (int groupAddress : joinedGroups){
+					host.joinGroup(Group.getOrCreateGroup(groupAddress));
+				}
 				hosts.add(host);
 			}
 		}

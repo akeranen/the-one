@@ -4,18 +4,11 @@
  */
 package routing.util;
 
-import java.util.ArrayList;
-
+import core.*;
 import util.Range;
 import util.Tuple;
 
-import core.ArithmeticCondition;
-import core.BroadcastMessage;
-import core.Connection;
-import core.DTNHost;
-import core.Message;
-import core.ModuleCommunicationBus;
-import core.Settings;
+import java.util.ArrayList;
 
 /**
  * <P> Message transfer accepting policy module. Can be used to decide whether
@@ -220,8 +213,10 @@ public class MessageTransferAcceptPolicy {
      * @return true if both conditions evaluated to true
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
-        boolean checkRecipients = (m instanceof  BroadcastMessage)
-                || checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress);
+        boolean checkNotOneToOne = (m instanceof  BroadcastMessage) ||
+				((m instanceof MulticastMessage) && ((MulticastMessage)m).getGroup().isInGroup(ownAddress));
+		boolean checkRecipients = checkNotOneToOne || (!(m instanceof MulticastMessage) &&
+				checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress));
         return checkRecipients && checkSimplePolicy(m.getFrom(), this.fromSendPolicy, ownAddress);
     }
 

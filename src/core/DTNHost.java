@@ -4,14 +4,14 @@
  */
 package core;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static core.Constants.DEBUG;
 
@@ -21,6 +21,11 @@ import static core.Constants.DEBUG;
 public class DTNHost implements Comparable<DTNHost> {
 	private static int nextAddress = 0;
 	private int address;
+
+	/**
+	 * List of groups this node has joined
+	 */
+	private List<Group> groups;
 
 	private Coord location; 	// where is the host
 	private Coord destination;	// where is it going
@@ -60,6 +65,7 @@ public class DTNHost implements Comparable<DTNHost> {
 		this.address = getNextAddress();
 		this.name = groupId+address;
 		this.net = new ArrayList<NetworkInterface>();
+		this.groups = new ArrayList<>();
 
 		for (NetworkInterface i : interf) {
 			NetworkInterface ni = i.replicate();
@@ -510,6 +516,25 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public void deleteMessage(String id, boolean drop) {
 		this.router.deleteMessage(id, drop);
+	}
+
+	/**
+	 * Lets the node join to a specified group
+	 *
+	 * @param group the group the node should join
+	 */
+	public void joinGroup(Group group){
+		groups.add(group);
+		group.joinGroup(this);
+	}
+
+	/**
+	 * Returns a list with groups the node has joined
+	 *
+	 * @return a list of groups
+	 */
+	public List<Group> getGroups(){
+		return groups;
 	}
 
 	/**

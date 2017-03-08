@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 public abstract class AbstractMovementModelTest {
 
     protected MovementModel model;
+    protected TestSettings testSettings;
     protected static final int MAX_COORD = 1000;
     protected static final int TEST_RUNS = 2000;
     protected static final String PATH_OUTSIDE_SIMULATION = "Path was outside the simulation area, ";
@@ -35,12 +36,13 @@ public abstract class AbstractMovementModelTest {
                                                              "Y coordinate above limit.";
     @Before
     /**
-     * Initializes the settings
+     * Initializes the settings and the model
      * Needs {@link #initializeModel(TestSettings)}.
      */
     public void setUp(){
         Settings.init(null);
-        model = initializeModel(new TestSettings());
+        testSettings = new TestSettings();
+        model = initializeModel(testSettings);
         //Gets the initial location as it is necessary for getPath
         model.getInitialLocation();
     }
@@ -76,7 +78,7 @@ public abstract class AbstractMovementModelTest {
             Path p = model.getPath();
             List<Coord> coords = p.getCoords();
             Coord nextWaypoint = coords.get(1);
-            assertNotNull(nextWaypoint);
+            assertNotNull("Path did not contain a next waypoint", nextWaypoint);
             //Bounds in test Settings are 1000x1000
             assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX()>=0);
             assertTrue(MESSAGE_Y_BELOW_ZERO,nextWaypoint.getY()>=0);

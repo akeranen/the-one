@@ -86,12 +86,9 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
     }
 
     @Test
-    public void testDistanceBetweenNodes() {
-        try{
-            setupMapData(null,null,null);
-        } catch (IOException e){
-            fail("Map Data could not be set up: "+e.getMessage());
-        }
+    public void testDistanceBetweenNodes() throws IOException {
+        setupMapData(null,null,null);
+
         Coord c;
         mbm.getInitialLocation();
         Path path = mbm.getPath();
@@ -105,13 +102,9 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
         }
     }
 
-    public void testOneMapTypeNode() {
+    public void testOneMapTypeNode() throws IOException {
         int NROF = 10;
-        try{
-            setupMapData("1",null,null);
-        } catch (IOException e){
-            fail("Map Data could not be set up: "+e.getMessage());
-        }
+        setupMapData("1",null,null);
 
         n1.addType(1);
 
@@ -148,12 +141,8 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
         }
     }
 
-    public void testManyMapTypeNodes() {
-        try{
-            setupMapData("1,2",null,null);
-        } catch (IOException e){
-            fail("Map Data could not be set up: "+e.getMessage());
-        }
+    public void testManyMapTypeNodes() throws IOException{
+        setupMapData("1,2",null,null);
         n1.addType(1);
         n2.addType(2);
 
@@ -213,13 +202,10 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
         assertTrue(thirdMap == fourthMap);
     }
 
-    public void testHostMoving() {
+    public void testHostMoving() throws IOException{
         final int NROF = 15;
-        try{
-            setupMapData(null, "1,1", null);
-        } catch (IOException e){
-            fail("Map Data could not be set up: "+e.getMessage());
-        }
+        setupMapData(null, "1,1", null);
+
         DTNHost h1 = setupHost();
         Coord loc = h1.getLocation().clone();
 

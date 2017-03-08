@@ -175,6 +175,7 @@ public class PanicMovementTest extends TestCase {
         h1.move(0);
         // move node directly to first waypoint
         h1.setLocation(h1.getPath().getCoords().get(0));
+        panicMovement.setLocation(h1.getLocation());
         return h1;
     }
 }

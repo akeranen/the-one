@@ -106,8 +106,8 @@ public class MessageStatsReportTest {
                 BufferedReader reader = new BufferedReader(new FileReader(outFile))
                 ){
 
-            reader.skip(2); // read comment lines
-
+            reader.readLine(); // read comment lines
+            reader.readLine(); // read comment lines
             assertEquals(
                     "Reported number of created messages should have been different.",
                     "created: 3",
@@ -140,12 +140,13 @@ public class MessageStatsReportTest {
                     "Reported delivery probability should have been different.",
                     "delivery_prob: 0.6667",
                     reader.readLine());
-            reader.skip(1); // responses are not tested in this scenario
+            reader.readLine(); // responses are not tested in this scenario
             assertEquals(
                     "Reported overhead ratio should have been different",
                     "overhead_ratio: 0.5000",
                     reader.readLine());
-            reader.skip(2); // latency is not tested in this scenario
+            reader.readLine(); // latency is not tested in this scenario
+            reader.readLine(); // latency is not tested in this scenario
             assertEquals(
                     "Reported average hopcount should have been different.",
                     "hopcount_avg: 1.5000",

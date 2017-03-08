@@ -10,7 +10,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import core.*;
+import core.ConnectionListener;
+import core.Coord;
+import core.DTNHost;
+import core.Settings;
+import core.SimClock;
 import junit.framework.TestCase;
 import report.ContactTimesReport;
 import report.InterContactTimesReport;

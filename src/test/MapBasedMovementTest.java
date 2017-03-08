@@ -50,7 +50,7 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 
 	private MapBasedMovement mbm;
 	private SimMap map;
-	private TestSettings s;
+
 
 
 	@Override
@@ -61,8 +61,6 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 
 	private void setupMapData(String okTypes, String speed, String wTime) {
 		java.util.Locale.setDefault(java.util.Locale.US);
-		Settings.init(null);
-		s = new TestSettings();
 		StringReader input = new StringReader(WKT);
 
 		WKTMapReader reader = new WKTMapReader(true);
@@ -72,14 +70,14 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 			fail(e.toString());
 		}
 
-		s.putSetting(MovementModel.SPEED, (speed != null ? speed : "1,1"));
-		s.putSetting(MovementModel.WAIT_TIME, (wTime != null ? wTime : "0,0"));
+		testSettings.putSetting(MovementModel.SPEED, (speed != null ? speed : "1,1"));
+		testSettings.putSetting(MovementModel.WAIT_TIME, (wTime != null ? wTime : "0,0"));
 
 		if (okTypes != null) {
-			s.putSetting(MapBasedMovement.MAP_SELECT_S, okTypes);
+			testSettings.putSetting(MapBasedMovement.MAP_SELECT_S, okTypes);
 		}
 		map = reader.getMap();
-		mbm = new MapBasedMovement(s, map, 3); // accepts types 1-3
+		mbm = new MapBasedMovement(testSettings, map, 3); // accepts types 1-3
 
 		n1 = map.getNodeByCoord(c1);
 		n2 = map.getNodeByCoord(c2);
@@ -179,22 +177,22 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 		String mmbClass = "movement.MapBasedMovement";
 		writeToNewFile();
 		assertEquals("1", new TestSettings(MapBasedMovement.MAP_BASE_MOVEMENT_NS).getSetting(MapBasedMovement.NROF_FILES_S));
-		mbm = (MapBasedMovement)s.createIntializedObject(mmbClass);
+		mbm = (MapBasedMovement) testSettings.createIntializedObject(mmbClass);
 		SimMap firstMap = mbm.getMap();
-		mbm = (MapBasedMovement)s.createIntializedObject(mmbClass);
+		mbm = (MapBasedMovement) testSettings.createIntializedObject(mmbClass);
 		SimMap secondMap = mbm.getMap();
 
 		// second call should return the same map object
 		assertTrue(firstMap == secondMap);
 
 		writeToNewFile(); // change the map file
-		mbm = (MapBasedMovement)s.createIntializedObject(mmbClass);
+		mbm = (MapBasedMovement) testSettings.createIntializedObject(mmbClass);
 		SimMap thirdMap = mbm.getMap();
 
 		// after reading from different file, should return a different instance
 		assertTrue(firstMap != thirdMap);
 
-		mbm = (MapBasedMovement)s.createIntializedObject(mmbClass);
+		mbm = (MapBasedMovement) testSettings.createIntializedObject(mmbClass);
 		SimMap fourthMap = mbm.getMap();
 
 		// now should return the same map object as with previous read
@@ -240,7 +238,7 @@ public class MapBasedMovementTest extends AbstractMovementModelTest {
 	}
 
 	private DTNHost setupHost() {
-		TestUtils utils = new TestUtils(null, null, s);
+		TestUtils utils = new TestUtils(null, null, testSettings);
 		DTNHost h1 = utils.createHost(mbm, null);
 
 		h1.move(0); // get a path for the node

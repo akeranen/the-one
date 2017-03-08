@@ -10,7 +10,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import core.*;
+import core.Coord;
+import core.DTNHost;
+import core.Message;
+import core.MessageListener;
+import core.SimClock;
 import junit.framework.TestCase;
 import report.DistanceDelayReport;
 
@@ -67,8 +71,8 @@ public class DistanceDelayReportTest extends TestCase {
 
 		r.done();
 
-		FileReader fileReader = new FileReader(outFile);
-		reader = new BufferedReader(fileReader);
+
+		reader = new BufferedReader(new FileReader(outFile));
 
 		reader.readLine(); // skip headers
 		reader.readLine(); // skip headers
@@ -76,7 +80,6 @@ public class DistanceDelayReportTest extends TestCase {
 		assertEquals("2.0 0.5 1 tst2",reader.readLine());
 		assertEquals("5.0 1.0 2 tst3",reader.readLine());
 
-		fileReader.close();
         reader.close();
 
 

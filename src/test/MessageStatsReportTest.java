@@ -102,8 +102,7 @@ public class MessageStatsReportTest {
 		this.report.done();
 
 		try (
-                FileReader fileReader = new FileReader(outFile);
-                BufferedReader reader = new BufferedReader(fileReader);
+                BufferedReader reader = new BufferedReader(new FileReader(outFile));
                 ){
 
             reader.readLine(); // read comment lines

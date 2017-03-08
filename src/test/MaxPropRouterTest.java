@@ -116,7 +116,7 @@ public class MaxPropRouterTest extends AbstractRouterTest {
 		h1.connect(h2);
 
 		/* thresholds should be zero before any transfers */
-		assertEquals(0, r1.calcThreshold()); //Hat der router hier die msg?
+		assertEquals(0, r1.calcThreshold());
 		assertEquals(0, r2.calcThreshold());
 
 		/* simple delivery of MSG_ID1 from h1 to h2 */

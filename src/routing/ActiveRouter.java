@@ -34,7 +34,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * If set to true and final recipient of a message rejects it because it
 	 * already has it, the message is deleted from buffer. Default=false. */
 	public static final String DELETE_DELIVERED_S = "deleteDelivered";
-	/** setting string for the energy threshold, below wich the battery is considered to be empty. Default = 0.01 */
+	/** setting string for the energy threshold, below which the battery is considered to be empty. Default = 0.01 */
 	public static final String ENERGY_THRESHOLD_S = "energyThreshold";
 	/** Default value for the energy threshold */
 	public static final double ENERGY_THRESHOLD_DEFAULT = 0.01;
@@ -53,7 +53,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
-	/** the threshold below wich the battery is considered to be empty */
+	/** the threshold below which the battery is considered to be empty */
 	private double energyThreshold;
 
 	/** List of EnergyListeners for this ActiveRouter */

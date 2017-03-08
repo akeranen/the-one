@@ -17,9 +17,9 @@ import movement.map.SimMap;
  */
 public class PanicMovement extends ShortestPathMapBasedMovement implements SwitchableMovement {
     
-	private Coord eventLocation;	
-	private double safeRangeRadius;
-	private double eventRangeRadius;
+	//private Coord eventLocation;	
+	//private double safeRangeRadius;
+	//private double eventRangeRadius;
 	
 	private PanicMovementUtil pmu;
 	private static final double SAFE_RANGE_RADIUS = 1000.0;
@@ -43,7 +43,7 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
      */
     protected PanicMovement(PanicMovement pm) {
         super(pm);
-        setLocalFields(pm.eventLocation, pm.safeRangeRadius, pm.eventRangeRadius);
+        setLocalFields(pm.pmu.getEventLocation(), pm.pmu.getSafeRangeRadius(), pm.pmu.getEventRangeRadius());
     }
 	
 	/**
@@ -65,9 +65,6 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 	 * @param eventRangeRadius distance within which the nodes react to an event
 	 */
 	private void setLocalFields (Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
-		this.eventLocation = eventLocation;
-		this.safeRangeRadius = safeRangeRadius;
-		this.eventRangeRadius = eventRangeRadius;
 		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
 	}
 	/**
@@ -96,33 +93,9 @@ public class PanicMovement extends ShortestPathMapBasedMovement implements Switc
 		return path;
 	}
 	
-	public void setEventLocation(Coord eventLocation) {
-		this.eventLocation = eventLocation;
-	}
-	
-	public Coord getEventLocation() {
-		return eventLocation;
-	}
-	
 	@Override
 	public PanicMovement replicate() {
 		return new PanicMovement(this);
-	}
-	
-	public double getSafeRangeRadius() {
-		return safeRangeRadius;
-	}
-	
-	public double getEventRangeRadius() {
-		return eventRangeRadius;
-	}
-	
-	public void setSafeRangeRadius(double radius) {
-		safeRangeRadius = radius;
-	}
-	
-	public void setEventRangeRadius(double radius) {
-		eventRangeRadius = radius;
 	}
 	
 	public PanicMovementUtil getPanicMovementUtil() {

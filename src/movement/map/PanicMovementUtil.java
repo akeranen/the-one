@@ -68,6 +68,17 @@ public class PanicMovementUtil {
 		}
 	}
 	
+	public double getSafeRangeRadius() {
+		return safeRangeRadius;
+	}
+	
+	public double getEventRangeRadius() {
+		return eventRangeRadius;
+	}
+	
+	public Coord getEventLocation() {
+		return eventLocation;
+	}
 	/**
 	 * Computes if the target node is in event direction from the source node's point of view
 	 * @param sourceNode current location of the node
@@ -76,8 +87,6 @@ public class PanicMovementUtil {
 	 */
 	public boolean isInEventDirection(MapNode sourceNode, MapNode targetNode) {
 		double angle;
-		
-		// to avoid division by zero. Every angle should be fine
 		
 		if (eventLocation.equals(targetNode.getLocation())) {
 		// event = target --> IN event direction

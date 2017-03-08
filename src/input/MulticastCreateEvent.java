@@ -38,13 +38,15 @@ public class MulticastCreateEvent extends MessageEvent {
     @Override
     public void processEvent(World world) {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
-        MulticastMessage messageToCreate = new MulticastMessage(from, Group.getOrCreateGroup(toAddr), this.id, this.size);
+        MulticastMessage messageToCreate =
+                new MulticastMessage(from, Group.getOrCreateGroup(toAddr), this.id, this.size);
         messageToCreate.setResponseSize(this.responseSize);
         from.createNewMessage(messageToCreate);
     }
 
     @Override
     public String toString() {
-        return super.toString() + " [" + fromAddr + "->" + Group.getGroup(toAddr).toString() + "] size:" + size + " CREATE";
+        return super.toString() + " [" + fromAddr + "->" + Group.getGroup(toAddr).toString() + "] size:" +
+                size + " CREATE";
     }
 }

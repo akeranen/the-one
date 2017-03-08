@@ -1,6 +1,10 @@
 package core;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A group of nodes that is used for group messaging
@@ -30,8 +34,9 @@ public class Group {
      * @param address address of the new group
      */
     private Group(int address){
-        if (groups.containsKey(address))
-            throw new AssertionError("Group address already assigned to another group: "+address);
+        if (groups.containsKey(address)) {
+            throw new AssertionError("Group address already assigned to another group: " + address);
+        }
         this.address = address;
         members = new ArrayList<>();
     }
@@ -66,7 +71,11 @@ public class Group {
      */
     public static Group getOrCreateGroup(int address){
         Group result = getGroup(address);
-        return result == null ? createGroup(address) : result;
+        if (result == null){
+            return createGroup(address);
+        }else {
+            return result;
+        }
     }
 
     /**

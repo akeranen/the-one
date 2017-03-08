@@ -4,7 +4,14 @@
  */
 package routing.util;
 
-import core.*;
+import core.ArithmeticCondition;
+import core.BroadcastMessage;
+import core.Connection;
+import core.DTNHost;
+import core.Message;
+import core.ModuleCommunicationBus;
+import core.MulticastMessage;
+import core.Settings;
 import util.Range;
 import util.Tuple;
 
@@ -185,7 +192,7 @@ public class MessageTransferAcceptPolicy {
 	 * @return true if all conditions evaluated to true
 	 */
 	private boolean checkMcbConditions(ModuleCommunicationBus mcb,
-			boolean receiving) {
+									   boolean receiving) {
 		ArrayList<Tuple<String,ArithmeticCondition>> list =
 			(receiving ? this.recvConditions : this.sendConditions);
 
@@ -213,7 +220,7 @@ public class MessageTransferAcceptPolicy {
      * @return true if both conditions evaluated to true
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
-        boolean checkNotOneToOne = (m instanceof  BroadcastMessage) ||
+        boolean checkNotOneToOne = (m instanceof BroadcastMessage) ||
 				((m instanceof MulticastMessage) && ((MulticastMessage)m).getGroup().isInGroup(ownAddress));
 		boolean checkRecipients = checkNotOneToOne || (!(m instanceof MulticastMessage) &&
 				checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress));
@@ -231,7 +238,7 @@ public class MessageTransferAcceptPolicy {
 	 * was null
 	 */
 	private boolean checkSimplePolicy(DTNHost host, Range [] policy,
-			int thisHost) {
+									  int thisHost) {
 		int address;
 
 		if (policy == null) {

@@ -4,7 +4,12 @@
  */
 package report;
 
-import core.*;
+
+import core.DTNHost;
+import core.Message;
+import core.MessageListener;
+import core.MulticastMessage;
+import core.SimScenario;
 
 import java.util.ArrayList;
 import java.util.HashMap;

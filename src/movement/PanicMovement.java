@@ -16,7 +16,7 @@ import movement.map.SimMap;
  * between the save range radius and the event range radius. Furthermore, they do not cross the event, such that
  * the angle between them, the event and the target is at most 90°
  */
-public class PanicMovement extends MapBasedMovement implements SwitchableMovement {
+public class PanicMovement extends MapBasedMovement {
 
 	
 	private PanicMovementUtil pmu;
@@ -33,7 +33,7 @@ public class PanicMovement extends MapBasedMovement implements SwitchableMovemen
 	 */
 	public PanicMovement (Settings settings) {
 		super(settings);
-		setLocalFields(new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
+		pmu = new PanicMovementUtil(new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
 		pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 	}
 
@@ -45,8 +45,7 @@ public class PanicMovement extends MapBasedMovement implements SwitchableMovemen
     protected PanicMovement(PanicMovement pm) {
         super(pm);
         pmu = pm.pmu;
-        setLocalFields(pmu.getEventLocation(), pmu.getSafeRangeRadius(), pmu.getEventRangeRadius());
-		this.pathFinder = pm.pathFinder;
+        this.pathFinder = pm.pathFinder;
     }
 	
 	/**
@@ -58,19 +57,10 @@ public class PanicMovement extends MapBasedMovement implements SwitchableMovemen
 	public PanicMovement (Settings settings, SimMap newMap, int nrofMaps,
 			Coord location, double safeRangeRadius, double eventRangeRadius) {
 		super(settings, newMap, nrofMaps);
-		setLocalFields(location, safeRangeRadius, eventRangeRadius);
+		pmu = new PanicMovementUtil(location, safeRangeRadius, eventRangeRadius);
 		pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
 	}
-	
-	/**
-	 * Sub routine called from the Constructors
-	 * @param eventLocation location where the event occurs 
-	 * @param safeRangeRadius distance to the event from which on the nodes are safe
-	 * @param eventRangeRadius distance within which the nodes react to an event
-	 */
-	private void setLocalFields (Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
-		pmu = new PanicMovementUtil(eventLocation, safeRangeRadius, eventRangeRadius);
-	}
+
 	/**
 	 * Determines a path to the most suitable node in the security zone
 	 */
@@ -82,7 +72,8 @@ public class PanicMovement extends MapBasedMovement implements SwitchableMovemen
 		
 		List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
 
-		for (MapNode node : nodePath) { // create a Path from the shortest path
+		for (MapNode node : nodePath) {
+			// create a Path from the shortest path
 			path.addWaypoint(node.getLocation());
 		}
 
@@ -106,7 +97,7 @@ public class PanicMovement extends MapBasedMovement implements SwitchableMovemen
 	 * @param location Location to find the next node to
 	 * @return the next node to parameter location
 	 */
-	private MapNode getNearestNode(SimMap map, Coord location) {
+	private static MapNode getNearestNode(SimMap map, Coord location) {
 		List<MapNode> list = map.getNodes();
 		MapNode bestNode = null;
 		double distance;

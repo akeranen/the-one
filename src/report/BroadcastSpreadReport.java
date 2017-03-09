@@ -64,7 +64,7 @@ public class BroadcastSpreadReport extends SamplingReport implements MessageList
         }
 
         Integer currNumberOfDeliveries = this.messageToDeliveries.get(m.getId());
-        boolean isWarmUpMessage = (currNumberOfDeliveries == null);
+        boolean isWarmUpMessage = currNumberOfDeliveries == null;
         if(!isWarmUpMessage) {
             this.messageToDeliveries.put(m.getId(), currNumberOfDeliveries + 1);
         }

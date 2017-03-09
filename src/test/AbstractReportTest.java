@@ -22,14 +22,16 @@ public abstract class AbstractReportTest {
      * @throws IOException
      */
     @Before
-    protected void setUp() throws IOException {
+    public void setUp() throws IOException {
         this.outputFile = File.createTempFile("reportTest", ".tmp");
 
         settings = new TestSettings();
         settings.putSetting(DTNSimUI.NROF_REPORT_S, "1");
         settings.putSetting(Report.REPORTDIR_SETTING, "test");
         settings.putSetting("Report.report1", this.getReportName());
-        settings.putSetting(this.getReportName() + "." +  Report.OUTPUT_SETTING, outputFile.getAbsolutePath());
+        settings.setNameSpace(this.getReportName());
+        settings.putSetting(Report.OUTPUT_SETTING, outputFile.getAbsolutePath());
+        settings.restoreNameSpace();
     }
 
     @After

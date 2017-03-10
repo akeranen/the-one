@@ -101,7 +101,7 @@ public class VhmEventsTest {
         try {
             VhmEventReader reader = new VhmEventReader(eventFile);
             return reader.readEvents(eventCount);
-        } catch (Exception e) {
+        } catch (SimError e) {
             TestCase.fail("Correct VHM events file could not be loaded: " + e);
         }
         return new ArrayList<>();

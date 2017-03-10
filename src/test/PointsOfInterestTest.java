@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.Random;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 import movement.map.MapNode;
 import movement.map.PointsOfInterest;
@@ -114,10 +116,12 @@ public class PointsOfInterestTest extends TestCase {
 		return fileName.replace('\\', '/');
 	}
 
+	@Test
 	public void testPoiSelection() throws Exception {
 		runTestPoiSelection(new double[] {0.1, 0.8, 0.05}, 0);
 	}
 
+	@Test
 	public void testDifferentRngSeeds() throws Exception {
 		runTestPoiSelection(new double[] {0.1, 0.8, 0.05}, 1);
 		runTestPoiSelection(new double[] {0.1, 0.8, 0.05}, 2);
@@ -129,6 +133,7 @@ public class PointsOfInterestTest extends TestCase {
 	/**
 	 * Tests full probability for one node group
 	 */
+	@Test
 	public void testFullProb() throws Exception {
 		runTestPoiSelection(new double[] {1.0, 0.0, 0.0}, 0);
 		runTestPoiSelection(new double[] {0.0, 1.0, 0.0}, 0);
@@ -195,6 +200,7 @@ public class PointsOfInterestTest extends TestCase {
 
 	}
 
+	@Test
 	public void testOkNodes() throws Exception {
 		int nrof = 100;
 		setUpWith(new double[] {0.1, 0.1, 0.1}, 1, new int [] {1});

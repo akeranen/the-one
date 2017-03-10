@@ -1,0 +1,38 @@
+#
+# Additional Settings for the Panic Movement mobility model
+#
+
+## Scenario settings
+Scenario.name = panic_movement_test
+
+# Define 2 different node groups
+Scenario.nrofHostGroups = 2
+
+# Common settings for all groups
+Group.movementModel = PanicMovement
+Group.router = EpidemicRouter
+Group.bufferSize = 5M
+Group.waitTime = 0, 120
+# All nodes have the bluetooth interface
+Group.nrofInterfaces = 1
+Group.interface1 = btInterface
+# Walking speeds
+Group.speed = 0.5, 1.5
+# Message TTL of 300 minutes (5 hours)
+Group.msgTtl = 300
+
+Group.nrofHosts = 400
+
+# group1 (pedestrians) specific settings
+Group1.groupID = p
+
+# group2 specific settings
+Group2.groupID = c
+# cars can drive only on roads
+Group2.okMaps = 1
+# 10-50 km/h
+Group2.speed = 2.7, 13.9
+
+## Movement model settings
+# How long time to move hosts in the world before real simulation
+MovementModel.warmup = 0

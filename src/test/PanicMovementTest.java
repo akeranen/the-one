@@ -3,6 +3,8 @@ package test;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Test;
+
 import junit.framework.*;
 import movement.MovementModel;
 import movement.Path;
@@ -34,12 +36,15 @@ public class PanicMovementTest extends TestCase {
     }
 
     /**
-     * This class tests the PanicMovement class using this
-     * topology:  n7--n5
-     * |   |
-     * n1--n2--n6--n3
-     * |
-     * n4
+     * This method creates the node topology according to this draft:
+     * 
+     *   | 1   2   3   4
+     *  _|_______________ 
+     *  0|     n6--n4
+     *   |     |   |
+     *  1| n0--n1--n5--n2
+     *   | |
+     *  2| n3
      **/
     private void createTopology(MapNode[] node) {
         node[0].addNeighbor(node[1]);
@@ -102,23 +107,24 @@ public class PanicMovementTest extends TestCase {
     }
 
     /**
-     * Tests if the angle between source node, event and target node is between 90 and 270 degrees (so the
-     * absolute of the difference of straight angle and this angle should be less or equal to 90 degrees)
+     * Tests if the angle between source node, event and target node is less than 90 and or more than 270 degrees 
+     * (so the absolute of the difference of straight angle and this angle should be greater than 90 degrees)
      * to avoid running through the event
      */
+    @Test
     public void testAngle() {
-
         Path path = panicMovement.getPath();
         MapNode start = map.getNodeByCoord(path.getCoords().get(0));
         MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
-
+        
         double angle = PanicMovementUtil.computeAngleBetween(event.getLocation(), start, end);
-        assertTrue("Angle should be between 90 and 270 degrees", Math.abs(180 - angle) <= 90);
+        assertTrue("Angle should not be between 90 and 270 degrees", Math.abs(180 - angle) > 90);
     }
 
     /**
      * Tests if the target node is inside the safe area
      */
+    @Test
     public void testSafeRegion() {
 
         Path path = panicMovement.getPath();
@@ -132,6 +138,7 @@ public class PanicMovementTest extends TestCase {
     /**
      * Test if closest possible node to the host is selected
      */
+    @Test
     public void testOptimizationCriterion() {
 
         Path path = panicMovement.getPath();
@@ -152,6 +159,7 @@ public class PanicMovementTest extends TestCase {
     /**
      * Tests if the target node is not outside the event range
      */
+    @Test
     public void testEventRange() {
 
         Path path = panicMovement.getPath();

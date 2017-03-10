@@ -53,9 +53,12 @@ public class PanicMovement extends MapBasedMovement {
     /**
      * Additional constructor for JUnit Tests
      *
-     * @param settings Settings for the map, hosts etc.
-     * @param newMap   Map passed instead of reading it from a file
-     * @param nrofMaps Number of WKT files
+     * @param settings         Settings for the map, hosts etc.
+     * @param newMap           Map passed instead of reading it from a file
+     * @param nrofMaps         Number of WKT files
+     * @param location         Event location
+     * @param safeRangeRadius  distance to the event to be safe
+     * @param eventRangeRadius distance to the event up to the hosts react to it
      */
     public PanicMovement(Settings settings, SimMap newMap, int nrofMaps,
                          Coord location, double safeRangeRadius, double eventRangeRadius) {

@@ -2,6 +2,13 @@ package movement.map;
 
 import core.Coord;
 
+/**
+ * 
+ * @author Nils Weidmann
+ * 
+ * This Class provides some mathematical methods needed for the mobility model PanicMovement, as well as selecting
+ * a destination node for the host 
+ */
 public class PanicMovementUtil {
 
     private double safeRangeRadius;
@@ -129,15 +136,20 @@ public class PanicMovementUtil {
         return source.distance(target1) * source.distance(target2);
     }
 
+    /** 
+     * Computes the angle between the vector from angle location to source node and angle location to target node.
+     * In case one distance is equal to 0, a default of 180° is returned. As this case should be handled by the caller,
+     * it should never occur.
+     */
     public static double computeAngleBetween(Coord angleLocation, MapNode sourceNode, MapNode targetNode) {
-        double scalarProduct = scalarProduct(angleLocation, sourceNode.getLocation(), targetNode.getLocation());
-        double lengthProduct = lengthProduct(angleLocation, sourceNode.getLocation(), targetNode.getLocation());
+        double scalarProduct = scalarProduct(sourceNode.getLocation(), angleLocation, targetNode.getLocation());
+        double lengthProduct = lengthProduct(sourceNode.getLocation(), angleLocation, targetNode.getLocation());
 
         if (lengthProduct <= 0) {
             // This case avoids division by zero. Since this case is also handled at the caller, it should never happen
             return STRAIGHT_ANGLE;
         } else {
-            return Math.acos(scalarProduct / lengthProduct) * FULL_ROTATION / Math.PI;
+            return Math.acos(scalarProduct / lengthProduct) * FULL_ROTATION / (Math.PI * 2);
         }
     }
 }

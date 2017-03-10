@@ -10,14 +10,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import core.ConnectionListener;
+import core.Coord;
+import core.DTNHost;
+import core.Settings;
+import core.SimClock;
 import junit.framework.TestCase;
 import report.ContactTimesReport;
 import report.InterContactTimesReport;
 import report.Report;
-import core.ConnectionListener;
-import core.Coord;
-import core.DTNHost;
-import core.SimClock;
 
 /**
  * Test cases for ContactTimes & InterContactTimesReports.
@@ -31,6 +32,7 @@ public class ContactTimesReportTest extends TestCase {
 	private final static String I_SET_PREFIX = "InterContactTimesReport.";
 
 	private void setUpWithGranularity(double gran) throws IOException {
+		Settings.init(null);
 		ContactTimesReport ctr;
 		InterContactTimesReport ictr;
 		TestSettings ts = new TestSettings();

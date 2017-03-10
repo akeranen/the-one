@@ -82,7 +82,9 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
             this.msgTime = null;
         }
 
-        this.rng = new java.security.SecureRandom();
+        /* Make sure simulation stays reproducible. */
+        /* if prefix is unique, so will be the rng's sequence. */
+        this.rng = new Random(idPrefix.hashCode());
 
         if (this.sizeRange.length == 1) {
             /* convert single value to range with 0 length */

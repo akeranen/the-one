@@ -61,7 +61,7 @@ public class PointsOfInterestTest extends TestCase {
 	protected void setUpWith(double[] poiProbs, int rngSeed, int [] okNodes)
 			throws Exception {
 		super.setUp();
-
+		java.util.Locale.setDefault(java.util.Locale.US);
 		Settings.init(null);
 		StringReader input = new StringReader(MAP_DATA);
 

@@ -79,17 +79,13 @@ public class VhmEventReader implements ExternalEventsReader {
         try (FileReader fileReader = new FileReader(eventFile)) {
             try (JsonReader jsonReader = Json.createReader(fileReader)) {
                 JsonObject jsonFile = (JsonObject) jsonReader.read();
-                if (jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION) {
+
+                if (jsonFile.getJsonNumber(READER_VERSION) != null
+                        && jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION) {
                     correct = true;
                 }
             }
-        } catch (FileNotFoundException e) {
-            // It is perfectly acceptable to not handle "e" here
-            correct = false;
         } catch (IOException e) {
-            // It is perfectly acceptable to not handle "e" here
-            correct = false;
-        } catch (NullPointerException e) {
             // It is perfectly acceptable to not handle "e" here
             correct = false;
         }

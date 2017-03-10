@@ -502,11 +502,13 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private boolean chooseNextDisaster() {
         boolean helping = false;
 
-        if (!disasters.isEmpty()) {
-            VhmEvent event = disasters.get(rng.nextInt(disasters.size()));
-            if (decideHelp(event)) {
-                chosenDisaster = event;
+        Collections.shuffle(disasters);
+
+        for(VhmEvent d : disasters) {
+            if (decideHelp(d)) {
+                chosenDisaster = d;
                 helping = true;
+                break;
             }
         }
 

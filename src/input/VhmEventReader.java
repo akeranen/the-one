@@ -83,7 +83,13 @@ public class VhmEventReader implements ExternalEventsReader {
                     correct = true;
                 }
             }
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
+            // It is perfectly acceptable to not handle "e" here
+            correct = false;
+        } catch (IOException e) {
+            // It is perfectly acceptable to not handle "e" here
+            correct = false;
+        } catch (NullPointerException e) {
             // It is perfectly acceptable to not handle "e" here
             correct = false;
         }

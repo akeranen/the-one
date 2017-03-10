@@ -558,15 +558,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //reset the host (network address, name, message buffer and connections)
         //do not call "host.reset();" as it interferes with host network address assignment for all hosts
-        //resetting the routing table is not possible without knowing the exact routing protocol
-        //get a new network address and name
-        //host.setNewAddress();
-        //empty the message buffer
-        /*for (Message m : host.getMessageCollection()) {
-            host.deleteMessage(m.getId(), true);
-        }*/
-        //update all connections
-        //host.update(true);
 
         //reset the Location to a new random one
         Coord min = getMap().getMinBound();

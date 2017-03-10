@@ -4,11 +4,11 @@
  */
 package test;
 
-import java.util.ArrayList;
-
 import core.DTNHost;
 import core.Message;
 import core.MessageListener;
+
+import java.util.ArrayList;
 
 /**
  * Message event checker for tests.
@@ -63,6 +63,12 @@ public class MessageChecker implements MessageListener {
 				recipient = m.getTo();
 				break;
 			case BROADCAST:
+				recipient = null;
+				break;
+			case MULTICAST:
+				/*TODO: This is strictly speaking not correct, because there is a certain group of nodes
+				receiving this message. AN idea would be to add a new Interface Addressable, that is used
+				within this class. DTNHost and Group should implement it then.*/
 				recipient = null;
 				break;
 			default:

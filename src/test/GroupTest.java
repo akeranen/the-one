@@ -64,7 +64,7 @@ public class GroupTest {
     }
 
     @Test
-    public void deleteGroup(){
+    public void testDeleteGroup(){
         Group group = Group.createGroup(0);
         group.delete();
         TestCase.assertNull("Group should be deleted from global registry",Group.getGroup(0));

@@ -5,37 +5,26 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
- * Reports about the number of unique deliveries for each broadcast message at each sampling time.
+ * Prints a line for each broadcast delivery.
  *
  * Format is like
- * [10]
- * M3 2 17
+ * # Prio Time_Since_Creation
+ * M3 2 7
+ * M3 2 12
+ * M1 3 101
  * ...
- * [15]
- * ...
- * where 3 is the message ID, 2 is the broadcast's priority and 17 is the number of hosts the message has been delivered
- * to until time 10.
+ * where the first column is the message ID, the second is the broadcast's priority and the last column shows the time
+ * that passed between creation and delivery.
  *
  * Created by Britta Heymann on 08.03.2017.
  */
-public class BroadcastSpreadReport extends SamplingReport implements MessageListener {
-    private Map<String, Integer> messageToDeliveries = new HashMap<>();
+public final class BroadcastDeliveryReport extends Report implements MessageListener {
+    public BroadcastDeliveryReport() {
+        super();
 
-    @Override
-    protected void sample(List<DTNHost> hosts) {
-        write(String.format("[%d]", (int)getSimTime()));
-        for(Map.Entry<String, Integer> messageInfo : this.messageToDeliveries.entrySet()) {
-            // TODO: Get correct priority here as soon as message priorities are implemented.
-            int priority = 1;
-            this.write(String.format("%s %d %d", messageInfo.getKey(), priority, messageInfo.getValue()));
-        }
+        this.write("# Prio Time_Since_Creation");
     }
-
     /**
      * Method is called when a new message is created
      *
@@ -43,8 +32,8 @@ public class BroadcastSpreadReport extends SamplingReport implements MessageList
      */
     @Override
     public void newMessage(Message m) {
-        if (!isWarmup() && m instanceof BroadcastMessage) {
-            this.messageToDeliveries.put(m.getId(), 0);
+        if (m instanceof BroadcastMessage && isWarmup()) {
+            this.addWarmupID(m.getId());
         }
     }
 
@@ -59,15 +48,14 @@ public class BroadcastSpreadReport extends SamplingReport implements MessageList
      */
     @Override
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
-        if (!firstDelivery || !(m instanceof BroadcastMessage)) {
+        if (!firstDelivery || !(m instanceof BroadcastMessage) || this.isWarmupID(m.getId())) {
             return;
         }
 
-        Integer currNumberOfDeliveries = this.messageToDeliveries.get(m.getId());
-        boolean isWarmUpMessage = currNumberOfDeliveries == null;
-        if(!isWarmUpMessage) {
-            this.messageToDeliveries.put(m.getId(), currNumberOfDeliveries + 1);
-        }
+        // TODO: Get correct priority here as soon as message priorities are implemented.
+        int priority = 1;
+        int timeAfterCreation = (int)this.getSimTime() - (int)m.getCreationTime();
+        this.write(String.format("%s %d %d", m.getId(), priority, timeAfterCreation));
     }
 
     /**

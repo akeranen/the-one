@@ -16,7 +16,6 @@ public class PanicMovementUtil {
     private Coord eventLocation;
     private static final double RIGHT_ANGLE = 90.0;
     private static final double STRAIGHT_ANGLE = 180.0;
-    private static final double FULL_ROTATION = 360.0;
 
     /**
      * Constructor

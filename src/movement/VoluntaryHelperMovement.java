@@ -186,8 +186,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * movement model for not moving at all
      */
     private SwitchableStationaryMovement stationaryMM;
-    /** movement model for panically runing to a safe location */
-    //private panicMovement panicMM;
 
     //event lists
     /**
@@ -227,7 +225,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         carMM = new CarMovement(settings);
         levyWalkMM = new LevyWalkMovement(settings);
         stationaryMM = new SwitchableStationaryMovement(settings);
-        //panicMM = new panicMovement(settings);
     }
 
     /**
@@ -254,7 +251,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         carMM = new CarMovement(prototype.carMM);
         levyWalkMM = new LevyWalkMovement(prototype.levyWalkMM);
         stationaryMM = new SwitchableStationaryMovement(prototype.stationaryMM);
-        //panicMM = new PanicMovement(prototype.panicMM);
 
         //register the movement model as a VhmListener
         VhmEventNotifier.addListener(this);
@@ -442,7 +438,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      *
      * @return The SimMap this movement model uses
      */
-    //TODO what aboiut carMM?
     public SimMap getMap() {
         return shortestPathMapBasedMM.getMap();
     }
@@ -570,8 +565,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                 } else {
                     mode = movementMode.PANIC_MODE;
                     //TODO tell the panicMM all about the disaster and panic
-                    /*switchToMovement(panicMM);
-                    panicMM.setLocation(host.getLocation());*/
                 }
             } else if (host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)) {
                 //chose the disaster

@@ -257,10 +257,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //just make sure this is initialized
         justChanged = false;
-
-        //set the movement mode and model
-        mode = movementMode.RANDOM_MAP_BASED_MODE;
-        setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
     /**
@@ -283,6 +279,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         super.setHost(host);
         //Register the MM as an EnergyListener.
         initEnergyListener();
+
+        //set the movement mode and model
+        mode = movementMode.RANDOM_MAP_BASED_MODE;
+        setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
     /**

@@ -18,7 +18,7 @@ import static core.Constants.DEBUG;
 /**
  * A DTN capable host.
  */
-public class DTNHost implements Comparable<DTNHost> {
+public class DTNHost implements Comparable<DTNHost>, Addressable {
 	private static int nextAddress = 0;
 	private int address;
 
@@ -152,9 +152,20 @@ public class DTNHost implements Comparable<DTNHost> {
 
 	/**
 	 * Returns the network-layer address of this host.
+	 * @return the address of this host
 	 */
+	@Override
 	public int getAddress() {
 		return this.address;
+	}
+
+	/**
+	 * Returns the address type of this object, which is from type host.
+	 * @return the AddressType of the object
+	 */
+	@Override
+	public AddressType getAddressableType() {
+		return AddressType.HOST;
 	}
 
 	/**

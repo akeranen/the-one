@@ -20,7 +20,7 @@ public class GroupTest {
     }
 
     @Test
-    public void testFetGroupReturnsGroupWithCorrectAddress(){
+    public void testGetGroupReturnsGroupWithCorrectAddress(){
         int testGroupCount = MAX_GROUP_ADDRESS;
         for (int i = 0; i < testGroupCount; i++){
             Group.createGroup(i);
@@ -55,19 +55,9 @@ public class GroupTest {
     }
 
     @Test
-    public void testLeaveGroup(){
-        int nodeAddress1 = 0;
-        Group group = Group.createGroup(0);
-        group.joinGroup(nodeAddress1);
-        group.leaveGroup(nodeAddress1);
-        TestCase.assertEquals("No members should be left in the group",0,group.getMemberCount());
+    public void testGetOrCreateGroup(){
+        Group group = Group.getOrCreateGroup(0);
+        Group group2 = Group.getOrCreateGroup(0);
+        TestCase.assertEquals("Groups should be references to the same object.",group,group2);
     }
-
-    @Test
-    public void testDeleteGroup(){
-        Group group = Group.createGroup(0);
-        group.delete();
-        TestCase.assertNull("Group should be deleted from global registry",Group.getGroup(0));
-    }
-
 }

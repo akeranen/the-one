@@ -2,21 +2,22 @@ package core;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A group of nodes that is used for group messaging
  *
  * Created by Marius Meyer on 08.03.17.
  */
-public class Group {
+public class Group implements Addressable {
 
     /**
      * Map with all existent groups. Key is the address of the group and value the group itself.
      */
-    private static Map<Integer,Group> groups = new HashMap<>();
+    private static Map<Integer,Group> groups = new ConcurrentHashMap<>();
 
     /**
      * The address of the group
@@ -38,7 +39,7 @@ public class Group {
             throw new AssertionError("Group address already assigned to another group: " + address);
         }
         this.address = address;
-        members = new ArrayList<>();
+        members = Collections.synchronizedList(new ArrayList<>());
     }
 
     /**
@@ -51,13 +52,6 @@ public class Group {
         Group newGroup = new Group(address);
         groups.put(newGroup.getAddress(),newGroup);
         return newGroup;
-    }
-
-    /**
-     * Deletes the group from the global group registry
-     */
-    public void delete(){
-        groups.remove(this.address);
     }
 
     /**
@@ -102,20 +96,12 @@ public class Group {
     }
 
     /**
-     * Let a specified node join the group
+     * Let a certain node join the group
      *
      * @param address address of the node that should join the group
      */
     public void joinGroup(int address){
         members.add(address);
-    }
-
-    /**
-     * Let a certain node leave the group
-     * @param address address of the node that should leave
-     */
-    public void leaveGroup(int address){
-        members.remove(address);
     }
 
     /**
@@ -143,6 +129,16 @@ public class Group {
      */
     public int getAddress(){
         return address;
+    }
+
+    /**
+     * Returns the address type of this object
+     *
+     * @return the AddressType of the object
+     */
+    @Override
+    public AddressType getAddressableType() {
+        return AddressType.GROUP;
     }
 
     /**

@@ -54,6 +54,13 @@ public class Group {
     }
 
     /**
+     * Deletes the group from the global group registry
+     */
+    public void delete(){
+        groups.remove(this.address);
+    }
+
+    /**
      *Returns the group for a specified group address
      *
      * @param address the group address
@@ -88,12 +95,27 @@ public class Group {
     }
 
     /**
+     * Clears the global group registry
+     */
+    public static void clearGroups(){
+        groups.clear();
+    }
+
+    /**
      * Let a specified node join the group
      *
-     * @param node the node that should join the group
+     * @param address address of the node that should join the group
      */
-    public void joinGroup(DTNHost node){
-        members.add(node.getAddress());
+    public void joinGroup(int address){
+        members.add(address);
+    }
+
+    /**
+     * Let a certain node leave the group
+     * @param address address of the node that should leave
+     */
+    public void leaveGroup(int address){
+        members.remove(address);
     }
 
     /**
@@ -101,7 +123,7 @@ public class Group {
      * @return number of nodes in the group
      */
     public int getMemberCount(){
-        return members.size() - 1;
+        return members.size();
     }
 
     /**

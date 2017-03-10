@@ -525,7 +525,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public void joinGroup(Group group){
 		groups.add(group);
-		group.joinGroup(this);
+		group.joinGroup(this.getAddress());
 	}
 
 	/**

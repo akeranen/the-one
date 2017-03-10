@@ -459,16 +459,18 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Pick a random disaster from the list of disasters, and decide for opr against helping at the disaster site.
-     * If the decision to help is made, the selected disaster is automatically set as the chosen disaster.
+     * Go through the list of disasters in random order, and decide for or against helping at the disaster site.
+     * If the decision to help is made, the disaster is automatically set as the chosen disaster.
      *
      * @return true if the decision was made to help at a disaster site, false otherwise.
      */
     private boolean chooseNextDisaster() {
         boolean helping = false;
 
+        //shuffle the list of disasters
         Collections.shuffle(disasters);
 
+        //check for each one, if the host should help there
         for(VhmEvent d : disasters) {
             if (decideHelp(d)) {
                 chosenDisaster = d;

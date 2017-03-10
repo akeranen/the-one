@@ -165,19 +165,6 @@ public class PanicMovementTest extends TestCase {
     	Path path = panicMovement.getPath();
     	assertTrue("Nodes in the safe area should not move", path.getCoords().size() == 1);
     }
-    /**
-     * Tests if the target node is not outside the event range
-     */
-    @Test
-    public void testEventRange() {
-
-        Path path = panicMovement.getPath();
-        MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
-
-        assertTrue("Target node should not be outside the event range",
-                end.getLocation().distance(event.getLocation())
-                        <= panicMovement.getPanicMovementUtil().getEventRangeRadius());
-    }
 
     /**
      * Creates a host for the map

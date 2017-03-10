@@ -1,7 +1,6 @@
 package input;
 
 import core.World;
-import movement.VoluntaryHelperMovement;
 
 /**
  * This is an event class that will be used for starting {@link VhmEvent}s by
@@ -24,7 +23,7 @@ public class VhmEventStartEvent extends VhmEvent {
 
     @Override
     public void processEvent(World world){
-        VoluntaryHelperMovement.eventStarted(this);
+        VhmEventNotifier.eventStarted(this);
     }
 
 

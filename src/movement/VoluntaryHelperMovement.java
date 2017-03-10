@@ -7,6 +7,7 @@ import core.Coord;
 import core.DTNHost;
 import core.SimClock;
 import input.VhmEvent;
+import input.VhmEventNotifier;
 import movement.map.SimMap;
 import routing.ActiveRouter;
 import routing.MessageRouter;
@@ -198,11 +199,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<>());
 
-    //TODO make this non static by moving it to the appropriate class?
-    /**
-     * List of VhmListeners
-     */
-    private static List<VhmListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Creates a new VoluntaryHelperMovement.
@@ -261,7 +257,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         //panicMM = new PanicMovement(prototype.panicMM);
 
         //register the movement model as a VhmListener
-        VoluntaryHelperMovement.addListener(this);
+        VhmEventNotifier.addListener(this);
 
         //just make sure this is initialized
         justChanged = false;
@@ -269,37 +265,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         //set the movement mode and model
         mode = movementMode.RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
-    }
-
-    /**
-     * Adds a VhmListener that will be notified of VhmEvents starting and ending.
-     *
-     * @param listener The listener that is added.
-     */
-    public static void addListener(VhmListener listener) {
-        listeners.add(listener);
-    }
-
-    /**
-     * Informs all registered VhmListeners, that a VhmEvent started and adds it to the appropriate List
-     *
-     * @param event The VhmEvent.
-     */
-    public static void eventStarted(VhmEvent event) {
-        for (VhmListener l : listeners) {
-            l.vhmEventStarted(event);
-        }
-    }
-
-    /**
-     * Informs all registered VhmListeners, that a VhmEvent ended and removes it from the appropriate list
-     *
-     * @param event The VhmEvent.
-     */
-    public static void eventEnded(VhmEvent event) {
-        for (VhmListener l : listeners) {
-            l.vhmEventEnded(event);
-        }
     }
 
     /**

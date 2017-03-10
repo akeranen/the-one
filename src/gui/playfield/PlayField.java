@@ -7,7 +7,7 @@ package gui.playfield;
 import core.VhmListener;
 import gui.DTNSimGUI;
 import input.VhmEvent;
-import movement.VoluntaryHelperMovement;
+import input.VhmEventNotifier;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -79,7 +79,7 @@ public class PlayField extends JPanel implements VhmListener {
         this.autoClearOverlay = true;
 
 		highlightedHosts = new LinkedList<DTNHost>();
-		VoluntaryHelperMovement.addListener(this);
+		VhmEventNotifier.addListener(this);
 		
         this.addMouseListener(new MouseAdapter() {
 			@Override

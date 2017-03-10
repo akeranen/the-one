@@ -1,7 +1,6 @@
 package input;
 
 import core.World;
-import movement.VoluntaryHelperMovement;
 
 /**
  * This is an event class that will be used for ending {@link VhmEvent}s by
@@ -24,6 +23,6 @@ public class VhmEventEndEvent extends VhmEvent {
 
     @Override
     public void processEvent(World world){
-        VoluntaryHelperMovement.eventEnded(this);
+        VhmEventNotifier.eventEnded(this);
     }
 }

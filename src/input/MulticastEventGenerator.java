@@ -1,6 +1,7 @@
 package input;
 
-import core.*;
+
+import core.Settings;
 
 /**
  * Multicast creation external events generator. Creates uniformly distributed

@@ -6,15 +6,14 @@ package core;
 
 import input.EventQueue;
 import input.EventQueueHandler;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.map.SimMap;
 import routing.MessageRouter;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simulation scenario used for getting and storing the settings of a
@@ -337,7 +336,6 @@ public class SimScenario implements Serializable {
 			if (s.contains(GROUP_ADDRESSES_S)){
 				joinedGroups = s.getCsvInts(GROUP_ADDRESSES_S);
 			}
-			int appCount;
 
 			// creates prototypes of MessageRouter and MovementModel
 			MovementModel mmProto =
@@ -364,54 +362,79 @@ public class SimScenario implements Serializable {
 			}
 
 			// setup applications
-			if (s.contains(APPCOUNT_S)) {
-				appCount = s.getInt(APPCOUNT_S);
-			} else {
-				appCount = 0;
-			}
-			for (int j=1; j<=appCount; j++) {
-				String appname = null;
-				Application protoApp = null;
-				try {
-					// Get name of the application for this group
-					appname = s.getSetting(GAPPNAME_S+j);
-					// Get settings for the given application
-					Settings t = new Settings(appname);
-					// Load an instance of the application
-					protoApp = (Application)t.createIntializedObject(
-							APP_PACKAGE + t.getSetting(APPTYPE_S));
-					// Set application listeners
-					protoApp.setAppListeners(this.appListeners);
-					// Set the proto application in proto router
-					//mRouterProto.setApplication(protoApp);
-					mRouterProto.addApplication(protoApp);
-				} catch (SettingsError se) {
-					// Failed to create an application for this group
-					System.err.println("Failed to setup an application: " + se);
-					System.err.println("Caught at " + se.getStackTrace()[0]);
-					System.exit(-1);
-				}
-			}
+			setupApplications(s,mRouterProto);
 
 			if (mmProto instanceof MapBasedMovement) {
 				this.simMap = ((MapBasedMovement)mmProto).getMap();
 			}
 
-			// creates hosts of ith group
-			for (int j=0; j<nrofHosts; j++) {
-				ModuleCommunicationBus comBus = new ModuleCommunicationBus();
+			createHostsOfGroup(nrofHosts,gid,mmProto,interfaces,mRouterProto,joinedGroups);
+		}
+	}
 
-				// prototypes are given to new DTNHost which replicates
-				// new instances of movement model and message router
-				DTNHost host = new DTNHost(this.messageListeners,
-						this.movementListeners,	gid, interfaces, comBus,
-						mmProto, mRouterProto);
-				//join the defined multicast groups
-				for (int groupAddress : joinedGroups){
-					host.joinGroup(Group.getOrCreateGroup(groupAddress));
-				}
-				hosts.add(host);
+	/**
+	 * Sets up the applications for the simulation
+	 *
+	 * @param s the settings
+	 * @param mRouterProto the message router
+	 */
+	private void setupApplications(Settings s, MessageRouter mRouterProto){
+		int appCount;
+		if (s.contains(APPCOUNT_S)) {
+			appCount = s.getInt(APPCOUNT_S);
+		} else {
+			appCount = 0;
+		}
+		for (int j=1; j<=appCount; j++) {
+			String appname = null;
+			Application protoApp = null;
+			try {
+				// Get name of the application for this group
+				appname = s.getSetting(GAPPNAME_S+j);
+				// Get settings for the given application
+				Settings t = new Settings(appname);
+				// Load an instance of the application
+				protoApp = (Application)t.createIntializedObject(
+						APP_PACKAGE + t.getSetting(APPTYPE_S));
+				// Set application listeners
+				protoApp.setAppListeners(this.appListeners);
+				// Set the proto application in proto router
+				//mRouterProto.setApplication(protoApp);
+				mRouterProto.addApplication(protoApp);
+			} catch (SettingsError se) {
+				// Failed to create an application for this group
+				System.err.println("Failed to setup an application: " + se);
+				System.err.println("Caught at " + se.getStackTrace()[0]);
+				throw new SimError("Failed to setup application: "+ se);
 			}
+		}
+	}
+
+	/**
+	 * Creates the hosts for a certain group.
+	 *
+	 * @param nrofHosts number of hosts in the group
+	 * @param gid the group id
+	 * @param mmProto the used mobility model
+	 * @param interfaces the used interfaces
+	 * @param mRouterProto the message router of the nodes
+	 * @param joinedGroups the group messaging groups the nodes are joined in
+	 */
+	private void createHostsOfGroup(int nrofHosts,String gid, MovementModel mmProto, List<NetworkInterface> interfaces,
+									MessageRouter mRouterProto, int[] joinedGroups){
+		for (int j=0; j<nrofHosts; j++) {
+			ModuleCommunicationBus comBus = new ModuleCommunicationBus();
+
+			// prototypes are given to new DTNHost which replicates
+			// new instances of movement model and message router
+			DTNHost host = new DTNHost(this.messageListeners,
+					this.movementListeners,	gid, interfaces, comBus,
+					mmProto, mRouterProto);
+			//join the defined multicast groups
+			for (int groupAddress : joinedGroups){
+				host.joinGroup(Group.getOrCreateGroup(groupAddress));
+			}
+			hosts.add(host);
 		}
 	}
 

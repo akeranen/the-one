@@ -32,9 +32,9 @@ public class PanicMovementUtil {
     }
 
     /**
-     * Computes the nearest Node on the map that leads at least 90° away from an event,
+     * Computes the nearest node on the map that is not in event direction as seen from the host,
      * i.e. the angle between eventLocation -> locationNode and
-     * eventLocation -> returnNode should be at least 90°.
+     * eventLocation -> returnNode should be either less than 90 and or more than 270 degrees.
      *
      * @param locationNode location of the node that is closest to the corresponding host
      */
@@ -62,8 +62,7 @@ public class PanicMovementUtil {
         for (MapNode node : map.getNodes()) {
             double distanceBetweenNodeAndEvent = eventLocation.distance(node.getLocation());
             double distanceBetweenHostAndNode = locationNode.getLocation().distance(node.getLocation());
-            if (distanceBetweenNodeAndEvent >= safeRangeRadius && distanceBetweenNodeAndEvent <= eventRangeRadius
-                    && (distanceBetweenHostAndNode < shortestDistance)
+            if (distanceBetweenNodeAndEvent >= safeRangeRadius && (distanceBetweenHostAndNode < shortestDistance)
                     && !isInEventDirection(locationNode, node)) {
                 nearestSafeNode = node;
                 shortestDistance = distanceBetweenHostAndNode;
@@ -149,7 +148,7 @@ public class PanicMovementUtil {
             // This case avoids division by zero. Since this case is also handled at the caller, it should never happen
             return STRAIGHT_ANGLE;
         } else {
-            return Math.acos(scalarProduct / lengthProduct) * FULL_ROTATION / (Math.PI * 2);
+            return Math.acos(scalarProduct / lengthProduct) * STRAIGHT_ANGLE / Math.PI;
         }
     }
 }

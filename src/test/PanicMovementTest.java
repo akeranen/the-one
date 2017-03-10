@@ -27,12 +27,14 @@ public class PanicMovementTest extends TestCase {
     private PanicMovement panicMovement;
     private SimMap map;
     private TestSettings settings;
+    private DTNHost host;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         setupMapDataAndBasicSettings();
-        panicMovement.setHost(setupHost());
+        host = setupHost();
+        panicMovement.setHost(host);
     }
 
     /**
@@ -107,18 +109,16 @@ public class PanicMovementTest extends TestCase {
     }
 
     /**
-     * Tests if the angle between source node, event and target node is less than 90 and or more than 270 degrees 
-     * (so the absolute of the difference of straight angle and this angle should be greater than 90 degrees)
-     * to avoid running through the event
+     * Tests if the host does not move towards the event
      */
     @Test
-    public void testAngle() {
+    public void testEventDirection() {
         Path path = panicMovement.getPath();
         MapNode start = map.getNodeByCoord(path.getCoords().get(0));
         MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
         
-        double angle = PanicMovementUtil.computeAngleBetween(event.getLocation(), start, end);
-        assertTrue("Angle should not be between 90 and 270 degrees", Math.abs(180 - angle) > 90);
+        assertTrue("Host should not move towards the event", 
+        		!panicMovement.getPanicMovementUtil().isInEventDirection(start, end));
     }
 
     /**
@@ -156,6 +156,15 @@ public class PanicMovementTest extends TestCase {
         }
     }
 
+    @Test
+    /**
+     * Tests if a node in the safe region stays there
+     */
+    public void testStayInSafeRegion() {
+    	host.setLocation(new Coord(3,0));
+    	Path path = panicMovement.getPath();
+    	assertTrue("Nodes in the safe area should not move", path.getCoords().size() == 1);
+    }
     /**
      * Tests if the target node is not outside the event range
      */

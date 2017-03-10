@@ -10,6 +10,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.junit.Test;
+
 import core.Coord;
 import core.DTNHost;
 import core.Message;
@@ -42,7 +44,7 @@ public class DistanceDelayReportTest extends TestCase {
 		this.utils = new TestUtils(null, ml, ts);
 	}
 
-
+	@Test
 	public void testMessageTransferred() throws IOException {
 		DTNHost h1 = utils.createHost(new Coord(0,0));
 		DTNHost h2 = utils.createHost(new Coord(2,0));

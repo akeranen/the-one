@@ -7,7 +7,6 @@ import input.VhmEvent;
 import input.VhmEventReader;
 import input.VhmEventStartEvent;
 import junit.framework.TestCase;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -38,8 +37,7 @@ public class VhmEventsTest {
      *
      * @throws FileNotFoundException might throw an exception if the files are not found
      */
-    @Before
-    public void setUp() throws FileNotFoundException{
+    public VhmEventsTest() throws FileNotFoundException{
         correctFile = new File(CORRECT_FILE);
         incorrectFile = new File(MISSING_VERSION);
     }

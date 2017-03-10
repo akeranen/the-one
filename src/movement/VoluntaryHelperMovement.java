@@ -633,8 +633,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         //handle the event
         if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
             handleEndedDisaster(event);
-        } else if (event.getType() == HOSPITAL && mode != movementMode.INJURED_MODE) {
-            handleEndedHospital(event);
         }
     }
 
@@ -648,22 +646,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         if (chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
             //..handle the loss of the chosen event by starting over
             forceStartOver();
-        }
-    }
-
-    /**
-     * Handles the end of a hospital, i.e. makes the movement react to it.
-     *
-     * @param event the VhmEvent associated with the end of the hospital.
-     */
-    private void handleEndedHospital(VhmEvent event) {
-        //test if the vanished hospital was selected, and select a new one with chooseNextHospital()
-        //if choosing a new one fails because there are no hospitals anymore...
-        boolean affected = chosenHospital != null && chosenHospital.getID() == event.getID();
-        if (affected && (mode == movementMode.TRANSPORTING_MODE || mode == movementMode.HOSPITAL_WAIT_MODE)
-                && !chooseNextHospital()) {
-            //...just move on with your day
-            switchToRandomMapBasedMode();
         }
     }
 

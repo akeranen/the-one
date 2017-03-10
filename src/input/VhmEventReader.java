@@ -7,6 +7,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonStructure;
 import javax.json.JsonValue;
+import javax.json.stream.JsonParsingException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -85,7 +86,7 @@ public class VhmEventReader implements ExternalEventsReader {
                     correct = true;
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException|JsonParsingException e) {
             // It is perfectly acceptable to not handle "e" here
             correct = false;
         }

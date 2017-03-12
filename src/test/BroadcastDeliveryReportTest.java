@@ -34,6 +34,8 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     private static final int SECOND_DELIVERY_TIME = 245;
     private static final int SIMULATION_TIME = 543;
 
+    private static final String TEST_MESSAGE_ID = "M1";
+
     private static final String EXPECTED_FIRST_LINE = "Time # Prio";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
 
@@ -99,7 +101,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
-        sender.createNewMessage(new BroadcastMessage(sender, "M1", 0));
+        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0));
 
         this.report.done();
         // Check output.
@@ -117,13 +119,13 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
-        sender.createNewMessage(new BroadcastMessage(sender, "M1", 0));
+        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0));
 
         // Go to delivery times and transfer the message at them.
         this.clock.setTime(FIRST_DELIVERY_TIME);
-        BroadcastDeliveryReportTest.transferMessage("M1", sender, utils.createHost());
+        BroadcastDeliveryReportTest.transferMessage(TEST_MESSAGE_ID, sender, utils.createHost());
         this.clock.setTime(SECOND_DELIVERY_TIME);
-        BroadcastDeliveryReportTest.transferMessage("M1", sender, utils.createHost());
+        BroadcastDeliveryReportTest.transferMessage(TEST_MESSAGE_ID, sender, utils.createHost());
 
         this.report.done();
 
@@ -134,7 +136,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
                     String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
                     reader.readLine());
             Assert.assertEquals(
-                    "Report about first delivery should have been different.",
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
                     String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME),
                     reader.readLine());
             Assert.assertEquals(
@@ -166,7 +168,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
 
         // Create 1-to-1 message.
         DTNHost h1 = utils.createHost();
-        h1.createNewMessage(new Message(h1, h1, "M1", 0));
+        h1.createNewMessage(new Message(h1, h1, TEST_MESSAGE_ID, 0));
 
         this.report.done();
 
@@ -190,11 +192,11 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Create broadcast at time before warm up has finished.
         this.clock.setTime(0);
         DTNHost h1 = utils.createHost();
-        h1.createNewMessage(new BroadcastMessage(h1, "M1", 0));
+        h1.createNewMessage(new BroadcastMessage(h1, TEST_MESSAGE_ID, 0));
 
         // Leave warm up time and transfer the message.
         this.clock.setTime(AFTER_WARM_UP_TIME);
-        BroadcastDeliveryReportTest.transferMessage("M1", h1, utils.createHost());
+        BroadcastDeliveryReportTest.transferMessage(TEST_MESSAGE_ID, h1, utils.createHost());
 
         this.report.done();
 
@@ -217,14 +219,14 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
-        sender.createNewMessage(new BroadcastMessage(sender, "M1", 0));
+        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0));
 
         // Go to delivery times and transfer the message at them.
         DTNHost recipient = utils.createHost();
         this.clock.setTime(FIRST_DELIVERY_TIME);
-        BroadcastDeliveryReportTest.transferMessage("M1", sender, recipient);
+        BroadcastDeliveryReportTest.transferMessage(TEST_MESSAGE_ID, sender, recipient);
         this.clock.setTime(SECOND_DELIVERY_TIME);
-        BroadcastDeliveryReportTest.transferMessage("M1", sender, recipient);
+        BroadcastDeliveryReportTest.transferMessage(TEST_MESSAGE_ID, sender, recipient);
 
         this.report.done();
 

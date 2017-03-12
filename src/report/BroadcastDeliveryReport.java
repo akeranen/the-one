@@ -6,25 +6,37 @@ import core.Message;
 import core.MessageListener;
 
 /**
- * Prints a line for each broadcast delivery.
+ * Prints a line for each broadcast delivery or creation.
  *
  * Format is like
- * # Prio Time_Since_Creation
- * M3 2 7
- * M3 2 12
- * M1 3 101
+ * Time # Prio
+ * 7 M3 2
+ * 12 M3 2
+ * 101 M1 3
  * ...
- * where the first column is the message ID, the second is the broadcast's priority and the last column shows the time
- * that passed between creation and delivery.
+ * 530
+ * where the first column is the simulation time, the second the message ID, and the third one the broadcast's
+ * priority. The final line is the simulation time at the end of the report.
  *
  * Created by Britta Heymann on 08.03.2017.
  */
 public final class BroadcastDeliveryReport extends Report implements MessageListener {
     public BroadcastDeliveryReport() {
         super();
-
-        this.write("# Prio Time_Since_Creation");
+        this.write("Time # Prio");
     }
+
+    /**
+     * Called when the simulation is done, user requested
+     * premature termination or intervalled report generating decided
+     * that it's time for the next report.
+     */
+    @Override
+    public void done() {
+        this.write(Integer.toString((int)this.getSimTime()));
+        super.done();
+    }
+
     /**
      * Method is called when a new message is created
      *
@@ -32,9 +44,16 @@ public final class BroadcastDeliveryReport extends Report implements MessageList
      */
     @Override
     public void newMessage(Message m) {
-        if (m instanceof BroadcastMessage && isWarmup()) {
-            this.addWarmupID(m.getId());
+        if (!(m instanceof BroadcastMessage)) {
+            return;
         }
+
+        if (isWarmup()) {
+            this.addWarmupID(m.getId());
+            return;
+        }
+
+        this.writeMessageLine(m);
     }
 
     /**
@@ -51,11 +70,17 @@ public final class BroadcastDeliveryReport extends Report implements MessageList
         if (!firstDelivery || !(m instanceof BroadcastMessage) || this.isWarmupID(m.getId())) {
             return;
         }
+        this.writeMessageLine(m);
+    }
 
+    /**
+     * Writes a line of the format "simTime messageId priority".
+     * @param m Message to write the line about.
+     */
+    private void writeMessageLine(Message m) {
         // TODO: Get correct priority here as soon as message priorities are implemented.
         int priority = 1;
-        int timeAfterCreation = (int)this.getSimTime() - (int)m.getCreationTime();
-        this.write(String.format("%s %d %d", m.getId(), priority, timeAfterCreation));
+        this.write(String.format("%d %s %d", (int)this.getSimTime(), m.getId(), priority));
     }
 
     /**

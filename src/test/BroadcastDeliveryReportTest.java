@@ -28,14 +28,21 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     private static final int WARM_UP_TIME = 50;
     private static final int AFTER_WARM_UP_TIME = WARM_UP_TIME + 1;
 
-    // Delivery times in a certain test. Chosen arbitrarily.
+    // Some times in a certain tests. Chosen arbitrarily.
     private static final int CREATION_TIME = 180;
     private static final int FIRST_DELIVERY_TIME = 230;
     private static final int SECOND_DELIVERY_TIME = 245;
+    private static final int SIMULATION_TIME = 543;
 
-    private static final String EXPECTED_FIRST_LINE = "# Prio Time_Since_Creation";
+    private static final String EXPECTED_FIRST_LINE = "Time # Prio";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
-    private static final String FORMAT_OF_FIRST_DELIVERY_LINE = "M1 1 %d";
+
+    private static final String FORMAT_OF_M1_REPORT_LINE = "%d M1 1";
+    private static final String UNEXPECTED_CREATION_LINE = "Line for message creation was not as expected.";
+    private static final String UNEXPECTED_FIRST_DELIVERY_LINE = "Line for first delivery should have been different.";
+
+    private static final String FORMAT_OF_SIM_TIME_LINE = "%d";
+    private static final String UNEXPECTED_MESSAGE_LINE = "Expected line about total simulation time.";
 
     private TestUtils utils;
     private BroadcastDeliveryReport report;
@@ -88,7 +95,25 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsDeliveries() throws IOException {
+    public void reportPrintsOnCreation() throws IOException {
+        // Go to creation time and create broadcast message.
+        this.clock.setTime(CREATION_TIME);
+        DTNHost sender = utils.createHost();
+        sender.createNewMessage(new BroadcastMessage(sender, "M1", 0));
+
+        this.report.done();
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    "Report about creation should have been different.",
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void reportPrintsOnDelivery() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
@@ -105,13 +130,31 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Check output.
         try(BufferedReader reader = this.createBufferedReader()) {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
+                    reader.readLine());
             Assert.assertEquals(
                     "Report about first delivery should have been different.",
-                    String.format(FORMAT_OF_FIRST_DELIVERY_LINE, FIRST_DELIVERY_TIME - CREATION_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME),
                     reader.readLine());
             Assert.assertEquals(
                     "Report about second delivery should have been different.",
-                    String.format(FORMAT_OF_FIRST_DELIVERY_LINE, SECOND_DELIVERY_TIME - CREATION_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, SECOND_DELIVERY_TIME),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void reportPrintsSimulationTimeWhenDone() throws IOException {
+        this.clock.setTime(SIMULATION_TIME);
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    "Last report line should have been different.",
+                    Integer.toString(SIMULATION_TIME),
                     reader.readLine());
         }
     }
@@ -130,7 +173,10 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Check output.
         try(BufferedReader reader = this.createBufferedReader()) {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
-            Assert.assertNull("No second line expected.", reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
+                    reader.readLine());
         }
     }
 
@@ -155,7 +201,10 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Check output.
         try(BufferedReader reader = this.createBufferedReader()) {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
-            Assert.assertNull("No second line expected.", reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
+                    reader.readLine());
         }
     }
 
@@ -183,10 +232,17 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         try(BufferedReader reader = this.createBufferedReader()) {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
             Assert.assertEquals(
-                    "Report about first delivery should have been different.",
-                    String.format(FORMAT_OF_FIRST_DELIVERY_LINE, FIRST_DELIVERY_TIME - CREATION_TIME),
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
                     reader.readLine());
-            Assert.assertNull("Second delivery to same host should not have been reported.", reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, SECOND_DELIVERY_TIME),
+                    reader.readLine());
         }
     }
 

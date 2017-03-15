@@ -87,4 +87,4 @@ perl_test:
   image: perl:5.24.1
   before_script:
     - cpan IPC::System::Simple
-  script: prove toolkit/tests
+  script: prove -v toolkit/tests

@@ -26,6 +26,9 @@ public class PanicMovement extends MapBasedMovement {
 
     private DijkstraPathFinder pathFinder;
 
+    private Coord eventLocation = new Coord(DEFAULT_EVENT_LOCATION_X, DEFAULT_EVENT_LOCATION_Y);
+    private double safeRange = DEFAULT_SAFE_RANGE;
+
     /**
      * Constructor setting values for the event and the minimum and maximum distance to
      * an event (SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS).
@@ -122,4 +125,19 @@ public class PanicMovement extends MapBasedMovement {
         return bestNode;
     }
 
+    public Coord getEventLocation() {
+        return eventLocation;
+    }
+
+    public void setEventLocation(Coord eventLocation) {
+        this.eventLocation = eventLocation;
+    }
+
+    public double getSafeRange() {
+        return safeRange;
+    }
+
+    public void setSafeRange(double safeRange) {
+        this.safeRange = safeRange;
+    }
 }

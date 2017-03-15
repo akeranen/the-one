@@ -4,6 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 use IPC::System::Simple qw(system capture);
 use File::Spec;
+use File::Basename;
 
 # Contains tests for broadcastMessageAnalyzer.pl.
 
@@ -14,6 +15,8 @@ use Test::More 'no_plan';
 my @outputLines;
 # Time granularity used throughout the tests.
 my $granularity = 10;
+# Current directory, important to get absolute file names.
+my $currDir = File::Basename::dirname($0);
 
 # Print to console that testing begins.
 print "Start tests for broadcastMessageAnalyzer.pl.\n";
@@ -63,9 +66,9 @@ Test::More::is(getMinFromLine($outputLines[5]), 6, "Minimum of single remaining 
 sub callBroadcastMessageAnalyzer {
     # Get absolute file path.
     my $inputFile = shift;
-    $inputFile = File::Spec->rel2abs("../toolkit/testdata/$inputFile");
+    $inputFile = File::Spec->rel2abs("$currDir/../testdata/$inputFile");
     # Use absolute file path of analyzer script, too.
-    my $rawDataName = File::Spec->rel2abs("../toolkit/broadcastMessageAnalyzer.pl");
+    my $rawDataName = File::Spec->rel2abs("$currDir/../broadcastMessageAnalyzer.pl");
     # Capture console output.
     @outputLines = IPC::System::Simple::capture("perl $rawDataName $inputFile $granularity");
 }

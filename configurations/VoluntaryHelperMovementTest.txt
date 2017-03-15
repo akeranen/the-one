@@ -18,10 +18,6 @@ Group.nrofHosts = 100
 # group1 (pedestrians) specific settings
 Group1.groupID = p
 Group1.isLocalHelper = true
-Group1.initialEnergy = 100
-Group1.scanEnergy = 0.001
-Group1.transmitEnergy = 0.001
-Group1.scanResponseEnergy = 0.001
 
 # group2 (cars) specific settings
 Group2.groupID = c

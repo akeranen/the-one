@@ -1,7 +1,6 @@
 package movement;
 
 import core.VhmListener;
-import core.EnergyListener;
 import core.Settings;
 import core.Coord;
 import core.DTNHost;
@@ -9,8 +8,6 @@ import core.SimClock;
 import input.VhmEvent;
 import input.VhmEventNotifier;
 import movement.map.SimMap;
-import routing.ActiveRouter;
-import routing.MessageRouter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +25,7 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  * @author Ansgar Mährlein
  */
 //TODO implement Panic Movement + more comments + javadoc
-public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, EnergyListener {
+public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener {
 
     //strings for the setting keys in the settings file
     /**
@@ -254,30 +251,17 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Sets the host of this movement model and registers this movement model as an EnergyListener.
+     * Sets the host and movement mode of this movement model.
      *
      * @param host the host to set
      */
     @Override
     public void setHost(DTNHost host) {
         super.setHost(host);
-        //Register the MM as an EnergyListener.
-        initEnergyListener();
 
         //set the movement mode and model
         mode = movementMode.RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
-    }
-
-    /**
-     * Registers the movement model as an EnergyListener.
-     */
-    private void initEnergyListener() {
-        //register the EnergyListener
-        MessageRouter router = this.host.getRouter();
-        if (router instanceof ActiveRouter) {
-            ((ActiveRouter) router).addEnergyListener(this);
-        }
     }
 
     /**
@@ -486,29 +470,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         } else {
             return false;
         }
-    }
-
-    /**
-     * This Method is called when the battery of the node ran empty.
-     * It resets the node's movement model.
-     */
-    @Override
-    public void batteryDied() {
-        //do not call "super.reset();" or the rng seed will be reset,
-        //so the new random location would always be the same
-
-        //TODO reset the host in DTNHost(network address, name, message buffer and connections)
-        //do not call "host.reset();" as it interferes with host network address assignment for all hosts
-
-        //reset the Location to a new random one
-        Coord min = getMap().getMinBound();
-        Coord max = getMap().getMaxBound();
-        double x = min.getX() + rng.nextDouble() * (max.getX() - min.getX());
-        double y = min.getY() + rng.nextDouble() * (max.getY() - min.getY());
-        host.setLocation(getMap().getClosestNodeByCoord(new Coord(x, y)).getLocation());
-
-        //select an event and help there or randomly move around the map
-        forceStartOver();
     }
 
     /**

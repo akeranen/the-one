@@ -76,8 +76,8 @@ public class DTNHost implements Comparable<DTNHost> {
 		// create instances by replicating the prototypes
 		this.movement = mmProto.replicate();
 		this.movement.setComBus(comBus);
-		setRouter(mRouterProto.replicate());
 		this.movement.setHost(this);
+		setRouter(mRouterProto.replicate());
 
 		this.location = movement.getInitialLocation();
 
@@ -142,15 +142,6 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public MessageRouter getRouter() {
 		return this.router;
-	}
-
-	/**
-	 * Sets a new network-layer address and name for this host.
-	 */
-	public void setNewAddress() {
-		String groupID = name.substring(0, name.lastIndexOf(Integer.toString(address)));
-		address = getNextAddress();
-		name = groupID + address;
 	}
 
 	/**

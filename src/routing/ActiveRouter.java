@@ -22,7 +22,6 @@ import core.MessageListener;
 import core.NetworkInterface;
 import core.Settings;
 import core.SimClock;
-import core.EnergyListener;
 
 /**
  * Superclass of active routers. Contains convenience methods (e.g.
@@ -34,10 +33,6 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * If set to true and final recipient of a message rejects it because it
 	 * already has it, the message is deleted from buffer. Default=false. */
 	public static final String DELETE_DELIVERED_S = "deleteDelivered";
-	/** setting string for the energy threshold, below which the battery is considered to be empty. Default = 0.01 */
-	public static final String ENERGY_THRESHOLD_S = "energyThreshold";
-	/** Default value for the energy threshold */
-	public static final double ENERGY_THRESHOLD_DEFAULT = 0.01;
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
@@ -53,13 +48,6 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
-	/** the threshold below which the battery is considered to be empty */
-	private double energyThreshold;
-	/** initial battery level for nodes with energy modelling enabled */
-	private double initialEnergy;
-
-	/** List of EnergyListeners for this ActiveRouter */
-	private List<EnergyListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -75,8 +63,6 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		if (s.contains(EnergyModel.INIT_ENERGY_S)) {
 			this.energy = new EnergyModel(s);
-			this.energyThreshold = s.getDouble(ENERGY_THRESHOLD_S, ENERGY_THRESHOLD_DEFAULT);
-			this.initialEnergy = s.getDouble(EnergyModel.INIT_ENERGY_S);
 		} else {
 			this.energy = null; /* no energy model */
 		}
@@ -91,27 +77,6 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.deleteDelivered = r.deleteDelivered;
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
-		this.energyThreshold = r.energyThreshold;
-		this.initialEnergy = r.initialEnergy;
-	}
-
-	/**
-	 * Adds a EnergyListener that will be notified of the battery going empty.
-	 * @param listener The listener that is added.
-	 */
-	public void addEnergyListener(EnergyListener listener) {
-		listeners.add(listener);
-	}
-
-	/**
-	 * Informs all registered EnergyListeners, that the battery went empty.
-	 */
-	private void batteryDied() {
-		//reset the energy value.
-		getHost().getComBus().updateProperty("Energy.value", initialEnergy);
-		for (EnergyListener l : listeners) {
-			l.batteryDied();
-		}
 	}
 
 	@Override
@@ -615,11 +580,6 @@ public abstract class ActiveRouter extends MessageRouter {
 	@Override
 	public void update() {
 		super.update();
-
-		//check if the battery has died and notify listeners in that case
-		if(energy != null && energy.getEnergy() <= energyThreshold) {
-			batteryDied();
-		}
 
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */

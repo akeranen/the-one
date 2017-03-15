@@ -3,9 +3,7 @@ package test;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Test;
-
-import junit.framework.*;
+import junit.framework.TestCase;
 import movement.MovementModel;
 import movement.Path;
 import movement.map.MapNode;
@@ -29,9 +27,10 @@ public class PanicMovementTest extends TestCase {
     private TestSettings settings;
     private DTNHost host;
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    /**
+     * Constructor to make SonarLint/Qube happy
+     * */
+    public PanicMovementTest() {
         setupMapDataAndBasicSettings();
         host = setupHost();
         panicMovement.setHost(host);
@@ -39,16 +38,16 @@ public class PanicMovementTest extends TestCase {
 
     /**
      * This method creates the node topology according to this draft:
-     * 
-     *   | 1   2   3   4
-     *  _|_______________ 
-     *  0|     n6--n4
-     *   |     |   |
-     *  1| n0--n1--n5--n2
-     *   | |
-     *  2| n3
+     * <p>
+     * | 1   2   3   4
+     * _|_______________
+     * 0|     n6--n4
+     * |     |   |
+     * 1| n0--n1--n5--n2
+     * | |
+     * 2| n3
      **/
-    private void createTopology(MapNode[] node) {
+    private static void createTopology(MapNode[] node) {
         node[0].addNeighbor(node[1]);
         node[0].addNeighbor(node[3]);
         node[1].addNeighbor(node[0]);
@@ -113,20 +112,18 @@ public class PanicMovementTest extends TestCase {
     /**
      * Tests if the host does not move towards the event
      */
-    @Test
     public void testEventDirection() {
         Path path = panicMovement.getPath();
         MapNode start = map.getNodeByCoord(path.getCoords().get(0));
         MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
-        
-        assertTrue("Host should not move towards the event", 
-        		!PanicMovementUtil.isInEventDirection(start, end, panicMovement.getEventLocation()));
+
+        assertTrue("Host should not move towards the event",
+                !PanicMovementUtil.isInEventDirection(start, end, panicMovement.getEventLocation()));
     }
 
     /**
      * Tests if the target node is inside the safe area
      */
-    @Test
     public void testSafeRegion() {
 
         Path path = panicMovement.getPath();
@@ -140,7 +137,6 @@ public class PanicMovementTest extends TestCase {
     /**
      * Test if closest possible node to the host is selected
      */
-    @Test
     public void testOptimizationCriterion() {
 
         Path path = panicMovement.getPath();
@@ -158,14 +154,13 @@ public class PanicMovementTest extends TestCase {
         }
     }
 
-    @Test
     /**
      * Tests if a node in the safe region stays there
      */
     public void testStayInSafeRegion() {
-    	host.setLocation(new Coord(3,0));
-    	Path path = panicMovement.getPath();
-    	assertTrue("Nodes in the safe area should not move", path.getCoords().size() == 1);
+        host.setLocation(new Coord(3, 0));
+        Path path = panicMovement.getPath();
+        assertTrue("Nodes in the safe area should not move", path.getCoords().size() == 1);
     }
 
     /**

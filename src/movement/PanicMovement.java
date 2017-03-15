@@ -109,18 +109,34 @@ public class PanicMovement extends MapBasedMovement {
         return bestNode;
     }
 
+    /**
+     * Get the location of the disaster that should be reacted to.
+     * @return The location of the disaster that is being reacted to.
+     */
     public Coord getEventLocation() {
         return eventLocation;
     }
 
+    /**
+     * Set the location of the disaster that should be reacted to.
+     * @param eventLocation The location of the disaster.
+     */
     public void setEventLocation(Coord eventLocation) {
         this.eventLocation = eventLocation;
     }
 
+    /**
+     * Get the distance from the disaster from which a host is safe.
+     * @return The distance from the disaster from which a host is safe.
+     */
     public double getSafeRange() {
         return safeRange;
     }
 
+    /**
+     * Set the distance from the disaster from which a host is safe.
+     * @param safeRange The distance from the disaster from which a host is safe.
+     */
     public void setSafeRange(double safeRange) {
         this.safeRange = safeRange;
     }

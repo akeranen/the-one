@@ -25,11 +25,13 @@ public abstract class AbstractReportTest {
     public void setUp() throws IOException {
         this.outputFile = File.createTempFile("reportTest", ".tmp");
 
+        String reportName = this.getReportClass().getSimpleName();
+
         settings = new TestSettings();
         settings.putSetting(DTNSimUI.NROF_REPORT_S, "1");
         settings.putSetting(Report.REPORTDIR_SETTING, "test");
-        settings.putSetting("Report.report1", this.getReportName());
-        settings.setNameSpace(this.getReportName());
+        settings.putSetting("Report.report1", reportName);
+        settings.setNameSpace(reportName);
         settings.putSetting(Report.OUTPUT_SETTING, outputFile.getAbsolutePath());
         settings.restoreNameSpace();
     }
@@ -40,8 +42,8 @@ public abstract class AbstractReportTest {
     }
 
     /***
-     * Gets the name of the report class to test.
-     * @return The name of the report class to test.
+     * Gets the report class to test.
+     * @return The the report class to test.
      */
-    protected abstract String getReportName();
+    protected abstract Class getReportClass();
 }

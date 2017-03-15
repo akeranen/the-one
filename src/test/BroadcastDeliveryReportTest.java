@@ -62,7 +62,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         super.setUp();
 
         // Add warm up time and report interval.
-        this.settings.setNameSpace(this.getReportName());
+        this.settings.setNameSpace(this.getReportClass().getSimpleName());
         this.settings.putSetting(Report.WARMUP_S, Integer.toString(WARM_UP_TIME));
         this.settings.restoreNameSpace();
 
@@ -88,12 +88,12 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     /**
-     * Gets the name of the report class to test.
-     * @return The name of the report class to test.
+     * Gets the report class to test.
+     * @return The report class to test.
      */
     @Override
-    protected String getReportName() {
-        return "BroadcastDeliveryReport";
+    protected Class getReportClass() {
+        return BroadcastDeliveryReport.class;
     }
 
     @Test

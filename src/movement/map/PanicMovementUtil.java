@@ -12,7 +12,6 @@ import core.Coord;
 public class PanicMovementUtil {
 
     private double safeRangeRadius;
-    private double eventRangeRadius;
     private Coord eventLocation;
     private static final double RIGHT_ANGLE = 90.0;
     private static final double STRAIGHT_ANGLE = 180.0;
@@ -22,12 +21,10 @@ public class PanicMovementUtil {
      *
      * @param eventLocation    Location where the event is located
      * @param safeRangeRadius  radius where the safe zone starts
-     * @param eventRangeRadius radius where the zone ends where you can help
      */
-    public PanicMovementUtil(Coord eventLocation, double safeRangeRadius, double eventRangeRadius) {
+    public PanicMovementUtil(Coord eventLocation, double safeRangeRadius) {
         this.eventLocation = eventLocation;
         this.safeRangeRadius = safeRangeRadius;
-        this.eventRangeRadius = eventRangeRadius;
     }
 
     /**
@@ -78,10 +75,6 @@ public class PanicMovementUtil {
 
     public double getSafeRangeRadius() {
         return safeRangeRadius;
-    }
-
-    public double getEventRangeRadius() {
-        return eventRangeRadius;
     }
 
     public Coord getEventLocation() {

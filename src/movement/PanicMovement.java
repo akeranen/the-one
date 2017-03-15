@@ -20,7 +20,6 @@ public class PanicMovement extends MapBasedMovement {
 
     private PanicMovementUtil pmu;
     private static final double DEFAULT_SAFE_RANGE = 1000.0;
-    private static final double DEFAULT_EVENT_RANGE = 1500.0;
     private static final double DEFAULT_EVENT_LOCATION_X = 1500.0;
     private static final double DEFAULT_EVENT_LOCATION_Y = 1500.0;
 
@@ -38,7 +37,7 @@ public class PanicMovement extends MapBasedMovement {
     public PanicMovement(Settings settings) {
         super(settings);
         pmu = new PanicMovementUtil(new Coord(DEFAULT_EVENT_LOCATION_X, DEFAULT_EVENT_LOCATION_Y),
-                DEFAULT_SAFE_RANGE, DEFAULT_EVENT_RANGE);
+                DEFAULT_SAFE_RANGE);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 
@@ -51,7 +50,7 @@ public class PanicMovement extends MapBasedMovement {
     protected PanicMovement(PanicMovement pm) {
         super(pm);
         pmu = new PanicMovementUtil(pm.pmu.getEventLocation(),
-                                    pm.pmu.getSafeRangeRadius(), pm.pmu.getEventRangeRadius());
+                                    pm.pmu.getSafeRangeRadius());
         this.pathFinder = pm.pathFinder;
     }
 
@@ -63,12 +62,11 @@ public class PanicMovement extends MapBasedMovement {
      * @param nrofMaps         Number of WKT files
      * @param location         Event location
      * @param safeRangeRadius  distance to the event to be safe
-     * @param eventRangeRadius distance to the event up to the hosts react to it
      */
     public PanicMovement(Settings settings, SimMap newMap, int nrofMaps,
-                         Coord location, double safeRangeRadius, double eventRangeRadius) {
+                         Coord location, double safeRangeRadius) {
         super(settings, newMap, nrofMaps);
-        pmu = new PanicMovementUtil(location, safeRangeRadius, eventRangeRadius);
+        pmu = new PanicMovementUtil(location, safeRangeRadius);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 

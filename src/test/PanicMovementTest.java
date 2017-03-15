@@ -105,7 +105,7 @@ public class PanicMovementTest extends TestCase {
         map = new SimMap(cmMap);
         createTopology(node);
         event = map.getNodeByCoord(new Coord(2, 1));
-        panicMovement = new PanicMovement(settings, map, 3, event.getLocation(), 1.0, 1.5);
+        panicMovement = new PanicMovement(settings, map, 3, event.getLocation(), 1.0);
     }
 
     /**

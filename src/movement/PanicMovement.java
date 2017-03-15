@@ -19,9 +19,10 @@ public class PanicMovement extends MapBasedMovement {
 
 
     private PanicMovementUtil pmu;
-    private static final double SAFE_RANGE_RADIUS = 1000.0;
-    private static final double EVENT_RANGE_RADIUS = 1500.0;
-    private static final double COORD1000 = 1500.0;
+    private static final double DEFAULT_SAFE_RANGE = 1000.0;
+    private static final double DEFAULT_EVENT_RANGE = 1500.0;
+    private static final double DEFAULT_EVENT_LOCATION_X = 1500.0;
+    private static final double DEFAULT_EVENT_LOCATION_Y = 1500.0;
 
     private DijkstraPathFinder pathFinder;
 
@@ -33,7 +34,8 @@ public class PanicMovement extends MapBasedMovement {
      */
     public PanicMovement(Settings settings) {
         super(settings);
-        pmu = new PanicMovementUtil(new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
+        pmu = new PanicMovementUtil(new Coord(DEFAULT_EVENT_LOCATION_X, DEFAULT_EVENT_LOCATION_Y),
+                DEFAULT_SAFE_RANGE, DEFAULT_EVENT_RANGE);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 

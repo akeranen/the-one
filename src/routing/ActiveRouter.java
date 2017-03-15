@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import movement.MovementModel;
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
 import routing.util.RoutingInfo;

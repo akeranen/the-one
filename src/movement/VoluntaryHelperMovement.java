@@ -11,7 +11,6 @@ import input.VhmEventNotifier;
 import movement.map.SimMap;
 import routing.ActiveRouter;
 import routing.MessageRouter;
-import routing.util.EnergyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;

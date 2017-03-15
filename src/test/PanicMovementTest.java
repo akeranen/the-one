@@ -105,7 +105,9 @@ public class PanicMovementTest extends TestCase {
         map = new SimMap(cmMap);
         createTopology(node);
         event = map.getNodeByCoord(new Coord(2, 1));
-        panicMovement = new PanicMovement(settings, map, 3, event.getLocation(), 1.0);
+        panicMovement = new PanicMovement(settings, map, 3);
+        panicMovement.setEventLocation(event.getLocation());
+        panicMovement.setSafeRange(1.0);
     }
 
     /**
@@ -118,7 +120,7 @@ public class PanicMovementTest extends TestCase {
         MapNode end = map.getNodeByCoord(path.getCoords().get(path.getCoords().size() - 1));
         
         assertTrue("Host should not move towards the event", 
-        		!panicMovement.getPanicMovementUtil().isInEventDirection(start, end));
+        		!PanicMovementUtil.isInEventDirection(start, end, panicMovement.getEventLocation()));
     }
 
     /**
@@ -132,7 +134,7 @@ public class PanicMovementTest extends TestCase {
 
         assertTrue("Target node should be inside the safe area",
                 end.getLocation().distance(event.getLocation())
-                        >= panicMovement.getPanicMovementUtil().getSafeRangeRadius());
+                        >= panicMovement.getSafeRange());
     }
 
     /**
@@ -150,8 +152,8 @@ public class PanicMovementTest extends TestCase {
                     > m.getLocation().distance(panicMovement.getHost().getLocation())) {
                 assertTrue("Closest possible node to the host should be selected",
                         m.getLocation().distance(event.getLocation())
-                                < panicMovement.getPanicMovementUtil().getSafeRangeRadius()
-                                || panicMovement.getPanicMovementUtil().isInEventDirection(start, m));
+                                < panicMovement.getSafeRange()
+                                || PanicMovementUtil.isInEventDirection(start, m, panicMovement.getEventLocation()));
             }
         }
     }

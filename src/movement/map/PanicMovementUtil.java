@@ -9,22 +9,16 @@ import core.Coord;
  * This Class provides some mathematical methods needed for the mobility model PanicMovement, as well as selecting
  * a destination node for the host 
  */
-public class PanicMovementUtil {
+public final class PanicMovementUtil {
 
-    private double safeRangeRadius;
-    private Coord eventLocation;
     private static final double RIGHT_ANGLE = 90.0;
     private static final double STRAIGHT_ANGLE = 180.0;
 
     /**
-     * Constructor
-     *
-     * @param eventLocation    Location where the event is located
-     * @param safeRangeRadius  radius where the safe zone starts
+     * Private constructor to hide the implicit public one
      */
-    public PanicMovementUtil(Coord eventLocation, double safeRangeRadius) {
-        this.eventLocation = eventLocation;
-        this.safeRangeRadius = safeRangeRadius;
+    private PanicMovementUtil() {
+
     }
 
     /**
@@ -34,14 +28,15 @@ public class PanicMovementUtil {
      *
      * @param locationNode location of the node that is closest to the corresponding host
      */
-    public MapNode selectDestination(SimMap map, MapNode locationNode) {
+    public static MapNode selectDestination(SimMap map, MapNode locationNode, Coord eventLocation,
+                                            double safeRangeRadius) {
         double distance = eventLocation.distance(locationNode.getLocation());
         if (distance >= safeRangeRadius) {
             // The host is within the safe area or the host is not concerned by the event
             return locationNode;
         }
 
-        return getBestNode(map, locationNode);
+        return getBestNode(map, locationNode, eventLocation, safeRangeRadius);
     }
 
     /**
@@ -51,7 +46,7 @@ public class PanicMovementUtil {
      * @param locationNode current location of the host
      * @return nearest safe node
      */
-    private MapNode getBestNode(SimMap map, MapNode locationNode) {
+    private static MapNode getBestNode(SimMap map, MapNode locationNode, Coord eventLocation, double safeRangeRadius) {
         MapNode nearestSafeNode = null;
         double shortestDistance = Double.MAX_VALUE;
 
@@ -59,7 +54,7 @@ public class PanicMovementUtil {
             double distanceBetweenNodeAndEvent = eventLocation.distance(node.getLocation());
             double distanceBetweenHostAndNode = locationNode.getLocation().distance(node.getLocation());
             if (distanceBetweenNodeAndEvent >= safeRangeRadius && (distanceBetweenHostAndNode < shortestDistance)
-                    && !isInEventDirection(locationNode, node)) {
+                    && !isInEventDirection(locationNode, node, eventLocation)) {
                 nearestSafeNode = node;
                 shortestDistance = distanceBetweenHostAndNode;
             }
@@ -73,14 +68,6 @@ public class PanicMovementUtil {
         }
     }
 
-    public double getSafeRangeRadius() {
-        return safeRangeRadius;
-    }
-
-    public Coord getEventLocation() {
-        return eventLocation;
-    }
-
     /**
      * Computes if the target node is in event direction from the source node's point of view
      *
@@ -88,7 +75,7 @@ public class PanicMovementUtil {
      * @param targetNode potential target location
      * @return true if the target node is in event direction from the source node's point of view, false otherwise
      */
-    public boolean isInEventDirection(MapNode sourceNode, MapNode targetNode) {
+    public static boolean isInEventDirection(MapNode sourceNode, MapNode targetNode, Coord eventLocation) {
         double angle;
 
         if (eventLocation.equals(targetNode.getLocation())) {

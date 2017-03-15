@@ -17,8 +17,6 @@ import movement.map.SimMap;
  */
 public class PanicMovement extends MapBasedMovement {
 
-
-    private PanicMovementUtil pmu;
     private static final double DEFAULT_SAFE_RANGE = 1000.0;
     private static final double DEFAULT_EVENT_LOCATION_X = 1500.0;
     private static final double DEFAULT_EVENT_LOCATION_Y = 1500.0;
@@ -36,8 +34,6 @@ public class PanicMovement extends MapBasedMovement {
      */
     public PanicMovement(Settings settings) {
         super(settings);
-        pmu = new PanicMovementUtil(new Coord(DEFAULT_EVENT_LOCATION_X, DEFAULT_EVENT_LOCATION_Y),
-                DEFAULT_SAFE_RANGE);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 
@@ -49,8 +45,6 @@ public class PanicMovement extends MapBasedMovement {
      */
     protected PanicMovement(PanicMovement pm) {
         super(pm);
-        pmu = new PanicMovementUtil(pm.pmu.getEventLocation(),
-                                    pm.pmu.getSafeRangeRadius());
         this.pathFinder = pm.pathFinder;
     }
 
@@ -60,13 +54,9 @@ public class PanicMovement extends MapBasedMovement {
      * @param settings         Settings for the map, hosts etc.
      * @param newMap           Map passed instead of reading it from a file
      * @param nrofMaps         Number of WKT files
-     * @param location         Event location
-     * @param safeRangeRadius  distance to the event to be safe
      */
-    public PanicMovement(Settings settings, SimMap newMap, int nrofMaps,
-                         Coord location, double safeRangeRadius) {
+    public PanicMovement(Settings settings, SimMap newMap, int nrofMaps) {
         super(settings, newMap, nrofMaps);
-        pmu = new PanicMovementUtil(location, safeRangeRadius);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 
@@ -77,7 +67,7 @@ public class PanicMovement extends MapBasedMovement {
     public Path getPath() {
         Path path = new Path(generateSpeed());
         MapNode hostNode = getNearestNode(getMap(), getLastLocation());
-        MapNode destNode = pmu.selectDestination(getMap(), hostNode);
+        MapNode destNode = PanicMovementUtil.selectDestination(getMap(), hostNode, eventLocation, safeRange);
 
         List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
 
@@ -94,10 +84,6 @@ public class PanicMovement extends MapBasedMovement {
     @Override
     public PanicMovement replicate() {
         return new PanicMovement(this);
-    }
-
-    public PanicMovementUtil getPanicMovementUtil() {
-        return pmu;
     }
 
     /**

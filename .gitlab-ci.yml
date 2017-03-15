@@ -81,3 +81,8 @@ test:
     when: always
     paths:
     - build/reports/
+
+perl_test:
+  stage: test
+  image: perl:5.24.1
+  script: prove toolkit/tests

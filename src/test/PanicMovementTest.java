@@ -19,7 +19,9 @@ import core.Settings;
  **/
 public class PanicMovementTest extends TestCase {
 
-    private MapNode[] node = new MapNode[7];
+    private static final int NR_OF_MAP_NODES = 7;
+
+    private MapNode[] node = new MapNode[NR_OF_MAP_NODES];
     private MapNode event;
 
     private PanicMovement panicMovement;
@@ -74,7 +76,7 @@ public class PanicMovementTest extends TestCase {
         settings.putSetting(MovementModel.SPEED, "1,1");
         settings.putSetting(MovementModel.WAIT_TIME, "0,0");
 
-        Coord[] coord = new Coord[7];
+        Coord[] coord = new Coord[NR_OF_MAP_NODES];
 
         coord[0] = new Coord(1, 1);
         coord[1] = new Coord(2, 1);
@@ -84,22 +86,11 @@ public class PanicMovementTest extends TestCase {
         coord[5] = new Coord(3, 1);
         coord[6] = new Coord(2, 0);
 
-        node[0] = new MapNode(coord[0]);
-        node[1] = new MapNode(coord[1]);
-        node[2] = new MapNode(coord[2]);
-        node[3] = new MapNode(coord[3]);
-        node[4] = new MapNode(coord[4]);
-        node[5] = new MapNode(coord[5]);
-        node[6] = new MapNode(coord[6]);
-
         Map<Coord, MapNode> cmMap = new HashMap<>();
-        cmMap.put(coord[0], node[0]);
-        cmMap.put(coord[1], node[1]);
-        cmMap.put(coord[2], node[2]);
-        cmMap.put(coord[3], node[3]);
-        cmMap.put(coord[4], node[4]);
-        cmMap.put(coord[5], node[5]);
-        cmMap.put(coord[6], node[6]);
+        for(int i = 0; i < NR_OF_MAP_NODES; i++) {
+            node[i] = new MapNode(coord[i]);
+            cmMap.put(coord[i], node[i]);
+        }
 
         map = new SimMap(cmMap);
         createTopology(node);

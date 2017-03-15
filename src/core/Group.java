@@ -96,9 +96,10 @@ public class Group implements Addressable {
     }
 
     /**
-     * Let a certain node join the group
+     * Adds the address of a node to the group member list.
+     * For a bidirectional join use {@link DTNHost#joinGroup(Group)}
      *
-     * @param address address of the node that should join the group
+     * @param address address of the node that should be added
      */
     public void joinGroup(int address){
         members.add(address);

@@ -6,6 +6,7 @@ import core.Group;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
+import core.SimError;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +29,6 @@ public class MulticastMessageTest {
 
     private MulticastMessage msg;
     private DTNHost from;
-    private Group group1;
 
     @Before
     public void setUp() throws Exception {
@@ -38,8 +38,8 @@ public class MulticastMessageTest {
                 new TestSettings());
         Group.clearGroups();
         from = new TestDTNHost(new ArrayList<>(),null,null);
-        group1 = Group.createGroup(GROUP_ADDRESS_1);
-        group1.joinGroup(from.getAddress());
+        Group group1 = Group.createGroup(GROUP_ADDRESS_1);
+        from.joinGroup(group1);
         msg = new MulticastMessage(from, group1, "M", 100);
     }
 
@@ -72,6 +72,12 @@ public class MulticastMessageTest {
     public void testCompletesDeliveryReturnsFalse() {
         DTNHost host = this.utils.createHost();
         assertFalse(this.msg.completesDelivery(host));
+    }
+
+    @Test(expected = SimError.class)
+    public void testSenderNotInDestinationGroupThrowsError(){
+        Group group2 = Group.createGroup(GROUP_ADDRESS_2);
+        MulticastMessage wrongMsg = new MulticastMessage(from,group2,"M",100);
     }
 
     @Test

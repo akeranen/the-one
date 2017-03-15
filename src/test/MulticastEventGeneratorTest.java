@@ -2,11 +2,9 @@ package test;
 
 import core.DTNHost;
 import core.Group;
-import core.Message;
-import core.MessageListener;
-import core.MulticastMessage;
 import core.SettingsError;
 import core.SimScenario;
+import core.World;
 import input.AbstractMessageEventGenerator;
 import input.ExternalEvent;
 import input.MulticastCreateEvent;
@@ -23,15 +21,17 @@ import static org.junit.Assert.assertTrue;
  */
 public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTest{
 
-    private static final int TEST_NODE_COUNT = 20;
+    private static final int TEST_NODE_COUNT = 10;
 
     @Before
     public void init(){
         super.init();
         SimScenario.reset();
         Group.clearGroups();
+        DTNHost.reset();
         this.settings.putSetting("groups","0,1");
         addSettingsToEnableSimScenario(this.settings);
+        SimScenario.getInstance();
     }
 
     @Test
@@ -52,11 +52,11 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
 
     @Test
     public void testSenderNodeMustBeInSameGroupAsDestinationGroup(){
-        SimScenario.getInstance().addMessageListener(createMessageListener());
         AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
+        World world = SimScenario.getInstance().getWorld();
         for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
             ExternalEvent event = generator.nextEvent();
-            event.processEvent(SimScenario.getInstance().getWorld());
+            event.processEvent(world);
         }
     }
 
@@ -77,34 +77,4 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         settings.putSetting("Group.router", "EpidemicRouter");
     }
 
-    private static MessageListener createMessageListener(){
-        return new MessageListener(){
-
-            @Override
-            public void newMessage(Message m) {
-                assertTrue("Sender of MulticastMessage should be in same group!",
-                        m.getFrom().getGroups().contains(((MulticastMessage)m).getGroup()));
-            }
-
-            @Override
-            public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {
-                //Not needed for the test
-            }
-
-            @Override
-            public void messageDeleted(Message m, DTNHost where, boolean dropped) {
-                //Not needed for the test
-            }
-
-            @Override
-            public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {
-                //Not needed for the test
-            }
-
-            @Override
-            public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
-                //Not needed for the test
-            }
-        };
-    }
 }

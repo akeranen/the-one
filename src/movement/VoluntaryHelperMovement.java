@@ -145,14 +145,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private movementMode mode;
     /**
-     * tells, if energy modelling is enabled for this node
-     */
-    private boolean energyModelled;
-    /**
-     * initial battery level for nodes with energy modelling enabled
-     */
-    private double initialEnergy;
-    /**
      * start time of waiting at the hospital or local helping movement
      */
     private double startTime;
@@ -209,11 +201,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //get all of the settings from the settings file, reverting to defaults, if setting absent in the file
         isLocalHelper = settings.getBoolean(IS_LOCAL_HELPER_SETTING, false);
-        energyModelled = settings.contains(EnergyModel.INIT_ENERGY_S);
-        if (energyModelled) {
-            //get the initial energy of a node
-            initialEnergy = settings.getDouble(EnergyModel.INIT_ENERGY_S);
-        }
         helpTime = settings.getDouble(HELP_TIME_SETTING, DEFAULT_HELP_TIME);
         hospitalWaitTime = settings.getDouble(HOSPITAL_WAIT_TIME_SETTING, DEFAULT_HOSPITAL_WAIT_TIME);
         injuryProbability = settings.getDouble(INJURY_PROBABILITY_SETTING, DEFAULT_INJURY_PROBABILITY);
@@ -238,8 +225,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //copy the settings from the prototype
         isLocalHelper = prototype.isLocalHelper;
-        energyModelled = prototype.energyModelled;
-        initialEnergy = prototype.initialEnergy;
         helpTime = prototype.helpTime;
         hospitalWaitTime = prototype.hospitalWaitTime;
         injuryProbability = prototype.injuryProbability;
@@ -286,16 +271,13 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Registers the movement model as an EnergyListener, if energy modelling is enabled for the host.
+     * Registers the movement model as an EnergyListener.
      */
     private void initEnergyListener() {
-        //only register the listener if energy modeling active for this node
-        if (energyModelled) {
-            //register the EnergyListener
-            MessageRouter router = this.host.getRouter();
-            if (router instanceof ActiveRouter) {
-                ((ActiveRouter) router).addEnergyListener(this);
-            }
+        //register the EnergyListener
+        MessageRouter router = this.host.getRouter();
+        if (router instanceof ActiveRouter) {
+            ((ActiveRouter) router).addEnergyListener(this);
         }
     }
 
@@ -509,18 +491,14 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * This Method is called when the battery of the node ran empty.
-     * (Only if the node has energy modelling enabled, as only then the Listener is registered.)
-     * It resets the node's battery and movement model.
+     * It resets the node's movement model.
      */
-    //TODO implement resetting and implement an interface for resetting the routing table
     @Override
     public void batteryDied() {
         //do not call "super.reset();" or the rng seed will be reset,
         //so the new random location would always be the same
-        //reset the energy value. Yes, it has to be done like this.
-        host.getComBus().updateProperty("Energy.value", initialEnergy);
 
-        //reset the host (network address, name, message buffer and connections)
+        //TODO reset the host in DTNHost(network address, name, message buffer and connections)
         //do not call "host.reset();" as it interferes with host network address assignment for all hosts
 
         //reset the Location to a new random one

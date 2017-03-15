@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import movement.MovementModel;
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
 import routing.util.RoutingInfo;
@@ -55,6 +56,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	private EnergyModel energy;
 	/** the threshold below which the battery is considered to be empty */
 	private double energyThreshold;
+	/** initial battery level for nodes with energy modelling enabled */
+	private double initialEnergy;
 
 	/** List of EnergyListeners for this ActiveRouter */
 	private List<EnergyListener> listeners = Collections.synchronizedList(new ArrayList<>());
@@ -73,10 +76,11 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		if (s.contains(EnergyModel.INIT_ENERGY_S)) {
 			this.energy = new EnergyModel(s);
+			this.energyThreshold = s.getDouble(ENERGY_THRESHOLD_S, ENERGY_THRESHOLD_DEFAULT);
+			this.initialEnergy = s.getDouble(EnergyModel.INIT_ENERGY_S);
 		} else {
 			this.energy = null; /* no energy model */
 		}
-		this.energyThreshold = s.getDouble(ENERGY_THRESHOLD_S, ENERGY_THRESHOLD_DEFAULT);
 	}
 
 	/**
@@ -89,6 +93,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
 		this.energyThreshold = r.energyThreshold;
+		this.initialEnergy = r.initialEnergy;
 	}
 
 	/**
@@ -103,6 +108,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Informs all registered EnergyListeners, that the battery went empty.
 	 */
 	private void batteryDied() {
+		//reset the energy value.
+		getHost().getComBus().updateProperty("Energy.value", initialEnergy);
 		for (EnergyListener l : listeners) {
 			l.batteryDied();
 		}

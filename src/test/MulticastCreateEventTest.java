@@ -2,6 +2,7 @@ package test;
 
 import core.ConnectionListener;
 import core.DTNHost;
+import core.Group;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
@@ -32,6 +33,7 @@ public class MulticastCreateEventTest {
 
     @Before
     public void setUp() throws Exception {
+        Group.clearGroups();
         this.messageChecker = new MessageChecker();
 
         List<MessageListener> messageListeners = new ArrayList<>(1);
@@ -44,6 +46,8 @@ public class MulticastCreateEventTest {
 
         List<DTNHost> hosts = new ArrayList<>(1);
         hosts.add(this.creator);
+        Group.createGroup(0).joinGroup(creator.getAddress());
+
 
         this.world = new World(
                 hosts,
@@ -71,7 +75,7 @@ public class MulticastCreateEventTest {
     @Test
     public void testProcessEventCreatesMulticastMessageWithCorrectProperties() {
         String messageId = "messageId";
-        int groupAddress = 1;
+        int groupAddress = 0;
         int size = 100;
         int responseSize = 50;
 

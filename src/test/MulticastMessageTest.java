@@ -37,7 +37,9 @@ public class MulticastMessageTest {
                 new ArrayList<MessageListener>(),
                 new TestSettings());
         Group.clearGroups();
+        from = new TestDTNHost(new ArrayList<>(),null,null);
         group1 = Group.createGroup(GROUP_ADDRESS_1);
+        group1.joinGroup(from.getAddress());
         msg = new MulticastMessage(from, group1, "M", 100);
     }
 

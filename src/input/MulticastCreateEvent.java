@@ -39,7 +39,7 @@ public class MulticastCreateEvent extends MessageEvent {
     public void processEvent(World world) {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
         MulticastMessage messageToCreate =
-                new MulticastMessage(from, Group.getOrCreateGroup(toAddr), this.id, this.size);
+                new MulticastMessage(from, Group.getGroup(toAddr), this.id, this.size);
         messageToCreate.setResponseSize(this.responseSize);
         from.createNewMessage(messageToCreate);
     }

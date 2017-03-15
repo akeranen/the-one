@@ -105,12 +105,13 @@ public class Group implements Addressable {
     }
 
     /**
-     * Returns the number of nodes joined to the group
-     * @return number of nodes in the group
+     * Returns the addresses of the nodes joined to the group
+     * @return list of addresses of nodes in the group
      */
-    public int getMemberCount(){
-        return members.size();
+    public Integer[] getMembers(){
+        return members.toArray(new Integer[0]);
     }
+
 
     /**
      *Check, if node has joined the group
@@ -127,6 +128,7 @@ public class Group implements Addressable {
      *
      * @return the group address
      */
+    @Override
     public int getAddress(){
         return address;
     }

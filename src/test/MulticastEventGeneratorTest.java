@@ -1,7 +1,14 @@
 package test;
 
+import core.DTNHost;
+import core.Group;
+import core.Message;
+import core.MessageListener;
+import core.MulticastMessage;
 import core.SettingsError;
+import core.SimScenario;
 import input.AbstractMessageEventGenerator;
+import input.ExternalEvent;
 import input.MulticastCreateEvent;
 import input.MulticastEventGenerator;
 import org.junit.Before;
@@ -16,10 +23,15 @@ import static org.junit.Assert.assertTrue;
  */
 public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTest{
 
+    private static final int TEST_NODE_COUNT = 20;
+
     @Before
     public void init(){
         super.init();
+        SimScenario.reset();
+        Group.clearGroups();
         this.settings.putSetting("groups","0,1");
+        addSettingsToEnableSimScenario(this.settings);
     }
 
     @Test
@@ -38,11 +50,61 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         new MulticastEventGenerator(this.settings);
     }
 
+    @Test
+    public void testSenderNodeMustBeInSameGroupAsDestinationGroup(){
+        SimScenario.getInstance().addMessageListener(createMessageListener());
+        AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
+            ExternalEvent event = generator.nextEvent();
+            event.processEvent(SimScenario.getInstance().getWorld());
+        }
+    }
+
     /**
      * Gets the class name of the class to generate message events with.
      */
     @Override
     protected String getMessageEventGeneratorClassName() {
         return MulticastEventGenerator.class.toString();
+    }
+
+    private static void addSettingsToEnableSimScenario(TestSettings settings) {
+        settings.putSetting("Group.groupID", "group");
+        settings.putSetting("Group.nrofHosts", Integer.toString(TEST_NODE_COUNT));
+        settings.putSetting("Group.nrofInterfaces", "0");
+        settings.putSetting("Group.movementModel", "StationaryMovement");
+        settings.putSetting("Group.nodeLocation", "0, 0");
+        settings.putSetting("Group.router", "EpidemicRouter");
+    }
+
+    private static MessageListener createMessageListener(){
+        return new MessageListener(){
+
+            @Override
+            public void newMessage(Message m) {
+                assertTrue("Sender of MulticastMessage should be in same group!",
+                        m.getFrom().getGroups().contains(((MulticastMessage)m).getGroup()));
+            }
+
+            @Override
+            public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {
+                //Not needed for the test
+            }
+
+            @Override
+            public void messageDeleted(Message m, DTNHost where, boolean dropped) {
+                //Not needed for the test
+            }
+
+            @Override
+            public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {
+                //Not needed for the test
+            }
+
+            @Override
+            public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
+                //Not needed for the test
+            }
+        };
     }
 }

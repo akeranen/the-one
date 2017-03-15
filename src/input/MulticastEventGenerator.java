@@ -1,7 +1,12 @@
 package input;
 
 
+import core.DTNHost;
+import core.Group;
 import core.Settings;
+import core.SimScenario;
+
+import java.util.List;
 
 /**
  * Multicast creation external events generator. Creates uniformly distributed
@@ -12,14 +17,24 @@ import core.Settings;
  */
 public class MulticastEventGenerator extends AbstractMessageEventGenerator {
 
-    /** groups address range -setting id ({@value}).
-     * The lower bound is inclusive and upper bound exclusive. */
-    public static final String GROUP_RANGE_S = "groups";
+    /** group count of groups used in the generator */
+    private static final String GROUP_COUNT_S = "group_count";
 
     /**
-     * range group addresses are chosen from
+     * range of group sizes used in the generator
      */
-    private int[] groupRange = {0,0};
+    private static final String GROUP_SIZE_RANGE_S = "group_size";
+
+    private static final int DEFAULT_GROUP_COUNT = 5;
+    private static final int DEFAULT_MIN_GROUP_SIZE = 3;
+    private static final int DEFAULT_MAX_GROUP_SIZE = 10;
+
+
+
+    private int[] groupSizeRange = {DEFAULT_MIN_GROUP_SIZE,DEFAULT_MAX_GROUP_SIZE};
+    private int[] groupAddressRange = {1,DEFAULT_GROUP_COUNT};
+
+    private boolean nodesAreAssignedToGroups;
 
     /**
      * Constructor, initializes the interval between events,
@@ -30,8 +45,36 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      */
     public MulticastEventGenerator(Settings s) {
         super(s, true);
-        this.groupRange = s.getCsvInts(GROUP_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
-        s.assertValidRange(this.groupRange, GROUP_RANGE_S);
+        int groupCount = s.getInt(GROUP_COUNT_S,DEFAULT_GROUP_COUNT);
+        this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
+        this.groupAddressRange[0] = 1;
+        this.groupAddressRange[1] = groupCount;
+        if (s.contains(GROUP_SIZE_RANGE_S)) {
+            this.groupSizeRange = s.getCsvInts(GROUP_SIZE_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+        }
+        for (int i = 1; i <= groupCount; i++){
+            Group.createGroup(i);
+        }
+    }
+
+    /**
+     * Assigns nodes randomly to the existing groups, respecting the defined group size range.
+     */
+    private void assignNodesToGroups(){
+        List<DTNHost> hosts = SimScenario.getInstance().getHosts();
+        for(Group g : Group.getGroups()){
+            //determine the size of the next group
+            int nextGroupSize = groupSizeRange[0] + rng.nextInt(groupSizeRange[1] - groupSizeRange[0]);
+            //let nodes join the group
+            for (int i = 0; i < nextGroupSize; i++){
+                DTNHost host;
+                //find node that is not already in group
+                do {
+                    host = hosts.get(rng.nextInt(hosts.size()));
+                } while (g.isInGroup(host.getAddress()));
+                host.joinGroup(g);
+            }
+        }
     }
 
     /**
@@ -40,13 +83,21 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      */
     @Override
     public ExternalEvent nextEvent() {
+        //check this when the first event is requested
+        //this is needed, because access to the hosts is needed and not possible during the call of the constructor
+        if (!nodesAreAssignedToGroups){
+            assignNodesToGroups();
+            nodesAreAssignedToGroups = true;
+        }
+
         /* Message is a one way message */
         int responseSize = 0;
 
         /* Draw additional message properties and create message. */
         int interval = this.drawNextEventTimeDiff();
-        int sender = this.drawHostAddress(this.hostRange);
-        int group = this.drawHostAddress(this.groupRange);
+        int group = this.drawHostAddress(this.groupAddressRange);
+        Integer[] groupMembers = Group.getGroup(group).getMembers();
+        int sender = groupMembers[rng.nextInt(groupMembers.length)];
         ExternalEvent messageCreateEvent = new MulticastCreateEvent(
                 sender,
                 group,

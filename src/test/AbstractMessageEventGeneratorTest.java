@@ -1,5 +1,6 @@
 package test;
 
+import core.Settings;
 import input.AbstractMessageEventGenerator;
 import org.junit.Before;
 
@@ -18,6 +19,7 @@ public abstract class AbstractMessageEventGeneratorTest {
 
     @Before
     public void init() {
+        Settings.init(null);
         this.settings.putSetting("Events.nrof", "1");
 
         this.settings.putSetting("class", this.getMessageEventGeneratorClassName());

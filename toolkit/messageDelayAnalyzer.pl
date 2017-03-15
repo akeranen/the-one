@@ -14,7 +14,7 @@ use warnings FATAL => 'all';
 #   <MessageType> <MessagePrio> <Delay>
 #   ...
 # where lines are printed after each delivery into output of the form
-#   Delay distribution for messages of type <FirstType>:
+#   Delay distribution for delivered messages of type <FirstType>:
 #   For priority <prio>:
 #   Delay 0 <= x < <granularity>: <% of delays between 0 and <granularity>> (Total: <# delays between 0 and <granularity>)
 #   Delay <granularity> <= x < 2 * <granularity>: <% of delays between <granularity> and 2 * <granularity>> (Total: <# delays between <granularity> and 2 * <granularity>)
@@ -23,7 +23,7 @@ use warnings FATAL => 'all';
 #   For priority <prio>:
 #   ...
 #
-#   Delay distribution for messages of type <SecondType>:
+#   Delay distribution for delivered messages of type <SecondType>:
 #   ...
 
 # To begin, parse the command line parameters.
@@ -60,7 +60,7 @@ while(<INFILE>) {
 
 # Interpret data for each message type and each priority.
 foreach my $type (sort keys %msgTypeToStatistics) {
-    print "Delay distribution for messages of type $type:\n";
+    print "Delay distribution for delivered messages of type $type:\n";
     foreach my $prio (sort keys %{ $msgTypeToStatistics{$type} }) {
         print "For priority $prio:\n";
 

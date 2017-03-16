@@ -70,11 +70,6 @@ public class SimScenario implements Serializable {
 	/** application name in the group -setting id ({@value})*/
 	public static final String GAPPNAME_S = "application";
 
-	/**
-	 *multicast group addresses that all nodes of this group will join -setting id ({@value})
-	 */
-	public static final String GROUP_ADDRESSES_S = "groupAddresses";
-
 	/** package where to look for movement models */
 	private static final String MM_PACKAGE = "movement.";
 	/** package where to look for router classes */
@@ -333,10 +328,6 @@ public class SimScenario implements Serializable {
 			String gid = s.getSetting(GROUP_ID_S);
 			int nrofHosts = s.getInt(NROF_HOSTS_S);
 			int nrofInterfaces = s.getInt(NROF_INTERF_S);
-			int[] joinedGroups = new int[0];
-			if (s.contains(GROUP_ADDRESSES_S)){
-				joinedGroups = s.getCsvInts(GROUP_ADDRESSES_S);
-			}
 
 			// creates prototypes of MessageRouter and MovementModel
 			MovementModel mmProto =
@@ -369,7 +360,7 @@ public class SimScenario implements Serializable {
 				this.simMap = ((MapBasedMovement)mmProto).getMap();
 			}
 
-			createHostsOfGroup(nrofHosts,gid,mmProto,interfaces,mRouterProto,joinedGroups);
+			createHostsOfGroup(nrofHosts,gid,mmProto,interfaces,mRouterProto);
 		}
 	}
 
@@ -417,10 +408,9 @@ public class SimScenario implements Serializable {
 	 * @param mmProto the used mobility model
 	 * @param interfaces the used interfaces
 	 * @param mRouterProto the message router of the nodes
-	 * @param joinedGroups the group messaging groups the nodes are joined in
 	 */
 	private void createHostsOfGroup(int nrofHosts,String gid, MovementModel mmProto, List<NetworkInterface> interfaces,
-									MessageRouter mRouterProto, int[] joinedGroups){
+									MessageRouter mRouterProto){
 		for (int j=0; j<nrofHosts; j++) {
 			ModuleCommunicationBus comBus = new ModuleCommunicationBus();
 
@@ -429,10 +419,6 @@ public class SimScenario implements Serializable {
 			DTNHost host = new DTNHost(this.messageListeners,
 					this.movementListeners,	gid, interfaces, comBus,
 					mmProto, mRouterProto);
-			//join the defined multicast groups
-			for (int groupAddress : joinedGroups){
-				host.joinGroup(Group.getOrCreateGroup(groupAddress));
-			}
 			hosts.add(host);
 		}
 	}

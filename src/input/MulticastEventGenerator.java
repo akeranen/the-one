@@ -25,15 +25,25 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      */
     private static final String GROUP_SIZE_RANGE_S = "group_size";
 
+    //default values, if nothing is given in the settings file
     private static final int DEFAULT_GROUP_COUNT = 5;
     private static final int DEFAULT_MIN_GROUP_SIZE = 3;
     private static final int DEFAULT_MAX_GROUP_SIZE = 10;
 
-
-
+    /**
+     * Sizes of the groups, that are created for the message generator
+     */
     private int[] groupSizeRange = {DEFAULT_MIN_GROUP_SIZE,DEFAULT_MAX_GROUP_SIZE};
-    private int[] groupAddressRange = {1,DEFAULT_GROUP_COUNT};
 
+    /**
+     * address range of the created groups
+     */
+    private int[] groupAddressRange;
+
+    /**
+     *variable used to create groups only the first time {@link MulticastEventGenerator#nextEvent()}
+     * is called.
+     */
     private boolean nodesAreAssignedToGroups;
 
     /**
@@ -68,10 +78,10 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
             //let nodes join the group
             for (int i = 0; i < nextGroupSize; i++){
                 DTNHost host;
-                //find node that is not already in group
+                //find node that is not already in the current group
                 do {
                     host = hosts.get(rng.nextInt(hosts.size()));
-                } while (g.isInGroup(host.getAddress()));
+                } while (g.contains(host.getAddress()));
                 host.joinGroup(g);
             }
         }

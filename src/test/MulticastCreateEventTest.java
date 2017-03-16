@@ -25,8 +25,9 @@ import static org.junit.Assert.assertTrue;
  * Created by Marius Meyer on 10.03.17.
  */
 public class MulticastCreateEventTest {
+
     private TestUtils utils;
-    private MessageChecker messageChecker;
+    private MessageChecker messageChecker = new MessageChecker();
 
     private World world;
     private DTNHost creator;
@@ -34,7 +35,6 @@ public class MulticastCreateEventTest {
     @Before
     public void setUp() throws Exception {
         Group.clearGroups();
-        this.messageChecker = new MessageChecker();
 
         List<MessageListener> messageListeners = new ArrayList<>(1);
         messageListeners.add(this.messageChecker);
@@ -46,7 +46,7 @@ public class MulticastCreateEventTest {
 
         List<DTNHost> hosts = new ArrayList<>(1);
         hosts.add(this.creator);
-        Group.createGroup(0).joinGroup(creator.getAddress());
+        creator.joinGroup(Group.createGroup(0));
 
 
         this.world = new World(
@@ -69,7 +69,7 @@ public class MulticastCreateEventTest {
         MulticastCreateEvent event = new MulticastCreateEvent(
                 this.creator.getAddress(),0, "messageId", 100, 50, 23);
         event.processEvent(this.world);
-        assertTrue(this.messageChecker.next());
+        assertTrue(this.messageChecker.next() && this.messageChecker.getLastMsg() instanceof MulticastMessage);
     }
 
     @Test

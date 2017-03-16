@@ -48,10 +48,10 @@ public class GroupTest {
         int nodeAddress1 = 0;
         int nodeAddress2 = 1;
         Group group = Group.createGroup(0);
-        group.joinGroup(nodeAddress1);
-        group.joinGroup(nodeAddress2);
-        TestCase.assertTrue("Node should be in Group",group.isInGroup(nodeAddress1));
-        TestCase.assertTrue("Node should be in Group",group.isInGroup(nodeAddress2));
+        group.addAddress(nodeAddress1);
+        group.addAddress(nodeAddress2);
+        TestCase.assertTrue("Node should be in Group",group.contains(nodeAddress1));
+        TestCase.assertTrue("Node should be in Group",group.contains(nodeAddress2));
     }
 
     @Test

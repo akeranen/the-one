@@ -66,7 +66,7 @@ public class Group implements Addressable {
 
     /**
      * Returns an existing group with the given address or creates a new group with this
-     * address, when it is not exisiting yet
+     * address, when it is not existing yet
      * @param address group address
      * @return a group with the given address
      */
@@ -101,7 +101,7 @@ public class Group implements Addressable {
      *
      * @param address address of the node that should be added
      */
-    public void joinGroup(int address){
+    public void addAddress(int address){
         members.add(address);
     }
 
@@ -115,12 +115,12 @@ public class Group implements Addressable {
 
 
     /**
-     *Check, if node has joined the group
+     *Check, if a node is in the group
      *
      * @param address node address to check
-     * @return true, if the node is in the group
+     * @return true, if the group contains the node address
      */
-    public boolean isInGroup(int address){
+    public boolean contains(int address){
         return members.contains(address);
     }
 
@@ -132,16 +132,6 @@ public class Group implements Addressable {
     @Override
     public int getAddress(){
         return address;
-    }
-
-    /**
-     * Returns the address type of this object
-     *
-     * @return the AddressType of the object
-     */
-    @Override
-    public AddressType getAddressableType() {
-        return AddressType.GROUP;
     }
 
     /**

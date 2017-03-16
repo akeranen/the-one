@@ -29,9 +29,7 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         SimScenario.reset();
         Group.clearGroups();
         DTNHost.reset();
-        this.settings.putSetting("groups","0,1");
         addSettingsToEnableSimScenario(this.settings);
-        SimScenario.getInstance();
     }
 
     @Test

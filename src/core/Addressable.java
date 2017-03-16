@@ -29,9 +29,4 @@ public interface Addressable {
      */
     int getAddress();
 
-    /**
-     * Returns the type of the address returned by the object
-     * @return type of the address
-     */
-    AddressType getAddressableType();
 }

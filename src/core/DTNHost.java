@@ -160,15 +160,6 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 	}
 
 	/**
-	 * Returns the address type of this object, which is from type host.
-	 * @return the AddressType of the object
-	 */
-	@Override
-	public AddressType getAddressableType() {
-		return AddressType.HOST;
-	}
-
-	/**
 	 * Returns this hosts's ModuleCommunicationBus
 	 * @return this hosts's ModuleCommunicationBus
 	 */
@@ -536,7 +527,7 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 	 */
 	public void joinGroup(Group group){
 		groups.add(group);
-		group.joinGroup(this.getAddress());
+		group.addAddress(this.getAddress());
 	}
 
 	/**

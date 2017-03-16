@@ -23,7 +23,7 @@ public class MulticastMessage extends Message {
      */
     public MulticastMessage(DTNHost from, Group to, String id, int size) {
         super(from, null, id, size);
-        if  (!to.isInGroup(from.getAddress())){
+        if  (!to.contains(from.getAddress())){
             throw new SimError("Sender must be in same group as the destination group," +
                     " but host "+ from + " is not " + to);
         }
@@ -37,7 +37,7 @@ public class MulticastMessage extends Message {
     @Override
     public DTNHost getTo() {
         throw new UnsupportedOperationException(
-                "Cannot call getTo on BroadcastMessage because it has no single recipient");
+                "Cannot call getTo on MulticastMessage because it has no single recipient");
     }
 
     /**
@@ -56,7 +56,7 @@ public class MulticastMessage extends Message {
      */
     @Override
     public boolean isFinalRecipient(DTNHost host) {
-        return group.isInGroup(host.getAddress());
+        return group.contains(host.getAddress());
     }
 
     /**

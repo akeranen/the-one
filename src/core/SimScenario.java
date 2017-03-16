@@ -69,8 +69,9 @@ public class SimScenario implements Serializable {
 	public static final String INTERFACENAME_S = "interface";
 	/** application name in the group -setting id ({@value})*/
 	public static final String GAPPNAME_S = "application";
+
 	/**
-	 *addresses of the multicast groups the nodes are joined in the group -setting id ({@value})
+	 *multicast group addresses that all nodes of this group will join -setting id ({@value})
 	 */
 	public static final String GROUP_ADDRESSES_S = "groupAddresses";
 
@@ -379,11 +380,9 @@ public class SimScenario implements Serializable {
 	 * @param mRouterProto the message router
 	 */
 	private void setupApplications(Settings s, MessageRouter mRouterProto){
-		int appCount;
+		int appCount = 0;
 		if (s.contains(APPCOUNT_S)) {
 			appCount = s.getInt(APPCOUNT_S);
-		} else {
-			appCount = 0;
 		}
 		for (int j=1; j<=appCount; j++) {
 			String appname = null;

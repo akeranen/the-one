@@ -221,7 +221,7 @@ public class MessageTransferAcceptPolicy {
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
         boolean checkNotOneToOne = (m instanceof BroadcastMessage) ||
-				((m instanceof MulticastMessage) && ((MulticastMessage)m).getGroup().isInGroup(ownAddress));
+				((m instanceof MulticastMessage) && ((MulticastMessage)m).getGroup().contains(ownAddress));
 		boolean checkRecipients = checkNotOneToOne || (!(m instanceof MulticastMessage) &&
 				checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress));
         return checkRecipients && checkSimplePolicy(m.getFrom(), this.fromSendPolicy, ownAddress);

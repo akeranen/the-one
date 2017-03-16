@@ -61,7 +61,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Let base do the basic report setup.
         super.setUp();
 
-        // Add warm up time and report interval.
+        // Add warm up time to settings.
         this.settings.setNameSpace(this.getReportClass().getSimpleName());
         this.settings.putSetting(Report.WARMUP_S, Integer.toString(WARM_UP_TIME));
         this.settings.restoreNameSpace();

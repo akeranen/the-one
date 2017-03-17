@@ -4,6 +4,7 @@ package input;
 import core.DTNHost;
 import core.Group;
 import core.Settings;
+import core.SimError;
 import core.SimScenario;
 import core.World;
 
@@ -17,7 +18,7 @@ import core.World;
 public class MulticastEventGenerator extends AbstractMessageEventGenerator {
 
     /** range of group count that is used in the generator */
-    private static final String GROUP_COUNT_S = "group_count";
+    private static final String GROUP_COUNT_RANGE_S = "group_count";
 
     /**
      * range of group sizes used in the generator
@@ -55,8 +56,8 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
     public MulticastEventGenerator(Settings s) {
         super(s, true);
         int[] groupCountRange = DEFAULT_GROUP_COUNT;
-        if (s.contains(GROUP_COUNT_S)){
-            groupCountRange = s.getCsvInts(GROUP_COUNT_S,Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+        if (s.contains(GROUP_COUNT_RANGE_S)){
+            groupCountRange = s.getCsvInts(GROUP_COUNT_RANGE_S,Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         }
         int groupCount = rng.nextInt(groupCountRange[1]) - groupCountRange[0];
         this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
@@ -64,6 +65,10 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         this.groupAddressRange[1] = groupCount;
         if (s.contains(GROUP_SIZE_RANGE_S)) {
             this.groupSizeRange = s.getCsvInts(GROUP_SIZE_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+        }
+        if (groupSizeRange[1] > hostRange[1] - hostRange[0]){
+            throw new SimError("Biggest possible group size is greater than the number"+
+                    " of hosts specified in host range.");
         }
         for (int i = 1; i <= groupCount; i++){
             Group.createGroup(i);
@@ -86,7 +91,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
                     int nextHostCandidate = rng.nextInt(hostRange[1]) - hostRange[0];
                     host = world.getNodeByAddress(nextHostCandidate);
                 } while (g.contains(host.getAddress()));
-                host.joinGroup(g);
+                g.addHost(host);
             }
         }
     }

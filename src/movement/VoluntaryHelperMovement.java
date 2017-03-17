@@ -24,7 +24,6 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  *
  * @author Ansgar Mährlein
  */
-//TODO more comments
 public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener {
 
     //strings for the setting keys in the settings file
@@ -348,7 +347,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * at the location of the selected disaster.
      */
     private void chooseMovementAfterMovingToEventMode() {
+        //if the host is a local helper...
         if (isLocalHelper) {
+            //...simulate the host helping at the disaster site by performing a levy walk
             mode = movementMode.LOCAL_HELP_MODE;
             levyWalkMM.setLocation(host.getLocation());
             levyWalkMM.setCenter(chosenDisaster.getLocation());
@@ -356,6 +357,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             startTime = SimClock.getTime();
             setCurrentMovementModel(levyWalkMM);
         } else {
+            //if the host is not a local helper,
+            //simulate a volunteer transporting injured people to the hospital by car
             if (chooseNextHospital()) {
                 mode = movementMode.TRANSPORTING_MODE;
                 carMM.setLocation(host.getLocation());
@@ -376,8 +379,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private void chooseMovementAfterTransportingMode() {
         if (rng.nextDouble() >= waitProbability) {
+            //simulate a volunteer helping/waiting at the hospital
             chooseMovingToEventMode();
         } else {
+            //have the host move back to the disaster he came from again
             mode = movementMode.HOSPITAL_WAIT_MODE;
             levyWalkMM.setLocation(host.getLocation());
             levyWalkMM.setCenter(chosenHospital.getLocation());
@@ -507,7 +512,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private boolean decideHelp(VhmEvent event) {
         boolean help;
         double distance = host.getLocation().distance(event.getLocation());
-
+        //decide if the host helps at the disaster site,
+        // based on the distance to the disaster, as well as the intensity and maximum range of the disaster
+        // and the intensity weight factor.
         help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY)
                 + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
 
@@ -548,6 +555,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
+     * Reacts to started disaster events by chosing the a new currently used movement model.
      *
      * @param event The VhmEvent that started.
      */
@@ -557,10 +565,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             //check if the node is to close to the disaster
             if (host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
                 if (rng.nextDouble() <= injuryProbability) {
+                    //simulate that the host was injured and is immobile
                     mode = movementMode.INJURED_MODE;
                     switchToMovement(stationaryMM);
                     stationaryMM.setLocation(host.getLocation());
                 } else {
+                    //let the host flee from the disaster
                     mode = movementMode.PANIC_MODE;
                     switchToMovement(panicMM);
                     panicMM.setEventLocation(event.getLocation());

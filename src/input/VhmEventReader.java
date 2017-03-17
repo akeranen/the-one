@@ -87,7 +87,8 @@ public class VhmEventReader implements ExternalEventsReader {
                 }
             }
         } catch (IOException|JsonParsingException e) {
-            // It is ok not to rethrow "e" here, as a test from the original project would fail otherwise.
+            // It is perfectly acceptable to not handle the exception here,
+            // as exceptions can be accepted by the nature of this method.
             correct = false;
         }
         return correct;

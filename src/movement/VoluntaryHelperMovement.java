@@ -300,7 +300,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     chooseMovementAfterHospitalWaitMode();
                     break;
                 case INJURED_MODE:
-                    //No change (unless the battery runs out, which is handled asynchronically in batteryDied())
+                    //No change
                     break;
                 case PANIC_MODE:
                     chooseMovementAfterPanicMode();

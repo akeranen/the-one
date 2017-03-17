@@ -526,8 +526,10 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 	 * @param group the group the node should join
 	 */
 	public void joinGroup(Group group){
-		groups.add(group);
-		group.addAddress(this.getAddress());
+		if (!groups.contains(group)) {
+			groups.add(group);
+			group.addHost(this);
+		}
 	}
 
 	/**

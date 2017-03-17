@@ -139,7 +139,6 @@ public class MessageStatsReport extends Report implements MessageListener {
             default:
                 throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
         }
-
 		this.nrofCreated += numberOfRecipients;
 		if (m.getResponseSize() > 0) {
             this.nrofResponseReqCreated += numberOfRecipients;

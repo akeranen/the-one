@@ -25,7 +25,7 @@ public abstract class AbstractMessageEventGeneratorTest {
         this.settings.putSetting("class", this.getMessageEventGeneratorClassName());
         this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_INTERVAL_S, "1,2");
         this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_SIZE_S, "500k,1M");
-        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,126");
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,14");
         this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_ID_PREFIX_S, "M");
     }
 

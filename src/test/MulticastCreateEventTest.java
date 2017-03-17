@@ -1,10 +1,12 @@
 package test;
 
 import core.DTNHost;
+import core.Group;
 import core.Message;
 import core.MulticastMessage;
 import input.ExternalEvent;
 import input.MulticastCreateEvent;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -15,6 +17,13 @@ import static org.junit.Assert.assertEquals;
  * Created by Marius Meyer on 10.03.17.
  */
 public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
+
+    @Before
+    public void createGroup(){
+        Group.clearGroups();
+        Group g = Group.createGroup(0);
+        creator.joinGroup(g);
+    }
 
     @Test
     public void testProcessEventCreatesMulticastMessageWithCorrectProperties() {

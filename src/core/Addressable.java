@@ -6,6 +6,7 @@ package core;
  *
  * Created by Marius Meyer on 10.03.17.
  */
+@FunctionalInterface
 public interface Addressable {
 
     /**

@@ -5,8 +5,7 @@ import core.DTNHost;
 import core.Group;
 import core.Settings;
 import core.SimScenario;
-
-import java.util.List;
+import core.World;
 
 /**
  * Multicast creation external events generator. Creates uniformly distributed
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public class MulticastEventGenerator extends AbstractMessageEventGenerator {
 
-    /** group count of groups used in the generator */
+    /** range of group count that is used in the generator */
     private static final String GROUP_COUNT_S = "group_count";
 
     /**
@@ -26,7 +25,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
     private static final String GROUP_SIZE_RANGE_S = "group_size";
 
     //default values, if nothing is given in the settings file
-    private static final int DEFAULT_GROUP_COUNT = 5;
+    private static final int[] DEFAULT_GROUP_COUNT = {2,10};
     private static final int DEFAULT_MIN_GROUP_SIZE = 3;
     private static final int DEFAULT_MAX_GROUP_SIZE = 10;
 
@@ -55,7 +54,11 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      */
     public MulticastEventGenerator(Settings s) {
         super(s, true);
-        int groupCount = s.getInt(GROUP_COUNT_S,DEFAULT_GROUP_COUNT);
+        int[] groupCountRange = DEFAULT_GROUP_COUNT;
+        if (s.contains(GROUP_COUNT_S)){
+            groupCountRange = s.getCsvInts(GROUP_COUNT_S,Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+        }
+        int groupCount = rng.nextInt(groupCountRange[1]) - groupCountRange[0];
         this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
         this.groupAddressRange[0] = 1;
         this.groupAddressRange[1] = groupCount;
@@ -71,7 +74,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      * Assigns nodes randomly to the existing groups, respecting the defined group size range.
      */
     private void assignNodesToGroups(){
-        List<DTNHost> hosts = SimScenario.getInstance().getHosts();
+        World world = SimScenario.getInstance().getWorld();
         for(Group g : Group.getGroups()){
             //determine the size of the next group
             int nextGroupSize = groupSizeRange[0] + rng.nextInt(groupSizeRange[1] - groupSizeRange[0]);
@@ -80,7 +83,8 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
                 DTNHost host;
                 //find node that is not already in the current group
                 do {
-                    host = hosts.get(rng.nextInt(hosts.size()));
+                    int nextHostCandidate = rng.nextInt(hostRange[1]) - hostRange[1];
+                    host = world.getNodeByAddress(nextHostCandidate);
                 } while (g.contains(host.getAddress()));
                 host.joinGroup(g);
             }
@@ -113,7 +117,6 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
                 group,
                 this.getID(),
                 this.drawMessageSize(),
-                responseSize,
                 this.nextEventsTime);
 
         /* Update next event time before returning. */

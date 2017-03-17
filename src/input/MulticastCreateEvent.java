@@ -16,7 +16,6 @@ public class MulticastCreateEvent extends MessageEvent {
      * Size of the created message
      */
     private int size;
-    private int responseSize;
 
     /**
      * Creates a message event.
@@ -26,10 +25,9 @@ public class MulticastCreateEvent extends MessageEvent {
      * @param id   ID of the message
      * @param time Time when the message event occurs
      */
-    public MulticastCreateEvent(int from, int to, String id, int size, int responseSize, double time) {
+    public MulticastCreateEvent(int from, int to, String id, int size, double time) {
         super(from, to, id, time);
         this.size = size;
-        this.responseSize = responseSize;
     }
 
     /**
@@ -40,7 +38,6 @@ public class MulticastCreateEvent extends MessageEvent {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
         MulticastMessage messageToCreate =
                 new MulticastMessage(from, Group.getGroup(toAddr), this.id, this.size);
-        messageToCreate.setResponseSize(this.responseSize);
         from.createNewMessage(messageToCreate);
     }
 

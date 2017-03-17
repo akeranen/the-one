@@ -25,19 +25,17 @@ public class MulticastMessageTest {
 
     private final static int GROUP_ADDRESS_1 = 0;
     private final static int GROUP_ADDRESS_2 = 1;
-    private TestUtils utils;
+    private TestUtils utils = new TestUtils(
+            new ArrayList<ConnectionListener>(),
+            new ArrayList<MessageListener>(),
+            new TestSettings());
 
     private MulticastMessage msg;
-    private DTNHost from;
+    private DTNHost from = new TestDTNHost(new ArrayList<>(),null,null);;
 
     @Before
     public void setUp() throws Exception {
-        this.utils = new TestUtils(
-                new ArrayList<ConnectionListener>(),
-                new ArrayList<MessageListener>(),
-                new TestSettings());
         Group.clearGroups();
-        from = new TestDTNHost(new ArrayList<>(),null,null);
         Group group1 = Group.createGroup(GROUP_ADDRESS_1);
         from.joinGroup(group1);
         msg = new MulticastMessage(from, group1, "M", 100);

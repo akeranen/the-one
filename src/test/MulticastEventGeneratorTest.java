@@ -29,7 +29,7 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         SimScenario.reset();
         Group.clearGroups();
         DTNHost.reset();
-        addSettingsToEnableSimScenario(this.settings);
+        TestSettings.addSettingsToEnableSimScenario(this.settings);
     }
 
     @Test
@@ -66,13 +66,5 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         return MulticastEventGenerator.class.toString();
     }
 
-    private static void addSettingsToEnableSimScenario(TestSettings settings) {
-        settings.putSetting("Group.groupID", "group");
-        settings.putSetting("Group.nrofHosts", Integer.toString(TEST_NODE_COUNT));
-        settings.putSetting("Group.nrofInterfaces", "0");
-        settings.putSetting("Group.movementModel", "StationaryMovement");
-        settings.putSetting("Group.nodeLocation", "0, 0");
-        settings.putSetting("Group.router", "EpidemicRouter");
-    }
 
 }

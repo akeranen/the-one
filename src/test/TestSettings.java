@@ -71,4 +71,18 @@ public class TestSettings extends core.Settings {
 		props.put(nameSpace + key, value);
 	}
 
+	/**
+	 *Extends existing settings to support {@link SimScenario} for test scenarios.
+	 * @param settings The settings that should be extended
+	 */
+	static void addSettingsToEnableSimScenario(TestSettings settings) {
+		settings.putSetting("Group.groupID", "group");
+		settings.putSetting("Group.nrofHosts", "10");
+		settings.putSetting("Group.nrofInterfaces", "0");
+		settings.putSetting("Group.movementModel", "StationaryMovement");
+		settings.putSetting("Group.nodeLocation", "0, 0");
+		settings.putSetting("Group.router", "EpidemicRouter");
+	}
+
+
 }

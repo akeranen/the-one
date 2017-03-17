@@ -10,18 +10,15 @@ import core.SimScenario;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
 import report.MessageStatsReport;
-
-import test.TestSettings;
-import test.TestUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Contains tests for the MessageStatsReportClass.
@@ -44,7 +41,7 @@ public class MessageStatsReportTest {
 
         TestSettings settings = new TestSettings();
         settings.putSetting("MessageStatsReport.output", outFile.getAbsolutePath());
-        this.addSettingsToEnableSimScenario(settings);
+        TestSettings.addSettingsToEnableSimScenario(settings);
 
         this.report = new MessageStatsReport();
         ArrayList<MessageListener> messageListeners = new ArrayList<>(1);
@@ -54,15 +51,6 @@ public class MessageStatsReportTest {
         this.utils.setGroupId("group");
 
         this.playScenario();
-    }
-
-    private void addSettingsToEnableSimScenario(TestSettings settings) {
-        settings.putSetting("Group.groupID", "group");
-        settings.putSetting("Group.nrofHosts", "3");
-        settings.putSetting("Group.nrofInterfaces", "0");
-        settings.putSetting("Group.movementModel", "StationaryMovement");
-        settings.putSetting("Group.nodeLocation", "0, 0");
-        settings.putSetting("Group.router", "EpidemicRouter");
     }
 
     @After

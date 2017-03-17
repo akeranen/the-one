@@ -22,6 +22,9 @@ import static org.junit.Assert.assertTrue;
  * Created by Britta Heymann on 16.02.2017.
  */
 public class MessageTransferAcceptPolicyTest {
+
+
+    private static final int INVALID_TO_VALUE = 10;
     private TestUtils utils;
     private TestSettings settings;
 
@@ -96,7 +99,7 @@ public class MessageTransferAcceptPolicyTest {
     public void testAcceptSendingReturnsFalseForMessageWithRecipientOutsideRange() {
         this.settings.setNameSpace("simplepolicy");
         this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
-                Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
+                Integer.toString(INVALID_TO_VALUE));
         this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
                 Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
         this.settings.restoreNameSpace();

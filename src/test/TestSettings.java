@@ -72,7 +72,8 @@ public class TestSettings extends core.Settings {
 	}
 
 	/**
-	 *Extends existing settings to support {@link SimScenario} for test scenarios.
+	 *Extends existing settings to support {@link SimScenario} for test scenarios by
+	 * adding all properties needed for groups
 	 * @param settings The settings that should be extended
 	 */
 	static void addSettingsToEnableSimScenario(TestSettings settings) {

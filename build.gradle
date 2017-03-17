@@ -62,6 +62,7 @@ dependencies {
 }
 
 test {
+    //make gradle run tests one after the other to prevent tests with static variables from influencing each other
     forkEvery=1
 }
 

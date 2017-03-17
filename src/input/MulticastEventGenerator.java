@@ -18,12 +18,12 @@ import core.World;
 public class MulticastEventGenerator extends AbstractMessageEventGenerator {
 
     /** range of group count that is used in the generator */
-    private static final String GROUP_COUNT_RANGE_S = "group_count";
+    public static final String GROUP_COUNT_RANGE_S = "group_count";
 
     /**
      * range of group sizes used in the generator
      */
-    private static final String GROUP_SIZE_RANGE_S = "group_size";
+    public static final String GROUP_SIZE_RANGE_S = "group_size";
 
     //default values, if nothing is given in the settings file
     private static final int[] DEFAULT_GROUP_COUNT = {2,10};
@@ -59,7 +59,8 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         if (s.contains(GROUP_COUNT_RANGE_S)){
             groupCountRange = s.getCsvInts(GROUP_COUNT_RANGE_S,Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         }
-        int groupCount = rng.nextInt(groupCountRange[1]) - groupCountRange[0];
+        int groupCount = rng.nextInt(groupCountRange[1] - groupCountRange[0]) +
+                groupCountRange[0];
         this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
         this.groupAddressRange[0] = 1;
         this.groupAddressRange[1] = groupCount;
@@ -88,7 +89,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
                 DTNHost host;
                 //find node that is not already in the current group
                 do {
-                    int nextHostCandidate = rng.nextInt(hostRange[1]) - hostRange[0];
+                    int nextHostCandidate = rng.nextInt(hostRange[1] - hostRange[0]) + hostRange[0];
                     host = world.getNodeByAddress(nextHostCandidate);
                 } while (g.contains(host.getAddress()));
                 g.addHost(host);

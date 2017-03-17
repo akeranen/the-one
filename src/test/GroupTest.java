@@ -16,10 +16,12 @@ import java.util.ArrayList;
 public class GroupTest {
 
     private static final int MAX_GROUP_ADDRESS = 3;
+    private TestUtils utils = new TestUtils(new ArrayList<>(),new ArrayList<>(), new TestSettings());
 
     @Before
     public void setUp(){
         Group.clearGroups();
+        DTNHost.reset();
     }
 
     @Test
@@ -41,16 +43,16 @@ public class GroupTest {
     @Test
     public void testGetMembers(){
         Group group = Group.createGroup(0);
-        DTNHost host1 = new TestDTNHost(new ArrayList<>(),null,new TestSettings());
+        DTNHost host1 = utils.createHost();
         group.addHost(host1);
-        TestCase.assertEquals("Group should have exavtly one member",1,group.getMembers().length);
+        TestCase.assertEquals("Group should have exactly one member",1,group.getMembers().length);
         TestCase.assertEquals("Member should be the added host",host1.getAddress(),(int)group.getMembers()[0]);
     }
 
     @Test
     public void testContainsHost(){
         Group group = Group.createGroup(0);
-        DTNHost host1 = new TestDTNHost(new ArrayList<>(),null,new TestSettings());
+        DTNHost host1 = utils.createHost();
         group.addHost(host1);
         TestCase.assertTrue("Group should contain added host",group.contains(host1.getAddress()));
     }
@@ -58,7 +60,7 @@ public class GroupTest {
     @Test
     public void testContainsNotHost(){
         Group group = Group.createGroup(0);
-        DTNHost host1 = new TestDTNHost(new ArrayList<>(),null,new TestSettings());
+        DTNHost host1 = utils.createHost();
         TestCase.assertFalse("Group should not contain host",group.contains(host1.getAddress()));
     }
 
@@ -87,9 +89,9 @@ public class GroupTest {
     }
 
     @Test
-    public void testJoinGroup(){
-        DTNHost host1 = new TestDTNHost(new ArrayList<>(),null,new TestSettings());
-        DTNHost host2 = new TestDTNHost(new ArrayList<>(),null,new TestSettings());
+    public void testAddHost(){
+        DTNHost host1 = utils.createHost();
+        DTNHost host2 = utils.createHost();
         Group group = Group.createGroup(0);
         group.addHost(host1);
         group.addHost(host2);

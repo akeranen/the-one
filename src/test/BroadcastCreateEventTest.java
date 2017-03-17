@@ -27,13 +27,11 @@ public class BroadcastCreateEventTest extends AbstractMessageCreateEventTest {
     }
 
     @Test
-    public void testProcessEventCreatesBroadcastMessageWithCorrectProperties() {
-        String messageId = "messageId";
-        int size = 100;
+    public void testProcessEventCreatesBroadcastMessageWithCorrectResponseSize() {
         int responseSize = 50;
 
         BroadcastCreateEvent event = new BroadcastCreateEvent(
-                this.creator.getAddress(), messageId, size, responseSize, 23);
+                this.creator.getAddress(), "messageId", 100, responseSize, 23);
         event.processEvent(this.world);
         this.messageChecker.next();
 

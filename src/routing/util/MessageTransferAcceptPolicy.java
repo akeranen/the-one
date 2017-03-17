@@ -5,7 +5,6 @@
 package routing.util;
 
 import core.ArithmeticCondition;
-import core.BroadcastMessage;
 import core.Connection;
 import core.DTNHost;
 import core.Message;
@@ -221,19 +220,31 @@ public class MessageTransferAcceptPolicy {
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
     	boolean checkRecipients = false;
-    	if (m instanceof MulticastMessage){
-    	    //check simple policy for all receivers
-    	    for (int address : ((MulticastMessage)m).getGroup().getMembers()){
-    			if (address != ownAddress && checkSimplePolicy(address,this.toSendPolicy,ownAddress)){
-					checkRecipients = true;
-					break;
-				}
-			}
-		} else {
-			checkRecipients = (m instanceof BroadcastMessage) ||
-					checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
-		}
+    	switch (m.getType()){
+            case MULTICAST: checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
+            break;
+            case BROADCAST: checkRecipients = true;break;
+            default: checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+        }
         return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
+    }
+
+    /**
+     * Checks the simple policy for every member of the group a multicast message is dedicated to.
+     *
+     * @param m the multicast message to check the policy for
+     * @param ownAddress the nodes' own address
+     * @return true, if the policy holds for at least one of the group members
+     */
+    private boolean checkSimplePolicyForGroupMembers(MulticastMessage m, int ownAddress){
+        boolean checkRecipients = false;
+        for (int address : m.getGroup().getMembers()){
+            if (checkSimplePolicy(address,this.toSendPolicy,ownAddress)){
+                checkRecipients = true;
+                break;
+            }
+        }
+        return checkRecipients;
     }
 
 	/**

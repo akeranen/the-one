@@ -26,13 +26,11 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     }
 
     @Test
-    public void testProcessEventCreatesMulticastMessageWithCorrectProperties() {
-        String messageId = "messageId";
+    public void testProcessEventCreatesMulticastMessageWithCorrectGroupAddress() {
         int groupAddress = 0;
-        int size = 100;
 
         MulticastCreateEvent event = new MulticastCreateEvent(
-                this.creator.getAddress(),groupAddress, messageId, size, 23);
+                this.creator.getAddress(),groupAddress, "messageId", 100, 23);
         event.processEvent(this.world);
         this.messageChecker.next();
 

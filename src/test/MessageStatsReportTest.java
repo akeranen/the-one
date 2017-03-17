@@ -69,6 +69,7 @@ public class MessageStatsReportTest {
         DTNHost a = this.utils.createHost();
         DTNHost b = this.utils.createHost();
         DTNHost c = this.utils.createHost();
+        DTNHost d = this.utils.createHost();
 
         a.createNewMessage(new BroadcastMessage(a, "m1", 50));
         a.sendMessage("m1", b);
@@ -87,12 +88,15 @@ public class MessageStatsReportTest {
         Group g = Group.createGroup(0);
         g.addHost(c);
         g.addHost(b);
+        g.addHost(d);
         c.createNewMessage(new MulticastMessage(c,g,"m3",150));
         c.sendMessage("m3",a);
         a.messageTransferred("m3",c);
         a.sendMessage("m3",b);
         b.messageTransferred("m3",a);
-        b.deleteMessage("m3",true);
+        b.sendMessage("m3",d);
+        d.messageTransferred("m3",b);
+        d.deleteMessage("m3",true);
 
     }
 
@@ -114,15 +118,15 @@ public class MessageStatsReportTest {
             reader.readLine(); // read comment lines
             assertEquals(
                     "Reported number of created messages should have been different.",
-                    "created: 4",
+                    "created: 5",
                     reader.readLine());
             assertEquals(
                     "Reported number of started messages should have been different.",
-                    "started: 6",
+                    "started: 7",
                     reader.readLine());
             assertEquals(
                     "Reported number of relayed messages should have been different.",
-                    "relayed: 5",
+                    "relayed: 6",
                     reader.readLine());
             assertEquals(
                     "Reported number of aborted messages should have been different.",
@@ -138,22 +142,22 @@ public class MessageStatsReportTest {
                     reader.readLine());
             assertEquals(
                     "Reported number of delivered messages should have been different.",
-                    "delivered: 3",
+                    "delivered: 4",
                     reader.readLine());
             assertEquals(
                     "Reported delivery probability should have been different.",
-                    "delivery_prob: 0.7500",
+                    "delivery_prob: 0.8000",
                     reader.readLine());
             reader.readLine(); // responses are not tested in this scenario
             assertEquals(
                     "Reported overhead ratio should have been different",
-                    "overhead_ratio: 0.6667",
+                    "overhead_ratio: 0.5000",
                     reader.readLine());
             reader.readLine(); // latency is not tested in this scenario
             reader.readLine(); // latency is not tested in this scenario
             assertEquals(
                     "Reported average hopcount should have been different.",
-                    "hopcount_avg: 1.6667",
+                    "hopcount_avg: 2.0000",
                     reader.readLine());
             assertEquals(
                     "Reported median hopcount should have been different.",

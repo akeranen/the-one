@@ -99,6 +99,13 @@ public class MulticastMessageTest {
     }
 
     @Test
+    public void testGetGroupReturnsTheCorrectGroup(){
+        MulticastMessage msg = new MulticastMessage(from,Group.getGroup(GROUP_ADDRESS_1),"M",100);
+        assertEquals("Destination group should be Group "+GROUP_ADDRESS_1,
+                Group.getGroup(GROUP_ADDRESS_1),msg.getGroup());
+    }
+
+    @Test
     public void testRecipientsToString() {
         assertEquals(
                 "Recipients descriptions should have been different.",

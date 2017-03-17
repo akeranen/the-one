@@ -83,7 +83,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
                 DTNHost host;
                 //find node that is not already in the current group
                 do {
-                    int nextHostCandidate = rng.nextInt(hostRange[1]) - hostRange[1];
+                    int nextHostCandidate = rng.nextInt(hostRange[1]) - hostRange[0];
                     host = world.getNodeByAddress(nextHostCandidate);
                 } while (g.contains(host.getAddress()));
                 host.joinGroup(g);

@@ -21,8 +21,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTest{
 
-    private static final int TEST_NODE_COUNT = 10;
-
     @Before
     public void init(){
         super.init();

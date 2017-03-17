@@ -16,8 +16,8 @@ use warnings FATAL => 'all';
 # where lines are printed after each delivery into output of the form
 #   Delay distribution for delivered messages of type <FirstType>:
 #   For priority <prio>:
-#   Delay 0 <= x < <granularity>: <% of delays between 0 and <granularity>> (Total: <# delays between 0 and <granularity>)
-#   Delay <granularity> <= x < 2 * <granularity>: <% of delays between <granularity> and 2 * <granularity>> (Total: <# delays between <granularity> and 2 * <granularity>)
+#   Delay 0 <= x < <delayStepSize>: <% of delays between 0 and <delayStepSize>> (Total: <# delays between 0 and <delayStepSize>)
+#   Delay <delayStepSize> <= x < 2 * <delayStepSize>: <% of delays between <delayStepSize> and 2 * <delayStepSize>> (Total: <# delays between <delayStepSize> and 2 * <delayStepSize>)
 #   ...
 #
 #   For priority <prio>:
@@ -28,15 +28,15 @@ use warnings FATAL => 'all';
 
 # To begin, parse the command line parameters.
 if (not defined $ARGV[0] or not defined $ARGV[1]) {
-    print "Usage: <inputFile> <granularity>\n";
+    print "Usage: <inputFile> <delayStepSize>\n";
     exit();
 }
 my $infile = $ARGV[0];
-my $delayStep = $ARGV[1];
+my $delayStepSize = $ARGV[1];
 
 # Statistics will be stored in a dictionary that maps each message type to a map between priorities and a sequence of
-# numbers indicating the number of messages of that type and priority delivered between 0 and granularity seconds,
-# between granularity and 2 * granularity seconds, between 2 * granularity and 3 * granularity seconds, ...
+# numbers indicating the number of messages of that type and priority delivered between 0 and delayStepSize seconds,
+# between delayStepSize and 2 * delayStepSize seconds, between 2 * delayStepSize and 3 * delayStepSize seconds, ...
 my %msgTypeToStatistics = ();
 
 # This regular expression matches a message line.
@@ -54,7 +54,7 @@ while(<INFILE>) {
     }
 
     # Otherwise, update count for correct type, priority and delay class.
-    my $delayClass = int($delay / $delayStep);
+    my $delayClass = int($delay / $delayStepSize);
     $msgTypeToStatistics{$type}{$prio}[$delayClass]++;
 }
 
@@ -70,7 +70,7 @@ foreach my $type (sort keys %msgTypeToStatistics) {
         my $deliveredMessagesSum = sumUpArray(\@statistics);
 
         # Then go through each delay class...
-        my $nextBorderPoint = $delayStep;
+        my $nextBorderPoint = $delayStepSize;
         while (@statistics) {
             # ...find the number of messages delivered in this timespan...
             my $numDeliveredInDelayClass = shift @statistics;
@@ -80,12 +80,12 @@ foreach my $type (sort keys %msgTypeToStatistics) {
 
             # ...and print it both as percentage and as total message count.
             printf("Delay %4d <= x < %4d: %6.2f%% (Total: %d)\n",
-                $nextBorderPoint - $delayStep,
+                $nextBorderPoint - $delayStepSize,
                 $nextBorderPoint,
                 100 * $numDeliveredInDelayClass / $deliveredMessagesSum,
                 $numDeliveredInDelayClass);
 
-            $nextBorderPoint += $delayStep;
+            $nextBorderPoint += $delayStepSize;
         }
 
         print "\n";

@@ -11,8 +11,8 @@ use Test::More;
 
 # This variable stores the output of the lastest messageDelayAnalyzer.pl call.
 my @outputLines;
-# Delay granularity used throughout the tests.
-my $granularity = 10;
+# Delay step size used throughout the tests.
+my $delayStepSize = 10;
 # Current directory, important to get absolute file names.
 my $currDir = File::Basename::dirname($0);
 
@@ -27,7 +27,7 @@ testDelayDistributionPercentagesAndTotals();
 # Finish testing.
 done_testing();
 
-# Check granularity is translated into correct delay classes and only delay classes up to the longest delay needed are
+# Check delayStepSize is translated into correct delay classes and only delay classes up to the longest delay needed are
 # printed.
 sub testDelayClasses {
     print "\nCheck correct delay distribution classes are built.\n";
@@ -36,9 +36,9 @@ sub testDelayClasses {
     callMessageDelayAnalyzer("immediateMessageDelayReport_fastBroadcast");
 
     Test::More::is(getMinDelayFromLine($outputLines[2]), 0, "Minimum delay of first delay class is correct.");
-    Test::More::is(getMaxDelayFromLine($outputLines[2]), $granularity, "Maximum delay of first delay class is correct.");
-    Test::More::is(getMinDelayFromLine($outputLines[3]), $granularity, "Minimum delay of second delay class is correct.");
-    Test::More::is(getMaxDelayFromLine($outputLines[3]), 2*$granularity, "Maximum delay of second delay class is correct.");
+    Test::More::is(getMaxDelayFromLine($outputLines[2]), $delayStepSize, "Maximum delay of first delay class is correct.");
+    Test::More::is(getMinDelayFromLine($outputLines[3]), $delayStepSize, "Minimum delay of second delay class is correct.");
+    Test::More::is(getMaxDelayFromLine($outputLines[3]), 2*$delayStepSize, "Maximum delay of second delay class is correct.");
     Test::More::is($outputLines[4], "\n", "Only the two necessary delay classes are printed.");
 }
 
@@ -162,7 +162,7 @@ sub callMessageDelayAnalyzer {
     # Use absolute file path of analyzer script, too.
     my $rawDataName = File::Spec->rel2abs("$currDir/../messageDelayAnalyzer.pl");
     # Capture console output.
-    @outputLines = IPC::System::Simple::capture("perl $rawDataName $inputFile $granularity");
+    @outputLines = IPC::System::Simple::capture("perl $rawDataName $inputFile $delayStepSize");
 }
 
 # Gets the minimum delay from a line of format "Delay <minDelay> <= x < <maxDelay>: <percentage>% (Total: <number>)" by

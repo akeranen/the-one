@@ -3,8 +3,10 @@ package test;
 import core.BroadcastMessage;
 import core.ConnectionListener;
 import core.DTNHost;
+import core.Group;
 import core.Message;
 import core.MessageListener;
+import core.MulticastMessage;
 import core.Settings;
 import core.SimScenario;
 import org.junit.After;
@@ -33,6 +35,7 @@ public class MessageStatsReportTest {
     @Before
     public void init() throws IOException{
         SimScenario.reset();
+        DTNHost.reset();
         Settings.init(null);
         java.util.Locale.setDefault(java.util.Locale.US);
 
@@ -58,6 +61,7 @@ public class MessageStatsReportTest {
         // SimScenario was called by MessageStatsReport and therefore initiated with this specific test's settings.
         // Cleanup to make further tests with other settings possible.
         SimScenario.reset();
+        DTNHost.reset();
     }
 
     private void playScenario() {
@@ -78,6 +82,17 @@ public class MessageStatsReportTest {
         a.sendMessage("m2", c);
         c.messageTransferred("m2", a);
         a.deleteMessage("m2", true);
+
+        Group g = Group.createGroup(0);
+        g.addHost(c);
+        g.addHost(b);
+        c.createNewMessage(new MulticastMessage(c,g,"m3",150));
+        c.sendMessage("m3",a);
+        a.messageTransferred("m3",c);
+        a.sendMessage("m3",b);
+        b.messageTransferred("m3",a);
+        b.deleteMessage("m3",true);
+
     }
 
     /**
@@ -98,15 +113,15 @@ public class MessageStatsReportTest {
             reader.readLine(); // read comment lines
             assertEquals(
                     "Reported number of created messages should have been different.",
-                    "created: 3",
+                    "created: 4",
                     reader.readLine());
             assertEquals(
                     "Reported number of started messages should have been different.",
-                    "started: 4",
+                    "started: 6",
                     reader.readLine());
             assertEquals(
                     "Reported number of relayed messages should have been different.",
-                    "relayed: 3",
+                    "relayed: 5",
                     reader.readLine());
             assertEquals(
                     "Reported number of aborted messages should have been different.",
@@ -114,7 +129,7 @@ public class MessageStatsReportTest {
                     reader.readLine());
             assertEquals(
                     "Reported number of dropped messages should have been different.",
-                    "dropped: 1",
+                    "dropped: 2",
                     reader.readLine());
             assertEquals(
                     "Reported number of removed messages should have been different.",
@@ -122,22 +137,22 @@ public class MessageStatsReportTest {
                     reader.readLine());
             assertEquals(
                     "Reported number of delivered messages should have been different.",
-                    "delivered: 2",
+                    "delivered: 3",
                     reader.readLine());
             assertEquals(
                     "Reported delivery probability should have been different.",
-                    "delivery_prob: 0.6667",
+                    "delivery_prob: 0.7500",
                     reader.readLine());
             reader.readLine(); // responses are not tested in this scenario
             assertEquals(
                     "Reported overhead ratio should have been different",
-                    "overhead_ratio: 0.5000",
+                    "overhead_ratio: 0.6667",
                     reader.readLine());
             reader.readLine(); // latency is not tested in this scenario
             reader.readLine(); // latency is not tested in this scenario
             assertEquals(
                     "Reported average hopcount should have been different.",
-                    "hopcount_avg: 1.5000",
+                    "hopcount_avg: 1.6667",
                     reader.readLine());
             assertEquals(
                     "Reported median hopcount should have been different.",

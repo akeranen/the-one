@@ -77,7 +77,7 @@ public class TestSettings extends core.Settings {
 	 */
 	static void addSettingsToEnableSimScenario(TestSettings settings) {
 		settings.putSetting("Group.groupID", "group");
-		settings.putSetting("Group.nrofHosts", "10");
+		settings.putSetting("Group.nrofHosts", "3");
 		settings.putSetting("Group.nrofInterfaces", "0");
 		settings.putSetting("Group.movementModel", "StationaryMovement");
 		settings.putSetting("Group.nodeLocation", "0, 0");

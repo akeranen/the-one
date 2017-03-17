@@ -47,8 +47,8 @@ public class MessageTransferAcceptPolicyTest {
         this.msg = new Message(this.sender, recipient, "M", 100);
         this.broadcast = new BroadcastMessage(this.sender, "B", 50);
         Group g = Group.createGroup(0);
-        sender.joinGroup(g);
-        recipient.joinGroup(g);
+        g.addHost(sender);
+        g.addHost(recipient);
         this.multicast = new MulticastMessage(this.sender,g,"G",100);
 
         this.settings.putSetting(MessageTransferAcceptPolicy.MTA_POLICY_NS, "simplepolicy");

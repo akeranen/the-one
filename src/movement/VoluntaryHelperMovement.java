@@ -174,6 +174,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * movement model for not moving at all
      */
     private SwitchableStationaryMovement stationaryMM;
+    /**
+     * movement model for fleeing from a disaster
+     */
+    private PanicMovement panicMM;
 
     //event lists
     /**
@@ -208,6 +212,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         carMM = new CarMovement(settings);
         levyWalkMM = new LevyWalkMovement(settings);
         stationaryMM = new SwitchableStationaryMovement(settings);
+        panicMM = new PanicMovement(settings);
     }
 
     /**
@@ -232,6 +237,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         carMM = new CarMovement(prototype.carMM);
         levyWalkMM = new LevyWalkMovement(prototype.levyWalkMM);
         stationaryMM = new SwitchableStationaryMovement(prototype.stationaryMM);
+        panicMM = new PanicMovement(prototype.panicMM);
 
         //register the movement model as a VhmListener
         VhmEventNotifier.addListener(this);
@@ -501,7 +507,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     stationaryMM.setLocation(host.getLocation());
                 } else {
                     mode = movementMode.PANIC_MODE;
-                    //TODO tell the panicMM all about the disaster and panic
+                    switchToMovement(panicMM);
+                    panicMM.setEventLocation(event.getLocation());
+                    panicMM.setSafeRange(event.getSafeRange());
                 }
             } else if (host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)) {
                 //chose the disaster

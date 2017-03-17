@@ -61,6 +61,10 @@ dependencies {
 	compile name: 'ECLA'
 }
 
+test {
+    forkEvery=1
+}
+
 task copyGui(type: Copy){
     from 'src/gui/buttonGraphics'
     into 'target/gui/buttonGraphics'

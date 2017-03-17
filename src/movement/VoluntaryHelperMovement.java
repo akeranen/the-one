@@ -260,8 +260,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         super.setHost(host);
 
         //set the movement mode and model
-        mode = movementMode.RANDOM_MAP_BASED_MODE;
-        setCurrentMovementModel(shortestPathMapBasedMM);
+        this.startOver();
     }
 
     /**

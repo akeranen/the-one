@@ -66,7 +66,7 @@ public class PanicMovement extends MapBasedMovement {
     @Override
     public Path getPath() {
         Path path = new Path(generateSpeed());
-        MapNode hostNode = getNearestNode(getMap(), getLastLocation());
+        MapNode hostNode = getMap().getClosestNodeByCoord(getLastLocation());
         MapNode destNode = PanicMovementUtil.selectDestination(getMap(), hostNode, eventLocation, safeRange);
 
         List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
@@ -84,29 +84,6 @@ public class PanicMovement extends MapBasedMovement {
     @Override
     public PanicMovement replicate() {
         return new PanicMovement(this);
-    }
-
-    /**
-     * Determines the next node to a given location
-     *
-     * @param map      Map which contains coordinates
-     * @param location Location to find the next node to
-     * @return the next node to parameter location
-     */
-    private static MapNode getNearestNode(SimMap map, Coord location) {
-        List<MapNode> list = map.getNodes();
-        MapNode bestNode = null;
-        double distance;
-        double bestDistance = 0;
-
-        for (MapNode node : list) {
-            distance = location.distance(node.getLocation());
-            if (bestNode == null || distance < bestDistance) {
-                bestNode = node;
-                bestDistance = distance;
-            }
-        }
-        return bestNode;
     }
 
     /**

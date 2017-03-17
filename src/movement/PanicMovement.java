@@ -17,13 +17,14 @@ import movement.map.SimMap;
  */
 public class PanicMovement extends MapBasedMovement {
 
-
-    private PanicMovementUtil pmu;
-    private static final double SAFE_RANGE_RADIUS = 1000.0;
-    private static final double EVENT_RANGE_RADIUS = 1500.0;
-    private static final double COORD1000 = 1500.0;
+    private static final double DEFAULT_SAFE_RANGE = 1000.0;
+    private static final double DEFAULT_EVENT_LOCATION_X = 1500.0;
+    private static final double DEFAULT_EVENT_LOCATION_Y = 1500.0;
 
     private DijkstraPathFinder pathFinder;
+
+    private Coord eventLocation = new Coord(DEFAULT_EVENT_LOCATION_X, DEFAULT_EVENT_LOCATION_Y);
+    private double safeRange = DEFAULT_SAFE_RANGE;
 
     /**
      * Constructor setting values for the event and the minimum and maximum distance to
@@ -33,7 +34,6 @@ public class PanicMovement extends MapBasedMovement {
      */
     public PanicMovement(Settings settings) {
         super(settings);
-        pmu = new PanicMovementUtil(new Coord(COORD1000, COORD1000), SAFE_RANGE_RADIUS, EVENT_RANGE_RADIUS);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 
@@ -45,8 +45,6 @@ public class PanicMovement extends MapBasedMovement {
      */
     protected PanicMovement(PanicMovement pm) {
         super(pm);
-        pmu = new PanicMovementUtil(pm.pmu.getEventLocation(),
-                                    pm.pmu.getSafeRangeRadius(), pm.pmu.getEventRangeRadius());
         this.pathFinder = pm.pathFinder;
     }
 
@@ -56,14 +54,9 @@ public class PanicMovement extends MapBasedMovement {
      * @param settings         Settings for the map, hosts etc.
      * @param newMap           Map passed instead of reading it from a file
      * @param nrofMaps         Number of WKT files
-     * @param location         Event location
-     * @param safeRangeRadius  distance to the event to be safe
-     * @param eventRangeRadius distance to the event up to the hosts react to it
      */
-    public PanicMovement(Settings settings, SimMap newMap, int nrofMaps,
-                         Coord location, double safeRangeRadius, double eventRangeRadius) {
+    public PanicMovement(Settings settings, SimMap newMap, int nrofMaps) {
         super(settings, newMap, nrofMaps);
-        pmu = new PanicMovementUtil(location, safeRangeRadius, eventRangeRadius);
         pathFinder = new DijkstraPathFinder(getOkMapNodeTypes());
     }
 
@@ -74,7 +67,7 @@ public class PanicMovement extends MapBasedMovement {
     public Path getPath() {
         Path path = new Path(generateSpeed());
         MapNode hostNode = getNearestNode(getMap(), getLastLocation());
-        MapNode destNode = pmu.selectDestination(getMap(), hostNode);
+        MapNode destNode = PanicMovementUtil.selectDestination(getMap(), hostNode, eventLocation, safeRange);
 
         List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);
 
@@ -91,10 +84,6 @@ public class PanicMovement extends MapBasedMovement {
     @Override
     public PanicMovement replicate() {
         return new PanicMovement(this);
-    }
-
-    public PanicMovementUtil getPanicMovementUtil() {
-        return pmu;
     }
 
     /**
@@ -120,4 +109,35 @@ public class PanicMovement extends MapBasedMovement {
         return bestNode;
     }
 
+    /**
+     * Get the location of the disaster that should be reacted to.
+     * @return The location of the disaster that is being reacted to.
+     */
+    public Coord getEventLocation() {
+        return eventLocation;
+    }
+
+    /**
+     * Set the location of the disaster that should be reacted to.
+     * @param eventLocation The location of the disaster.
+     */
+    public void setEventLocation(Coord eventLocation) {
+        this.eventLocation = eventLocation;
+    }
+
+    /**
+     * Get the distance from the disaster from which a host is safe.
+     * @return The distance from the disaster from which a host is safe.
+     */
+    public double getSafeRange() {
+        return safeRange;
+    }
+
+    /**
+     * Set the distance from the disaster from which a host is safe.
+     * @param safeRange The distance from the disaster from which a host is safe.
+     */
+    public void setSafeRange(double safeRange) {
+        this.safeRange = safeRange;
+    }
 }

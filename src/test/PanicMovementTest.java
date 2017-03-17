@@ -30,7 +30,7 @@ public class PanicMovementTest extends TestCase {
     private DTNHost host;
 
     /**
-     * Constructor to make SonarLint/Qube happy
+     * Constructor. It is called before every test.
      */
     public PanicMovementTest() {
         setupMapDataAndBasicSettings();

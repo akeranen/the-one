@@ -31,7 +31,7 @@ public class PanicMovementTest extends TestCase {
 
     /**
      * Constructor to make SonarLint/Qube happy
-     * */
+     */
     public PanicMovementTest() {
         setupMapDataAndBasicSettings();
         host = setupHost();
@@ -76,18 +76,18 @@ public class PanicMovementTest extends TestCase {
         settings.putSetting(MovementModel.SPEED, "1,1");
         settings.putSetting(MovementModel.WAIT_TIME, "0,0");
 
-        Coord[] coord = new Coord[NR_OF_MAP_NODES];
-
-        coord[0] = new Coord(1, 1);
-        coord[1] = new Coord(2, 1);
-        coord[2] = new Coord(4, 1);
-        coord[3] = new Coord(1, 2);
-        coord[4] = new Coord(3, 0);
-        coord[5] = new Coord(3, 1);
-        coord[6] = new Coord(2, 0);
+        Coord[] coord = new Coord[] {
+                new Coord(1, 1),
+                new Coord(2, 1),
+                new Coord(4, 1),
+                new Coord(1, 2),
+                new Coord(3, 0),
+                new Coord(3, 1),
+                new Coord(2, 0)
+        };
 
         Map<Coord, MapNode> cmMap = new HashMap<>();
-        for(int i = 0; i < NR_OF_MAP_NODES; i++) {
+        for (int i = 0; i < NR_OF_MAP_NODES; i++) {
             node[i] = new MapNode(coord[i]);
             cmMap.put(coord[i], node[i]);
         }

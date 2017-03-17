@@ -104,9 +104,6 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
             nodesAreAssignedToGroups = true;
         }
 
-        /* Message is a one way message */
-        int responseSize = 0;
-
         /* Draw additional message properties and create message. */
         int interval = this.drawNextEventTimeDiff();
         int group = this.drawHostAddress(this.groupAddressRange);

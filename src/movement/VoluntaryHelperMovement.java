@@ -24,7 +24,7 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  *
  * @author Ansgar Mährlein
  */
-//TODO implement Panic Movement + more comments + javadoc
+//TODO more comments
 public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener {
 
     //strings for the setting keys in the settings file
@@ -291,7 +291,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         if (!justChanged) {
             switch (mode) {
                 case RANDOM_MAP_BASED_MODE:
-                    chooseMovementAfterRandomMapBasedMode();
+                case PANIC_MODE:
+                    startOver();
                     break;
                 case MOVING_TO_EVENT_MODE:
                     chooseMovementAfterMovingToEventMode();
@@ -308,9 +309,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                 case INJURED_MODE:
                     //No change
                     break;
-                case PANIC_MODE:
-                    chooseMovementAfterPanicMode();
-                    break;
+
                 default:
                     chooseRandomMapBasedMode();
                     break;
@@ -321,6 +320,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         return true;
     }
 
+    /**
+     * Sets the map based movement model carMM of type CarMovement as the current  movement model
+     * and takes care of all neccessary paramter initialization/updates,
+     * to make the host of this movement model move towards a disaster.
+     */
     private void chooseMovingToEventMode() {
         mode = movementMode.MOVING_TO_EVENT_MODE;
         carMM.setLocation(host.getLocation());
@@ -329,19 +333,20 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         setCurrentMovementModel(carMM);
     }
 
+    /**
+     * Sets the random map based movement model as the current  movement model
+     * and takes care of all neccessary paramter initialization/updates.
+     */
     private void chooseRandomMapBasedMode() {
         mode = movementMode.RANDOM_MAP_BASED_MODE;
         shortestPathMapBasedMM.setLocation(host.getLocation());
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
-    private void chooseMovementAfterRandomMapBasedMode() {
-        //this could be changed to "startOver();", but it could have a minimal negative performance impact
-        if (chooseNextDisaster()) {
-            chooseMovingToEventMode();
-        }
-    }
-
+    /**
+     * Chooses the current movement model after the host of this movement model has arrived
+     * at the location of the selected disaster.
+     */
     private void chooseMovementAfterMovingToEventMode() {
         if (isLocalHelper) {
             mode = movementMode.LOCAL_HELP_MODE;
@@ -365,6 +370,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         }
     }
 
+    /**
+     * Chooses the current movement model after the host of this movement model has arrived
+     * at the location of the selected hospital after transporting injured people to it.
+     */
     private void chooseMovementAfterTransportingMode() {
         if (rng.nextDouble() >= waitProbability) {
             chooseMovingToEventMode();
@@ -378,28 +387,70 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         }
     }
 
+    /**
+     * Lets the this mobility model start at the beginning, if the host of this movement model has waited/helped
+     * for at least the specified wait time at the location of the selected hospital.
+     */
     private void chooseMovementAfterHospitalWaitMode() {
         if (SimClock.getTime() - startTime >= hospitalWaitTime) {
             startOver();
         }
     }
 
+    /**
+     * Lets the this mobility model start at the beginning, if the host of this movement model has helped
+     * for at least the specified help time at the location of the selected disaster.
+     */
     private void chooseMovementAfterLocalHelpMode() {
         if (SimClock.getTime() - startTime >= helpTime) {
             startOver();
         }
     }
 
-    private void chooseMovementAfterPanicMode() {
-        startOver();
-    }
-
+    /**
+     * Lets the this mobility model start at the beginning.
+     * This means checking all disasters, and deciding to help at one of them and moving there or,
+     * if for no disaster helping was chosen, starting random map based movement.
+     */
     private void startOver() {
         //start over at the beginning
         if (chooseNextDisaster()) {
             chooseMovingToEventMode();
         } else {
             chooseRandomMapBasedMode();
+        }
+    }
+
+    /**
+     * Makes the host of this mobility model immediately move towards the selected disaster.
+     */
+    private void switchToMovingToEventMode() {
+        mode = movementMode.MOVING_TO_EVENT_MODE;
+        switchToMovement(carMM);
+        carMM.setLocation(host.getLocation());
+        carMM.setNextRoute(carMM.getLastLocation(),
+                carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
+    }
+
+    /**
+     *  Switches this mobility model immediately to using the random map based movement.
+     */
+    private void switchToRandomMapBasedMode() {
+        mode = movementMode.RANDOM_MAP_BASED_MODE;
+        switchToMovement(shortestPathMapBasedMM);
+        shortestPathMapBasedMM.setLocation(host.getLocation());
+    }
+
+    /**
+     * Forces the this mobility model to immediately start at the beginning.
+     * This means checking all disasters , and deciding to help at one of them and moving there or,
+     * if for no disaster helping was chosen, starting random map based movement.
+     */
+    private void forceStartOver() {
+        if (chooseNextDisaster()) {
+            switchToMovingToEventMode();
+        } else {
+            switchToRandomMapBasedMode();
         }
     }
 
@@ -496,6 +547,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         handleStartedVhmEvent(event);
     }
 
+    /**
+     *
+     * @param event The VhmEvent that started.
+     */
     private void handleStartedVhmEvent(VhmEvent event) {
         //handle the event
         if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
@@ -551,28 +606,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         if (chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
             //..handle the loss of the chosen event by starting over
             forceStartOver();
-        }
-    }
-
-    private void switchToMovingToEventMode() {
-        mode = movementMode.MOVING_TO_EVENT_MODE;
-        switchToMovement(carMM);
-        carMM.setLocation(host.getLocation());
-        carMM.setNextRoute(carMM.getLastLocation(),
-                carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-    }
-
-    private void switchToRandomMapBasedMode() {
-        mode = movementMode.RANDOM_MAP_BASED_MODE;
-        switchToMovement(shortestPathMapBasedMM);
-        shortestPathMapBasedMM.setLocation(host.getLocation());
-    }
-
-    private void forceStartOver() {
-        if (chooseNextDisaster()) {
-            switchToMovingToEventMode();
-        } else {
-            switchToRandomMapBasedMode();
         }
     }
 }

@@ -63,15 +63,15 @@ public class TrafficReport extends Report implements MessageListener, Connection
             totalBytes = 1;
         }
 
-        // Sort map entries, then print the statistics.
+        // Sort map entries, then fetch and print the statistics.
         Map<Message.MessageType, AtomicLong> sortedMap = new TreeMap<>(this.trafficByMessageType);
         for (Map.Entry<Message.MessageType, AtomicLong> traffic : sortedMap.entrySet()) {
+            // Fetch statistics.
             long bytes = traffic.getValue().get();
-            this.write(String.format(
-                    "%s: %5.2f%% (%d Bytes)",
-                    traffic.getKey(),
-                    ((double)bytes / totalBytes) * PERCENTAGE_SCALING_FACTOR,
-                    bytes));
+            double percentage = ((double)bytes / totalBytes) * PERCENTAGE_SCALING_FACTOR;
+
+            // Print them.
+            this.write(String.format("%s: %5.2f%% (%d Bytes)", traffic.getKey(), percentage, bytes));
         }
 
         super.done();
@@ -101,7 +101,8 @@ public class TrafficReport extends Report implements MessageListener, Connection
     @Override
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
         if (!this.isWarmupID(m.getId())) {
-            this.trafficByMessageType.get(m.getType()).updateAndGet(x -> x + m.getSize());
+            AtomicLong currentByteCount = this.trafficByMessageType.get(m.getType());
+            currentByteCount.updateAndGet(x -> x + m.getSize());
         }
     }
 

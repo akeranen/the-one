@@ -95,8 +95,6 @@ public class GroupTest {
         group.addHost(host2);
         TestCase.assertTrue("Node should be in Group",group.contains(host1.getAddress()));
         TestCase.assertTrue("Node should be in Group",group.contains(host2.getAddress()));
-        TestCase.assertTrue("Group should be added to nodes' groups",host1.getGroups().contains(group));
-        TestCase.assertTrue("Group should be added to nodes' groups",host2.getGroups().contains(group));
     }
 
     @Test

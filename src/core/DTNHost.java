@@ -22,11 +22,6 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 	private static int nextAddress = 0;
 	private int address;
 
-	/**
-	 * List of groups this node has joined
-	 */
-	private List<Group> groups;
-
 	private Coord location; 	// where is the host
 	private Coord destination;	// where is it going
 
@@ -65,7 +60,6 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 		this.address = getNextAddress();
 		this.name = groupId+address;
 		this.net = new ArrayList<NetworkInterface>();
-		this.groups = new ArrayList<>();
 
 		for (NetworkInterface i : interf) {
 			NetworkInterface ni = i.replicate();
@@ -518,27 +512,6 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 	 */
 	public void deleteMessage(String id, boolean drop) {
 		this.router.deleteMessage(id, drop);
-	}
-
-	/**
-	 * Lets the node join to a specified group
-	 *
-	 * @param group the group the node should join
-	 */
-	public void joinGroup(Group group){
-		if (!groups.contains(group)) {
-			groups.add(group);
-			group.addHost(this);
-		}
-	}
-
-	/**
-	 * Returns a list with groups the node has joined
-	 *
-	 * @return a list of groups
-	 */
-	public List<Group> getGroups(){
-		return groups;
 	}
 
 	/**

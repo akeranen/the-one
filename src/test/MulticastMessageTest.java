@@ -37,7 +37,7 @@ public class MulticastMessageTest {
     public void setUp() throws Exception {
         Group.clearGroups();
         Group group1 = Group.createGroup(GROUP_ADDRESS_1);
-        from.joinGroup(group1);
+        group1.addHost(from);
         msg = new MulticastMessage(from, group1, "M", 100);
     }
 
@@ -49,7 +49,7 @@ public class MulticastMessageTest {
     @Test
     public void testIsFinalRecipientReturnsTrueForHostWithSameGroup() {
         DTNHost host = this.utils.createHost();
-        host.joinGroup(Group.getGroup(GROUP_ADDRESS_1));
+        Group.getGroup(GROUP_ADDRESS_1).addHost(host);
         assertTrue(this.msg.isFinalRecipient(host));
     }
 
@@ -62,7 +62,7 @@ public class MulticastMessageTest {
     @Test
     public void testIsFinalRecipientReturnsFalseForHostWithOtherGroup() {
         DTNHost host = this.utils.createHost();
-        host.joinGroup(Group.getOrCreateGroup(GROUP_ADDRESS_2));
+        Group.getOrCreateGroup(GROUP_ADDRESS_2).addHost(host);
         assertFalse(this.msg.isFinalRecipient(host));
     }
 

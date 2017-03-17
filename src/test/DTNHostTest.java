@@ -113,11 +113,8 @@ public class DTNHostTest extends TestCase {
     DTNHost host = createHost();
     Group g = Group.createGroup(0);
     assertFalse("Host should not yet be in group 0",g.contains(host.getAddress()));
-    assertTrue("Group 0 should be empty",host.getGroups().isEmpty());
-    host.joinGroup(g);
-    assertTrue("Host is not in group 0",g.contains(host.getAddress()));
-    assertTrue("Group 0 is not listed in hosts' groups",host.getGroups().contains(g));
-    assertEquals("Host should be only the member of group 0",1,host.getGroups().size());
+    g.addHost(host);
+    assertTrue("Host should be in group 0",g.contains(host.getAddress()));
     assertEquals("Host should be the only member of group 0",1,g.getMembers().length);
   }
 }

@@ -22,7 +22,7 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     public void createGroup(){
         Group.clearGroups();
         Group g = Group.createGroup(0);
-        creator.joinGroup(g);
+        g.addHost(creator);
     }
 
     @Test

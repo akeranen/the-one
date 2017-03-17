@@ -84,7 +84,7 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
 
     /***
      * Gets the report class to test.
-     * @return The the report class to test.
+     * @return The report class to test.
      */
     @Override
     protected Class getReportClass() {

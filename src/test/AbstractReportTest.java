@@ -47,7 +47,7 @@ public abstract class AbstractReportTest {
 
     /***
      * Gets the report class to test.
-     * @return The the report class to test.
+     * @return The report class to test.
      */
     protected abstract Class getReportClass();
 

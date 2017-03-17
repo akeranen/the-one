@@ -49,13 +49,13 @@ sub testAnalysisIsSplitByTypeAndPrio {
     # Call message delay analyzer for report with different types and priorities.
     callMessageDelayAnalyzer("immediateMessageDelayReport_differentTypes");
 
-    # Find expected type starts.
+    # Find expected line numbers of headings.
     # The expected number of printed delay classes by type and priority.
     my $expectedNumDelayClassesBroadcastsPrio1 = 1;
     my $expectedNumDelayClassesBroadcastsPrio2 = 2;
     my $expectedNumDelayClassesMulticastsPrio10 = 1;
     my $expectedNumDelayClassesOneToOnePrio10 = 2;
-    # Expected start line indices.
+    # Expected line numbers for headings.
     my $expectedStartBroadcastsPrio1 = 1;
     my $expectedStartBroadcastsPrio2 = $expectedStartBroadcastsPrio1 + $expectedNumDelayClassesBroadcastsPrio1 + 2;
     my $expectedStartMulticastsPrio10 = $expectedStartBroadcastsPrio2 + $expectedNumDelayClassesBroadcastsPrio2 + 3;

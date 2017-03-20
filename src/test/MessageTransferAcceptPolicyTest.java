@@ -24,7 +24,11 @@ import static org.junit.Assert.assertTrue;
 public class MessageTransferAcceptPolicyTest {
 
 
-    private static final int INVALID_TO_VALUE = 10;
+    private static final String NOT_ACCEPT_S = "Sending should not have bin accepted.";
+    private static final String ACCEPT_S = "Sending should have bin accepted.";
+
+    private static final String POLICY_NS = "simplepolicy";
+
     private TestUtils utils;
     private TestSettings settings;
 
@@ -33,6 +37,7 @@ public class MessageTransferAcceptPolicyTest {
     private Message multicast;
     private DTNHost sender;
     private DTNHost recipient;
+    private DTNHost recipient2;
 
     @Before
     public void init() {
@@ -46,20 +51,22 @@ public class MessageTransferAcceptPolicyTest {
 
         this.sender = this.utils.createHost();
         this.recipient = this.utils.createHost();
+        this.recipient2 = this.utils.createHost();
 
         this.msg = new Message(this.sender, recipient, "M", 100);
         this.broadcast = new BroadcastMessage(this.sender, "B", 50);
         Group g = Group.createGroup(0);
         g.addHost(sender);
         g.addHost(recipient);
+        g.addHost(recipient2);
         this.multicast = new MulticastMessage(this.sender,g,"G",100);
 
-        this.settings.putSetting(MessageTransferAcceptPolicy.MTA_POLICY_NS, "simplepolicy");
+        this.settings.putSetting(MessageTransferAcceptPolicy.MTA_POLICY_NS, POLICY_NS);
     }
 
     @Test
     public void testAcceptSendingReturnsTrueForMessageAdheringToSimplePolicies() {
-        this.settings.setNameSpace("simplepolicy");
+        this.settings.setNameSpace(POLICY_NS);
         this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
                 Integer.toString(this.recipient.getAddress()));
         this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
@@ -69,16 +76,13 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertTrue(
-                "Message: Sending should have been accepted.",
+                ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.msg));
-        assertTrue(
-                "Multicast: Sending should have been accepted.",
-                policy.acceptSending(this.sender, this.recipient, null, this.multicast));
     }
 
     @Test
     public void testAcceptSendingReturnsFalseForMessageWithSenderOutsideRange() {
-        this.settings.setNameSpace("simplepolicy");
+        this.settings.setNameSpace(POLICY_NS);
         this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
                 Integer.toString(this.recipient.getAddress()));
         this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
@@ -88,18 +92,15 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                "Message: Sending should not have been accepted.",
+                NOT_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.msg));
-        assertFalse(
-                "Multicast: Sending should not have been accepted.",
-                policy.acceptSending(this.sender, this.recipient, null, this.multicast));
     }
 
     @Test
     public void testAcceptSendingReturnsFalseForMessageWithRecipientOutsideRange() {
-        this.settings.setNameSpace("simplepolicy");
+        this.settings.setNameSpace(POLICY_NS);
         this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
-                Integer.toString(INVALID_TO_VALUE));
+                Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
         this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
                 Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
         this.settings.restoreNameSpace();
@@ -107,16 +108,59 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                "Message: Sending should not have been accepted.",
+                NOT_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.msg));
+    }
+
+    @Test
+    public void testAcceptSendingReturnsTrueForPartOfMulticastGroupInsideRange(){
+        this.settings.setNameSpace(POLICY_NS);
+        this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
+                Integer.toString(this.recipient.getAddress()));
+        this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
+                Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
+        this.settings.restoreNameSpace();
+
+        MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
+
+        assertTrue(
+                ACCEPT_S,
+                policy.acceptSending(this.sender, this.recipient, null, this.multicast));
+    }
+
+    @Test
+    public void testAcceptSendingReturnsTrueForSenderOfMulticastInsideRange(){
+        this.settings.setNameSpace(POLICY_NS);
+        this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
+                Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
+        this.settings.restoreNameSpace();
+
+        MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
+
+        assertTrue(
+                ACCEPT_S,
+                policy.acceptSending(this.sender, this.recipient, null, this.multicast));
+    }
+
+    @Test
+    public void testAcceptSendingReturnsFalseForSenderOfMulticastOutsideRange(){
+        this.settings.setNameSpace(POLICY_NS);
+        this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
+                Integer.toString(this.recipient2.getAddress()));
+        this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
+                Integer.toString(this.recipient.getAddress()));
+        this.settings.restoreNameSpace();
+
+        MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
+
         assertFalse(
-                "Multicast: Sending should not have been accepted.",
+                NOT_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.multicast));
     }
 
     @Test
     public void testAcceptSendingReturnsTrueForBroadcastWithSenderInsideRange() {
-        this.settings.setNameSpace("simplepolicy");
+        this.settings.setNameSpace(POLICY_NS);
         this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
                 Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
         this.settings.restoreNameSpace();
@@ -124,13 +168,13 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertTrue(
-                "Sending should have been accepted.",
+                ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.broadcast));
     }
 
     @Test
     public void testAcceptSendingReturnsFalseForBroadcastWithSenderOutsideRange() {
-        this.settings.setNameSpace("simplepolicy");
+        this.settings.setNameSpace(POLICY_NS);
         this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
                 Integer.toString(this.recipient.getAddress()));
         this.settings.restoreNameSpace();
@@ -138,7 +182,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                "Sending should not have been accepted.",
+                NOT_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.broadcast));
     }
 }

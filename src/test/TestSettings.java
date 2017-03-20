@@ -4,13 +4,14 @@
  */
 package test;
 
-import input.EventQueueHandler;
-
-import java.util.Properties;
-
-import movement.MovementModel;
 import core.SettingsError;
 import core.SimScenario;
+import input.EventQueueHandler;
+import movement.MovementModel;
+import movement.StationaryMovement;
+import routing.EpidemicRouter;
+
+import java.util.Properties;
 
 /**
  * Class for replacing Settings class in tests.
@@ -77,12 +78,14 @@ public class TestSettings extends core.Settings {
 	 * @param settings The settings that should be extended
 	 */
 	static void addSettingsToEnableSimScenario(TestSettings settings) {
-		settings.putSetting("Group.groupID", "group");
-		settings.putSetting("Group.nrofHosts", "3");
-		settings.putSetting("Group.nrofInterfaces", "0");
-		settings.putSetting("Group.movementModel", "StationaryMovement");
-		settings.putSetting("Group.nodeLocation", "0, 0");
-		settings.putSetting("Group.router", "EpidemicRouter");
+	    settings.setNameSpace(SimScenario.GROUP_NS);
+		settings.putSetting(SimScenario.GROUP_ID_S, "group");
+		settings.putSetting(SimScenario.NROF_HOSTS_S, "3");
+		settings.putSetting(SimScenario.NROF_INTERF_S, "0");
+		settings.putSetting(SimScenario.MOVEMENT_MODEL_S, StationaryMovement.class.getSimpleName());
+		settings.putSetting(StationaryMovement.LOCATION_S, "0, 0");
+		settings.putSetting(SimScenario.ROUTER_S, EpidemicRouter.class.getSimpleName());
+		settings.restoreNameSpace();
 	}
 
 

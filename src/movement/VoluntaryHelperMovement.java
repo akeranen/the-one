@@ -320,7 +320,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Sets the map based movement model carMM of type CarMovement as the current  movement model
+     * Sets the map based movement model carMM of type CarMovement as the current movement model
      * and takes care of all neccessary paramter initialization/updates,
      * to make the host of this movement model move towards a disaster.
      */
@@ -333,7 +333,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Sets the random map based movement model as the current  movement model
+     * Sets the random map based movement model as the current movement model
      * and takes care of all neccessary paramter initialization/updates.
      */
     private void chooseRandomMapBasedMode() {
@@ -379,10 +379,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private void chooseMovementAfterTransportingMode() {
         if (rng.nextDouble() >= waitProbability) {
-            //simulate a volunteer helping/waiting at the hospital
+            //have the host move back to the disaster he came from again
             chooseMovingToEventMode();
         } else {
-            //have the host move back to the disaster he came from again
+            //simulate a volunteer helping/waiting at the hospital
             mode = movementMode.HOSPITAL_WAIT_MODE;
             levyWalkMM.setLocation(host.getLocation());
             levyWalkMM.setCenter(chosenHospital.getLocation());
@@ -555,7 +555,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Reacts to started disaster events by chosing the a new currently used movement model.
+     * Reacts to started disaster events by deciding on a new movement model to be used.
      *
      * @param event The VhmEvent that started.
      */

@@ -2,6 +2,7 @@ package test;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import report.Report;
 import ui.DTNSimUI;
 
@@ -14,6 +15,8 @@ import java.io.IOException;
  * Created by Britta Heymann on 08.03.2017.
  */
 public abstract class AbstractReportTest {
+    protected static final int WARM_UP_TIME = 50;
+
     protected File outputFile;
     protected TestSettings settings;
 
@@ -33,6 +36,7 @@ public abstract class AbstractReportTest {
         settings.putSetting("Report.report1", reportName);
         settings.setNameSpace(reportName);
         settings.putSetting(Report.OUTPUT_SETTING, outputFile.getAbsolutePath());
+        this.settings.putSetting(Report.WARMUP_S, Integer.toString(WARM_UP_TIME));
         settings.restoreNameSpace();
     }
 
@@ -40,6 +44,12 @@ public abstract class AbstractReportTest {
     public void deleteFile() {
         this.outputFile.delete();
     }
+
+    /**
+     * Checks that the report correctly handles the warm up time as set by the {@link Report#WARMUP_S} setting.
+     */
+    @Test
+    public abstract void reportCorrectlyHandlesWarmUpTime() throws IOException;
 
     /***
      * Gets the report class to test.

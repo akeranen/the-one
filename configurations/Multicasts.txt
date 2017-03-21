@@ -1,20 +1,8 @@
-Scenario.nrofHostGroups = 2
+Group.nrofHosts = 5
 
-
-# Only few nodes to see what's going on
-Group1.nrofHosts = 5
-Group1.groupAddresses = 1
-
-Group2.nrofHosts = 5
-#group addresses of nodes - can be a list
-Group2.groupAddresses = 1,2
-
-
-# Change class of the first event generator s.t. broadcasts are produced
+# Change class of the first event generator s.t. multicasts are produced
 Events1.class = MulticastEventGenerator
 # Only few messages to see what's going on (one new message every 10 mins).
 Events1.interval = 600,600
 # Adapt range of message source/destination addresses to fewer hosts.
 Events1.hosts = 0,10
-#defines the group addresses that should be used in the generator.
-Events1.groups = 1,2

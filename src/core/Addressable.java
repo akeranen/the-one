@@ -6,6 +6,7 @@ package core;
  *
  * Created by Marius Meyer on 10.03.17.
  */
+@FunctionalInterface
 public interface Addressable {
 
     /**
@@ -29,9 +30,4 @@ public interface Addressable {
      */
     int getAddress();
 
-    /**
-     * Returns the type of the address returned by the object
-     * @return type of the address
-     */
-    AddressType getAddressableType();
 }

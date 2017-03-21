@@ -6,6 +6,7 @@ import core.Group;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
+import core.SimError;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,20 +25,19 @@ public class MulticastMessageTest {
 
     private final static int GROUP_ADDRESS_1 = 0;
     private final static int GROUP_ADDRESS_2 = 1;
-    private TestUtils utils;
+    private TestUtils utils = new TestUtils(
+            new ArrayList<ConnectionListener>(),
+            new ArrayList<MessageListener>(),
+            new TestSettings());
 
     private MulticastMessage msg;
-    private DTNHost from;
-    private Group group1;
+    private DTNHost from = new TestDTNHost(new ArrayList<>(),null,null);;
 
     @Before
     public void setUp() throws Exception {
-        this.utils = new TestUtils(
-                new ArrayList<ConnectionListener>(),
-                new ArrayList<MessageListener>(),
-                new TestSettings());
         Group.clearGroups();
-        group1 = Group.createGroup(GROUP_ADDRESS_1);
+        Group group1 = Group.createGroup(GROUP_ADDRESS_1);
+        group1.addHost(from);
         msg = new MulticastMessage(from, group1, "M", 100);
     }
 
@@ -49,7 +49,7 @@ public class MulticastMessageTest {
     @Test
     public void testIsFinalRecipientReturnsTrueForHostWithSameGroup() {
         DTNHost host = this.utils.createHost();
-        host.joinGroup(Group.getGroup(GROUP_ADDRESS_1));
+        Group.getGroup(GROUP_ADDRESS_1).addHost(host);
         assertTrue(this.msg.isFinalRecipient(host));
     }
 
@@ -62,7 +62,7 @@ public class MulticastMessageTest {
     @Test
     public void testIsFinalRecipientReturnsFalseForHostWithOtherGroup() {
         DTNHost host = this.utils.createHost();
-        host.joinGroup(Group.getOrCreateGroup(GROUP_ADDRESS_2));
+        Group.getOrCreateGroup(GROUP_ADDRESS_2).addHost(host);
         assertFalse(this.msg.isFinalRecipient(host));
     }
 
@@ -70,6 +70,12 @@ public class MulticastMessageTest {
     public void testCompletesDeliveryReturnsFalse() {
         DTNHost host = this.utils.createHost();
         assertFalse(this.msg.completesDelivery(host));
+    }
+
+    @Test(expected = SimError.class)
+    public void testSenderNotInDestinationGroupThrowsError(){
+        Group group2 = Group.createGroup(GROUP_ADDRESS_2);
+        MulticastMessage wrongMsg = new MulticastMessage(from,group2,"M",100);
     }
 
     @Test
@@ -90,6 +96,13 @@ public class MulticastMessageTest {
         MulticastMessage replicate = (MulticastMessage) this.msg.replicate();
         assertEquals(
                 "Replicated message should be sent to same group.",replicate.getGroup().getAddress(),GROUP_ADDRESS_1);
+    }
+
+    @Test
+    public void testGetGroupReturnsTheCorrectGroup(){
+        MulticastMessage msg = new MulticastMessage(from,Group.getGroup(GROUP_ADDRESS_1),"M",100);
+        assertEquals("Destination group should be Group "+GROUP_ADDRESS_1,
+                Group.getGroup(GROUP_ADDRESS_1),msg.getGroup());
     }
 
     @Test

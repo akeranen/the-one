@@ -1,9 +1,12 @@
 package test;
 
+import core.DTNHost;
 import core.Group;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 /**
  * Contains tests for the Group class
@@ -13,10 +16,52 @@ import org.junit.Test;
 public class GroupTest {
 
     private static final int MAX_GROUP_ADDRESS = 3;
+    private TestUtils utils = new TestUtils(new ArrayList<>(),new ArrayList<>(), new TestSettings());
 
     @Before
     public void setUp(){
         Group.clearGroups();
+        DTNHost.reset();
+    }
+
+    @Test
+    public void testClearGroups(){
+        Group.createGroup(0);
+        Group.clearGroups();
+        TestCase.assertEquals("Groups array should be empty after clearing groups",
+                0,Group.getGroups().length);
+    }
+
+    @Test
+    public void testGetGroups(){
+        Group g = Group.createGroup(0);
+        Group[] groups = Group.getGroups();
+        TestCase.assertEquals("Exactly one group should be in group array",1,groups.length);
+        TestCase.assertEquals("The group in the array should be the created one",g,groups[0]);
+    }
+
+    @Test
+    public void testGetMembers(){
+        Group group = Group.createGroup(0);
+        DTNHost host1 = utils.createHost();
+        group.addHost(host1);
+        TestCase.assertEquals("Group should have exactly one member",1,group.getMembers().length);
+        TestCase.assertEquals("Member should be the added host",host1.getAddress(),(int)group.getMembers()[0]);
+    }
+
+    @Test
+    public void testContainsHost(){
+        Group group = Group.createGroup(0);
+        DTNHost host1 = utils.createHost();
+        group.addHost(host1);
+        TestCase.assertTrue("Group should contain added host",group.contains(host1.getAddress()));
+    }
+
+    @Test
+    public void testContainsNotHost(){
+        Group group = Group.createGroup(0);
+        DTNHost host1 = utils.createHost();
+        TestCase.assertFalse("Group should not contain host",group.contains(host1.getAddress()));
     }
 
     @Test
@@ -44,14 +89,14 @@ public class GroupTest {
     }
 
     @Test
-    public void testJoinGroup(){
-        int nodeAddress1 = 0;
-        int nodeAddress2 = 1;
+    public void testAddHost(){
+        DTNHost host1 = utils.createHost();
+        DTNHost host2 = utils.createHost();
         Group group = Group.createGroup(0);
-        group.joinGroup(nodeAddress1);
-        group.joinGroup(nodeAddress2);
-        TestCase.assertTrue("Node should be in Group",group.isInGroup(nodeAddress1));
-        TestCase.assertTrue("Node should be in Group",group.isInGroup(nodeAddress2));
+        group.addHost(host1);
+        group.addHost(host2);
+        TestCase.assertTrue("Node should be in Group",group.contains(host1.getAddress()));
+        TestCase.assertTrue("Node should be in Group",group.contains(host2.getAddress()));
     }
 
     @Test
@@ -59,5 +104,12 @@ public class GroupTest {
         Group group = Group.getOrCreateGroup(0);
         Group group2 = Group.getOrCreateGroup(0);
         TestCase.assertEquals("Groups should be references to the same object.",group,group2);
+    }
+
+    @Test
+    public void testToString(){
+        Group group = Group.createGroup(0);
+        TestCase.assertEquals("String representation of group is not as expected: " + group.toString(),
+                "Group "+0,group.toString());
     }
 }

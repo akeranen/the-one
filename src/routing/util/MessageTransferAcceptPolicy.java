@@ -5,7 +5,6 @@
 package routing.util;
 
 import core.ArithmeticCondition;
-import core.BroadcastMessage;
 import core.Connection;
 import core.DTNHost;
 import core.Message;
@@ -220,38 +219,57 @@ public class MessageTransferAcceptPolicy {
      * @return true if both conditions evaluated to true
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
-        boolean checkNotOneToOne = (m instanceof BroadcastMessage) ||
-				((m instanceof MulticastMessage) && ((MulticastMessage)m).getGroup().isInGroup(ownAddress));
-		boolean checkRecipients = checkNotOneToOne || (!(m instanceof MulticastMessage) &&
-				checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress));
-        return checkRecipients && checkSimplePolicy(m.getFrom(), this.fromSendPolicy, ownAddress);
+    	boolean checkRecipients = false;
+    	switch (m.getType()){
+            case MULTICAST: checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
+            break;
+            case BROADCAST: checkRecipients = true;break;
+            default: checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+        }
+        return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
+    }
+
+    /**
+     * Checks the simple policy for every member of the group a multicast message is dedicated to.
+     *
+     * @param m the multicast message to check the policy for
+     * @param ownAddress the nodes' own address
+     * @return true, if the policy holds for at least one of the group members
+     */
+    private boolean checkSimplePolicyForGroupMembers(MulticastMessage m, int ownAddress){
+        boolean checkRecipients = false;
+        for (int address : m.getGroup().getMembers()){
+            if (checkSimplePolicy(address,this.toSendPolicy,ownAddress)){
+                checkRecipients = true;
+                break;
+            }
+        }
+        return checkRecipients;
     }
 
 	/**
 	 * Checks if the host's address is contained in the policy list
 	 * (or {@value #TO_ME_VALUE} is contained and the address matches to
 	 * thisHost parameter)
-	 * @param host The hosts whose address to check
+	 * @param hostAddress The address to check
 	 * @param policy The list of accepted addresses
 	 * @param thisHost The address of this host
 	 * @return True if the address was in the policy list, or the policy list
 	 * was null
 	 */
-	private boolean checkSimplePolicy(DTNHost host, Range [] policy,
+	private boolean checkSimplePolicy(int hostAddress, Range [] policy,
 									  int thisHost) {
-		int address;
 
 		if (policy == null) {
 			return true;
 		}
 
-		address = host.getAddress();
 
 		for (Range r : policy) {
-			if (r.isInRange(TO_ME_VALUE) && address == thisHost) {
+			if (r.isInRange(TO_ME_VALUE) && hostAddress == thisHost) {
 				return true;
 			}
-			 else if (r.isInRange(address)) {
+			 else if (r.isInRange(hostAddress)) {
 				return true;
 			}
 		}

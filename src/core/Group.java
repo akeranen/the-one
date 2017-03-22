@@ -2,6 +2,7 @@ package core;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +143,7 @@ public final class Group implements Addressable {
      */
     @Override
     public String toString(){
-        return "Group " + address;
+        return "Group " + address + ", Members="+ Arrays.toString(members.toArray());
     }
 
 

@@ -109,7 +109,9 @@ public class GroupTest {
     @Test
     public void testToString(){
         Group group = Group.createGroup(0);
+        DTNHost host1 = utils.createHost();
+        group.addHost(host1);
         TestCase.assertEquals("String representation of group is not as expected: " + group.toString(),
-                "Group "+0,group.toString());
+                "Group "+0+", Members=["+host1.getAddress()+"]",group.toString());
     }
 }

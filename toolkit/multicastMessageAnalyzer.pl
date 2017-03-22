@@ -33,13 +33,15 @@ my $timeStep = $ARGV[1];
 
 # Maps priorities to a set of maps between a single message of that priority and a sequence of numbers indicating the
 # number of people reached at timeStep, 2 * timeStep, 3 * timeStep, ... time steps after creation.
-my %timeToAvgs = ();
+my %intervalToAvgs = ();
+my %msgToCreateTime = ();
+my %msgToMaxInterval = ();
 
 
 # Matches a message line.
 my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+.\d+) (\d+.\d+) (\d+.\d+)$';
 # Matches the last report line, i.e. the total simulation time.
-my $simTimeLineMatcher = '^(\d+)$';
+my $simTimeLineMatcher = '^(\d+.\d+)$';
 
 # Read broadcast report.
 open(INFILE, "$infile") or die "Can't open $infile : $!";
@@ -61,17 +63,20 @@ while(<INFILE>) {
         last;
     }
     my $timeInterval = int(($recvTime - $createTime) / $timeStep);
-    $timeToAvgs{$timeInterval}{$msgId} = $ratio;
-
+	if ($ratio > 1.0){
+		print "ERROR: can't be true: ratio=$ratio\n";
+	}
+	$msgToCreateTime{$msgId} = $createTime;
+    $intervalToAvgs{$timeInterval}{$msgId} = $ratio;
 }
 
 close(INFILE);
 
 my %msgToLastRatio = ();
 
-foreach my $interval ( sort {$a <=> $b} keys %timeToAvgs){
-    foreach my $msg (keys %{$timeToAvgs{$interval}}) {
-        $msgToLastRatio{$msg} = $timeToAvgs{$interval}{$msg};
+foreach my $interval ( sort {$a <=> $b} keys %intervalToAvgs){
+    foreach my $msg (keys %{$intervalToAvgs{$interval}}) {
+        $msgToLastRatio{$msg} = $intervalToAvgs{$interval}{$msg};
     }
     printNextInterval($interval);
 }
@@ -80,20 +85,30 @@ sub printNextInterval{
     my $interval = shift;
     my $nextAvg = 0;
     my $nextMin = 2;
-    foreach my $msgRatio (%msgToLastRatio){
-        $nextAvg += $msgRatio;
+	my $msgCount = 0;
+	my $minMsg;
+    foreach my $msg (keys %msgToLastRatio){
+		if ($msgToMaxInterval{$msg} < $interval){
+			next;
+		}
+		$msgCount++;
+		my $msgRatio = $msgToLastRatio{$msg};
+        $nextAvg = $nextAvg + $msgRatio;
         if ($nextMin > $msgRatio){
             $nextMin = $msgRatio;
+			$minMsg = $msg;
         }
     }
-    my $msgCount = keys %msgToLastRatio;
-    print "$nextAvg";
     $nextAvg = $nextAvg / $msgCount;
-    print "$interval    $nextMin    $nextAvg\n";
+    print "$interval    $nextMin    $nextAvg	$minMsg\n";
 }
 
 sub addMissingCrossedTimePointsToStatistics {
     # Get final simulator time.
     my $simTime = shift;
+	
+	foreach my $msgId (keys %msgToCreateTime){
+		$msgToMaxInterval{$msgId} = int($simTime - $msgToCreateTime{$msgId}) / $timeStep;
+	}
 
 }

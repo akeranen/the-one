@@ -24,7 +24,7 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
     /**
      * map storing the number nodes that have already received a certain group message
      */
-    private Map<Integer,Integer> receivedNodes = new ConcurrentHashMap<>();
+    private Map<String,Integer> receivedNodes = new ConcurrentHashMap<>();
 
     /**
      * Initializes the report and writes the header to the file
@@ -43,11 +43,15 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
     public void newMessage(Message m) {
         if (isWarmup()){
             addWarmupID(m.getId());
-        }
-        if (m instanceof MulticastMessage){
+        } else if (m instanceof MulticastMessage){
             MulticastMessage multicast = (MulticastMessage) m;
             int groupAddress = multicast.getGroup().getAddress();
-            receivedNodes.put(groupAddress,1);
+            receivedNodes.put(m.getId(),0);
+            write(multicast.getId() + " "
+                    + groupAddress + " "
+                    + m.getCreationTime() + " "
+                    + getSimTime() + " "
+                    + 0.0);
         }
     }
 
@@ -80,12 +84,12 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
         if (m instanceof MulticastMessage && firstDelivery && !isWarmupID(m.getId())){
             MulticastMessage multicast = (MulticastMessage) m;
             int groupAddress = multicast.getGroup().getAddress();
-            receivedNodes.put(groupAddress,receivedNodes.get(groupAddress) + 1);
+            receivedNodes.put(m.getId(),receivedNodes.get(groupAddress) + 1);
             write(multicast.getId() + " "
                     + groupAddress + " "
                     + m.getCreationTime() + " "
                     + getSimTime() + " "
-                    + ( receivedNodes.get(groupAddress) / (double) multicast.getGroup().getMembers().length));
+                    + ( receivedNodes.get(groupAddress) / ((double) multicast.getGroup().getMembers().length)));
         }
     }
 

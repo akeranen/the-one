@@ -135,7 +135,6 @@ public class NodeChooser extends JPanel implements ActionListener {
 	/**
 	 * Initializes the node chooser panels
 	 */
-	@SuppressWarnings("unchecked")
 	private void init() {
 		nodesPanel = new JPanel();
 		chooserPanel = new JPanel();
@@ -161,7 +160,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 				groupNames[i] = (last + "..." + next);
 				last = next + 1;
 			}
-			groupChooser = new JComboBox(groupNames);
+			groupChooser = new JComboBox<>(groupNames);
 			groupChooser.addActionListener(this);
 			chooserPanel.add(groupChooser);
 		}

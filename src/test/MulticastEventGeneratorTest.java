@@ -35,8 +35,9 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         Group.clearGroups();
         DTNHost.reset();
         TestSettings.addSettingsToEnableSimScenario(this.settings);
-        //overwrite host range settings specified in super class {@link AbstractMEssageEventGeneratorTest}
-        // to prevent errors after super class has changed
+        /*redefine host range settings because we need to check an invalid maximal group size.
+        For this, we need to know the host range specified in the settings.
+        */
         this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,"+MAX_HOST_RANGE);
 
         settings.putSetting(MulticastEventGenerator.GROUP_COUNT_RANGE_S,MIN_GROUP_COUNT+", "+MAX_GROUP_COUNT);

@@ -11,7 +11,6 @@ import core.Message;
 import core.ModuleCommunicationBus;
 import core.MulticastMessage;
 import core.Settings;
-import core.SimError;
 import util.Range;
 import util.Tuple;
 
@@ -220,7 +219,7 @@ public class MessageTransferAcceptPolicy {
      * @return true if both conditions evaluated to true
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
-    	boolean checkRecipients = false;
+    	boolean checkRecipients;
     	switch (m.getType()){
             case MULTICAST:
             	checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
@@ -232,7 +231,7 @@ public class MessageTransferAcceptPolicy {
                 checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
                 break;
             default:
-            	throw new SimError("Unknown message type: "+m.getType());
+                throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
         }
         return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
     }

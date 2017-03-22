@@ -67,10 +67,9 @@ public final class BroadcastDeliveryReport extends Report implements MessageList
      */
     @Override
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
-        if (!firstDelivery || !(m instanceof BroadcastMessage) || this.isWarmupID(m.getId())) {
-            return;
+        if (firstDelivery && (m instanceof BroadcastMessage) && !this.isWarmupID(m.getId())) {
+            this.writeMessageLine(m);
         }
-        this.writeMessageLine(m);
     }
 
     /**

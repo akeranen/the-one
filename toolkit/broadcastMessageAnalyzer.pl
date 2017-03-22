@@ -12,7 +12,7 @@ use strict;
 #   ...
 #   <SimulatorTime> <MessageId> <MessagePrio>
 #   <TotalSimulatorTime>
-# where lines are printed after creation and each delivery into a file of the form
+# where lines are printed after creation and each delivery into output of the form
 #   Reached people by broadcasts of prio <prio>
 #   time after creation    avg   min
 #   <time after creation>  <avg> <min>

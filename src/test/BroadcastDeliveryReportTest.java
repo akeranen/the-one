@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import report.BroadcastDeliveryReport;
-import report.Report;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -25,8 +24,7 @@ import java.util.ArrayList;
  * Created by Britta Heymann on 08.03.2017.
  */
 public class BroadcastDeliveryReportTest extends AbstractReportTest {
-    private static final int WARM_UP_TIME = 50;
-    private static final int AFTER_WARM_UP_TIME = WARM_UP_TIME + 1;
+    private static final int AFTER_WARM_UP_TIME = AbstractReportTest.WARM_UP_TIME + 1;
 
     // Some times in a certain tests. Chosen arbitrarily.
     private static final int CREATION_TIME = 180;
@@ -61,11 +59,6 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Let base do the basic report setup.
         super.setUp();
 
-        // Add warm up time and report interval.
-        this.settings.setNameSpace(this.getReportName());
-        this.settings.putSetting(Report.WARMUP_S, Integer.toString(WARM_UP_TIME));
-        this.settings.restoreNameSpace();
-
         // Set clock to 0.
         this.clock.setTime(0);
 
@@ -88,12 +81,12 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     /**
-     * Gets the name of the report class to test.
-     * @return The name of the report class to test.
+     * Gets the report class to test.
+     * @return The report class to test.
      */
     @Override
-    protected String getReportName() {
-        return "BroadcastDeliveryReport";
+    protected Class getReportClass() {
+        return BroadcastDeliveryReport.class;
     }
 
     @Test
@@ -188,7 +181,8 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
      * @throws IOException
      */
     @Test
-    public void reportIgnoresWarmUp() throws IOException {
+    @Override
+    public void reportCorrectlyHandlesWarmUpTime() throws IOException {
         // Create broadcast at time before warm up has finished.
         this.clock.setTime(0);
         DTNHost h1 = utils.createHost();

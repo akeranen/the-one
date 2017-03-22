@@ -11,6 +11,7 @@ import core.Message;
 import core.ModuleCommunicationBus;
 import core.MulticastMessage;
 import core.Settings;
+import core.SimError;
 import util.Range;
 import util.Tuple;
 
@@ -221,10 +222,17 @@ public class MessageTransferAcceptPolicy {
     private boolean checkSimplePolicy(Message m, int ownAddress) {
     	boolean checkRecipients = false;
     	switch (m.getType()){
-            case MULTICAST: checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
-            break;
-            case BROADCAST: checkRecipients = true;break;
-            default: checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+            case MULTICAST:
+            	checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
+            	break;
+            case BROADCAST:
+            	checkRecipients = true;
+            	break;
+			case ONE_TO_ONE:
+                checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+                break;
+            default:
+            	throw new SimError("Unknown message type: "+m.getType());
         }
         return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
     }

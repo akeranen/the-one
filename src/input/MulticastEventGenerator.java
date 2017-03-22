@@ -60,7 +60,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
             groupCountRange = s.getCsvInts(GROUP_COUNT_RANGE_S,Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         }
         int groupCount = rng.nextInt(groupCountRange[1] - groupCountRange[0]) +
-                groupCountRange[0];
+                groupCountRange[0] + 1;
         this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
         this.groupAddressRange[0] = 1;
         this.groupAddressRange[1] = groupCount;
@@ -83,7 +83,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         World world = SimScenario.getInstance().getWorld();
         for(Group g : Group.getGroups()){
             //determine the size of the next group
-            int nextGroupSize = groupSizeRange[0] + rng.nextInt(groupSizeRange[1] - groupSizeRange[0]);
+            int nextGroupSize = groupSizeRange[0] + rng.nextInt(groupSizeRange[1] - groupSizeRange[0]) + 1;
             //let nodes join the group
             for (int i = 0; i < nextGroupSize; i++){
                 DTNHost host;

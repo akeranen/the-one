@@ -107,14 +107,4 @@ public class DTNHostTest extends TestCase {
 
   //==========================================================================//
 
-
-  @Test
-  public void testJoinGroupAndGetGroup(){
-    DTNHost host = createHost();
-    Group g = Group.createGroup(0);
-    assertFalse("Host should not yet be in group 0",g.contains(host.getAddress()));
-    g.addHost(host);
-    assertTrue("Host should be in group 0",g.contains(host.getAddress()));
-    assertEquals("Host should be the only member of group 0",1,g.getMembers().length);
-  }
 }

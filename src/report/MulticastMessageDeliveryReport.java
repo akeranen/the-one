@@ -4,7 +4,6 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
-import core.SimClock;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,19 +19,12 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
      * header of the resulting output file
      */
     private static final String HEADER =
-            "# message, group, delay, delivery ratio";
+            "#message, group, sent, received, ratio";
 
     /**
      * map storing the number nodes that have already received a certain group message
      */
     private Map<Integer,Integer> receivedNodes = new ConcurrentHashMap<>();
-
-    /**
-     * Constructor for the report
-     */
-    public MulticastMessageDeliveryReport(){
-        init();
-    }
 
     /**
      * Initializes the report and writes the header to the file
@@ -49,6 +41,9 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
      */
     @Override
     public void newMessage(Message m) {
+        if (isWarmup()){
+            addWarmupID(m.getId());
+        }
         if (m instanceof MulticastMessage){
             MulticastMessage multicast = (MulticastMessage) m;
             int groupAddress = multicast.getGroup().getAddress();
@@ -82,14 +77,22 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
      */
     @Override
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
-        if (m instanceof MulticastMessage){
+        if (m instanceof MulticastMessage && firstDelivery && !isWarmupID(m.getId())){
             MulticastMessage multicast = (MulticastMessage) m;
             int groupAddress = multicast.getGroup().getAddress();
             receivedNodes.put(groupAddress,receivedNodes.get(groupAddress) + 1);
             write(multicast.getId() + " "
                     + groupAddress + " "
-                    + (SimClock.getTime() -  m.getCreationTime()) + " "
-                    + ( receivedNodes.get(groupAddress) / (double) multicast.getGroup().getMemberCount()));
+                    + m.getCreationTime() + " "
+                    + getSimTime() + " "
+                    + ( receivedNodes.get(groupAddress) / (double) multicast.getGroup().getMembers().length));
         }
+    }
+
+    @Override
+    public void done(){
+        write(Double.toString(getSimTime()));
+        super.done();
+
     }
 }

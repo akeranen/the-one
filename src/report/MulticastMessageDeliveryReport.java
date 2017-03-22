@@ -84,12 +84,12 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
         if (m instanceof MulticastMessage && firstDelivery && !isWarmupID(m.getId())){
             MulticastMessage multicast = (MulticastMessage) m;
             int groupAddress = multicast.getGroup().getAddress();
-            receivedNodes.put(m.getId(),receivedNodes.get(groupAddress) + 1);
+            receivedNodes.put(m.getId(),receivedNodes.get(m.getId()) + 1);
             write(multicast.getId() + " "
                     + groupAddress + " "
                     + m.getCreationTime() + " "
                     + getSimTime() + " "
-                    + ( receivedNodes.get(groupAddress) / ((double) multicast.getGroup().getMembers().length)));
+                    + ( receivedNodes.get(m.getId()) / ((double) multicast.getGroup().getMembers().length)));
         }
     }
 

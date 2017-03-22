@@ -2,24 +2,22 @@
 use warnings FATAL => 'all';
 use strict;
 
-# Broadcast message analyzer: Prints
-# * Average reached people per time after creation for broadcasts depending on priority
-# * Minimum reached people per time after creation for broadcasts depending on priority
+# Multicast message analyzer: Prints
 #
-# Parses the BroadcastDeliveryReport to do so, i.e. translates a file of the form
-#   Time # Prio
-#   <SimulatorTime> <MessageId> <MessagePrio>
+#* Average group message delivery ratio per time
+#* Minimum group message delivery ratio per time
+#
+# Parses the MulticastDeliveryReport to do so, i.e. translates a file of the form
+#   #message, group, sent, received, ratio
+#   <MessageId> <GroupAddress> <SentTime> <RecvdTime> <DelRatio>
 #   ...
-#   <SimulatorTime> <MessageId> <MessagePrio>
+#   <MessageId> <GroupAddress> <SentTime> <RecvdTime> <DelRatio>
 #   <TotalSimulatorTime>
 # where lines are printed after creation and each delivery into a file of the form
-#   Reached people by broadcasts of prio <prio>
-#   time after creation    avg   min
-#   <time after creation>  <avg> <min>
+#   SimTime	MinRatio	AvgRatio
+#   <time after creation>	<min>	<avg>
 #   ...
-#
-#   Reached people by broadcasts of prio <prio>
-#   ...
+
 
 # Parse command line parameters.
 if (not defined $ARGV[0] or not defined $ARGV[1]) {
@@ -31,10 +29,12 @@ my $timeStep = $ARGV[1];
 
 # Define useful fields:
 
-# Maps priorities to a set of maps between a single message of that priority and a sequence of numbers indicating the
-# number of people reached at timeStep, 2 * timeStep, 3 * timeStep, ... time steps after creation.
+#Maps intervals (= time after message creation) to maps of messages and their delivery ratio during this interval
 my %intervalToAvgs = ();
+#Maps a message to the time it was created
 my %msgToCreateTime = ();
+#Maps a message to the highest interval it is used in
+#This is used to only take messages into account, that existed in the given time interval
 my %msgToMaxInterval = ();
 
 
@@ -43,10 +43,10 @@ my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+.\d+) (\d+.\d+) (\d+.\d+)$';
 # Matches the last report line, i.e. the total simulation time.
 my $simTimeLineMatcher = '^(\d+.\d+)$';
 
-# Read broadcast report.
+# Read multicast report.
 open(INFILE, "$infile") or die "Can't open $infile : $!";
 while(<INFILE>) {
-    # Try to parse lines either of type <time> <msgId> <prio> or of type <simTime>.
+    # Try to parse lines either of type <msgId> <group> <ctime> <rtime <ratio> or <simtime>.
     my ($msgId, $groupAddr, $createTime, $recvTime, $ratio) = m/$messageLineMatcher/;
     my ($simTime) = m/$simTimeLineMatcher/;
 
@@ -57,53 +57,63 @@ while(<INFILE>) {
 
     # Handle sim time lines in a special way.
     if (defined $simTime) {
-        # Add possibly missing time points in the statistics to reach the simulator time and the end of simulation.
-        addMissingCrossedTimePointsToStatistics($simTime);
+        # Calculates the highest interval for every node, in which it has to be taken to account
+        calculateMaxIntervalForAllMsgs($simTime);
         # Sim time line should be last line.
         last;
     }
-    my $timeInterval = int(($recvTime - $createTime) / $timeStep);
-	if ($ratio > 1.0){
-		print "ERROR: can't be true: ratio=$ratio\n";
-	}
+	#calculate the interval this message was delivered in
+    my $timeInterval = int(($recvTime - $createTime) / $timeStep + 1);
+	
 	$msgToCreateTime{$msgId} = $createTime;
+	#put the message and its ratio in the map for the calculated interval
     $intervalToAvgs{$timeInterval}{$msgId} = $ratio;
 }
 
 close(INFILE);
 
+#Map, that stores the latest delivery ratio for every message
 my %msgToLastRatio = ();
 
+print "SimTime	MinRatio	AvgRatio\n";
+
+#Sort intervals numerically and process every interval step by step
 foreach my $interval ( sort {$a <=> $b} keys %intervalToAvgs){
+	#for every message delivered during this interval, update the latest delivery ratio
     foreach my $msg (keys %{$intervalToAvgs{$interval}}) {
         $msgToLastRatio{$msg} = $intervalToAvgs{$interval}{$msg};
     }
     printNextInterval($interval);
 }
 
+#calculates and prints the min and average for the given interval
 sub printNextInterval{
     my $interval = shift;
-    my $nextAvg = 0;
+    my $total = 0;
     my $nextMin = 2;
 	my $msgCount = 0;
-	my $minMsg;
+	#check every message
     foreach my $msg (keys %msgToLastRatio){
+		#ignore it, if it didn't exist anymore during the current interval
 		if ($msgToMaxInterval{$msg} < $interval){
 			next;
 		}
+		#add it to the min and avg calculation for the current interval
 		$msgCount++;
 		my $msgRatio = $msgToLastRatio{$msg};
-        $nextAvg = $nextAvg + $msgRatio;
+        $total += $msgRatio;
         if ($nextMin > $msgRatio){
             $nextMin = $msgRatio;
-			$minMsg = $msg;
         }
     }
-    $nextAvg = $nextAvg / $msgCount;
-    print "$interval    $nextMin    $nextAvg	$minMsg\n";
+	#calculate average
+    my $nextAvg = $total / $msgCount;
+	#convert the interval into simulation seconds
+	my $seconds = $interval * $timeStep;
+    print "$seconds    $nextMin    $nextAvg\n";
 }
 
-sub addMissingCrossedTimePointsToStatistics {
+sub calculateMaxIntervalForAllMsgs {
     # Get final simulator time.
     my $simTime = shift;
 	

@@ -14,7 +14,7 @@ public final class VhmEventNotifier {
     /**
      * List of VhmListeners
      */
-    private static List<VhmListener> listeners = Collections.synchronizedList(new ArrayList<>());
+    private static List<VhmListener> listeners = Collections.synchronizedList(new ArrayList<VhmListener>());
 
     /** Private constructor to hide the implicit public one. */
     private VhmEventNotifier() {

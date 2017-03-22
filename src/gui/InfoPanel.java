@@ -47,6 +47,7 @@ public class InfoPanel extends JPanel implements ActionListener{
 	 * Show information about a host
 	 * @param host Host to show the information of
 	 */
+	@SuppressWarnings("unchecked")
 	public void showInfo(DTNHost host) {
 		Vector<Message> messages =
 			new Vector<Message>(host.getMessageCollection());

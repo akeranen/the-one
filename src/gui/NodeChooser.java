@@ -135,6 +135,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 	/**
 	 * Initializes the node chooser panels
 	 */
+	@SuppressWarnings("unchecked")
 	private void init() {
 		nodesPanel = new JPanel();
 		chooserPanel = new JPanel();

@@ -117,6 +117,7 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 	/**
 	 * Creates panel's components and initializes them
 	 */
+	@SuppressWarnings("unchecked")
 	private void initPanel() {
 		this.setLayout(new FlowLayout());
 		this.simTimeField = new JTextField("0.0");

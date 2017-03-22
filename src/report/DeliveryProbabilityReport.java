@@ -8,7 +8,6 @@ import java.util.Map;
 import core.DTNHost;
 import core.Message;
 import core.MessageListener;
-import core.SimScenario;
 
 /**
  * Report for generating statistics about the delivery probability of One-to-One messages.
@@ -16,8 +15,6 @@ import core.SimScenario;
  *
  */
 public class DeliveryProbabilityReport  extends Report implements MessageListener {
-
-    private final SimScenario simScenario = SimScenario.getInstance();
 
 	private Map<String, Double> creationTimes;
 	private List<Double> latencies;
@@ -57,7 +54,9 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
 	 * @param dropped
 	 */
 	public void messageDeleted(Message m, DTNHost where, boolean dropped) {
-		
+		if (isWarmupID(m.getId())) {
+			return;
+		}
 	}
 	
 	/**
@@ -67,7 +66,7 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
 	 * @param to receiver of the message
 	 */
 	public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {
-		
+		// Method is not used, but must be implemented due to the class hierarchy
 	}
 	
 	/**
@@ -123,7 +122,7 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
 	 * @param to receiver of the message
 	 */
 	public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {
-		
+		// Method is not used, but must be implemented due to the class hierarchy
 	}
 	
 	/**

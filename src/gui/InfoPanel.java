@@ -57,6 +57,12 @@ public class InfoPanel extends JPanel implements ActionListener{
 			" at " + host.getLocation();
 
 		msgChooser = new JComboBox<>(messages);
+		//Inserting a Message instead of a String,S
+		//to display this string set as the message id as the first item of the JComboBox.
+		//Originally a String was inserted,
+		//but as msgChooser only had objects of type Message apart from this first element,
+		//msgChooser was changed to be of type JComboBox<Message> to avoid an unchecked warning,
+		//which made inserting a String illegal (leading to an error), making this hack necessary.
 		msgChooser.insertItemAt(new Message(null, null, messages.size() + " messages", 0), 0);
 		msgChooser.setSelectedIndex(0);
 		msgChooser.addActionListener(this);

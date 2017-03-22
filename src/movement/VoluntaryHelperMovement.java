@@ -287,7 +287,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     @Override
     public boolean newOrders() {
+        //when the just changed flag is set, the path and destination of the host were just set to null,
+        //so getPath and thus newOrders is called,
+        //but here a new movement model would possibly be selected, so to prevent that, if justChanged is true,...
         if (!justChanged) {
+            //...switching to a different movement mode and model is not done and...
             switch (mode) {
                 case RANDOM_MAP_BASED_MODE:
                 case PANIC_MODE:
@@ -314,6 +318,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     break;
             }
         } else {
+            //...in the end, nothing is done, except for setting justChanged to false
             justChanged = false;
         }
         return true;
@@ -343,7 +348,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Lets the this mobility model start at the beginning.
+     * Lets this mobility model start at the beginning.
      * This means checking all disasters, and deciding to help at one of them and moving there or,
      * if for no disaster helping was chosen, starting random map based movement.
      */
@@ -436,7 +441,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Switches the movement model and resets the host to use it after the next update
+     * sets a flag to indicate, that the movement model was forcefully changed
+     * and resets the hosts path and destination, so that it has to get a new one,
+     * effectively leading to an immediate change to whatever movement model is set directly after calling this method.
      */
     private void setMovementAsForcefullySwitched() {
         justChanged = true;

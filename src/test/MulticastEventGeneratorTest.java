@@ -29,16 +29,23 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     private static final int INVALID_MAX_GROUP_SIZE = MAX_HOST_RANGE + 1;
 
     @Before
+    @Override
     public void init(){
         super.init();
         SimScenario.reset();
         Group.clearGroups();
         DTNHost.reset();
         TestSettings.addSettingsToEnableSimScenario(this.settings);
+
         /*redefine host range settings because we need to check an invalid maximal group size.
         For this, we need to know the host range specified in the settings.
         */
         this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,"+MAX_HOST_RANGE);
+
+        /* Make sure we have enough hosts. */
+        settings.setNameSpace(SimScenario.GROUP_NS);
+        settings.putSetting(SimScenario.NROF_HOSTS_S, Integer.toString(MAX_HOST_RANGE));
+        settings.restoreNameSpace();
 
         settings.putSetting(MulticastEventGenerator.GROUP_COUNT_RANGE_S,MIN_GROUP_COUNT+", "+MAX_GROUP_COUNT);
         settings.putSetting(MulticastEventGenerator.GROUP_SIZE_RANGE_S,MIN_GROUP_SIZE+", "+MAX_GROUP_SIZE);
@@ -81,7 +88,7 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     public void testGeneratorThrowsExceptionWhenMaxGroupSizeIsGreaterThanHostAddressRange(){
         settings.putSetting(MulticastEventGenerator.GROUP_SIZE_RANGE_S,MIN_GROUP_SIZE+", "+
                 INVALID_MAX_GROUP_SIZE);
-        AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
+        new MulticastEventGenerator(this.settings);
     }
 
     /**

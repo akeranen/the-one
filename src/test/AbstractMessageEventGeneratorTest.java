@@ -15,11 +15,12 @@ public abstract class AbstractMessageEventGeneratorTest {
      */
     protected static final int NR_TRIALS_IN_TEST = 10;
 
-    protected TestSettings settings = new TestSettings();
+    protected TestSettings settings;
 
     @Before
     public void init() {
         Settings.init(null);
+        this.settings = new TestSettings();
         this.settings.putSetting("Events.nrof", "1");
 
         this.settings.putSetting("class", this.getMessageEventGeneratorClassName());

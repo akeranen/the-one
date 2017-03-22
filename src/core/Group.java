@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Created by Marius Meyer on 08.03.17.
  */
-public class Group implements Addressable {
+public final class Group implements Addressable {
 
     /**
      * Map with all existent groups. Key is the address of the group and value the group itself.

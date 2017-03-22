@@ -133,9 +133,9 @@ public class MessageStatsReport extends Report implements MessageListener {
             case BROADCAST:
                 numberOfRecipients = this.simScenario.getHosts().size() - 1;
                 break;
-			case MULTICAST:
-				numberOfRecipients = ((MulticastMessage)m).getGroup().getMembers().length - 1;
-				break;
+            case MULTICAST:
+                numberOfRecipients = ((MulticastMessage)m).getGroup().getMembers().length - 1;
+                break;
             default:
                 throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
         }

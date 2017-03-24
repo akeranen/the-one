@@ -49,8 +49,8 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             receivedNodes.put(m.getId(),0);
             write(multicast.getId() + " "
                     + groupAddress + " "
-                    + m.getCreationTime() + " "
-                    + getSimTime() + " "
+                    + (int) m.getCreationTime() + " "
+                    + (int) getSimTime() + " "
                     + 0.0);
         }
     }
@@ -87,15 +87,15 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             receivedNodes.put(m.getId(),receivedNodes.get(m.getId()) + 1);
             write(multicast.getId() + " "
                     + groupAddress + " "
-                    + m.getCreationTime() + " "
-                    + getSimTime() + " "
-                    + ( receivedNodes.get(m.getId()) / ((double) multicast.getGroup().getMembers().length)));
+                    + (int) m.getCreationTime() + " "
+                    + (int) getSimTime() + " "
+                    + ( receivedNodes.get(m.getId()) / ((double) multicast.getGroup().getMembers().length - 1)));
         }
     }
 
     @Override
     public void done(){
-        write(Double.toString(getSimTime()));
+        write(Integer.toString((int) getSimTime()));
         super.done();
 
     }

@@ -2,8 +2,10 @@ package test;
 
 import core.BroadcastMessage;
 import core.DTNHost;
+import core.Group;
 import core.Message;
 import core.MessageListener;
+import core.MulticastMessage;
 import core.SimClock;
 import org.junit.After;
 import org.junit.Assert;
@@ -160,6 +162,24 @@ public class BroadcastDeliveryReportTest extends AbstractMessageReportTest {
         DTNHost h1 = utils.createHost();
         h1.createNewMessage(new Message(h1, h1, TEST_MESSAGE_ID, 0));
 
+        testReportIgnoresMessage();
+    }
+
+    @Test
+    public void reportIgnoresMulticastMessages() throws IOException {
+        // Skip warm up time.
+        this.clock.setTime(AFTER_WARM_UP_TIME);
+
+        // Create 1-to-1 message.
+        DTNHost h1 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        h1.createNewMessage(new MulticastMessage(h1,g,TEST_MESSAGE_ID,0));
+
+        testReportIgnoresMessage();
+    }
+
+    private void testReportIgnoresMessage() throws IOException{
         this.report.done();
 
         // Check output.

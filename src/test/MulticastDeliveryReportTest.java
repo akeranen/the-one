@@ -1,10 +1,13 @@
 package test;
 
+import core.BroadcastMessage;
 import core.DTNHost;
 import core.Group;
+import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
 import core.SimClock;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,12 +32,15 @@ public class MulticastDeliveryReportTest extends AbstractMessageReportTest {
     private static final int SECOND_DELIVERY_TIME = 245;
     private static final int SIMULATION_TIME = 543;
 
+    private static final double HALF_GROUP_RATIO = 0.5;
+    private static final double ALL_GROUP_RATIO = 1.0;
+
     private static final String TEST_MESSAGE_ID = "M1";
 
     private static final String EXPECTED_FIRST_LINE = "#message, group, sent, received, ratio";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
 
-    private static final String FORMAT_OF_M1_REPORT_LINE = "M1 %d %d %d %d";
+    private static final String FORMAT_OF_M1_REPORT_LINE = "M1 0 %d %d %s";
     private static final String UNEXPECTED_CREATION_LINE = "Line for message creation was not as expected.";
     private static final String UNEXPECTED_FIRST_DELIVERY_LINE = "Line for first delivery should have been different.";
 
@@ -44,6 +50,10 @@ public class MulticastDeliveryReportTest extends AbstractMessageReportTest {
     private TestUtils utils;
     private MulticastMessageDeliveryReport report;
     private SimClock clock = SimClock.getInstance();
+
+    public MulticastDeliveryReportTest(){
+        //setUp is called by junit before every test
+    }
 
     @Before
     @Override
@@ -66,6 +76,229 @@ public class MulticastDeliveryReportTest extends AbstractMessageReportTest {
 
     }
 
+    @After
+    public void resetClock(){
+        clock.setTime(0);
+    }
+
+    @Test
+    public void testReportReactsOnCreateMessage() throws IOException{
+        clock.setTime(AFTER_WARM_UP_TIME);
+        DTNHost h1 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        h1.createNewMessage(new MulticastMessage(h1, g, TEST_MESSAGE_ID, 0));
+
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, AFTER_WARM_UP_TIME,  AFTER_WARM_UP_TIME,0.0),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportReactsOnTransferMessage() throws IOException{
+        clock.setTime(AFTER_WARM_UP_TIME);
+        DTNHost h1 = utils.createHost();
+        DTNHost h2 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        g.addHost(h2);
+        h1.createNewMessage(new MulticastMessage(h1, g, TEST_MESSAGE_ID, 0));
+
+        transferMessage(TEST_MESSAGE_ID, h1, h2);
+
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, AFTER_WARM_UP_TIME,  AFTER_WARM_UP_TIME,0.0),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, AFTER_WARM_UP_TIME,  AFTER_WARM_UP_TIME,
+                            ALL_GROUP_RATIO), reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportSetsCorrectMsgCreationTime() throws IOException{
+        clock.setTime(CREATION_TIME);
+        DTNHost h1 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        h1.createNewMessage(new MulticastMessage(h1, g, TEST_MESSAGE_ID, 0));
+
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, CREATION_TIME,0.0),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportSetsCorrectRecvTime() throws IOException{
+        clock.setTime(CREATION_TIME);
+        DTNHost h1 = utils.createHost();
+        DTNHost h2 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        g.addHost(h2);
+        h1.createNewMessage(new MulticastMessage(h1, g, TEST_MESSAGE_ID, 0));
+
+        clock.setTime(FIRST_DELIVERY_TIME);
+        transferMessage(TEST_MESSAGE_ID, h1, h2);
+
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, CREATION_TIME,0.0),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, FIRST_DELIVERY_TIME, ALL_GROUP_RATIO),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportSetsCorrectRatio() throws IOException{
+        clock.setTime(CREATION_TIME);
+        DTNHost h1 = utils.createHost();
+        DTNHost h2 = utils.createHost();
+        DTNHost h3 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        g.addHost(h2);
+        g.addHost(h3);
+        h1.createNewMessage(new MulticastMessage(h1, g, TEST_MESSAGE_ID, 0));
+
+        clock.setTime(FIRST_DELIVERY_TIME);
+        transferMessage(TEST_MESSAGE_ID, h1, h2);
+
+        clock.setTime(SECOND_DELIVERY_TIME);
+        transferMessage(TEST_MESSAGE_ID, h2, h3);
+
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, CREATION_TIME,0.0),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, FIRST_DELIVERY_TIME, HALF_GROUP_RATIO),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, SECOND_DELIVERY_TIME, ALL_GROUP_RATIO),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportIgnoresSecondDelivery() throws IOException{
+        clock.setTime(CREATION_TIME);
+        DTNHost h1 = utils.createHost();
+        DTNHost h2 = utils.createHost();
+        Group g = Group.createGroup(0);
+        g.addHost(h1);
+        g.addHost(h2);
+        h1.createNewMessage(new MulticastMessage(h1, g, TEST_MESSAGE_ID, 0));
+
+        clock.setTime(FIRST_DELIVERY_TIME);
+        transferMessage(TEST_MESSAGE_ID, h1, h2);
+
+        clock.setTime(SECOND_DELIVERY_TIME);
+        transferMessage(TEST_MESSAGE_ID, h1, h2);
+
+        report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_CREATION_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME,  CREATION_TIME,0.0),
+                    reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_FIRST_DELIVERY_LINE,
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME,  FIRST_DELIVERY_TIME,
+                            ALL_GROUP_RATIO), reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, SECOND_DELIVERY_TIME),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportSetsCorrectSimTimeAfterDone() throws IOException{
+        clock.setTime(SIMULATION_TIME);
+        report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, SIMULATION_TIME),
+                    reader.readLine());
+        }
+    }
+
+    @Test
+    public void testReportIgnoresUnicastMessages() throws IOException{
+        // Skip warm up time.
+        this.clock.setTime(AFTER_WARM_UP_TIME);
+        // Create 1-to-1 message.
+        DTNHost h1 = utils.createHost();
+        h1.createNewMessage(new Message(h1,h1,TEST_MESSAGE_ID,0));
+
+        transferMessage(TEST_MESSAGE_ID,h1,h1);
+        testReportIgnoresMessage();
+    }
+
+    @Test
+    public void testReportIgnoresBroadcastMessages() throws IOException{
+        // Skip warm up time.
+        this.clock.setTime(AFTER_WARM_UP_TIME);
+        // Create 1-to-1 message.
+        DTNHost h1 = utils.createHost();
+        h1.createNewMessage(new BroadcastMessage(h1,TEST_MESSAGE_ID,0));
+
+        transferMessage(TEST_MESSAGE_ID,h1,h1);
+        testReportIgnoresMessage();
+    }
+
     @Override
     @Test
     public void reportCorrectlyHandlesWarmUpTime() throws IOException {
@@ -82,6 +315,19 @@ public class MulticastDeliveryReportTest extends AbstractMessageReportTest {
         this.clock.setTime(AFTER_WARM_UP_TIME);
         transferMessage(TEST_MESSAGE_ID, h1, h2);
 
+        this.report.done();
+
+        // Check output.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_LINE,
+                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
+                    reader.readLine());
+        }
+    }
+
+    private void testReportIgnoresMessage() throws IOException{
         this.report.done();
 
         // Check output.

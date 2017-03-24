@@ -94,7 +94,7 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsLegendAsFirstLine() throws IOException {
+    public void testReportPrintsLegendAsFirstLine() throws IOException {
         // Complete report.
         this.report.done();
 
@@ -105,7 +105,7 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsMessageTypes() throws IOException {
+    public void testReportPrintsMessageTypes() throws IOException {
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
@@ -142,7 +142,7 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsCorrectDelay() throws IOException {
+    public void testReportPrintsCorrectDelay() throws IOException {
         // Create message at a certain time point.
         this.clock.setTime(CREATION_TIME);
         this.sender.createNewMessage(new Message(this.sender, this.receiver, TEST_MESSAGE_ID, 0));
@@ -170,7 +170,7 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
      * @throws IOException
      */
     @Test
-    public void reportIgnoresWarmUp() throws IOException {
+    public void testReportIgnoresWarmUp() throws IOException {
         // Create message at time before warm up has finished.
         this.clock.setTime(0);
         this.sender.createNewMessage(new BroadcastMessage(this.sender, TEST_MESSAGE_ID, 0));
@@ -194,7 +194,7 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
      * @throws IOException
      */
     @Test
-    public void reportIgnoresSecondDeliveryToSameHost() throws IOException {
+    public void testReportIgnoresSecondDeliveryToSameHost() throws IOException {
         // Go to creation time and create message.
         this.clock.setTime(CREATION_TIME);
         this.sender.createNewMessage(new BroadcastMessage(this.sender, TEST_MESSAGE_ID, 0));

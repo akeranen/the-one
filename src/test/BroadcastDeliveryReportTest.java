@@ -12,10 +12,7 @@ import org.junit.Test;
 import report.BroadcastDeliveryReport;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**
@@ -23,7 +20,7 @@ import java.util.ArrayList;
  *
  * Created by Britta Heymann on 08.03.2017.
  */
-public class BroadcastDeliveryReportTest extends AbstractReportTest {
+public class BroadcastDeliveryReportTest extends AbstractMessageReportTest {
     private static final int AFTER_WARM_UP_TIME = AbstractReportTest.WARM_UP_TIME + 1;
 
     // Some times in a certain tests. Chosen arbitrarily.
@@ -240,22 +237,5 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
                     String.format(FORMAT_OF_SIM_TIME_LINE, SECOND_DELIVERY_TIME),
                     reader.readLine());
         }
-    }
-
-    /**
-     * Transfers the specified message between the specified hosts.
-     */
-    private static void transferMessage(String messageId, DTNHost from, DTNHost to) {
-        from.sendMessage(messageId, to);
-        to.messageTransferred(messageId, from);
-    }
-
-    /**
-     * Create a buffered reader that assumes the output file was written using UTF8 encoding.
-     * @return The buffered reader.
-     * @throws IOException
-     */
-    private BufferedReader createBufferedReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(new FileInputStream(this.outputFile), StandardCharsets.UTF_8));
     }
 }

@@ -77,13 +77,20 @@ my %msgToLastRatio = ();
 
 print "SimTime	MinRatio	AvgRatio\n";
 
+my $lastInterval = 0;
 #Sort intervals numerically and process every interval step by step
 foreach my $interval ( sort {$a <=> $b} keys %intervalToAvgs){
+	#fill missing intervals with values of prior interval
+	while ($lastInterval + 1 < $interval){
+		printNextInterval($lastInterval + 1);
+		$lastInterval++;		
+	}
 	#for every message delivered during this interval, update the latest delivery ratio
     foreach my $msg (keys %{$intervalToAvgs{$interval}}) {
         $msgToLastRatio{$msg} = $intervalToAvgs{$interval}{$msg};
     }
     printNextInterval($interval);
+	$lastInterval = $interval;
 }
 
 #calculates and prints the min and average for the given interval

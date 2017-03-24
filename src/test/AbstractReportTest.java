@@ -6,8 +6,12 @@ import org.junit.Test;
 import report.Report;
 import ui.DTNSimUI;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 /**
  * A base class for all tests testing reports.
@@ -56,4 +60,13 @@ public abstract class AbstractReportTest {
      * @return The the report class to test.
      */
     protected abstract Class getReportClass();
+
+    /**
+     * Create a buffered reader that assumes the output file was written using UTF8 encoding.
+     * @return The buffered reader.
+     * @throws IOException
+     */
+    protected BufferedReader createBufferedReader() throws IOException {
+        return new BufferedReader(new InputStreamReader(new FileInputStream(this.outputFile), StandardCharsets.UTF_8));
+    }
 }

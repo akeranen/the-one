@@ -66,7 +66,7 @@ public class PanicMovement extends MapBasedMovement {
     @Override
     public Path getPath() {
         Path path = new Path(generateSpeed());
-        MapNode hostNode = getNearestNode(getMap(), getLastLocation());
+        MapNode hostNode = getNearestNode(getMap(), this.host.getLocation());
         MapNode destNode = PanicMovementUtil.selectDestination(getMap(), hostNode, eventLocation, safeRange);
 
         List<MapNode> nodePath = pathFinder.getShortestPath(hostNode, destNode);

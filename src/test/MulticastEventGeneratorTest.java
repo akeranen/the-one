@@ -25,18 +25,27 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     private static final int MAX_GROUP_COUNT = 10;
     private static final int MIN_GROUP_SIZE = 2;
     private static final int MAX_GROUP_SIZE = 10;
-    private static final int INVALID_MAX_GROUP_SIZE = 11;
     private static final int MAX_HOST_RANGE = 10;
+    private static final int INVALID_MAX_GROUP_SIZE = MAX_HOST_RANGE + 1;
 
     @Before
+    @Override
     public void init(){
         super.init();
         SimScenario.reset();
         Group.clearGroups();
         DTNHost.reset();
         TestSettings.addSettingsToEnableSimScenario(this.settings);
-        //overwrite host range settings from abstract class to prevent errors after abstract class changes
+
+        /*redefine host range settings because we need to check an invalid maximal group size.
+        For this, we need to know the host range specified in the settings.
+        */
         this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,"+MAX_HOST_RANGE);
+
+        /* Make sure we have enough hosts. */
+        settings.setNameSpace(SimScenario.GROUP_NS);
+        settings.putSetting(SimScenario.NROF_HOSTS_S, Integer.toString(MAX_HOST_RANGE));
+        settings.restoreNameSpace();
 
         settings.putSetting(MulticastEventGenerator.GROUP_COUNT_RANGE_S,MIN_GROUP_COUNT+", "+MAX_GROUP_COUNT);
         settings.putSetting(MulticastEventGenerator.GROUP_SIZE_RANGE_S,MIN_GROUP_SIZE+", "+MAX_GROUP_SIZE);
@@ -65,11 +74,11 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
             generator.nextEvent();
             assertTrue("Group count must be in specified range",
-                    Group.getGroups().length < MAX_GROUP_COUNT
+                    Group.getGroups().length <= MAX_GROUP_COUNT
                             && Group.getGroups().length >= MIN_GROUP_COUNT);
             for (Group g : Group.getGroups()) {
                 assertTrue("Group size should be in specified range",
-                        g.getMembers().length < MAX_GROUP_SIZE &&
+                        g.getMembers().length <= MAX_GROUP_SIZE &&
                                 g.getMembers().length >= MIN_GROUP_SIZE);
             }
         }
@@ -79,7 +88,7 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     public void testGeneratorThrowsExceptionWhenMaxGroupSizeIsGreaterThanHostAddressRange(){
         settings.putSetting(MulticastEventGenerator.GROUP_SIZE_RANGE_S,MIN_GROUP_SIZE+", "+
                 INVALID_MAX_GROUP_SIZE);
-        AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
+        new MulticastEventGenerator(this.settings);
     }
 
     /**

@@ -1,7 +1,9 @@
 package test;
 
+import core.ConnectionListener;
 import core.DTNHost;
 import core.Group;
+import core.MessageListener;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +18,8 @@ import java.util.ArrayList;
 public class GroupTest {
 
     private static final int MAX_GROUP_ADDRESS = 3;
-    private TestUtils utils = new TestUtils(new ArrayList<>(),new ArrayList<>(), new TestSettings());
+    private TestUtils utils = new TestUtils(new ArrayList<ConnectionListener>(),
+            new ArrayList<MessageListener>(), new TestSettings());
 
     @Before
     public void setUp(){
@@ -109,7 +112,9 @@ public class GroupTest {
     @Test
     public void testToString(){
         Group group = Group.createGroup(0);
+        DTNHost host1 = utils.createHost();
+        group.addHost(host1);
         TestCase.assertEquals("String representation of group is not as expected: " + group.toString(),
-                "Group "+0,group.toString());
+                "Group "+0+", Members=["+host1.getAddress()+"]",group.toString());
     }
 }

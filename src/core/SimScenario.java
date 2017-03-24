@@ -411,7 +411,7 @@ public class SimScenario implements Serializable {
 	 */
 	private void createHostsOfGroup(int nrofHosts,String gid, MovementModel mmProto, List<NetworkInterface> interfaces,
 									MessageRouter mRouterProto){
-		for (int j=0; j<nrofHosts; j++) {
+        for (int j=0; j<nrofHosts; j++) {
 			ModuleCommunicationBus comBus = new ModuleCommunicationBus();
 
 			// prototypes are given to new DTNHost which replicates

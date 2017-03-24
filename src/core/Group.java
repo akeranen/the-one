@@ -2,6 +2,7 @@ package core;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Created by Marius Meyer on 08.03.17.
  */
-public class Group implements Addressable {
+public final class Group implements Addressable {
 
     /**
      * Map with all existent groups. Key is the address of the group and value the group itself.
@@ -39,7 +40,7 @@ public class Group implements Addressable {
             throw new AssertionError("Group address already assigned to another group: " + address);
         }
         this.address = address;
-        members = Collections.synchronizedList(new ArrayList<>());
+        members = Collections.synchronizedList(new ArrayList<Integer>());
     }
 
     /**
@@ -61,7 +62,11 @@ public class Group implements Addressable {
      * @return the group with the specified address or null, if not existent
      */
     public static Group getGroup(int address){
-        return groups.getOrDefault(address,null);
+        if (groups.containsKey(address)){
+            return groups.get(address);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -142,7 +147,7 @@ public class Group implements Addressable {
      */
     @Override
     public String toString(){
-        return "Group " + address;
+        return "Group " + address + ", Members="+ Arrays.toString(members.toArray());
     }
 
 

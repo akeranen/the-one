@@ -24,8 +24,14 @@ import static org.junit.Assert.assertTrue;
 public class MessageTransferAcceptPolicyTest {
 
 
-    private static final String NOT_ACCEPT_S = "Sending should not have bin accepted.";
-    private static final String ACCEPT_S = "Sending should have bin accepted.";
+    private static final String UNEXPECTED_ACCEPT_S = "Sending should not have been accepted.";
+    private static final String EXPECTED_ACCEPT_S = "Sending should have been accepted.";
+
+    /**
+     * Use a invalid address value to test an empty TO_SPOLICY_S in multicasts. When this value is
+     * left empty, it would put in the TO_ME_VALUE by default.
+     */
+    private static final int INVALID_VALUE = -2;
 
     private static final String POLICY_NS = "simplepolicy";
 
@@ -76,7 +82,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertTrue(
-                ACCEPT_S,
+                EXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.msg));
     }
 
@@ -92,7 +98,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                NOT_ACCEPT_S,
+                UNEXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.msg));
     }
 
@@ -108,7 +114,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                NOT_ACCEPT_S,
+                UNEXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.msg));
     }
 
@@ -124,7 +130,23 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertTrue(
-                ACCEPT_S,
+                EXPECTED_ACCEPT_S,
+                policy.acceptSending(this.sender, this.recipient, null, this.multicast));
+    }
+
+    @Test
+    public void testAcceptSendingReturnsFalseForAllOfMulticastGroupOutsideRange(){
+        this.settings.setNameSpace(POLICY_NS);
+        this.settings.putSetting(MessageTransferAcceptPolicy.TO_SPOLICY_S,
+                Integer.toString(INVALID_VALUE));
+        this.settings.putSetting(MessageTransferAcceptPolicy.FROM_SPOLICY_S,
+                Integer.toString(MessageTransferAcceptPolicy.TO_ME_VALUE));
+        this.settings.restoreNameSpace();
+
+        MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
+
+        assertFalse(
+                UNEXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.multicast));
     }
 
@@ -138,7 +160,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertTrue(
-                ACCEPT_S,
+                EXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.multicast));
     }
 
@@ -154,7 +176,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                NOT_ACCEPT_S,
+                UNEXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.multicast));
     }
 
@@ -168,7 +190,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertTrue(
-                ACCEPT_S,
+                EXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.broadcast));
     }
 
@@ -182,7 +204,7 @@ public class MessageTransferAcceptPolicyTest {
         MessageTransferAcceptPolicy policy = new MessageTransferAcceptPolicy(this.settings);
 
         assertFalse(
-                NOT_ACCEPT_S,
+                UNEXPECTED_ACCEPT_S,
                 policy.acceptSending(this.sender, this.recipient, null, this.broadcast));
     }
 }

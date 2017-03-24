@@ -219,12 +219,19 @@ public class MessageTransferAcceptPolicy {
      * @return true if both conditions evaluated to true
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
-    	boolean checkRecipients = false;
+        boolean checkRecipients;
     	switch (m.getType()){
-            case MULTICAST: checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
-            break;
-            case BROADCAST: checkRecipients = true;break;
-            default: checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+            case MULTICAST:
+                checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
+                break;
+            case BROADCAST:
+                checkRecipients = true;
+                break;
+            case ONE_TO_ONE:
+                checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+                break;
+            default:
+                throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
         }
         return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
     }
@@ -266,7 +273,7 @@ public class MessageTransferAcceptPolicy {
 
 
 		for (Range r : policy) {
-			if (r.isInRange(TO_ME_VALUE) && hostAddress == thisHost) {
+            if (r.isInRange(TO_ME_VALUE) && hostAddress == thisHost) {
 				return true;
 			}
 			 else if (r.isInRange(hostAddress)) {

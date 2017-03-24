@@ -21,6 +21,10 @@ public class PanicMovementTest extends TestCase {
 
     private static final int NR_OF_MAP_NODES = 8;
 
+    private static final Coord EVENT_COORD = new Coord(2, 1);
+    /** Danger radius around the event. Chosen s. t. hosts at diagonally neighbored nodes are still in danger. **/
+    private static final double DANGER_RADIUS = 1.5;
+
     private MapNode[] node = new MapNode[NR_OF_MAP_NODES];
     private MapNode event;
 
@@ -81,7 +85,7 @@ public class PanicMovementTest extends TestCase {
 
         Coord[] coord = new Coord[] {
                 new Coord(1, 1),
-                new Coord(2, 1),
+                EVENT_COORD,
                 new Coord(4, 1),
                 new Coord(1, 2),
                 new Coord(3, 0),
@@ -98,10 +102,10 @@ public class PanicMovementTest extends TestCase {
 
         map = new SimMap(cmMap);
         createTopology(node);
-        event = map.getNodeByCoord(new Coord(2, 1));
+        event = map.getNodeByCoord(EVENT_COORD);
         panicMovement = new PanicMovement(settings, map, 3);
         panicMovement.setEventLocation(event.getLocation());
-        panicMovement.setSafeRange(1.5);
+        panicMovement.setSafeRange(DANGER_RADIUS);
     }
 
     /**
@@ -153,7 +157,10 @@ public class PanicMovementTest extends TestCase {
      * Tests if a node in the safe region stays there
      */
     public void testStayInSafeRegion() {
-        host.setLocation(new Coord(4, 1));
+        Coord safeRegionCoord = new Coord(
+                (int)Math.ceil(EVENT_COORD.getX() + DANGER_RADIUS),
+                EVENT_COORD.getY());
+        host.setLocation(safeRegionCoord);
         Path path = panicMovement.getPath();
         assertTrue("Nodes in the safe area should not move", path.getCoords().size() == 1);
     }

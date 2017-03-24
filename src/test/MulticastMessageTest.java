@@ -6,6 +6,7 @@ import core.Group;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
+import core.NetworkInterface;
 import core.SimError;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class MulticastMessageTest {
             new TestSettings());
 
     private MulticastMessage msg;
-    private DTNHost from = new TestDTNHost(new ArrayList<>(),null,null);;
+    private DTNHost from = new TestDTNHost(new ArrayList<NetworkInterface>(),null,null);
 
     @Before
     public void setUp() throws Exception {

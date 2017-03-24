@@ -138,6 +138,5 @@ public class DeliveryProbabilityReportTest {
                     "delivery_prob: 0.6667",
                     reader.readLine());
         }
-
 	}
 }

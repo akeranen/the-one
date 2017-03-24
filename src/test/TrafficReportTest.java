@@ -116,7 +116,7 @@ public class TrafficReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsExplanationAsFirstLine() throws IOException {
+    public void testReportPrintsExplanationAsFirstLine() throws IOException {
         // Complete report.
         this.report.done();
 
@@ -127,7 +127,7 @@ public class TrafficReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportAlwaysPrintsAllMessageTypes() throws IOException {
+    public void testReportAlwaysPrintsAllMessageTypes() throws IOException {
         // Complete report.
         this.report.done();
 
@@ -147,7 +147,7 @@ public class TrafficReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsCorrectValuesForTransferredMessages() throws IOException {
+    public void testReportPrintsCorrectValuesForTransferredMessages() throws IOException {
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
         // Create broadcasts and 1-to-1 message.
@@ -196,7 +196,7 @@ public class TrafficReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportIncludesRelayedPartOfAbortedMessageTransfers() throws IOException {
+    public void testReportIncludesRelayedPartOfAbortedMessageTransfers() throws IOException {
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
         // Create message.
@@ -232,7 +232,7 @@ public class TrafficReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportIgnoresWarmUpMessageEvenIfTransferredLater() throws IOException {
+    public void testReportIgnoresWarmUpMessageEvenIfTransferredLater() throws IOException {
         // Create message in warm up time.
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", ONE_TO_ONE_SIZE));
 
@@ -257,7 +257,7 @@ public class TrafficReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportIgnoresWarmUpMessageEvenIfInAbortedTransferLater() throws IOException {
+    public void testReportIgnoresWarmUpMessageEvenIfInAbortedTransferLater() throws IOException {
         // Create message in warm up time.
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", ONE_TO_ONE_SIZE));
 

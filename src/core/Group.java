@@ -64,7 +64,9 @@ public final class Group implements Addressable {
     public static Group getGroup(int address){
         if (groups.containsKey(address)){
             return groups.get(address);
-        } else return null;
+        } else {
+            return null;
+        }
     }
 
     /**

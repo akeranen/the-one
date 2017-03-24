@@ -25,7 +25,6 @@ import java.util.ArrayList;
  * Created by Britta Heymann on 17.03.2017.
  */
 public class TrafficReportTest extends AbstractReportTest {
-    private static final int WARM_UP_TIME = 50;
     private static final int AFTER_WARM_UP_TIME = WARM_UP_TIME + 1;
     private static final int TRANSMIT_SPEED = 2;
 
@@ -235,8 +234,13 @@ public class TrafficReportTest extends AbstractReportTest {
         }
     }
 
+    /**
+     * Tests that messages created on warm up will be ignored even if they get transferred later.
+     * @throws IOException
+     */
     @Test
-    public void testReportIgnoresWarmUpMessageEvenIfTransferredLater() throws IOException {
+    @Override
+    public void testReportCorrectlyHandlesWarmUpTime() throws IOException {
         // Create message in warm up time.
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", ONE_TO_ONE_SIZE));
 

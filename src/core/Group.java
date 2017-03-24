@@ -40,7 +40,7 @@ public final class Group implements Addressable {
             throw new AssertionError("Group address already assigned to another group: " + address);
         }
         this.address = address;
-        members = Collections.synchronizedList(new ArrayList<>());
+        members = Collections.synchronizedList(new ArrayList<Integer>());
     }
 
     /**
@@ -62,7 +62,11 @@ public final class Group implements Addressable {
      * @return the group with the specified address or null, if not existent
      */
     public static Group getGroup(int address){
-        return groups.getOrDefault(address,null);
+        if (groups.containsKey(address)){
+            return groups.get(address);
+        } else {
+            return null;
+        }
     }
 
     /**

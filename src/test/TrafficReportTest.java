@@ -142,6 +142,10 @@ public class TrafficReportTest extends AbstractReportTest {
                     "Broadcast traffic should have been printed.",
                     String.format(TRAFFIC_LINE_FORMAT, Message.MessageType.BROADCAST, 0.0, 0),
                     reader.readLine());
+            Assert.assertEquals(
+                    "Multicast traffic should have been printed.",
+                    String.format(TRAFFIC_LINE_FORMAT, Message.MessageType.MULTICAST, 0.0, 0),
+                    reader.readLine());
             // TODO: Add further types once we have them
         }
     }

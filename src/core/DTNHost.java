@@ -4,21 +4,21 @@
  */
 package core;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static core.Constants.DEBUG;
 
 /**
  * A DTN capable host.
  */
-public class DTNHost implements Comparable<DTNHost> {
+public class DTNHost implements Comparable<DTNHost>, Addressable {
 	private static int nextAddress = 0;
 	private int address;
 
@@ -146,7 +146,9 @@ public class DTNHost implements Comparable<DTNHost> {
 
 	/**
 	 * Returns the network-layer address of this host.
+	 * @return the address of this host
 	 */
+	@Override
 	public int getAddress() {
 		return this.address;
 	}

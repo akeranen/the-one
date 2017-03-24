@@ -47,6 +47,9 @@ public class InfoPanel extends JPanel implements ActionListener{
 	 * Show information about a host
 	 * @param host Host to show the information of
 	 */
+	//suppressing the unchecked warnings is necessary here,
+	//as otherwise compiling the simulator with the compile.sh or compile.bat scripts is not possible.
+	//The only other possible solutions are hacky (eg. inserting a Message instead of a string into the msgChooser).
 	@SuppressWarnings("unchecked")
 	public void showInfo(DTNHost host) {
 		Vector<Message> messages =

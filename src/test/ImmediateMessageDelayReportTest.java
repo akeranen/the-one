@@ -2,8 +2,10 @@ package test;
 
 import core.BroadcastMessage;
 import core.DTNHost;
+import core.Group;
 import core.Message;
 import core.MessageListener;
+import core.MulticastMessage;
 import core.SimClock;
 import org.junit.After;
 import org.junit.Assert;
@@ -104,16 +106,19 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
 
     @Test
     public void reportPrintsMessageTypes() throws IOException {
-        // TODO: add multicast once that is merged.
-
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
         // Create and deliver messages of all types.
+        Group group = Group.createGroup(1);
+        group.addHost(this.sender);
+        group.addHost(this.receiver);
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", 0));
         this.sender.createNewMessage(new BroadcastMessage(this.sender, "M2", 0));
+        this.sender.createNewMessage(new MulticastMessage(this.sender, group, "M3", 0));
         ImmediateMessageDelayReportTest.transferMessage("M1", this.sender, this.receiver);
         ImmediateMessageDelayReportTest.transferMessage("M2", this.sender, this.receiver);
+        ImmediateMessageDelayReportTest.transferMessage("M3", this.sender, this.receiver);
 
         // Complete report.
         this.report.done();
@@ -129,7 +134,10 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
                     UNEXPECTED_MESSAGE_TYPE,
                     Message.MessageType.BROADCAST.toString(),
                     ImmediateMessageDelayReportTest.getTypeFromLine(reader.readLine()));
-
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_TYPE,
+                    Message.MessageType.MULTICAST.toString(),
+                    ImmediateMessageDelayReportTest.getTypeFromLine(reader.readLine()));
         }
     }
 

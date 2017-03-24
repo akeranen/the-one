@@ -23,7 +23,6 @@ import java.util.ArrayList;
  * Created by Britta Heymann on 15.03.2017.
  */
 public class ImmediateMessageDelayReportTest extends AbstractReportTest {
-    private static final int WARM_UP_TIME = 50;
     private static final int AFTER_WARM_UP_TIME = WARM_UP_TIME + 1;
 
     // Some times in a certain tests. Chosen arbitrarily.
@@ -170,7 +169,8 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
      * @throws IOException
      */
     @Test
-    public void testReportIgnoresWarmUp() throws IOException {
+    @Override
+    public void testReportCorrectlyHandlesWarmUpTime() throws IOException {
         // Create message at time before warm up has finished.
         this.clock.setTime(0);
         this.sender.createNewMessage(new BroadcastMessage(this.sender, TEST_MESSAGE_ID, 0));

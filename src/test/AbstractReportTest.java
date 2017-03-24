@@ -49,7 +49,7 @@ public abstract class AbstractReportTest {
      * Checks that the report correctly handles the warm up time as set by the {@link Report#WARMUP_S} setting.
      */
     @Test
-    public abstract void reportCorrectlyHandlesWarmUpTime() throws IOException;
+    public abstract void testReportCorrectlyHandlesWarmUpTime() throws IOException;
 
     /***
      * Gets the report class to test.

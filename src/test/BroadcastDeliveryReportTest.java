@@ -90,7 +90,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsOnCreation() throws IOException {
+    public void testReportPrintsOnCreation() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
@@ -108,7 +108,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsOnDelivery() throws IOException {
+    public void testReportPrintsOnDelivery() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
@@ -140,7 +140,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsSimulationTimeWhenDone() throws IOException {
+    public void testReportPrintsSimulationTimeWhenDone() throws IOException {
         this.clock.setTime(SIMULATION_TIME);
         this.report.done();
 
@@ -155,7 +155,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportIgnoresOneToOneMessages() throws IOException {
+    public void testReportIgnoresOneToOneMessages() throws IOException {
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
@@ -182,7 +182,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
      */
     @Test
     @Override
-    public void reportCorrectlyHandlesWarmUpTime() throws IOException {
+    public void testReportCorrectlyHandlesWarmUpTime() throws IOException {
         // Create broadcast at time before warm up has finished.
         this.clock.setTime(0);
         DTNHost h1 = utils.createHost();
@@ -209,7 +209,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
      * @throws IOException
      */
     @Test
-    public void reportIgnoresSecondDeliveryToSameHost() throws IOException {
+    public void testReportIgnoresSecondDeliveryToSameHost() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();

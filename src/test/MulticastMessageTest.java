@@ -109,7 +109,7 @@ public class MulticastMessageTest {
     public void testRecipientsToString() {
         assertEquals(
                 "Recipients descriptions should have been different.",
-                "Group "+GROUP_ADDRESS_1,
+                this.msg.getGroup().toString(),
                 this.msg.recipientsToString());
     }
 }

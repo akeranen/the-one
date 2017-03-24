@@ -47,7 +47,8 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
                 this.creator.getAddress(),0, "messageId", 100, 34.2);
         assertEquals(
                 "ToString should have printed a different value",
-                "MSG @34.2 messageId [" + this.creator.getAddress() + "->Group 0] size:100 CREATE",
+                "MSG @34.2 messageId [" + this.creator.getAddress() + "->"
+                        +Group.getGroup(0)+"] size:100 CREATE",
                 event.toString());
     }
 

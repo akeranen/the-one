@@ -39,9 +39,9 @@ my %msgToMaxInterval = ();
 
 
 # Matches a message line.
-my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+.\d+) (\d+.\d+) (\d+.\d+)$';
+my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+) (\d+) (\d+([.]\d+)?)$';
 # Matches the last report line, i.e. the total simulation time.
-my $simTimeLineMatcher = '^(\d+.\d+)$';
+my $simTimeLineMatcher = '^(\d+([.]\d+)?)$';
 
 # Read multicast report.
 open(INFILE, "$infile") or die "Can't open $infile : $!";

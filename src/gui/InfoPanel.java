@@ -22,7 +22,7 @@ import core.Message;
  * Information panel that shows data of selected messages and nodes.
  */
 public class InfoPanel extends JPanel implements ActionListener{
-	private JComboBox<Message> msgChooser;
+	private JComboBox msgChooser;
 	private JLabel info;
 	private JButton infoButton;
 	private JButton routingInfoButton;
@@ -47,6 +47,7 @@ public class InfoPanel extends JPanel implements ActionListener{
 	 * Show information about a host
 	 * @param host Host to show the information of
 	 */
+	@SuppressWarnings("unchecked")
 	public void showInfo(DTNHost host) {
 		Vector<Message> messages =
 			new Vector<Message>(host.getMessageCollection());
@@ -57,13 +58,7 @@ public class InfoPanel extends JPanel implements ActionListener{
 			" at " + host.getLocation();
 
 		msgChooser = new JComboBox<>(messages);
-		//Inserting a Message instead of a String,S
-		//to display this string set as the message id as the first item of the JComboBox.
-		//Originally a String was inserted,
-		//but as msgChooser only had objects of type Message apart from this first element,
-		//msgChooser was changed to be of type JComboBox<Message> to avoid an unchecked warning,
-		//which made inserting a String illegal (leading to an error), making this hack necessary.
-		msgChooser.insertItemAt(new Message(null, null, messages.size() + " messages", 0), 0);
+		msgChooser.insertItemAt(messages.size() + " messages", 0);
 		msgChooser.setSelectedIndex(0);
 		msgChooser.addActionListener(this);
 

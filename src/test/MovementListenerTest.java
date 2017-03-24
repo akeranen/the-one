@@ -4,18 +4,16 @@ import core.Coord;
 import core.DTNHost;
 import core.MovementListener;
 import core.Settings;
-import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import report.MovementListenerTestReport;
 import report.Report;
 import ui.DTNSimUI;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringBufferInputStream;
-import java.net.URLClassLoader;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author teemuk

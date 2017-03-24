@@ -6,7 +6,6 @@ import core.SimError;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.stream.JsonParsingException;
-import java.io.IOException;
 
 /**
  * This is a container that includes all parameters of a VhmEvent

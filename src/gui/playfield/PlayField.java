@@ -286,8 +286,8 @@ public class PlayField extends JPanel implements VhmListener {
      */
     public Coord getGraphicsPosition(Coord loc) {
         Coord c = loc.clone();
-        c.setLocation(PlayFieldGraphic.scale(c.getX()) + PLAYFIELD_OFFSET,
-                PlayFieldGraphic.scale(c.getY()) + PLAYFIELD_OFFSET);
+        c.setLocation(PlayFieldGraphic.scale(c.getX()) + (double)PLAYFIELD_OFFSET,
+                PlayFieldGraphic.scale(c.getY()) + (double)PLAYFIELD_OFFSET);
         return c;
     }
 

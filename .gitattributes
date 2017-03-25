@@ -13,8 +13,6 @@
 
 # Windows batch files should retain CRLF
 *.bat           text eol=crlf
-# Bash scripts should have LF (Unix-Style line endings)
-*.sh            text eol=lf
 
 *.class         binary
 *.gif           binary

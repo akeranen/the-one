@@ -5,7 +5,7 @@ import core.SimError;
 
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.stream.JsonParsingException;
+import java.io.IOException;
 
 /**
  * This is a container that includes all parameters of a VhmEvent
@@ -143,8 +143,9 @@ public class VhmEvent extends ExternalEvent {
      *
      * @param name   The name of the event. This should be the key value of the JSON object
      * @param object The JSON object, that represents the event
+     * @throws IOException If the JSON object could not be parsed to an VhmEvent
      */
-    public VhmEvent(String name, JsonObject object){
+    public VhmEvent(String name, JsonObject object) throws IOException {
         super(0);
         try {
             this.id = getNextEventID();
@@ -184,8 +185,8 @@ public class VhmEvent extends ExternalEvent {
             } else {
                 this.intensity = DEFAULT_INTENSITY;
             }
-        } catch (JsonParsingException e) {
-            throw new SimError("VhmEvent could not be parsed from JSON: " + e);
+        } catch (Exception e) {
+            throw new IOException("VhmEvent could not be parsed from JSON: " + e);
         }
     }
 

@@ -49,12 +49,12 @@ public final class ImmediateMessageDelayReport extends Report implements Message
      */
     @Override
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
-        if (!firstDelivery || this.isWarmupID(m.getId())) {
-            return;
+        if (firstDelivery && !this.isWarmupID(m.getId())) {
+            // TODO: Get correct priority here as soon as message priorities are implemented.
+            int priority = 1;
+            this.write(
+                    String.format("%s %d %d", m.getType(), priority, (int)(this.getSimTime() - m.getCreationTime())));
         }
-        // TODO: Get correct priority here as soon as message priorities are implemented.
-        int priority = 1;
-        this.write(String.format("%s %d %d", m.getType(), priority, (int)(this.getSimTime() - m.getCreationTime())));
     }
 
     /**

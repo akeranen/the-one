@@ -12,10 +12,7 @@ import org.junit.Test;
 import report.BroadcastDeliveryReport;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**
@@ -248,14 +245,5 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     private static void transferMessage(String messageId, DTNHost from, DTNHost to) {
         from.sendMessage(messageId, to);
         to.messageTransferred(messageId, from);
-    }
-
-    /**
-     * Create a buffered reader that assumes the output file was written using UTF8 encoding.
-     * @return The buffered reader.
-     * @throws IOException
-     */
-    private BufferedReader createBufferedReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(new FileInputStream(this.outputFile), StandardCharsets.UTF_8));
     }
 }

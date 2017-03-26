@@ -22,8 +22,8 @@ public class PanicMovementTest extends TestCase {
     private static final int NR_OF_MAP_NODES = 8;
 
     private static final Coord EVENT_COORD = new Coord(2, 1);
-    /** Danger radius around the event. Chosen s. t. hosts at diagonally neighbored nodes are still in danger. **/
-    private static final double DANGER_RADIUS = 1.5;
+    /** Safe range around the event. Chosen s. t. hosts at diagonally neighbored nodes are still in danger. **/
+    private static final double SAFE_RANGE = 1.5;
 
     private MapNode[] node = new MapNode[NR_OF_MAP_NODES];
     private MapNode event;
@@ -105,7 +105,7 @@ public class PanicMovementTest extends TestCase {
         event = map.getNodeByCoord(EVENT_COORD);
         panicMovement = new PanicMovement(settings, map, 3);
         panicMovement.setEventLocation(event.getLocation());
-        panicMovement.setSafeRange(DANGER_RADIUS);
+        panicMovement.setSafeRange(SAFE_RANGE);
     }
 
     /**
@@ -158,7 +158,7 @@ public class PanicMovementTest extends TestCase {
      */
     public void testStayInSafeRegion() {
         Coord safeRegionCoord = new Coord(
-                (int)Math.ceil(EVENT_COORD.getX() + DANGER_RADIUS),
+                (int)Math.ceil(EVENT_COORD.getX() + SAFE_RANGE),
                 EVENT_COORD.getY());
         host.setLocation(safeRegionCoord);
         Path path = panicMovement.getPath();

@@ -136,7 +136,7 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 		this.sepsField.setToolTipText(TEXT_SEPS);
 
 		this.screenShotButton = new JButton(TEXT_SCREEN_SHOT);
-		this.guiUpdateChooser = new JComboBox(UP_SPEEDS);
+		this.guiUpdateChooser = new JComboBox<>(UP_SPEEDS);
 
 		this.zoomSelector = new JSpinner(new SpinnerNumberModel(1.0, ZOOM_MIN,
 				ZOOM_MAX, 0.001));

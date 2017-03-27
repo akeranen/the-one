@@ -6,12 +6,12 @@ use IPC::System::Simple qw(system capture);
 use File::Spec;
 use File::Basename;
 
-# Contains tests for broadcastMessageAnalyzer.pl.
+# Contains tests for multicastMessageAnalyzer.pl.
 
 # We do not specify how many tests will follow, but we will use tsets.
 use Test::More 'no_plan';
 
-# This variable stores the output of the lastest broadcastMessageAnalyzer.pl call.
+# This variable stores the output of the lastest multicastMessageAnalyzer.pl call.
 my @outputLines;
 # Time granularity used throughout the tests.
 my $granularity = 10;
@@ -45,7 +45,7 @@ Test::More::is(getMinFromLine($outputLines[5]), 0.5, "Minimum of single remainin
 Test::More::is(getAvgFromLine($outputLines[6]), 1, "Average of single remaining message is correct.");
 Test::More::is(getMinFromLine($outputLines[6]), "1.0", "Minimum of single remaining message is correct.");
 
-# Calls broadcastMessageAnalyzer.pl with the given file name.
+# Calls multicastMessageAnalyzer.pl with the given file name.
 # Expects the file to reside in toolkit/testdata.
 sub callMulticastMessageAnalyzer {
     # Get absolute file path.
@@ -57,17 +57,17 @@ sub callMulticastMessageAnalyzer {
     @outputLines = IPC::System::Simple::capture("perl $rawDataName $inputFile $granularity");
 }
 
-# Gets the time point from a line of format <timePoint> <avg> <min>.
+# Gets the time point from a line of format <timePoint> <min> <avg>.
 sub getTimePointFromLine {
     return getWordFromLine(shift, 0);
 }
 
-# Gets average from a line of format <timePoint> <avg> <min>.
+# Gets average from a line of format <timePoint> <min> <avg>.
 sub getAvgFromLine {
     return getWordFromLine(shift, 2);
 }
 
-# Gets minimum from a line of format <timePoint> <avg> <min>.
+# Gets minimum from a line of format <timePoint> <min> <avg>.
 sub getMinFromLine {
     return getWordFromLine(shift, 1);
 }

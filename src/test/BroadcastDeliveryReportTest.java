@@ -22,7 +22,7 @@ import java.util.ArrayList;
  *
  * Created by Britta Heymann on 08.03.2017.
  */
-public class BroadcastDeliveryReportTest extends AbstractMessageReportTest {
+public class BroadcastDeliveryReportTest extends AbstractReportTest {
     private static final int AFTER_WARM_UP_TIME = AbstractReportTest.WARM_UP_TIME + 1;
 
     // Some times in a certain tests. Chosen arbitrarily.
@@ -199,7 +199,7 @@ public class BroadcastDeliveryReportTest extends AbstractMessageReportTest {
      */
     @Test
     @Override
-    public void reportCorrectlyHandlesWarmUpTime() throws IOException {
+    public void testReportCorrectlyHandlesWarmUpTime() throws IOException {
         // Create broadcast at time before warm up has finished.
         this.clock.setTime(0);
         DTNHost h1 = utils.createHost();
@@ -257,5 +257,13 @@ public class BroadcastDeliveryReportTest extends AbstractMessageReportTest {
                     String.format(FORMAT_OF_SIM_TIME_LINE, SECOND_DELIVERY_TIME),
                     reader.readLine());
         }
+    }
+
+    /**
+     * Transfers the specified message between the specified hosts.
+     */
+    private static void transferMessage(String messageId, DTNHost from, DTNHost to) {
+        from.sendMessage(messageId, to);
+        to.messageTransferred(messageId, from);
     }
 }

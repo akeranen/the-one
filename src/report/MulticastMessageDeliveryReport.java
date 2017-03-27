@@ -19,7 +19,7 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
      * header of the resulting output file
      */
     private static final String HEADER =
-            "#message, group, sent, received, ratio";
+            "#message, sent, received, ratio";
 
     /**
      * map storing the number nodes that have already received a certain group message
@@ -48,7 +48,6 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             int groupAddress = multicast.getGroup().getAddress();
             receivedNodes.put(m.getId(),0);
             write(multicast.getId() + " "
-                    + groupAddress + " "
                     + (int) m.getCreationTime() + " "
                     + (int) getSimTime() + " "
                     + 0.0);
@@ -86,7 +85,6 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             int groupAddress = multicast.getGroup().getAddress();
             receivedNodes.put(m.getId(),receivedNodes.get(m.getId()) + 1);
             write(multicast.getId() + " "
-                    + groupAddress + " "
                     + (int) m.getCreationTime() + " "
                     + (int) getSimTime() + " "
                     + ( receivedNodes.get(m.getId()) / ((double) multicast.getGroup().getMembers().length - 1)));

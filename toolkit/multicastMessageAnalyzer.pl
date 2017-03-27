@@ -39,7 +39,7 @@ my %msgToMaxInterval = ();
 
 
 # Matches a message line.
-my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+) (\d+) (\d+([.]\d+)?)$';
+my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+) (\d+([.]\d+)?)$';
 # Matches the last report line, i.e. the total simulation time.
 my $simTimeLineMatcher = '^(\d+([.]\d+)?)$';
 
@@ -47,7 +47,7 @@ my $simTimeLineMatcher = '^(\d+([.]\d+)?)$';
 open(INFILE, "$infile") or die "Can't open $infile : $!";
 while(<INFILE>) {
     # Try to parse lines either of type <msgId> <group> <ctime> <rtime <ratio> or <simtime>.
-    my ($msgId, $groupAddr, $createTime, $recvTime, $ratio) = m/$messageLineMatcher/;
+    my ($msgId, $createTime, $recvTime, $ratio) = m/$messageLineMatcher/;
     my ($simTime) = m/$simTimeLineMatcher/;
 
     # Ignore lines that are not of this kind.
@@ -93,6 +93,21 @@ foreach my $interval ( sort {$a <=> $b} keys %intervalToAvgs){
 	$lastInterval = $interval;
 }
 
+#fill lines up to simulation end
+while (getHighestInterval() > $lastInterval){
+    $lastInterval++;
+    printNextInterval($lastInterval);
+}
+
+
+
+sub getHighestInterval{
+    my $max = 0;
+    $_ > $max and $max = $_ for values %msgToMaxInterval;
+    return $max;
+}
+
+
 #calculates and prints the min and average for the given interval
 sub printNextInterval{
     my $interval = shift;
@@ -125,7 +140,7 @@ sub calculateMaxIntervalForAllMsgs {
     my $simTime = shift;
 	
 	foreach my $msgId (keys %msgToCreateTime){
-		$msgToMaxInterval{$msgId} = int($simTime - $msgToCreateTime{$msgId}) / $timeStep;
+		$msgToMaxInterval{$msgId} = int(($simTime - $msgToCreateTime{$msgId}) / $timeStep + 1);
 	}
 
 }

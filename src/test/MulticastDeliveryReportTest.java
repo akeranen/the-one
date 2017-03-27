@@ -37,10 +37,10 @@ public class MulticastDeliveryReportTest extends AbstractMessageReportTest {
 
     private static final String TEST_MESSAGE_ID = "M1";
 
-    private static final String EXPECTED_FIRST_LINE = "#message, group, sent, received, ratio";
+    private static final String EXPECTED_FIRST_LINE = "#message, sent, received, ratio";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
 
-    private static final String FORMAT_OF_M1_REPORT_LINE = "M1 0 %d %d %s";
+    private static final String FORMAT_OF_M1_REPORT_LINE = "M1 %d %d %s";
     private static final String UNEXPECTED_CREATION_LINE = "Line for message creation was not as expected.";
     private static final String UNEXPECTED_FIRST_DELIVERY_LINE = "Line for first delivery should have been different.";
 

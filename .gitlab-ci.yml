@@ -81,10 +81,3 @@ test:
     when: always
     paths:
     - build/reports/
-
-perl_test:
-  stage: test
-  image: perl:5.24.1
-  before_script:
-    - cpan IPC::System::Simple
-  script: prove -v toolkit/tests

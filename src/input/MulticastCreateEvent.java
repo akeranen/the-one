@@ -11,7 +11,6 @@ import core.World;
  * Created by Marius Meyer on 08.03.17.
  */
 public class MulticastCreateEvent extends MessageEvent {
-    private static final long serialVersionUID = 1;
 
     /**
      * Size of the created message

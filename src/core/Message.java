@@ -64,13 +64,13 @@ public class Message implements Comparable<Message> {
          */
         ONE_TO_ONE,
         /**
+        * Message which should be sent to a specific group of nodes
+	    */
+        MULTICAST,
+        /**
          * Message which should be sent to everyone.
          */
-        BROADCAST,
-		/**
-		 * Message which should be sent to a specific group of nodes
-		 */
-		MULTICAST
+        BROADCAST
     }
 
 	/**

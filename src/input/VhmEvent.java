@@ -9,7 +9,8 @@ import javax.json.stream.JsonParsingException;
 
 /**
  * This is a container that includes all parameters of a VhmEvent
- * <p>
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
+ *
  * Created by Marius Meyer on 15.02.17.
  */
 public class VhmEvent extends ExternalEvent {

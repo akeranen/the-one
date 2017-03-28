@@ -23,7 +23,8 @@ import java.util.Map;
  * Reader for {@link VhmEvent}s. This class reads {@link VhmEvent}s from a defined
  * file and provides an event queue
  * for the use with the ONE
- * <p>
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
+ *
  * Created by Marius Meyer on 15.02.17.
  */
 public class VhmEventReader implements ExternalEventsReader {

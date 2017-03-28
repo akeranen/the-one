@@ -19,7 +19,8 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
 /**
  * This movement model simulates the movement of voluntary helpers in a disaster region.
  * It makes use of several other movement models for this.
- * <p>
+ * (In comments and class-names etc., Vhm is the abbreviation of VoluntaryHelperMovement)
+ *
  * Created by Ansgar Mährlein on 08.02.2017.
  *
  * @author Ansgar Mährlein

@@ -3,8 +3,10 @@ package core;
 import input.VhmEvent;
 
 /**
- * This is an Interface for all classes that want to listen to the VHMEvents of the VouluntaryHelperMobility model.
+ * This is an Interface for all classes that want to listen to the VhmEvents of the VouluntaryHelperMobility model.
  * Those events can be disasters or hospitals.
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
+ *
  * Created by Ansgar Mährlein on 15.02.2017.
  */
 public interface VhmListener {

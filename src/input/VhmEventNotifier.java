@@ -8,6 +8,8 @@ import java.util.List;
 
 /**
  * This class holds the List of VhmListeners and notifies them when a VhmEvent started or ended.
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
+ *
  * Created by Ansgar Mährlein on 10.03.2017.
  */
 public final class VhmEventNotifier {

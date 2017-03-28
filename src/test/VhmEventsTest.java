@@ -16,6 +16,7 @@ import java.util.List;
 
 /**
  * This class tests classes depending on VhmEvent
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
  *
  * Created by Marius Meyer on 17.02.17.
  */

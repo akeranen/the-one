@@ -5,6 +5,7 @@ import core.World;
 /**
  * This is an event class that will be used for ending {@link VhmEvent}s by
  * the {@link VhmEventReader}
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
  *
  * Created by Marius Meyer on 15.02.17.
  */

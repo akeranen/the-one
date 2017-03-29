@@ -80,7 +80,10 @@ public class ExternalEventsQueue implements EventQueue {
 		if (BinaryEventsReader.isBinaryEeFile(eventsFile)) {
 			this.reader = new BinaryEventsReader(eventsFile);
 		}
-		else {
+		else if (VhmEventReader.isVhmEventsFile(eventsFile)) {
+			this.reader = new VhmEventReader(eventsFile);
+		}
+		else{
 			this.reader = new StandardEventsReader(eventsFile);
 		}
 

@@ -4,21 +4,21 @@
  */
 package core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import static core.Constants.DEBUG;
 
 /**
  * A DTN capable host.
  */
-public class DTNHost implements Comparable<DTNHost>, Addressable {
+public class DTNHost implements Comparable<DTNHost> {
 	private static int nextAddress = 0;
 	private int address;
 
@@ -146,9 +146,7 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 
 	/**
 	 * Returns the network-layer address of this host.
-	 * @return the address of this host
 	 */
-	@Override
 	public int getAddress() {
 		return this.address;
 	}
@@ -436,6 +434,17 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
 		}
 
 		return true;
+	}
+
+	/**
+	 * removes the current movement destination and path such that the host will
+	 * request a new path from the movement model.
+	 * Call this, when the sub-movement model of a composite movement model should be changed,
+     * before the host reached the destination set by the previous sub-movement model.
+	 */
+	public void interruptMovement(){
+		this.destination = null;
+		this.path = null;
 	}
 
 	/**

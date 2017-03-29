@@ -4,7 +4,10 @@
  */
 package gui.playfield;
 
+import core.VhmListener;
 import gui.DTNSimGUI;
+import input.VhmEvent;
+import input.VhmEventNotifier;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -31,7 +34,7 @@ import core.World;
  * The canvas where node graphics and message visualizations are drawn.
  *
  */
-public class PlayField extends JPanel {
+public class PlayField extends JPanel implements VhmListener {
 	public static final int PLAYFIELD_OFFSET = 10;
 
 	private World w;
@@ -40,6 +43,7 @@ public class PlayField extends JPanel {
 	private Color bgColor = Color.WHITE;
 
 	private List<PlayFieldGraphic> overlayGraphics;
+	private List<VhmEventGraphic> vhmEventGraphics;
 	private boolean autoClearOverlay;	// automatically clear overlay graphics
 	private MapGraphic mapGraphic;
 	private boolean showMapGraphic;
@@ -67,12 +71,15 @@ public class PlayField extends JPanel {
         this.setBackground(bgColor);
         this.overlayGraphics = Collections.synchronizedList(
 		new ArrayList<PlayFieldGraphic>());
+		this.vhmEventGraphics = Collections.synchronizedList(
+				new ArrayList<VhmEventGraphic>());
         this.mapGraphic = null;
         this.underlayImage = null;
         this.imageTransform = null;
         this.autoClearOverlay = true;
 
 		highlightedHosts = new LinkedList<DTNHost>();
+		VhmEventNotifier.addListener(this);
 		
         this.addMouseListener(new MouseAdapter() {
 			@Override
@@ -208,6 +215,10 @@ public class PlayField extends JPanel {
 			new PathGraphic(h.getPath()).draw(g2);
 		}
 
+		for (int i=0, n=vhmEventGraphics.size();i<n; i++){
+		    vhmEventGraphics.get(i).draw(g2);
+        }
+
 		// draw overlay graphics
 		for (int i=0, n=overlayGraphics.size(); i<n; i++) {
 			overlayGraphics.get(i).draw(g2);
@@ -324,5 +335,15 @@ public class PlayField extends JPanel {
 		gui.setFocus(closest);
 
 		this.updateField();
+	}
+
+	@Override
+	public void vhmEventStarted(VhmEvent event) {
+		this.vhmEventGraphics.add(new VhmEventGraphic(event));
+	}
+
+	@Override
+	public void vhmEventEnded(VhmEvent event) {
+		vhmEventGraphics.remove(new VhmEventGraphic(event));
 	}
 }

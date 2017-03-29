@@ -4,17 +4,18 @@
  */
 package routing.util;
 
+import java.util.ArrayList;
+
+import util.Range;
+import util.Tuple;
+
 import core.ArithmeticCondition;
+import core.BroadcastMessage;
 import core.Connection;
 import core.DTNHost;
 import core.Message;
 import core.ModuleCommunicationBus;
-import core.MulticastMessage;
 import core.Settings;
-import util.Range;
-import util.Tuple;
-
-import java.util.ArrayList;
 
 /**
  * <P> Message transfer accepting policy module. Can be used to decide whether
@@ -191,7 +192,7 @@ public class MessageTransferAcceptPolicy {
 	 * @return true if all conditions evaluated to true
 	 */
 	private boolean checkMcbConditions(ModuleCommunicationBus mcb,
-									   boolean receiving) {
+			boolean receiving) {
 		ArrayList<Tuple<String,ArithmeticCondition>> list =
 			(receiving ? this.recvConditions : this.sendConditions);
 
@@ -219,64 +220,36 @@ public class MessageTransferAcceptPolicy {
      * @return true if both conditions evaluated to true
      */
     private boolean checkSimplePolicy(Message m, int ownAddress) {
-        boolean checkRecipients;
-    	switch (m.getType()){
-            case MULTICAST:
-                checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
-                break;
-            case BROADCAST:
-                checkRecipients = true;
-                break;
-            case ONE_TO_ONE:
-                checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
-                break;
-            default:
-                throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
-        }
-        return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
-    }
-
-    /**
-     * Checks the simple policy for every member of the group a multicast message is dedicated to.
-     *
-     * @param m the multicast message to check the policy for
-     * @param ownAddress the nodes' own address
-     * @return true, if the policy holds for at least one of the group members
-     */
-    private boolean checkSimplePolicyForGroupMembers(MulticastMessage m, int ownAddress){
-        boolean checkRecipients = false;
-        for (int address : m.getGroup().getMembers()){
-            if (checkSimplePolicy(address,this.toSendPolicy,ownAddress)){
-                checkRecipients = true;
-                break;
-            }
-        }
-        return checkRecipients;
+        boolean checkRecipients = (m instanceof  BroadcastMessage)
+                || checkSimplePolicy(m.getTo(), this.toSendPolicy, ownAddress);
+        return checkRecipients && checkSimplePolicy(m.getFrom(), this.fromSendPolicy, ownAddress);
     }
 
 	/**
 	 * Checks if the host's address is contained in the policy list
 	 * (or {@value #TO_ME_VALUE} is contained and the address matches to
 	 * thisHost parameter)
-	 * @param hostAddress The address to check
+	 * @param host The hosts whose address to check
 	 * @param policy The list of accepted addresses
 	 * @param thisHost The address of this host
 	 * @return True if the address was in the policy list, or the policy list
 	 * was null
 	 */
-	private boolean checkSimplePolicy(int hostAddress, Range [] policy,
-									  int thisHost) {
+	private boolean checkSimplePolicy(DTNHost host, Range [] policy,
+			int thisHost) {
+		int address;
 
 		if (policy == null) {
 			return true;
 		}
 
+		address = host.getAddress();
 
 		for (Range r : policy) {
-            if (r.isInRange(TO_ME_VALUE) && hostAddress == thisHost) {
+			if (r.isInRange(TO_ME_VALUE) && address == thisHost) {
 				return true;
 			}
-			 else if (r.isInRange(hostAddress)) {
+			 else if (r.isInRange(address)) {
 				return true;
 			}
 		}

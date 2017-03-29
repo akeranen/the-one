@@ -1,1 +1,1 @@
-java -Xmx64G -cp target;lib/ECLA.jar;lib/DTNConsoleConnection.jar core.DTNSim %*
+java -Xmx512M -cp target;lib/javax.json-1.0.4.jar;lib/ECLA.jar;lib/DTNConsoleConnection.jar core.DTNSim %*

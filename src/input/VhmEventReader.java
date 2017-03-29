@@ -97,6 +97,11 @@ public class VhmEventReader implements ExternalEventsReader {
                 StandardCharsets.UTF_8));
     }
 
+    /**
+     * Read events from the reader
+     * @param nrof Maximum number of events to read
+     * @return Events in a List
+     */
     @Override
     public List<ExternalEvent> readEvents(int nrof) {
         if (allEventsRead) {

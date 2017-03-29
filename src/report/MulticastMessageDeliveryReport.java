@@ -85,7 +85,7 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             write(multicast.getId() + " "
                     + (int) m.getCreationTime() + " "
                     + (int) getSimTime() + " "
-                    + ( receivedNodes.get(m.getId()) / ((double) multicast.getGroup().getMembers().length - 1)));
+                    + ( receivedNodes.get(m.getId()) / ((double) multicast.getGroup().getMembers().length)));
         }
     }
 

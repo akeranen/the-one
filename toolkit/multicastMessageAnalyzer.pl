@@ -8,13 +8,13 @@ use strict;
 #* Minimum group message delivery ratio per time
 #
 # Parses the MulticastDeliveryReport to do so, i.e. translates a file of the form
-#   #message, group, sent, received, ratio
-#   <MessageId> <GroupAddress> <SentTime> <RecvdTime> <DelRatio>
+#   #message, sent, received, ratio
+#   <MessageId> <SentTime> <RecvdTime> <DelRatio>
 #   ...
-#   <MessageId> <GroupAddress> <SentTime> <RecvdTime> <DelRatio>
+#   <MessageId> <SentTime> <RecvdTime> <DelRatio>
 #   <TotalSimulatorTime>
 # where lines are printed after creation and each delivery into a file of the form
-#   SimTime	MinRatio	AvgRatio
+#   #SimTime	MinRatio	AvgRatio
 #   <time after creation>	<min>	<avg>
 #   ...
 
@@ -46,7 +46,7 @@ my $simTimeLineMatcher = '^(\d+([.]\d+)?)$';
 # Read multicast report.
 open(INFILE, "$infile") or die "Can't open $infile : $!";
 while(<INFILE>) {
-    # Try to parse lines either of type <msgId> <group> <ctime> <rtime <ratio> or <simtime>.
+    # Try to parse lines either of type <msgId> <ctime> <rtime <ratio> or <simtime>.
     my ($msgId, $createTime, $recvTime, $ratio) = m/$messageLineMatcher/;
     my ($simTime) = m/$simTimeLineMatcher/;
 
@@ -75,7 +75,7 @@ close(INFILE);
 #Map, that stores the latest delivery ratio for every message
 my %msgToLastRatio = ();
 
-print "SimTime	MinRatio	AvgRatio\n";
+print "#SimTime	MinRatio	AvgRatio\n";
 
 my $lastInterval = 0;
 #Sort intervals numerically and process every interval step by step

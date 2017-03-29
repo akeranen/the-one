@@ -45,7 +45,6 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             addWarmupID(m.getId());
         } else if (m instanceof MulticastMessage){
             MulticastMessage multicast = (MulticastMessage) m;
-            int groupAddress = multicast.getGroup().getAddress();
             receivedNodes.put(m.getId(),0);
             write(multicast.getId() + " "
                     + (int) m.getCreationTime() + " "
@@ -82,7 +81,6 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean firstDelivery) {
         if (m instanceof MulticastMessage && firstDelivery && !isWarmupID(m.getId())){
             MulticastMessage multicast = (MulticastMessage) m;
-            int groupAddress = multicast.getGroup().getAddress();
             receivedNodes.put(m.getId(),receivedNodes.get(m.getId()) + 1);
             write(multicast.getId() + " "
                     + (int) m.getCreationTime() + " "

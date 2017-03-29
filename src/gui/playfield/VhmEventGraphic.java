@@ -13,9 +13,13 @@ import java.awt.geom.Ellipse2D;
  */
 public class VhmEventGraphic extends PlayFieldGraphic {
 
-    /** size of the rectangle marking the event location */
+    /**
+     * size of the rectangle marking the event location
+     */
     private static final int EVENT_RECT_SIZE = 2;
-    /** size factor to convert a radius to a diameter */
+    /**
+     * size factor to convert a radius to a diameter
+     */
     private static final int EVENT_RANGE_SIZE_FACTOR = 2;
 
     /**

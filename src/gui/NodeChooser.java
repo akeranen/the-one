@@ -160,7 +160,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 				groupNames[i] = (last + "..." + next);
 				last = next + 1;
 			}
-			groupChooser = new JComboBox(groupNames);
+			groupChooser = new JComboBox<>(groupNames);
 			groupChooser.addActionListener(this);
 			chooserPanel.add(groupChooser);
 		}

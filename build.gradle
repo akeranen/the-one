@@ -64,6 +64,11 @@ dependencies {
 	compile name: 'ECLA'
 }
 
+test {
+    //make gradle run tests one after the other to prevent tests with static variables from influencing each other
+    forkEvery=1
+}
+
 task copyGui(type: Copy){
     from 'src/gui/buttonGraphics'
     into 'target/gui/buttonGraphics'

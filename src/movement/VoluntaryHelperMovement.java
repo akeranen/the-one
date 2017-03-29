@@ -482,13 +482,15 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * @return true if the decision is to help, false otherwise
      */
     private boolean decideHelp(VhmEvent event) {
-        boolean help;
+        boolean help = false;
         double distance = host.getLocation().distance(event.getLocation());
         //decide if the host helps at the disaster site,
         // based on the distance to the disaster, as well as the intensity and maximum range of the disaster
         // and the intensity weight factor.
-        help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY)
-                + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
+        if(distance <= event.getMaxRange()) {
+            help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY)
+                    + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
+        }
 
         return help;
     }

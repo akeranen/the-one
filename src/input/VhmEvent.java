@@ -328,8 +328,9 @@ public class VhmEvent extends ExternalEvent {
 
     /**
      * Checks, if two VhmEvents are equal by comparing their id.
-     * Returns true if the event id, even if this VhmEvent is of subtype VhmEventStartEvent or VhmEventEndEvent
-     * and the object that this VhmEvent is compared to is the opposite.
+     * Returns true if the event ids are equal, even if this VhmEvent and the object that this VhmEvent is compared to,
+     * are of subtype VhmEventStartEvent or VhmEventEndEvent.
+     * The two compared VhmEvent Objects don't need to be of the same subtype.
      *
      * @param ob the VhmEvent to compare to
      * @return true, if the object is of type VhmEvent or one of its subtypes

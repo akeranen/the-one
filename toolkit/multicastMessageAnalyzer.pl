@@ -33,7 +33,7 @@ my $timeStep = $ARGV[1];
 my %intervalToAvgs = ();
 #Maps a message to the time it was created
 my %msgToCreateTime = ();
-#Maps a message to the highest interval it is used in
+#Maps a message to the number of intervals between message creation and simulation end.
 #This is used to only take messages into account, that existed in the given time interval
 my %msgToMaxInterval = ();
 
@@ -64,39 +64,39 @@ while(<INFILE>) {
     }
 	#calculate the interval this message was delivered in
     my $timeInterval = int(($recvTime - $createTime) / $timeStep + 1);
-	
-	$msgToCreateTime{$msgId} = $createTime;
+
+    $msgToCreateTime{$msgId} = $createTime;
 	#put the message and its ratio in the map for the calculated interval
     $intervalToAvgs{$timeInterval}{$msgId} = $ratio;
 }
 
 close(INFILE);
 
-#Map, that stores the latest delivery ratio for every message
+#Map, that stores the last delivery ratio for every message
 my %msgToLastRatio = ();
 
-print "#SimTime	MinRatio	AvgRatio\n";
+print "#timeAfterMessageCreation	MinRatio	AvgRatio\n";
 
 my $lastInterval = 0;
 #Sort intervals numerically and process every interval step by step
 foreach my $interval ( sort {$a <=> $b} keys %intervalToAvgs){
 	#fill missing intervals with values of prior interval
 	while ($lastInterval + 1 < $interval){
-		printNextInterval($lastInterval + 1);
+		printInterval($lastInterval + 1);
 		$lastInterval++;		
 	}
 	#for every message delivered during this interval, update the latest delivery ratio
     foreach my $msg (keys %{$intervalToAvgs{$interval}}) {
         $msgToLastRatio{$msg} = $intervalToAvgs{$interval}{$msg};
     }
-    printNextInterval($interval);
-	$lastInterval = $interval;
+    printInterval($interval);
+    $lastInterval = $interval;
 }
 
 #fill lines up to simulation end
 while (getHighestInterval() > $lastInterval){
     $lastInterval++;
-    printNextInterval($lastInterval);
+    printInterval($lastInterval);
 }
 
 
@@ -109,9 +109,9 @@ sub getHighestInterval{
 
 
 #calculates and prints the min and average for the given interval
-sub printNextInterval{
+sub printInterval{
     my $interval = shift;
-    my $total = 0;
+    my $ratioSum = 0;
     my $nextMin = 2;
 	my $msgCount = 0;
 	#check every message
@@ -123,14 +123,14 @@ sub printNextInterval{
 		#add it to the min and avg calculation for the current interval
 		$msgCount++;
 		my $msgRatio = $msgToLastRatio{$msg};
-        $total += $msgRatio;
+        $ratioSum += $msgRatio;
         if ($nextMin > $msgRatio){
             $nextMin = $msgRatio;
         }
     }
 	#calculate average
-    my $nextAvg = $total / $msgCount;
-	#convert the interval into simulation seconds
+    my $nextAvg = $ratioSum / $msgCount;
+    #convert the interval into simulation seconds
 	my $seconds = $interval * $timeStep;
     print "$seconds    $nextMin    $nextAvg\n";
 }

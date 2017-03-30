@@ -13,8 +13,8 @@ use Test::More 'no_plan';
 
 # This variable stores the output of the lastest multicastMessageAnalyzer.pl call.
 my @outputLines;
-# Time granularity used throughout the tests.
-my $granularity = 10;
+# Time steps (granularity) used throughout the tests.
+my $timeStep = 10;
 # Current directory, important to get absolute file names.
 my $currDir = File::Basename::dirname($0);
 
@@ -24,10 +24,10 @@ print "Start tests for multicastMessageAnalyzer.pl.\n";
 # Check granularity is translated into correct time points and time points are printed
 # until creation + time point > end of simulation.
 callMulticastMessageAnalyzer("multicastDeliveryReport_singleCreation");
-Test::More::is(getTimePointFromLine($outputLines[1]), $granularity, "First time point is correct.");
-Test::More::is(getTimePointFromLine($outputLines[2]), 2 * $granularity, "Second time point is correct.");
-Test::More::is(getTimePointFromLine($outputLines[3]), 3 * $granularity, "Third time point is correct.");
-Test::More::is(getTimePointFromLine($outputLines[4]), 4 * $granularity, "Fourth time point is correct.");
+Test::More::is(getTimePointFromLine($outputLines[1]), $timeStep, "First time point is correct.");
+Test::More::is(getTimePointFromLine($outputLines[2]), 2 * $timeStep, "Second time point is correct.");
+Test::More::is(getTimePointFromLine($outputLines[3]), 3 * $timeStep, "Third time point is correct.");
+Test::More::is(getTimePointFromLine($outputLines[4]), 4 * $timeStep, "Fourth time point is correct.");
 
 # Check analysis correctly works in terms of averaging and minimizing, esp. if some messages have a longer lifetime
 # than others.
@@ -54,7 +54,7 @@ sub callMulticastMessageAnalyzer {
     # Use absolute file path of analyzer script, too.
     my $rawDataName = File::Spec->rel2abs("$currDir/../multicastMessageAnalyzer.pl");
     # Capture console output.
-    @outputLines = IPC::System::Simple::capture("perl $rawDataName $inputFile $granularity");
+    @outputLines = IPC::System::Simple::capture("perl $rawDataName $inputFile $timeStep");
 }
 
 # Gets the time point from a line of format <timePoint> <min> <avg>.

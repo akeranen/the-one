@@ -9,7 +9,19 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Prints a line for each multicast delivery or creation.
  *
+ * Format is like
+ * #message, sent, received, ratio
+ * M3 10 10 0.0
+ * M3 10 15 0.2
+ * M1 20 20 0.0
+ * ...
+ * 530
+ * where the first column is the message ID, the second the creation time of the message, and the third one the
+ * time, a multicast message was received by a node of the destination group.
+ * The last line represents the delivery ratio of the message calculated with #nodes_received_msg / #nodes_in_group
+ * The final line is the simulation time at the end of the report.
  *
  * Created by Marius Meyer on 10.03.17.
  */
@@ -22,7 +34,7 @@ public class MulticastMessageDeliveryReport extends Report implements MessageLis
             "#message, sent, received, ratio";
 
     /**
-     * map storing the number nodes that have already received a certain group message
+     * A map storing GroupMessageID -> number of recipients that have received that message
      */
     private Map<String,Integer> receivedNodes = new ConcurrentHashMap<>();
 

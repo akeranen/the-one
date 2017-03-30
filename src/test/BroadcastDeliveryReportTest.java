@@ -89,7 +89,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsOnCreation() throws IOException {
+    public void testReportPrintsOnCreation() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
@@ -107,7 +107,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsOnDelivery() throws IOException {
+    public void testReportPrintsOnDelivery() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
@@ -139,7 +139,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportPrintsSimulationTimeWhenDone() throws IOException {
+    public void testReportPrintsSimulationTimeWhenDone() throws IOException {
         this.clock.setTime(SIMULATION_TIME);
         this.report.done();
 
@@ -154,7 +154,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportIgnoresOneToOneMessages() throws IOException {
+    public void testReportIgnoresOneToOneMessages() throws IOException {
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
@@ -166,7 +166,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     }
 
     @Test
-    public void reportIgnoresMulticastMessages() throws IOException {
+    public void testReportIgnoresMulticastMessages() throws IOException {
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
@@ -226,7 +226,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
      * @throws IOException
      */
     @Test
-    public void reportIgnoresSecondDeliveryToSameHost() throws IOException {
+    public void testReportIgnoresSecondDeliveryToSameHost() throws IOException {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();

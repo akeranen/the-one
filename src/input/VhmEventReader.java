@@ -25,7 +25,7 @@ import java.util.Map;
  * file and provides an event queue
  * for the use with the ONE
  * (Vhm is the abbreviation of VoluntaryHelperMovement)
- *
+ * <p>
  * Created by Marius Meyer on 15.02.17.
  */
 public class VhmEventReader implements ExternalEventsReader {
@@ -69,15 +69,15 @@ public class VhmEventReader implements ExternalEventsReader {
      */
     static boolean isVhmEventsFile(File eventFile) {
         boolean correct = false;
-        try(BufferedReader fileReader = createReader(eventFile);
-            JsonReader jsonReader = Json.createReader(fileReader)) {
+        try (BufferedReader fileReader = createReader(eventFile);
+             JsonReader jsonReader = Json.createReader(fileReader)) {
             JsonObject jsonFile = (JsonObject) jsonReader.read();
 
             if (jsonFile.getJsonNumber(READER_VERSION) != null
                     && jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION) {
                 correct = true;
             }
-        } catch (IOException|JsonParsingException e) {
+        } catch (IOException | JsonParsingException e) {
             // It is perfectly acceptable to not handle the exception here,
             // as exceptions can be accepted by the nature of this method.
             correct = false;
@@ -87,11 +87,12 @@ public class VhmEventReader implements ExternalEventsReader {
 
     /**
      * Creates a Buffered reader for a File. Should only be used for *.json Files containing VhmEvents.
+     *
      * @param eventFile The file containing the VhmEvents that are to be read
      * @return A BufferedReader  for the specified File
      * @throws FileNotFoundException If the specified file could not be found
      */
-    private static BufferedReader createReader(File eventFile) throws FileNotFoundException{
+    private static BufferedReader createReader(File eventFile) throws FileNotFoundException {
         FileInputStream fileInputStream = new FileInputStream(eventFile);
         return new BufferedReader(new InputStreamReader(fileInputStream,
                 StandardCharsets.UTF_8));
@@ -99,6 +100,7 @@ public class VhmEventReader implements ExternalEventsReader {
 
     /**
      * Read events from the reader
+     *
      * @param nrof Maximum number of events to read
      * @return Events in a List
      */
@@ -124,8 +126,8 @@ public class VhmEventReader implements ExternalEventsReader {
      */
     private List<VhmEvent> extractEvents(int nrof) throws IOException {
         JsonStructure jsonFile;
-        try(BufferedReader fileReader = createReader(eventFile);
-        JsonReader jsonReader = Json.createReader(fileReader)) {
+        try (BufferedReader fileReader = createReader(eventFile);
+             JsonReader jsonReader = Json.createReader(fileReader)) {
             jsonFile = jsonReader.read();
         } catch (IOException e) {
             throw new SimError(e);

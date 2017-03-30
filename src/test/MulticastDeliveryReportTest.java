@@ -35,7 +35,6 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
     private static final double HALF_GROUP_RATIO = 0.5;
     private static final double THIRDS_GROUP_RATIO = 1.0 / 3.0;
     private static final double TWO_THIRDS_GROUP_RATIO = 2.0 / 3.0;
-    private static final double ALL_GROUP_RATIO = 1.0;
 
     private static final String TEST_MESSAGE_ID = "M1";
 

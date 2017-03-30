@@ -549,6 +549,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     setMovementAsForcefullySwitched();
                     mode = movementMode.PANIC_MODE;
                     setCurrentMovementModel(panicMM);
+                    panicMM.setLocation(host.getLocation());
                     panicMM.setEventLocation(event.getLocation());
                     panicMM.setSafeRange(event.getSafeRange());
                 }

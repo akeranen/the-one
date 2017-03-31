@@ -49,6 +49,9 @@ public class Message implements Comparable<Message> {
 
 	/** Application ID of the application that created the message */
 	private String	appID;
+	
+	/** The priority of this message */
+	private int priority;
 
 	static {
 		reset();
@@ -72,7 +75,7 @@ public class Message implements Comparable<Message> {
 		 */
 		MULTICAST
     }
-
+    
 	/**
 	 * Creates a new Message.
 	 * @param from Who the message is (originally) from
@@ -82,12 +85,27 @@ public class Message implements Comparable<Message> {
 	 * @param size Size of the message (in bytes)
 	 */
 	public Message(DTNHost from, DTNHost to, String id, int size) {
+		// set priority to default value saying that this message has no priority value
+		this(from,to,id,size,-1);
+	}
+
+	/**
+	 * Creates a new Message.
+	 * @param from Who the message is (originally) from
+	 * @param to Who the message is (originally) to
+	 * @param id Message identifier (must be unique for message but
+	 * 	will be the same for all replicates of the message)
+	 * @param size Size of the message (in bytes)
+	 * @param priority Priority of this message
+	 */
+	public Message(DTNHost from, DTNHost to, String id, int size, int priority) {
 		this.from = from;
 		this.to = to;
 		this.id = id;
 		this.size = size;
 		this.path = new ArrayList<DTNHost>();
 		this.uniqueId = nextUniqueId;
+		this.priority = priority;
 
 		this.timeCreated = SimClock.getTime();
 		this.timeReceived = this.timeCreated;
@@ -281,6 +299,7 @@ public class Message implements Comparable<Message> {
 		this.requestMsg  = m.requestMsg;
 		this.initTtl = m.initTtl;
 		this.appID = m.appID;
+		this.priority = m.priority;
 
 		if (m.properties != null) {
 			Set<String> keys = m.properties.keySet();
@@ -371,7 +390,7 @@ public class Message implements Comparable<Message> {
 	 * @return A replicate of the message
 	 */
 	public Message replicate() {
-		Message m = new Message(from, to, id, size);
+		Message m = new Message(from, to, id, size, priority);
 		m.copyFrom(this);
 		return m;
 	}
@@ -412,5 +431,22 @@ public class Message implements Comparable<Message> {
 	public void setAppID(String appID) {
 		this.appID = appID;
 	}
+	
+	/**
+	 * Sets the priority
+	 * @param priority The new priority of this message
+	 */
+	public void setPriority(int priority){
+		this.priority = priority;
+	}
+	
+	/**
+	 * Gets the priority
+	 * @return The current priority of this message
+	 */
+	public int getPriority(){
+		return this.priority;
+	}
+	
 
 }

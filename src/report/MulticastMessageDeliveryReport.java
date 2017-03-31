@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 530
  * where the first column is the message ID, the second the creation time of the message, and the third one the
  * time, a multicast message was received by a node of the destination group.
- * The last line represents the delivery ratio of the message calculated with #nodes_received_msg / #nodes_in_group
+ * The last column represents the delivery ratio of the message calculated with #nodes_received_msg / #nodes_in_group
  * The final line is the simulation time at the end of the report.
  *
  * Created by Marius Meyer on 10.03.17.

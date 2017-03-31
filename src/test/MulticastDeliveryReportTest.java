@@ -292,7 +292,7 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
     public void testReportIgnoresBroadcastMessages() throws IOException{
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
-        // Create 1-to-1 message.
+        // Create broadcast message.
         DTNHost h1 = utils.createHost();
         h1.createNewMessage(new BroadcastMessage(h1,TEST_MESSAGE_ID,0));
 
@@ -328,6 +328,13 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
         }
     }
 
+    /**
+     * Finishes the report and checks, if it is empty.
+     * This can be used to test, if a certain message type was ignored by the report.
+     *
+     *
+     * @throws IOException If a reader for the report file couldn't be created
+     */
     private void testReportIgnoresMessage() throws IOException{
         this.report.done();
 

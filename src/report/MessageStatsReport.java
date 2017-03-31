@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
+
 /**
  * Report for generating different kind of total statistics about message
  * relaying performance. Messages that were created during the warm up period
@@ -47,10 +49,12 @@ public class MessageStatsReport extends Report implements MessageListener {
 	 * Constructor.
 	 */
 	public MessageStatsReport() {
-		init();
+		// Constructor is empty because all initializations are done in the init method.
+		// This is necessary because Superclass Report works the same way
 	}
 
 	@Override
+	@Before
 	protected void init() {
 		super.init();
 		this.creationTimes = new HashMap<String, Double>();

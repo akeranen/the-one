@@ -28,6 +28,7 @@ Test::More::is(getTimePointFromLine($outputLines[1]), $timeStep, "First time poi
 Test::More::is(getTimePointFromLine($outputLines[2]), 2 * $timeStep, "Second time point is correct.");
 Test::More::is(getTimePointFromLine($outputLines[3]), 3 * $timeStep, "Third time point is correct.");
 Test::More::is(getTimePointFromLine($outputLines[4]), 4 * $timeStep, "Fourth time point is correct.");
+Test::More::is($outputLines[5], undef, "Nothing afterwards.");
 
 # Check analysis correctly works in terms of averaging and minimizing, esp. if some messages have a longer lifetime
 # than others.

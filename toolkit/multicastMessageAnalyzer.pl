@@ -46,7 +46,7 @@ my $simTimeLineMatcher = '^(\d+([.]\d+)?)$';
 # Read multicast report.
 open(INFILE, "$infile") or die "Can't open $infile : $!";
 while(<INFILE>) {
-    # Try to parse lines either of type <msgId> <ctime> <rtime <ratio> or <simtime>.
+    # Try to parse lines either of type <msgId> <ctime> <rtime> <ratio> or <simtime>.
     my ($msgId, $createTime, $recvTime, $ratio) = m/$messageLineMatcher/;
     my ($simTime) = m/$simTimeLineMatcher/;
 
@@ -62,11 +62,11 @@ while(<INFILE>) {
         # Sim time line should be last line.
         last;
     }
-	#calculate the interval this message was delivered in
+    #calculate the interval this message was delivered in
     my $timeInterval = int(($recvTime - $createTime) / $timeStep + 1);
 
     $msgToCreateTime{$msgId} = $createTime;
-	#put the message and its ratio in the map for the calculated interval
+    #put the message and its ratio in the map for the calculated interval
     $intervalToAvgs{$timeInterval}{$msgId} = $ratio;
 }
 
@@ -80,12 +80,12 @@ print "#timeAfterMessageCreation	MinRatio	AvgRatio\n";
 my $lastInterval = 0;
 #Sort intervals numerically and process every interval step by step
 foreach my $interval ( sort {$a <=> $b} keys %intervalToAvgs){
-	#fill missing intervals with values of prior interval
-	while ($lastInterval + 1 < $interval){
-		printInterval($lastInterval + 1);
-		$lastInterval++;		
-	}
-	#for every message delivered during this interval, update the latest delivery ratio
+    #fill missing intervals with values of prior interval
+    while ($lastInterval + 1 < $interval){
+        printInterval($lastInterval + 1);
+        $lastInterval++;        
+    }
+    #for every message delivered during this interval, update the latest delivery ratio
     foreach my $msg (keys %{$intervalToAvgs{$interval}}) {
         $msgToLastRatio{$msg} = $intervalToAvgs{$interval}{$msg};
     }
@@ -113,34 +113,34 @@ sub printInterval{
     my $interval = shift;
     my $ratioSum = 0;
     my $nextMin = 2;
-	my $msgCount = 0;
-	#check every message
+    my $msgCount = 0;
+    #check every message
     foreach my $msg (keys %msgToLastRatio){
-		#ignore it, if it didn't exist anymore during the current interval
-		if ($msgToMaxInterval{$msg} < $interval){
-			next;
-		}
-		#add it to the min and avg calculation for the current interval
-		$msgCount++;
-		my $msgRatio = $msgToLastRatio{$msg};
+        #ignore it, if it didn't exist anymore during the current interval
+        if ($msgToMaxInterval{$msg} < $interval){
+            next;
+        }
+        #add it to the min and avg calculation for the current interval
+        $msgCount++;
+        my $msgRatio = $msgToLastRatio{$msg};
         $ratioSum += $msgRatio;
         if ($nextMin > $msgRatio){
             $nextMin = $msgRatio;
         }
     }
-	#calculate average
+    #calculate average
     my $nextAvg = $ratioSum / $msgCount;
     #convert the interval into simulation seconds
-	my $seconds = $interval * $timeStep;
-    print "$seconds    $nextMin    $nextAvg\n";
+    my $seconds = $interval * $timeStep;
+    print "$seconds	$nextMin	$nextAvg\n";
 }
 
 sub calculateMaxIntervalForAllMsgs {
     # Get final simulator time.
     my $simTime = shift;
-	
-	foreach my $msgId (keys %msgToCreateTime){
-		$msgToMaxInterval{$msgId} = int(($simTime - $msgToCreateTime{$msgId}) / $timeStep + 1);
-	}
+    
+    foreach my $msgId (keys %msgToCreateTime){
+        $msgToMaxInterval{$msgId} = int(($simTime - $msgToCreateTime{$msgId}) / $timeStep + 1);
+    }
 
 }

@@ -570,23 +570,28 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     @Override
     public void vhmEventEnded(VhmEvent event) {
-        boolean affected = false;
         //remove the event from the appropriate list
         if (event.getType() == HOSPITAL) {
             hospitals.remove(event);
         } else if (event.getType() == DISASTER) {
             disasters.remove(event);
-            if(chosenDisaster != null && chosenDisaster.equals(event)){
+            //if the ended event was chosen...
+            if(chosenDisaster != null && chosenDisaster.equals(event)) {
+                // set the chosen disaster to null and react to this
                 chosenDisaster = null;
-                affected = true;
+                if(mode != movementMode.INJURED_MODE) {
+                    handleEndedDisaster();
+                }
             }
         }
+    }
 
-        if (affected && (mode == movementMode.MOVING_TO_EVENT_MODE || mode == movementMode.LOCAL_HELP_MODE
-                || mode == movementMode.TRANSPORTING_MODE)) {
-            //..handle the loss of the chosen event by immediately starting over
-            setMovementAsForcefullySwitched();
-            startOver();
-        }
+    /**
+     * Handles the end of a disaster, i.e. makes the movement react to it.
+     */
+    private void handleEndedDisaster() {
+        //..handle the loss of the chosen event by immediately starting over
+        setMovementAsForcefullySwitched();
+        startOver();
     }
 }

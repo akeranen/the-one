@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-
 import core.DTNHost;
 import core.Message;
 import core.MessageListener;
@@ -30,15 +28,12 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
 	 * Constructor, it just calls the init-Methods
 	 */
 	public DeliveryProbabilityReport() {
-		// Constructor is empty because all initializations are done in the init method.
-		// This is necessary because Superclass Report works the same way
+		init();
 	}
 	
 	/**
 	 * Sets basic settings
 	 */
-	@Override
-	@Before
 	protected void init() {
 		super.init();
 		this.creationTimes = new HashMap<String, Double>();

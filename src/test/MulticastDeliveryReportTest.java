@@ -33,8 +33,7 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
     private static final int SIMULATION_TIME = 543;
 
     private static final double HALF_GROUP_RATIO = 0.5;
-    private static final double THIRDS_GROUP_RATIO = 1.0 / 3.0;
-    private static final double TWO_THIRDS_GROUP_RATIO = 2.0 / 3.0;
+    private static final double ALL_GROUP_RATIO = 1.0;
 
     private static final String TEST_MESSAGE_ID = "M1";
 
@@ -130,7 +129,7 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
                     String.format(FORMAT_OF_M1_REPORT_LINE, AFTER_WARM_UP_TIME,  AFTER_WARM_UP_TIME,
-                            HALF_GROUP_RATIO), reader.readLine());
+                            ALL_GROUP_RATIO), reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_MESSAGE_LINE,
                     String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
@@ -182,7 +181,7 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
                     reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
-                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, FIRST_DELIVERY_TIME, HALF_GROUP_RATIO),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, FIRST_DELIVERY_TIME, ALL_GROUP_RATIO),
                     reader.readLine());
         }
     }
@@ -216,12 +215,12 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
                     reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
-                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, FIRST_DELIVERY_TIME, THIRDS_GROUP_RATIO),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, FIRST_DELIVERY_TIME, HALF_GROUP_RATIO),
                     reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
                     String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, SECOND_DELIVERY_TIME,
-                            TWO_THIRDS_GROUP_RATIO), reader.readLine());
+                            ALL_GROUP_RATIO), reader.readLine());
         }
     }
 
@@ -253,7 +252,7 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
                     String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME,  FIRST_DELIVERY_TIME,
-                            HALF_GROUP_RATIO), reader.readLine());
+                            ALL_GROUP_RATIO), reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_MESSAGE_LINE,
                     String.format(FORMAT_OF_SIM_TIME_LINE, SECOND_DELIVERY_TIME),

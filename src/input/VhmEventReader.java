@@ -9,9 +9,12 @@ import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParsingException;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,35 +24,29 @@ import java.util.Map;
  * Reader for {@link VhmEvent}s. This class reads {@link VhmEvent}s from a defined
  * file and provides an event queue
  * for the use with the ONE
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
  * <p>
  * Created by Marius Meyer on 15.02.17.
  */
 public class VhmEventReader implements ExternalEventsReader {
 
-    public static final String READER_VERSION = "vhm_events_version";
+    private static final String READER_VERSION = "vhm_events_version";
 
     /**
      * The current version of the JSON event files.
      * This class will only read in files, where the vhm_events_version equals this value
      */
-    public static final int CURRENT_VERSION = 1;
-
-
-    /**
-     * Reader to read events from file
-     */
-    private JsonReader reader;
-
-    /**
-     * FileReader for the use with the BufferedReader
-     * Declared as local variable to close it in the close function.
-     */
-    private FileReader fileReader;
+    private static final int CURRENT_VERSION = 1;
 
     /**
      * Is set to true the first time, events are read in from the file
      */
     private boolean allEventsRead;
+
+    /**
+     * The file that contains the events that this VhmEventReader is supposed to read
+     */
+    private File eventFile;
 
     /**
      * Creates a new reader for a specified file
@@ -60,13 +57,8 @@ public class VhmEventReader implements ExternalEventsReader {
         if (!isVhmEventsFile(eventFile)) {
             throw new SimError("VHM events file is not valid: " + eventFile.getAbsolutePath());
         }
-        try {
-            fileReader = new FileReader(eventFile);
-            reader = Json.createReader(fileReader);
-            allEventsRead = false;
-        } catch (FileNotFoundException e) {
-            throw new SimError(e);
-        }
+        this.eventFile = eventFile;
+        allEventsRead = false;
     }
 
     /**
@@ -75,18 +67,17 @@ public class VhmEventReader implements ExternalEventsReader {
      * @param eventFile the file that should be checked
      * @return true, if the file is an JSON event file
      */
-    public static boolean isVhmEventsFile(File eventFile) {
+    static boolean isVhmEventsFile(File eventFile) {
         boolean correct = false;
-        try (FileReader fileReader = new FileReader(eventFile)) {
-            try (JsonReader jsonReader = Json.createReader(fileReader)) {
-                JsonObject jsonFile = (JsonObject) jsonReader.read();
+        try (BufferedReader fileReader = createReader(eventFile);
+             JsonReader jsonReader = Json.createReader(fileReader)) {
+            JsonObject jsonFile = (JsonObject) jsonReader.read();
 
-                if (jsonFile.getJsonNumber(READER_VERSION) != null
-                        && jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION) {
-                    correct = true;
-                }
+            if (jsonFile.getJsonNumber(READER_VERSION) != null
+                    && jsonFile.getJsonNumber(READER_VERSION).intValue() == CURRENT_VERSION) {
+                correct = true;
             }
-        } catch (IOException|JsonParsingException e) {
+        } catch (IOException | JsonParsingException e) {
             // It is perfectly acceptable to not handle the exception here,
             // as exceptions can be accepted by the nature of this method.
             correct = false;
@@ -94,12 +85,31 @@ public class VhmEventReader implements ExternalEventsReader {
         return correct;
     }
 
+    /**
+     * Creates a Buffered reader for a File. Should only be used for *.json Files containing VhmEvents.
+     *
+     * @param eventFile The file containing the VhmEvents that are to be read
+     * @return A BufferedReader  for the specified File
+     * @throws FileNotFoundException If the specified file could not be found
+     */
+    private static BufferedReader createReader(File eventFile) throws FileNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream(eventFile);
+        return new BufferedReader(new InputStreamReader(fileInputStream,
+                StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Read events from the reader
+     *
+     * @param nrof Maximum number of events to read
+     * @return Events in a List
+     */
     @Override
     public List<ExternalEvent> readEvents(int nrof) {
         if (allEventsRead) {
             return new ArrayList<>();
         }
-        List<VhmEvent> events = null;
+        List<VhmEvent> events;
         try {
             events = extractEvents(nrof);
             allEventsRead = true;
@@ -115,7 +125,13 @@ public class VhmEventReader implements ExternalEventsReader {
      * @return a list of the {@link VhmEvent}s
      */
     private List<VhmEvent> extractEvents(int nrof) throws IOException {
-        JsonStructure jsonFile = reader.read();
+        JsonStructure jsonFile;
+        try (BufferedReader fileReader = createReader(eventFile);
+             JsonReader jsonReader = Json.createReader(fileReader)) {
+            jsonFile = jsonReader.read();
+        } catch (IOException e) {
+            throw new SimError(e);
+        }
         List<VhmEvent> eventList = new ArrayList<>();
         if (jsonFile.getValueType() == JsonValue.ValueType.OBJECT) {
             JsonObject root = (JsonObject) jsonFile;
@@ -150,13 +166,12 @@ public class VhmEventReader implements ExternalEventsReader {
         return allEvents;
     }
 
+    /**
+     * Closes this VhmEventReader.
+     */
     @Override
     public void close() {
-        try {
-            reader.close();
-            fileReader.close();
-        } catch (IOException e) {
-            throw new SimError("Reader could not be closed: " + e);
-        }
+        //No need to do anything here, everything closeable is already closed directly after usage,
+        //by making use of try with resources
     }
 }

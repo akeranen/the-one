@@ -8,7 +8,8 @@ import java.awt.geom.Ellipse2D;
 
 /**
  * Graphics class for {@link VhmEvent}s
- * <p>
+ * (Vhm is the abbreviation of VoluntaryHelperMovement)
+ *
  * Created by Marius Meyer on 17.02.17.
  */
 public class VhmEventGraphic extends PlayFieldGraphic {

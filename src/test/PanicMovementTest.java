@@ -161,6 +161,7 @@ public class PanicMovementTest extends TestCase {
                 (int)Math.ceil(EVENT_COORD.getX() + SAFE_RANGE),
                 EVENT_COORD.getY());
         host.setLocation(safeRegionCoord);
+        panicMovement.setLocation(host.getLocation());
         Path path = panicMovement.getPath();
         assertTrue("Nodes in the safe area should not move", path.getCoords().size() == 1);
     }

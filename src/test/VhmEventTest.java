@@ -218,7 +218,7 @@ public class VhmEventTest {
      * Creates a {@link JsonObject} that completely specifies a {@link VhmEvent} s. t. no default values will be used.
      * @return The created {@link JsonObject}.
      */
-    private static JsonObject createJsonForCompletelySpecifiedEvent() {
+    static JsonObject createJsonForCompletelySpecifiedEvent() {
         return VhmEventTest.createMinimalVhmEventBuilder()
                 .add(VhmEvent.START_TIME, START_TIME)
                 .add(VhmEvent.END_TIME, END_TIME)

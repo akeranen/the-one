@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
  *
  * Created by Britta Heymann on 02.04.2017.
  */
-public class VhmEventStartEventTest extends ProcessableVhmEventTest {
+public class VhmEventStartEventTest extends AbstractProcessableVhmEventTest {
     @Test
     public void testEventTimeEqualsVhmEventStart() {
         VhmEventStartEvent startEvent = new VhmEventStartEvent(this.event);
@@ -22,8 +22,11 @@ public class VhmEventStartEventTest extends ProcessableVhmEventTest {
                 DOUBLE_COMPARING_DELTA);
     }
 
-    @Test
-    public void testProcessEventSendsEventStartedViaVhmEventNotifier() {
+    /**
+     * Verifies that processEvent sends an event started notification via the {@link VhmEventNotifier}.
+     */
+    @Override
+    public void testProcessEvent() {
         // Set up a listener.
         RecordingVhmEventListener recorder = new RecordingVhmEventListener();
         VhmEventNotifier.addListener(recorder);

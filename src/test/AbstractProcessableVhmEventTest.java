@@ -2,6 +2,7 @@ package test;
 
 import core.World;
 import input.VhmEvent;
+import org.junit.Test;
 
 import java.util.ArrayList;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
  *
  * Created by Britta Heymann on 02.04.2017.
  */
-public class ProcessableVhmEventTest {
+public abstract class AbstractProcessableVhmEventTest {
     /** Delta used when asserting double equality. */
     protected static final double DOUBLE_COMPARING_DELTA = 0.01;
 
@@ -21,7 +22,10 @@ public class ProcessableVhmEventTest {
     /** A simple {@link input.VhmEvent}. */
     protected VhmEvent event =  VhmEventTest.createVhmEventWithDefaultValues();
 
-    protected ProcessableVhmEventTest() {
+    protected AbstractProcessableVhmEventTest() {
         // This class should not be instantiated.
     }
+
+    @Test
+    public abstract void testProcessEvent();
 }

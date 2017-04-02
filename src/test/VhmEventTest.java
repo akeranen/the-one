@@ -232,7 +232,7 @@ public class VhmEventTest {
      * Creates a {@link VhmEvent} that uses default values at all possible places.
      * @return The created {@link VhmEvent}.
      */
-    private static VhmEvent createVhmEventWithDefaultValues() {
+    static VhmEvent createVhmEventWithDefaultValues() {
         return new VhmEvent(EVENT_NAME, VhmEventTest.createMinimalVhmEventBuilder().build());
     }
 

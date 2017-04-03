@@ -22,10 +22,6 @@ public abstract class AbstractProcessableVhmEventTest {
     /** A simple {@link input.VhmEvent}. */
     protected VhmEvent event =  VhmEventTest.createVhmEventWithDefaultValues();
 
-    protected AbstractProcessableVhmEventTest() {
-        // This class should not be instantiated.
-    }
-
     @Test
     public abstract void testProcessEvent();
 }

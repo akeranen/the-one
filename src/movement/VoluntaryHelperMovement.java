@@ -592,6 +592,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         //if the ended event was chosen...
         if (chosenDisaster != null && event.getID() == chosenDisaster.getID()) {
             //..handle the loss of the chosen event by immediately starting over
+            chosenDisaster = null;
             setMovementAsForcefullySwitched();
             startOver();
         }

@@ -578,7 +578,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         }
 
         //handle the event
-        if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
+        if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE && mode != movementMode.PANIC_MODE) {
             handleEndedDisaster(event);
         }
     }

@@ -16,6 +16,7 @@ import routing.PassiveRouter;
 import routing.util.RoutingInfo;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -36,6 +37,8 @@ public class MessageRouterTest {
     private DTNHost recipient;
     private DTNHost sender;
 
+    private MessageChecker checker = new MessageChecker();
+
     public MessageRouterTest(){
         //set up is done in methods annotated with @Before
     }
@@ -43,9 +46,11 @@ public class MessageRouterTest {
     @Before
     public void setUp() {
         Group.clearGroups();
+        List<MessageListener> mListener = new ArrayList<MessageListener>(1);
+        mListener.add(checker);
         this.utils = new TestUtils(
                 new ArrayList<ConnectionListener>(),
-                new ArrayList<MessageListener>(),
+                mListener,
                 new TestSettings());
         // Use passive router as that is nearest to the original MessageRouter class
         this.utils.setMessageRouterProto(new PassiveRouter(new TestSettings()));
@@ -185,6 +190,10 @@ public class MessageRouterTest {
         sender.createNewMessage(this.broadcast);
         Assert.assertTrue("Broadcast should be set as delivered message after creation",
                 router.isDeliveredMessage(this.broadcast));
+        sendMessageToRecepientAndBackToSender(this.broadcast);
+
+        Assert.assertFalse("Own message should be set as already received",
+                checker.getLastFirstDelivery());
 
     }
 
@@ -194,6 +203,9 @@ public class MessageRouterTest {
         sender.createNewMessage(this.multicast);
         Assert.assertTrue("Multicast should be set as delivered message after creation",
                 router.isDeliveredMessage(this.multicast));
+        sendMessageToRecepientAndBackToSender(this.multicast);
+        Assert.assertFalse("Own message should be set as already received",
+                checker.getLastFirstDelivery());
     }
 
     @Test
@@ -202,7 +214,25 @@ public class MessageRouterTest {
         Message senderToSenderMsg = new Message(sender,sender,"S to S",DEFAULT_MESSAGE_SIZE);
         sender.createNewMessage(senderToSenderMsg);
         Assert.assertFalse("Unicast should not be set as delivered message after creation",
-                router.isDeliveredMessage(this.multicast));
+                router.isDeliveredMessage(senderToSenderMsg));
+        sendMessageToRecepientAndBackToSender(senderToSenderMsg);
+        Assert.assertTrue("Own message should not be set as already received",
+                checker.getLastFirstDelivery());
+    }
+
+    /**
+     * Sends a message from the sender to the recipient and back and forwards the message checker to the last event
+     *
+     * @param m the message that should be sent
+     */
+    private void sendMessageToRecepientAndBackToSender(Message m){
+        sender.sendMessage(m.getId(),recipient);
+        recipient.messageTransferred(m.getId(),sender);
+        recipient.sendMessage(m.getId(),sender);
+        sender.messageTransferred(m.getId(),recipient);
+        while (checker.next()){
+            //skip all message logs to get the last one for the message sent from receiver to sender
+        }
     }
 
     /**

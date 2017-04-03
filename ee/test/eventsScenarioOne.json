@@ -1,0 +1,74 @@
+{
+	"vhm_events_version" : 1,
+	"St. Johannisstift Ev. Krankenhaus" :{
+		"type" : "HOSPITAL", 
+		"event_range" : 962.98778585708, 
+		"location" : { 
+			"x" : 10081.5026666667, 
+			"y" : 9189.623
+		} 
+	},
+	"St. Vincenz-Krankenhaus" :{ 
+		"type" : "HOSPITAL", 
+		"event_range" : 889.282221811042, "
+		location" : { 
+			"x" : 11039.6716666667, 
+			"y" : 8607.78466666667
+		} 
+	},
+	"Brüderkrankenhaus Sankt Josef" :{ 
+		"type" : "HOSPITAL", 
+		"event_range" : 70.8777401172717, 
+		"location" : { 
+			"x" : 11031.691, 
+			"y" : 7806.0895
+		} 
+	},
+	"Frauen- und Kinderklinik St. Louise" :{ 
+		"type" : "HOSPITAL", 
+		"event_range" : 772.868925132761, 
+		"location" : { 
+			"x" : 11289.5610909091, 
+			"y" : 7600.12172727273
+		} 
+	},
+	"event1" :{
+		"type" : "DISASTER",
+		"event_range" : 32,
+		"safe_range" : 991,
+		"max_range" : 6000,
+		"intensity" : 10,
+		"start" : 100,
+		"end" : 259200,
+		"location" : {
+			"x" : 7776,
+			"y" : 12106
+		}
+	},
+	"event2" :{
+		"type" : "DISASTER",
+		"event_range" : 43,
+		"safe_range" : 855,
+		"max_range" : 6000,
+		"intensity" : 8,
+		"start" 150: ,
+		"end" : 259200,
+		"location" : {
+			"x" : 5433,
+			"y" : 3898
+		}
+	},
+	"event3" :{
+		"type" : "DISASTER",
+		"event_range" : 14,
+		"safe_range" : 970,
+		"max_range" : 6000,
+		"intensity" : 10,
+		"start" : 172800,
+		"end" : 259200,
+		"location" : {
+			"x" : 6540,
+			"y" : 1418
+		}
+	}
+}

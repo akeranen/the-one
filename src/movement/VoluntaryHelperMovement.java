@@ -449,6 +449,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private void setMovementAsForcefullySwitched() {
         justChanged = true;
         host.interruptMovement();
+        //set the hosts current location in all movement models. Necessary due to a race condition.
+        shortestPathMapBasedMM.setLocation(host.getLocation());
+        carMM.setLocation(host.getLocation());
+        panicMM.setLocation(host.getLocation());
+        stationaryMM.setLocation(host.getLocation());
+        levyWalkMM.setLocation(host.getLocation());
     }
 
     /**

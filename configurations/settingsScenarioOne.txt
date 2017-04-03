@@ -1,0 +1,239 @@
+## Scenario settings
+# 259200s = 72h = 3d
+Scenario.endTime = 259200
+# Define 3 different node groups
+Scenario.nrofHostGroups = 3
+
+# "WiFi" interface for all nodes
+wInterface.type = InterferenceLimitedInterface
+# Transmit speed of 50 Mbps = 6250kBps
+wInterface.transmitSpeed = 6250k
+wInterface.transmitRange = 30
+wInterface.scanInterval = 30
+
+# Common settings for all groups
+Group.movementModel = MapBasedMovement
+Group.router = EpidemicRouter
+# Buffer size of 10 MB
+Group.bufferSize = 10M
+Group.nrofInterfaces = 1
+Group.interface1 = wInterface
+# Time the node will help at a disaster site (in seconds)
+Group.helpTime = 1800
+# Probability that a node gets injured if an event happens to close to it [0, 1]
+Group.injuryProbability = 0.1
+# Time the node will stay at the hospital after transporting someone to it (in seconds)
+Group.hospitalWaitTime = 900
+# Probability that a node stays at the hospital after transporting someone to it [0, 1]
+Group.hospitalWaitProbability = 0.1
+# Weight of a disasters intensity for determining if a node will help at the disaster site [0, 1]
+Group.intensityWeight = 0.7
+# Number of multicast groups
+Group.group_count = 1000, 5000
+# Size of multicast groups
+Group.group_size = 3,30
+
+# group1 (locally helping pedestrians) specific settings
+Group1.groupID = p
+Group1.isLocalHelper = true
+Group1.speed = 1, 2
+Group1.nrofHosts = 8550
+#Group1.okMaps = 1,2
+
+# group2 (transporting pedestrians) specific settings
+Group2.groupID = t
+Group2.isLocalHelper = false
+Group2.speed = 1, 2
+Group2.nrofHosts = 450
+#Group2.okMaps = 1,2
+
+# group3 (cars) specific settings
+Group3.groupID = c
+Group3.speed = 8, 14
+Group3.nrofHosts = 1000
+#Group3.okMaps = 2,3
+
+# How many event generators
+Events.nrof = 17
+
+#Settings for the disaster and hospital events
+# max number of external events to preload (default = 500)
+Events1.nrofPreload = 7
+# path to external events file 
+#Events1.filePath = ee/test/eventsScenarioOne.json
+# using this one, as long as the according branch isn't merged
+Events1.filePath = ee/test/VHMTestEvents.json
+
+# Class for first message type (Broadcasts without photo)
+Events2.class = BroadcastEventGenerator
+# Creation interval in seconds (one new message every 60 to 300 seconds)
+Events2.interval = 60,300
+# Message sizes (0.1KB - 1KB)
+Events2.size = 0.1k,1k
+# range of message source/destination addresses
+Events2.hosts = 0,19999
+# Message ID prefix
+Events2.prefix = b
+
+# Class for second message type (Broadcasts with photo)
+Events3.class = BroadcastEventGenerator
+# Creation interval in seconds (one new message every 60 to 120 seconds)
+Events3.interval = 60,120
+# Message sizes (500KB - 4MB)
+Events3.size = 500k,4M
+# range of message source/destination addresses
+Events3.hosts = 0,19999
+# Message ID prefix
+Events3.prefix = B
+
+# Class for third message type (Multicasts small)
+Events4.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events4.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events4.size = 0.1k,1k
+# range of message source/destination addresses
+Events4.hosts = 0,19999
+# Message ID prefix
+Events4.prefix = m1
+
+Events5.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events5.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events5.size = 0.1k,1k
+# range of message source/destination addresses
+Events5.hosts = 0,19999
+# Message ID prefix
+Events5.prefix = m2
+
+Events6.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events6.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events6.size = 0.1k,1k
+# range of message source/destination addresses
+Events6.hosts = 0,19999
+# Message ID prefix
+Events6.prefix = m3
+
+Events7.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events7.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events7.size = 0.1k,1k
+# range of message source/destination addresses
+Events7.hosts = 0,19999
+# Message ID prefix
+Events7.prefix = m4
+
+Events8.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events8.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events8.size = 0.1k,1k
+# range of message source/destination addresses
+Events8.hosts = 0,19999
+# Message ID prefix
+Events8.prefix = m5
+
+Events9.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events9.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events9.size = 0.1k,1k
+# range of message source/destination addresses
+Events9.hosts = 0,19999
+# Message ID prefix
+Events9.prefix = m6
+
+Events10.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events10.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events10.size = 0.1k,1k
+# range of message source/destination addresses
+Events10.hosts = 0,19999
+# Message ID prefix
+Events10.prefix = m7
+
+Events11.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events11.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events11.size = 0.1k,1k
+# range of message source/destination addresses
+Events11.hosts = 0,19999
+# Message ID prefix
+Events11.prefix = m8
+
+Events12.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events12.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events12.size = 0.1k,1k
+# range of message source/destination addresses
+Events12.hosts = 0,19999
+# Message ID prefix
+Events12.prefix = m9
+
+Events13.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events13.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events13.size = 0.1k,1k
+# range of message source/destination addresses
+Events13.hosts = 0,19999
+# Message ID prefix
+Events13.prefix = m10
+
+# Class for fourth message type (Multicasts large)
+Events14.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 10 to 30 seconds)
+Events14.interval = 10,30
+# Message sizes (500KB - 4MB)
+Events14.size = 500k,4M
+# range of message source/destination addresses
+Events14.hosts = 0,19999
+# Message ID prefix
+Events14.prefix = M
+
+# Class for fifth message type (1-to-1 messages small)
+Events15.class = MessageEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events15.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events15.size = 0.1k,1k
+# range of message source/destination addresses
+Events15.hosts = 0,19999
+# Message ID prefix
+Events15.prefix = pm1
+
+Events16.class = MessageEventGenerator
+# Creation interval in seconds (one new message every 1 to 30 seconds)
+Events16.interval = 1,30
+# Message sizes (0.1KB - 1KB)
+Events16.size = 0.1k,1k
+# range of message source/destination addresses
+Events16.hosts = 0,19999
+# Message ID prefix
+Events16.prefix = pm2
+
+# Class for sixth message type (1-to-1 messages large)
+Events17.class = MessageEventGenerator
+# Creation interval in seconds (one new message every 50 to 150 seconds)
+Events17.interval = 50,150
+# Message sizes (500KB - 4MB)
+Events17.size = 500k,4M
+# range of message source/destination addresses
+Events17.hosts = 0,19999
+# Message ID prefix
+Events17.prefix = PM
+
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 25000, 25000
+
+#MapBasedMovement.nrofMapFiles = 3
+#MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt
+#MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
+#MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt

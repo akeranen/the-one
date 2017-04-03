@@ -230,6 +230,12 @@ Events17.hosts = 0,19999
 # Message ID prefix
 Events17.prefix = PM
 
+Report.nrofReports = 4
+Report.report1 = BroadcastDeliveryReport
+Report.report2 = MulticastMessageDeliveryReport
+Report.report3 = TrafficReport
+Report.report4 = ImmediateMessageDelayReport
+
 # World's size for Movement Models without implicit size (width, height; meters)
 #MovementModel.worldSize = 25000, 25000
 

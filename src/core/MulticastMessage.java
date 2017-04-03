@@ -29,6 +29,25 @@ public class MulticastMessage extends Message {
         }
         this.group = to;
     }
+    
+    /**
+     * Creates a new Message that also has a priority.
+     *
+     * @param from Who the message is (originally) from
+     * @param to   Who the message is (originally) to
+     * @param id   Message identifier (must be unique for message but
+     *             will be the same for all replicates of the message)
+     * @param size Size of the message (in bytes)
+     * @param prio Priority of the message
+     */
+    public MulticastMessage(DTNHost from, Group to, String id, int size, int prio) {
+        super(from, null, id, size, prio);
+        if  (!to.contains(from.getAddress())){
+            throw new SimError("Sender must be in same group as the destination group," +
+                    " but host "+ from + " is not " + to);
+        }
+        this.group = to;
+    }
 
     /**
      * Returns the node this message is originally to

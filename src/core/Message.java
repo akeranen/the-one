@@ -85,7 +85,7 @@ public class Message implements Comparable<Message> {
 	 * @param size Size of the message (in bytes)
 	 */
 	public Message(DTNHost from, DTNHost to, String id, int size) {
-		// set priority to default value saying that this message has no priority value
+		// set priority to -1 indicating that this message has no priority value
 		this(from,to,id,size,-1);
 	}
 
@@ -96,16 +96,16 @@ public class Message implements Comparable<Message> {
 	 * @param id Message identifier (must be unique for message but
 	 * 	will be the same for all replicates of the message)
 	 * @param size Size of the message (in bytes)
-	 * @param priority Priority of this message
+	 * @param prio Priority of this message
 	 */
-	public Message(DTNHost from, DTNHost to, String id, int size, int priority) {
+	public Message(DTNHost from, DTNHost to, String id, int size, int prio) {
 		this.from = from;
 		this.to = to;
 		this.id = id;
 		this.size = size;
 		this.path = new ArrayList<DTNHost>();
 		this.uniqueId = nextUniqueId;
-		this.priority = priority;
+		this.priority = prio;
 
 		this.timeCreated = SimClock.getTime();
 		this.timeReceived = this.timeCreated;
@@ -430,14 +430,6 @@ public class Message implements Comparable<Message> {
 	 */
 	public void setAppID(String appID) {
 		this.appID = appID;
-	}
-	
-	/**
-	 * Sets the priority
-	 * @param priority The new priority of this message
-	 */
-	public void setPriority(int priority){
-		this.priority = priority;
 	}
 	
 	/**

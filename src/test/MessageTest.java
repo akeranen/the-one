@@ -25,7 +25,6 @@ public class MessageTest extends TestCase {
 	private DTNHost from;
 	private DTNHost to;
 	private SimClock sc;
-	private int priority;
 
 	@Before
 	public void setUp() throws Exception {
@@ -39,7 +38,7 @@ public class MessageTest extends TestCase {
 		this.to = this.utils.createHost();
 
 		msg = new Message(from, to, "M", 100);
-		msgPrio = new Message(from,to,"M", 100, 5);
+		msgPrio = new Message(from,to,"N", 100, 5);
 		msg.setTtl(10);
 
 	}
@@ -118,9 +117,5 @@ public class MessageTest extends TestCase {
 	public void testPriority(){
 		assertEquals(msg.getPriority(), -1);
 		assertEquals(msgPrio.getPriority(), 5);
-		msgPrio.setPriority(3);
-	    msg.setPriority(7);
-		assertEquals(msgPrio.getPriority(),3);
-		assertEquals(msg.getPriority(),7);
 	}
 }

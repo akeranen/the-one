@@ -31,7 +31,7 @@ public class MulticastMessageTest {
             new ArrayList<MessageListener>(),
             new TestSettings());
 
-    private MulticastMessage msg;
+    private MulticastMessage msg, msgPrio;
     private DTNHost from = new TestDTNHost(new ArrayList<NetworkInterface>(),null,null);
 
     @Before
@@ -40,6 +40,7 @@ public class MulticastMessageTest {
         Group group1 = Group.createGroup(GROUP_ADDRESS_1);
         group1.addHost(from);
         msg = new MulticastMessage(from, group1, "M", 100);
+        msgPrio = new MulticastMessage(from, group1, "N", 100, 7);
     }
 
     @Test(expected = java.lang.UnsupportedOperationException.class)
@@ -113,4 +114,10 @@ public class MulticastMessageTest {
                 this.msg.getGroup().toString(),
                 this.msg.recipientsToString());
     }
+    
+    @Test
+	public void testPriority(){
+		assertEquals(msg.getPriority(), -1);
+		assertEquals(msgPrio.getPriority(), 7);
+	}
 }

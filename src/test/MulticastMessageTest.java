@@ -26,6 +26,8 @@ public class MulticastMessageTest {
 
     private final static int GROUP_ADDRESS_1 = 0;
     private final static int GROUP_ADDRESS_2 = 1;
+    private final static int priority = 7;
+    private final static int invalidPriority = -1;
     private TestUtils utils = new TestUtils(
             new ArrayList<ConnectionListener>(),
             new ArrayList<MessageListener>(),
@@ -40,7 +42,7 @@ public class MulticastMessageTest {
         Group group1 = Group.createGroup(GROUP_ADDRESS_1);
         group1.addHost(from);
         msg = new MulticastMessage(from, group1, "M", 100);
-        msgPrio = new MulticastMessage(from, group1, "N", 100, 7);
+        msgPrio = new MulticastMessage(from, group1, "N", 100, priority);
     }
 
     @Test(expected = java.lang.UnsupportedOperationException.class)
@@ -117,7 +119,7 @@ public class MulticastMessageTest {
     
     @Test
 	public void testPriority(){
-		assertEquals(msg.getPriority(), -1);
-		assertEquals(msgPrio.getPriority(), 7);
+		assertEquals(msg.getPriority(), invalidPriority);
+		assertEquals(msgPrio.getPriority(), priority);
 	}
 }

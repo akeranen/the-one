@@ -22,12 +22,7 @@ public class MulticastMessage extends Message {
      * @param size Size of the message (in bytes)
      */
     public MulticastMessage(DTNHost from, Group to, String id, int size) {
-        super(from, null, id, size);
-        if  (!to.contains(from.getAddress())){
-            throw new SimError("Sender must be in same group as the destination group," +
-                    " but host "+ from + " is not " + to);
-        }
-        this.group = to;
+        this(from, to, id, size, INVALID_PRIORITY);
     }
     
     /**

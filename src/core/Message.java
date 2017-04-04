@@ -17,6 +17,8 @@ import java.util.Set;
 public class Message implements Comparable<Message> {
 	/** Value for infinite TTL of message */
 	public static final int INFINITE_TTL = -1;
+	/** Default value for messages without any priority  */
+	public static final int INVALID_PRIORITY = -1;
     protected DTNHost from;
 	private DTNHost to;
 	/** Identifier of the message */
@@ -86,7 +88,7 @@ public class Message implements Comparable<Message> {
 	 */
 	public Message(DTNHost from, DTNHost to, String id, int size) {
 		// set priority to -1 indicating that this message has no priority value
-		this(from,to,id,size,-1);
+		this(from,to,id,size,INVALID_PRIORITY);
 	}
 
 	/**
@@ -97,15 +99,23 @@ public class Message implements Comparable<Message> {
 	 * 	will be the same for all replicates of the message)
 	 * @param size Size of the message (in bytes)
 	 * @param prio Priority of this message
+	 * @throws SimError if the message already has a value for the given key
 	 */
-	public Message(DTNHost from, DTNHost to, String id, int size, int prio) {
+	public Message(DTNHost from, DTNHost to, String id, int size, int prio) throws SimError{
 		this.from = from;
 		this.to = to;
 		this.id = id;
 		this.size = size;
 		this.path = new ArrayList<DTNHost>();
 		this.uniqueId = nextUniqueId;
-		this.priority = prio;
+		if(prio >= -1){
+			this.priority = prio;
+		}
+		else {
+			throw new SimError("Priority of Message " + this + 
+					" was assigned to be " + priority + 
+					", but it has to be at least -1.");
+		}
 
 		this.timeCreated = SimClock.getTime();
 		this.timeReceived = this.timeCreated;
@@ -390,7 +400,7 @@ public class Message implements Comparable<Message> {
 	 * @return A replicate of the message
 	 */
 	public Message replicate() {
-		Message m = new Message(from, to, id, size, priority);
+		Message m = new Message(from, to, id, size);
 		m.copyFrom(this);
 		return m;
 	}

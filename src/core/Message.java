@@ -110,8 +110,7 @@ public class Message implements Comparable<Message> {
 		this.uniqueId = nextUniqueId;
 		if(prio >= -1){
 			this.priority = prio;
-		}
-		else {
+		} else {
 			throw new SimError("Priority of Message " + this + 
 					" was assigned to be " + priority + 
 					", but it has to be at least -1.");

@@ -21,7 +21,7 @@ import java.util.List;
 
 public class ExternalEventsQueueTest extends TestCase {
 
-    private static final String TEMP_VHM_FILE_PATH = "ee/VHMTestEvents.json";
+    private static final String TEMP_VHM_FILE_PATH = "ee/test/VHMTestEvents.json";
     private static final int PRELOAD_NUMBER = 5;
 
     private final String[] stdinput = {

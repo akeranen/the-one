@@ -10,8 +10,8 @@
 	},
 	"St. Vincenz-Krankenhaus" :{ 
 		"type" : "HOSPITAL", 
-		"event_range" : 889.282221811042, "
-		location" : { 
+		"event_range" : 889.282221811042,
+		"location" : { 
 			"x" : 11039.6716666667, 
 			"y" : 8607.78466666667
 		} 
@@ -51,7 +51,7 @@
 		"safe_range" : 855,
 		"max_range" : 6000,
 		"intensity" : 8,
-		"start" 150: ,
+		"start" : 150,
 		"end" : 259200,
 		"location" : {
 			"x" : 5433,

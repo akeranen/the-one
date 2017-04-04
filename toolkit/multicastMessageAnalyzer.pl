@@ -17,7 +17,9 @@ use strict;
 #   #SimTime	MinRatio	AvgRatio
 #   <time after creation>	<min>	<avg>
 #   ...
-
+#
+# A message is counting for the next used interval. e.g. a message ratio is updated at 51 seconds, it
+# will be handled in the next interval (e.g 60).
 
 # Parse command line parameters.
 if (not defined $ARGV[0] or not defined $ARGV[1]) {

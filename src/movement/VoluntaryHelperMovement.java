@@ -80,7 +80,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * the movement modes the node can be in
      */
-    private enum movementMode {
+    public enum movementMode {
         /**
          * movement mode for randomly moving around on the map
          */
@@ -595,5 +595,138 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             setMovementAsForcefullySwitched();
             startOver();
         }
+    }
+
+    /**
+     * Returns the current movement mode
+     * @return the current movement mode
+     */
+    public movementMode getMode() {
+        return mode;
+    }
+
+    /**
+     * Sets the current movement mode
+     *
+     * @param mode the new movement mode
+     */
+    public void setMode(movementMode mode) {
+        this.mode = mode;
+    }
+
+    public ShortestPathMapBasedMovement getShortestPathMapBasedMM() {
+        return shortestPathMapBasedMM;
+    }
+
+    public CarMovement getCarMM() {
+        return carMM;
+    }
+
+    public LevyWalkMovement getLevyWalkMM() {
+        return levyWalkMM;
+    }
+
+    public SwitchableStationaryMovement getStationaryMM() {
+        return stationaryMM;
+    }
+
+    public PanicMovement getPanicMM() {
+        return panicMM;
+    }
+
+    public boolean isLocalHelper() {
+        return isLocalHelper;
+    }
+
+    public void setLocalHelper(boolean localHelper) {
+        isLocalHelper = localHelper;
+    }
+
+    public double getHospitalWaitTime() {
+        return hospitalWaitTime;
+    }
+
+    public void setHospitalWaitTime(double hospitalWaitTime) {
+        this.hospitalWaitTime = hospitalWaitTime;
+    }
+
+    public double getHelpTime() {
+        return helpTime;
+    }
+
+    public void setHelpTime(double helpTime) {
+        this.helpTime = helpTime;
+    }
+
+    public double getInjuryProbability() {
+        return injuryProbability;
+    }
+
+    public void setInjuryProbability(double injuryProbability) {
+        this.injuryProbability = injuryProbability;
+    }
+
+    public double getWaitProbability() {
+        return waitProbability;
+    }
+
+    public void setWaitProbability(double waitProbability) {
+        this.waitProbability = waitProbability;
+    }
+
+    public double getIntensityWeight() {
+        return intensityWeight;
+    }
+
+    public void setIntensityWeight(double intensityWeight) {
+        this.intensityWeight = intensityWeight;
+    }
+
+    public double getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(double startTime) {
+        this.startTime = startTime;
+    }
+
+    public boolean isJustChanged() {
+        return justChanged;
+    }
+
+    public void setJustChanged(boolean justChanged) {
+        this.justChanged = justChanged;
+    }
+
+    public VhmEvent getChosenDisaster() {
+        return chosenDisaster;
+    }
+
+    public void setChosenDisaster(VhmEvent chosenDisaster) {
+        this.chosenDisaster = chosenDisaster;
+    }
+
+    public VhmEvent getChosenHospital() {
+        return chosenHospital;
+    }
+
+    public void setChosenHospital(VhmEvent chosenHospital) {
+        this.chosenHospital = chosenHospital;
+    }
+
+    public List<VhmEvent> getDisasters() {
+        return Collections.synchronizedList(new ArrayList<>(disasters));
+    }
+
+    public void setDisasters(List<VhmEvent> disasters) {
+        this.disasters = Collections.synchronizedList(new ArrayList<>(disasters));
+    }
+
+    public List<VhmEvent> getHospitals() {
+        return Collections.synchronizedList(new ArrayList<>(hospitals));
+    }
+
+    public void setHospitals(List<VhmEvent> hospitals) {
+        this.hospitals = Collections.synchronizedList(new ArrayList<>(hospitals));
     }
 }

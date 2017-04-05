@@ -282,7 +282,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * Method is called between each getPath() request when the current MM is
      * ready (isReady() method returns true).
-     * This is the place where the movement model (mostly) switches between the submodels.
+     * This is the place where the movement model (mostly) switches between the sub-models.
      *
      * @return true if success
      */
@@ -327,24 +327,22 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Sets the map based movement model carMM of type CarMovement as the current movement model
-     * and takes care of all neccessary paramter initialization/updates,
+     * and takes care of all necessary parameter initialization/updates,
      * to make the host of this movement model move towards a disaster.
      */
     private void chooseMovingToEventMode() {
         mode = movementMode.MOVING_TO_EVENT_MODE;
-        carMM.setLocation(host.getLocation());
+        setCurrentMovementModel(carMM);
         carMM.setNextRoute(carMM.getLastLocation(),
                 carMM.getMap().getClosestNodeByCoord(chosenDisaster.getLocation()).getLocation());
-        setCurrentMovementModel(carMM);
     }
 
     /**
      * Sets the random map based movement model as the current movement model
-     * and takes care of all neccessary paramter initialization/updates.
+     * and takes care of all necessary parameter initialization/updates.
      */
     private void chooseRandomMapBasedMode() {
         mode = movementMode.RANDOM_MAP_BASED_MODE;
-        shortestPathMapBasedMM.setLocation(host.getLocation());
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
@@ -371,20 +369,18 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         if (isLocalHelper) {
             //...simulate the host helping at the disaster site by performing a levy walk
             mode = movementMode.LOCAL_HELP_MODE;
-            levyWalkMM.setLocation(host.getLocation());
-            levyWalkMM.setCenter(chosenDisaster.getLocation());
-            levyWalkMM.setRadius(chosenDisaster.getEventRange());
             startTime = SimClock.getTime();
             setCurrentMovementModel(levyWalkMM);
+            levyWalkMM.setCenter(chosenDisaster.getLocation());
+            levyWalkMM.setRadius(chosenDisaster.getEventRange());
         } else {
             //if the host is not a local helper,
             //simulate a volunteer transporting injured people to the hospital by car
             if (chooseNextHospital()) {
                 mode = movementMode.TRANSPORTING_MODE;
-                carMM.setLocation(host.getLocation());
+                setCurrentMovementModel(carMM);
                 carMM.setNextRoute(carMM.getLastLocation(),
                         carMM.getMap().getClosestNodeByCoord(chosenHospital.getLocation()).getLocation());
-                setCurrentMovementModel(carMM);
             } else {
                 //if choosing a new hospital fails because there are no hospitals...
                 //...just move on with your day
@@ -404,11 +400,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         } else {
             //simulate a volunteer helping/waiting at the hospital
             mode = movementMode.HOSPITAL_WAIT_MODE;
-            levyWalkMM.setLocation(host.getLocation());
-            levyWalkMM.setCenter(chosenHospital.getLocation());
-            levyWalkMM.setRadius(chosenHospital.getEventRange());
             startTime = SimClock.getTime();
             setCurrentMovementModel(levyWalkMM);
+            levyWalkMM.setCenter(chosenHospital.getLocation());
+            levyWalkMM.setRadius(chosenHospital.getEventRange());
         }
     }
 
@@ -449,6 +444,22 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private void setMovementAsForcefullySwitched() {
         justChanged = true;
         host.interruptMovement();
+    }
+
+    /**
+     * Sets the current movement model to be used the next time getPath() is
+     * called, and make sure,
+     * that the new movement model is initialized with the hosts location as the current location,
+     * instead of the destination of the movement model that was used before.
+     * @param mm Next movement model
+     */
+    @Override
+    public void setCurrentMovementModel(SwitchableMovement mm) {
+        super.setCurrentMovementModel(mm);
+        //overwrite the effect of ExtendedMovementModel.setCurrentMovementModel(),
+        //where the last location of the movement model, that was used before,
+        //is set as the new movement model's location
+        getCurrentMovementModel().setLocation(host.getLocation());
     }
 
     /**
@@ -543,13 +554,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     setMovementAsForcefullySwitched();
                     mode = movementMode.INJURED_MODE;
                     setCurrentMovementModel(stationaryMM);
-                    stationaryMM.setLocation(host.getLocation());
                 } else {
                     //let the host flee from the disaster
                     setMovementAsForcefullySwitched();
                     mode = movementMode.PANIC_MODE;
                     setCurrentMovementModel(panicMM);
-                    panicMM.setLocation(host.getLocation());
                     panicMM.setEventLocation(event.getLocation());
                     panicMM.setSafeRange(event.getSafeRange());
                 }

@@ -121,7 +121,17 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
     
     /**
      * Writes the results of the report to a text file
+     * The results are calculated as summary for the whole simulation run.
+     *
+     * Format is like
+     * Message stats for scenario deliveryProbabilityReport sim_time: 10073.4000
+     * created: 339 delivered: 80 delivery_prob: 0.2360
+     * 
+     * where the total simulation time is part of the header line. Created gives the number of created messages,
+     * delivered are the number of messages reaching its target. The quotient is the delivery probability. 
+     *
      */
+
     @Override
     public void done() {
         write("Message stats for scenario " + getScenarioName() +

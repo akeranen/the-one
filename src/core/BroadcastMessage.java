@@ -17,6 +17,19 @@ public class BroadcastMessage extends Message {
     public BroadcastMessage(DTNHost from, String id, int size) {
         super(from, null, id, size);
     }
+    
+    /**
+     * Creates a new BroadcastMessage that also has a priority.
+     *
+     * @param from Who the message is (originally) from
+     * @param id   Message identifier (must be unique for message but
+     *             will be the same for all replicates of the message)
+     * @param size Size of the message (in bytes)
+     * @param prio Priority of the message 
+     */
+    public BroadcastMessage(DTNHost from, String id, int size, int prio){
+    	super(from, null, id, size, prio);
+    }
 
     /**
      * Returns the node this message is originally to

@@ -20,4 +20,6 @@ doc/package-list
 build/
 target/
 lib/Simulator.jar
+
 /bin/
+out/

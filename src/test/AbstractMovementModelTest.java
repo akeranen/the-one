@@ -23,7 +23,8 @@ public abstract class AbstractMovementModelTest {
 
     protected MovementModel model;
     protected TestSettings testSettings;
-    protected static final int MAX_COORD = 1000;
+    protected static final int MAX_COORD_X = 10000;
+    protected static final int MAX_COORD_Y = 8000;
     protected static final int TEST_RUNS = 2000;
     protected static final String PATH_OUTSIDE_SIMULATION = "Path was outside the simulation area, ";
     protected static final String MESSAGE_X_BELOW_ZERO = PATH_OUTSIDE_SIMULATION +
@@ -42,6 +43,9 @@ public abstract class AbstractMovementModelTest {
     public void setUp(){
         Settings.init(null);
         testSettings = new TestSettings();
+        testSettings.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
+        testSettings.putSetting(MovementModel.WORLD_SIZE,MAX_COORD_X+", "+MAX_COORD_Y);
+        testSettings.restoreNameSpace();
         model = initializeModel(testSettings);
         //Gets the initial location as it is necessary for getPath
         model.getInitialLocation();
@@ -77,13 +81,17 @@ public abstract class AbstractMovementModelTest {
         for (int i=1; i<TEST_RUNS; i++){
             Path p = model.getPath();
             List<Coord> coords = p.getCoords();
-            Coord nextWaypoint = coords.get(1);
-            assertNotNull("Path did not contain a next waypoint", nextWaypoint);
-            //Bounds in test Settings are 1000x1000
-            assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX()>=0);
-            assertTrue(MESSAGE_Y_BELOW_ZERO,nextWaypoint.getY()>=0);
-            assertTrue(MESSAGE_X_ABOVE_LIMIT, nextWaypoint.getX()<=MAX_COORD);
-            assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY()<=MAX_COORD);
+            //check if a next waypoint exists, it may be, that path to the current position is generated
+            //and only includes one waypoint
+            if (coords.size() > 1) {
+                Coord nextWaypoint = coords.get(1);
+                assertNotNull("Path did not contain a next waypoint", nextWaypoint);
+                //Bounds in test Settings are 10000x8000
+                assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX() >= 0);
+                assertTrue(MESSAGE_Y_BELOW_ZERO, nextWaypoint.getY() >= 0);
+                assertTrue(MESSAGE_X_ABOVE_LIMIT, nextWaypoint.getX() <= MAX_COORD_X);
+                assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY() <= MAX_COORD_Y);
+            }
         }
     }
 }

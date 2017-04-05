@@ -18,8 +18,8 @@ use strict;
 #   <time after creation>	<min>	<avg>
 #   ...
 #
-# A message is counting for the next used interval. e.g. a message ratio is updated at 51 seconds, it
-# will be handled in the next interval (e.g 60).
+# Messages may not exist anymore at a certain time point. Even if there was an update
+# of the ratio after the last interval, it will then not be considered in the next interval.
 
 # Parse command line parameters.
 if (not defined $ARGV[0] or not defined $ARGV[1]) {

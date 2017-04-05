@@ -8,7 +8,7 @@ use File::Basename;
 
 # Contains tests for multicastMessageAnalyzer.pl.
 
-# We do not specify how many tests will follow, but we will use tsets.
+# We do not specify how many tests will follow, but we will use tests.
 use Test::More 'no_plan';
 
 # This variable stores the output of the lastest multicastMessageAnalyzer.pl call.

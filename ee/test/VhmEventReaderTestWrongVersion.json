@@ -1,0 +1,11 @@
+{
+  "vhm_events_version" : 2,
+  "event1" :{
+    "type" : "DISASTER",
+    "event_range" : 300,
+    "location" : {
+      "x" : 1000,
+      "y" : 1000
+    }
+  }
+}

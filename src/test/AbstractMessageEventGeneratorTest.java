@@ -1,5 +1,6 @@
 package test;
 
+import core.Settings;
 import input.AbstractMessageEventGenerator;
 import org.junit.Before;
 
@@ -14,16 +15,18 @@ public abstract class AbstractMessageEventGeneratorTest {
      */
     protected static final int NR_TRIALS_IN_TEST = 10;
 
-    protected TestSettings settings = new TestSettings();
+    protected TestSettings settings;
 
     @Before
     public void init() {
+        Settings.init(null);
+        this.settings = new TestSettings();
         this.settings.putSetting("Events.nrof", "1");
 
         this.settings.putSetting("class", this.getMessageEventGeneratorClassName());
         this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_INTERVAL_S, "1,2");
         this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_SIZE_S, "500k,1M");
-        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,126");
+        this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,14");
         this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_ID_PREFIX_S, "M");
     }
 

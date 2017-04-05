@@ -52,13 +52,22 @@ jar {
 dependencies {
     // The production code uses Guava
     compile 'com.google.guava:guava:20.0'
+	
+    //JSON framework
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.0.4'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:2.+"
 	
 	compile name: 'DTNConsoleConnection'
 	
 	compile name: 'ECLA'
+}
+
+test {
+    //make gradle run tests one after the other to prevent tests with static variables from influencing each other
+    forkEvery=1
 }
 
 task copyGui(type: Copy){

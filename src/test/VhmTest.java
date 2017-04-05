@@ -1,9 +1,6 @@
 package test;
 
-
-import core.ConnectionListener;
 import core.Coord;
-import core.MessageListener;
 import movement.CarMovement;
 import movement.MapBasedMovement;
 import movement.MovementModel;
@@ -33,7 +30,7 @@ public class VhmTest extends AbstractMovementModelTest{
         testSettings.restoreNameSpace();
         vhm = new VoluntaryHelperMovement(testSettings);
         //needed to initialize MM
-        vhm.setHost(new TestUtils(new ArrayList<ConnectionListener>(),new ArrayList<MessageListener>(),
+        vhm.setHost(new TestUtils(new ArrayList<>(),new ArrayList<>(),
                 testSettings).createHost());
         return vhm;
     }

@@ -33,7 +33,7 @@ public final class VhmEventNotifier {
     }
 
     /**
-     * Informs all registered VhmListeners, that a VhmEvent started and adds it to the appropriate List
+     * Informs all registered VhmListeners that a VhmEvent started.
      *
      * @param event The VhmEvent.
      */
@@ -44,7 +44,7 @@ public final class VhmEventNotifier {
     }
 
     /**
-     * Informs all registered VhmListeners, that a VhmEvent ended and removes it from the appropriate list
+     * Informs all registered VhmListeners that a VhmEvent ended.
      *
      * @param event The VhmEvent.
      */

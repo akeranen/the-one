@@ -44,7 +44,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      *variable used to create groups only the first time {@link MulticastEventGenerator#nextEvent()}
      * is called.
      */
-    private boolean nodesAreAssignedToGroups;
+    private static boolean nodesAreAssignedToGroups;
 
     /**
      * Constructor, initializes the interval between events,
@@ -71,8 +71,12 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
             throw new SimError("Biggest possible group size is greater than the number"+
                     " of hosts specified in host range.");
         }
-        for (int i = 1; i <= groupCount; i++){
-            Group.createGroup(i);
+        //Create groups if no groups are existing yet
+        if (Group.getGroups().length == 0) {
+            for (int i = 1; i <= groupCount; i++) {
+                Group.createGroup(i);
+            }
+            nodesAreAssignedToGroups = false;
         }
     }
 
@@ -97,6 +101,10 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         }
     }
 
+    private static synchronized void setNodesAsAssigned(){
+        nodesAreAssignedToGroups = true;
+    }
+
     /**
      * Returns the next multicast creation event.
      * @see EventQueue#nextEvent()
@@ -107,7 +115,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         //this is needed, because access to the hosts is needed and not possible during the call of the constructor
         if (!nodesAreAssignedToGroups){
             assignNodesToGroups();
-            nodesAreAssignedToGroups = true;
+            setNodesAsAssigned();
         }
 
         /* Draw additional message properties and create message. */

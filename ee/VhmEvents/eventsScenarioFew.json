@@ -2,7 +2,7 @@
 	"vhm_events_version" : 1,
 	"St. Johannisstift Ev. Krankenhaus" :{ 
 		"type" : "HOSPITAL", 
-		"event_range" : 117.349161853027, 
+		"event_range" : 30, 
 		"location" : { 
 			"x" : 10173.82, 
 			"y" : 10612.26
@@ -10,7 +10,7 @@
 	},
 	"St. Vincenz-Krankenhaus" :{ 
 		"type" : "HOSPITAL", 
-		"event_range" : 254.990268737002, 
+		"event_range" : 80, 
 		"location" : { 
 			"x" : 10928.49, 
 			"y" : 11053.11
@@ -18,7 +18,7 @@
 	},
 	"Brüderkrankenhaus Sankt Josef" :{ 
 		"type" : "HOSPITAL", 
-		"event_range" : 321.148244099193, 
+		"event_range" : 30, 
 		"location" : { 
 			"x" : 11035.67, 
 			"y" : 11862.38
@@ -26,7 +26,7 @@
 	},
 	"Frauen- und Kinderklinik St. Louise" :{ 
 		"type" : "HOSPITAL", 
-		"event_range" : 703.75004306079, 
+		"event_range" : 35, 
 		"location" : { 
 			"x" : 11236.37, 
 			"y" : 12208.07

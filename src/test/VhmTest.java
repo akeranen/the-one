@@ -4,14 +4,18 @@ package test;
 import core.ConnectionListener;
 import core.Coord;
 import core.MessageListener;
+import movement.CarMovement;
 import movement.MapBasedMovement;
 import movement.MovementModel;
+import movement.ShortestPathMapBasedMovement;
 import movement.VoluntaryHelperMovement;
 import org.junit.Test;
 
 import java.util.ArrayList;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Tests for VoluntaryHelperMovement
@@ -38,5 +42,32 @@ public class VhmTest extends AbstractMovementModelTest{
     public void testGetInitialLocation(){
         Coord coord = vhm.getInitialLocation();
         assertNotNull(coord);
+    }
+
+    @Test
+    public void testInitialMovementMode() {
+        assertEquals(VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE, vhm.getMode());
+        assertEquals(ShortestPathMapBasedMovement.class, vhm.getCurrentMovementModel().getClass());
+    }
+
+    /**
+     * For now this is just an example and a template for creating state change tests.
+     * This test needs to be checked and possibly modified.
+     */
+    @Test
+    public void testMovementAfterPanicMode() {
+        //set the state of the VoluntaryHelperMovement object.
+        vhm.setMode(VoluntaryHelperMovement.movementMode.PANIC_MODE);
+        vhm.setCurrentMovementModel(vhm.getPanicMM());
+
+        //provoke a state change
+        vhm.newOrders();
+
+        //test if the state changed to an expected value
+        assertTrue((VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE.equals(vhm.getMode())
+                && ShortestPathMapBasedMovement.class.equals(vhm.getCurrentMovementModel().getClass()))
+                ||
+                (VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE.equals(vhm.getMode())
+                        && CarMovement.class.equals(vhm.getCurrentMovementModel().getClass())));
     }
 }

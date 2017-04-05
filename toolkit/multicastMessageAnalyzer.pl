@@ -130,11 +130,13 @@ sub printInterval{
             $nextMin = $msgRatio;
         }
     }
-    #calculate average
-    my $nextAvg = $ratioSum / $msgCount;
-    #convert the interval into simulation seconds
-    my $seconds = $interval * $timeStep;
-    print "$seconds	$nextMin	$nextAvg\n";
+    if ($msgCount > 0) {
+        #calculate average
+        my $nextAvg = $ratioSum / $msgCount;
+        #convert the interval into simulation seconds
+        my $seconds = $interval * $timeStep;
+        print "$seconds	$nextMin	$nextAvg\n";
+    }
 }
 
 sub calculateMaxIntervalForAllMsgs {
@@ -142,7 +144,7 @@ sub calculateMaxIntervalForAllMsgs {
     my $simTime = shift;
     
     foreach my $msgId (keys %msgToCreateTime){
-        $msgToMaxInterval{$msgId} = int(($simTime - $msgToCreateTime{$msgId}) / $timeStep + 1);
+        $msgToMaxInterval{$msgId} = int(($simTime - $msgToCreateTime{$msgId}) / $timeStep );
     }
 
 }

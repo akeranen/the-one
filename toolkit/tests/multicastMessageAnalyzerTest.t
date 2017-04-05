@@ -28,7 +28,6 @@ Test::More::is(getTimePointFromLine($outputLines[1]), $timeStep, "First time poi
 Test::More::is(getTimePointFromLine($outputLines[2]), 2 * $timeStep, "Second time point is correct.");
 Test::More::is(getTimePointFromLine($outputLines[3]), 3 * $timeStep, "Third time point is correct.");
 Test::More::is(getTimePointFromLine($outputLines[4]), 4 * $timeStep, "Fourth time point is correct.");
-Test::More::is(getTimePointFromLine($outputLines[5]), 5 * $timeStep, "Fifth time point is correct.");
 Test::More::is($outputLines[6], undef, "Nothing afterwards.");
 
 # Check analysis correctly works in terms of averaging and minimizing, esp. if some messages have a longer lifetime
@@ -38,14 +37,12 @@ Test::More::is(getAvgFromLine($outputLines[1]), 0.166666666666667, "First averag
 Test::More::is(getMinFromLine($outputLines[1]), "0.0", "First minimum of three messages is correct.");
 Test::More::is(getAvgFromLine($outputLines[2]), 0.333333333333333, "Second average of three messages is correct.");
 Test::More::is(getMinFromLine($outputLines[2]), "0.0", "Second minimum of three messages is correct.");
-Test::More::is(getAvgFromLine($outputLines[3]), 0.583333333333333, "Average of two remaining messages is correct.");
-Test::More::is(getMinFromLine($outputLines[3]), 0.25, "Minimum of two remaining messages is correct.");
-Test::More::is(getAvgFromLine($outputLines[4]), 0.666666666666667, "Average of single remaining message is correct.");
-Test::More::is(getMinFromLine($outputLines[4]), 0.5, "Minimum of single remaining message is correct.");
-Test::More::is(getAvgFromLine($outputLines[5]), 0.833333333333333, "Average of single remaining message is correct.");
+Test::More::is(getAvgFromLine($outputLines[3]), 0.583333333333333, "Average of three remaining messages is correct.");
+Test::More::is(getMinFromLine($outputLines[3]), 0.25, "Minimum of three remaining messages is correct.");
+Test::More::is(getAvgFromLine($outputLines[4]), 0.666666666666667, "Average of two remaining message is correct.");
+Test::More::is(getMinFromLine($outputLines[4]), 0.5, "Minimum of two remaining message is correct.");
+Test::More::is(getAvgFromLine($outputLines[5]), 0.5, "Average of single remaining message is correct.");
 Test::More::is(getMinFromLine($outputLines[5]), 0.5, "Minimum of single remaining message is correct.");
-Test::More::is(getAvgFromLine($outputLines[6]), 1, "Average of single remaining message is correct.");
-Test::More::is(getMinFromLine($outputLines[6]), "1.0", "Minimum of single remaining message is correct.");
 
 # Calls multicastMessageAnalyzer.pl with the given file name.
 # Expects the file to reside in toolkit/testdata.

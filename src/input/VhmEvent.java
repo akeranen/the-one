@@ -3,9 +3,7 @@ package input;
 import core.Coord;
 import core.SimError;
 
-import javax.json.JsonNumber;
 import javax.json.JsonObject;
-import javax.json.stream.JsonParsingException;
 
 /**
  * This is a container that includes all parameters of a VhmEvent
@@ -147,46 +145,42 @@ public class VhmEvent extends ExternalEvent {
      */
     public VhmEvent(String name, JsonObject object){
         super(0);
-        try {
-            this.id = getNextEventID();
-            //Parse mandatory parameters
-            if (name != null) {
-                this.name = name;
-            } else {
-                throw new SimError("Event must have an identifier!");
-            }
+        this.id = getNextEventID();
+        //Parse mandatory parameters
+        if (name != null) {
+            this.name = name;
+        } else {
+            throw new SimError("Event must have an identifier!");
+        }
 
-            //parse event type
-            this.type = VhmEventType.valueOf(object.getJsonString(EVENT_TYPE).getString());
+        //parse event type
+        this.type = VhmEventType.valueOf(object.getJsonString(EVENT_TYPE).getString());
 
-            //parse event location
-            JsonObject loc = (JsonObject) object.get(EVENT_LOCATION);
-            double x = loc.getJsonNumber(EVENT_LOCATION_X).doubleValue();
-            double y = loc.getJsonNumber(EVENT_LOCATION_Y).doubleValue();
-            this.location = new Coord(x, y);
+        //parse event location
+        JsonObject loc = (JsonObject) object.get(EVENT_LOCATION);
+        double x = loc.getJsonNumber(EVENT_LOCATION_X).doubleValue();
+        double y = loc.getJsonNumber(EVENT_LOCATION_Y).doubleValue();
+        this.location = new Coord(x, y);
 
-            //parse event range
-            this.eventRange = object.getJsonNumber(EVENT_RANGE).doubleValue();
+        //parse event range
+        this.eventRange = object.getJsonNumber(EVENT_RANGE).doubleValue();
 
-            safeRange = getDoubleOrDefault(object, SAFE_RANGE, DEFAULT_SAFE_RANGE);
+        safeRange = getDoubleOrDefault(object, SAFE_RANGE, DEFAULT_SAFE_RANGE);
 
-            maxRange = getDoubleOrDefault(object, MAX_RANGE, DEFAULT_MAX_RANGE);
+        maxRange = getDoubleOrDefault(object, MAX_RANGE, DEFAULT_MAX_RANGE);
 
-            startTime = getDoubleOrDefault(object, START_TIME, DEFAULT_START_TIME);
+        startTime = getDoubleOrDefault(object, START_TIME, DEFAULT_START_TIME);
 
-            endTime = getDoubleOrDefault(object, END_TIME, DEFAULT_END_TIME);
+        endTime = getDoubleOrDefault(object, END_TIME, DEFAULT_END_TIME);
 
-            //parse intensity or set it to min intensity
-            if (object.containsKey(EVENT_INTENSITY)) {
-                this.intensity = ((JsonNumber) object.get(EVENT_INTENSITY)).intValue();
-                assert intensity >= MIN_INTENSITY &&
-                        intensity <= MAX_INTENSITY : "Intensity must be integer between "
-                        + MIN_INTENSITY + " and " + MAX_INTENSITY;
-            } else {
-                this.intensity = DEFAULT_INTENSITY;
-            }
-        } catch (JsonParsingException e) {
-            throw new SimError("VhmEvent could not be parsed from JSON: " + e);
+        //parse intensity or set it to min intensity
+        if (object.containsKey(EVENT_INTENSITY)) {
+            this.intensity = object.getInt(EVENT_INTENSITY);
+            assert intensity >= MIN_INTENSITY &&
+                    intensity <= MAX_INTENSITY : "Intensity must be integer between "
+                    + MIN_INTENSITY + " and " + MAX_INTENSITY;
+        } else {
+            this.intensity = DEFAULT_INTENSITY;
         }
     }
 

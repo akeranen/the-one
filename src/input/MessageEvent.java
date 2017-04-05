@@ -8,6 +8,8 @@ package input;
  * A message related external event
  */
 public abstract class MessageEvent extends ExternalEvent {
+    /** fixed priority for one-to-one messages */
+    public static final int MESSAGE_PRIORITY = 0;
 	/** address of the node the message is from */
 	protected int fromAddr;
 	/** address of the node the message is to */

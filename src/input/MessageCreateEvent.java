@@ -41,7 +41,7 @@ public class MessageCreateEvent extends MessageEvent {
 		DTNHost to = world.getNodeByAddress(this.toAddr);
 		DTNHost from = world.getNodeByAddress(this.fromAddr);
 
-		Message m = new Message(from, to, this.id, this.size);
+		Message m = new Message(from, to, this.id, this.size, MESSAGE_PRIORITY);
 		m.setResponseSize(this.responseSize);
 		from.createNewMessage(m);
 	}

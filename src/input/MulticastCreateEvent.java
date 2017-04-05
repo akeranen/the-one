@@ -12,6 +12,7 @@ import core.World;
  */
 public class MulticastCreateEvent extends MessageEvent {
     private static final long serialVersionUID = 1;
+    public static final int MULTICAST_PRIORITY = 1;
 
     /**
      * Size of the created message
@@ -25,6 +26,7 @@ public class MulticastCreateEvent extends MessageEvent {
      * @param to   Who the message goes to
      * @param id   ID of the message
      * @param time Time when the message event occurs
+     * @param prio Priority of the message
      */
     public MulticastCreateEvent(int from, int to, String id, int size, double time) {
         super(from, to, id, time);
@@ -38,7 +40,7 @@ public class MulticastCreateEvent extends MessageEvent {
     public void processEvent(World world) {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
         MulticastMessage messageToCreate =
-                new MulticastMessage(from, Group.getGroup(toAddr), this.id, this.size);
+                new MulticastMessage(from, Group.getGroup(toAddr), this.id, this.size, MULTICAST_PRIORITY);
         from.createNewMessage(messageToCreate);
     }
 

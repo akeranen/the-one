@@ -23,7 +23,6 @@ public class BroadcastMessageTest {
     private BroadcastMessage msg, msgPrio;
     private DTNHost from;
     private final static int priority = 3;
-    private final static int invalidPriority = -1;
 
     @Before
     public void setUp() throws Exception {
@@ -76,7 +75,7 @@ public class BroadcastMessageTest {
     
     @Test
    	public void testPriority(){
-   		assertEquals(msg.getPriority(), invalidPriority);
+   		assertEquals(msg.getPriority(), Message.INVALID_PRIORITY);
    		assertEquals(msgPrio.getPriority(), priority);
    	}
 }

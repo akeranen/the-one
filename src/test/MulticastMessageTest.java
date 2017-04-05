@@ -27,14 +27,11 @@ public class MulticastMessageTest {
     private final static int GROUP_ADDRESS_1 = 0;
     private final static int GROUP_ADDRESS_2 = 1;
     private final static int priority = 7;
-    private final static int invalidPriority = -1;
-    private TestUtils utils = new TestUtils(
-            new ArrayList<ConnectionListener>(),
-            new ArrayList<MessageListener>(),
+    private TestUtils utils = new TestUtils(new ArrayList<ConnectionListener>(), new ArrayList<MessageListener>(),
             new TestSettings());
 
     private MulticastMessage msg, msgPrio;
-    private DTNHost from = new TestDTNHost(new ArrayList<NetworkInterface>(),null,null);
+    private DTNHost from = new TestDTNHost(new ArrayList<NetworkInterface>(), null, null);
 
     @Before
     public void setUp() throws Exception {
@@ -77,9 +74,9 @@ public class MulticastMessageTest {
     }
 
     @Test(expected = SimError.class)
-    public void testSenderNotInDestinationGroupThrowsError(){
+    public void testSenderNotInDestinationGroupThrowsError() {
         Group group2 = Group.createGroup(GROUP_ADDRESS_2);
-        MulticastMessage wrongMsg = new MulticastMessage(from,group2,"M",100);
+        MulticastMessage wrongMsg = new MulticastMessage(from, group2, "M", 100);
     }
 
     @Test
@@ -90,36 +87,33 @@ public class MulticastMessageTest {
     @Test
     public void testReplicateDoesNotChangeType() {
         Message replicate = this.msg.replicate();
-        assertTrue(
-                "Replicated message should have been of type MulticastMessage.",
+        assertTrue("Replicated message should have been of type MulticastMessage.",
                 replicate instanceof MulticastMessage);
     }
 
     @Test
     public void testReplicateDoesNotChangeDestinationGroup() {
         MulticastMessage replicate = (MulticastMessage) this.msg.replicate();
-        assertEquals(
-                "Replicated message should be sent to same group.",replicate.getGroup().getAddress(),GROUP_ADDRESS_1);
+        assertEquals("Replicated message should be sent to same group.", replicate.getGroup().getAddress(),
+                GROUP_ADDRESS_1);
     }
 
     @Test
-    public void testGetGroupReturnsTheCorrectGroup(){
-        MulticastMessage msg = new MulticastMessage(from,Group.getGroup(GROUP_ADDRESS_1),"M",100);
-        assertEquals("Destination group should be Group "+GROUP_ADDRESS_1,
-                Group.getGroup(GROUP_ADDRESS_1),msg.getGroup());
+    public void testGetGroupReturnsTheCorrectGroup() {
+        MulticastMessage msg = new MulticastMessage(from, Group.getGroup(GROUP_ADDRESS_1), "M", 100);
+        assertEquals("Destination group should be Group " + GROUP_ADDRESS_1, Group.getGroup(GROUP_ADDRESS_1),
+                msg.getGroup());
     }
 
     @Test
     public void testRecipientsToString() {
-        assertEquals(
-                "Recipients descriptions should have been different.",
-                this.msg.getGroup().toString(),
+        assertEquals("Recipients descriptions should have been different.", this.msg.getGroup().toString(),
                 this.msg.recipientsToString());
     }
-    
+
     @Test
-	public void testPriority(){
-		assertEquals(msg.getPriority(), invalidPriority);
-		assertEquals(msgPrio.getPriority(), priority);
-	}
+    public void testPriority() {
+        assertEquals(msg.getPriority(), Message.INVALID_PRIORITY);
+        assertEquals(msgPrio.getPriority(), priority);
+    }
 }

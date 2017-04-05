@@ -65,6 +65,12 @@ public class DTNHostTest extends TestCase {
     assertFalse("Radio reported as active.", host.isRadioActive());
   }
 
+    public void testInterruptMovement(){
+        DTNHost host = createHost();
+        host.interruptMovement();
+        assertNull("Path should be null",host.getPath());
+    }
+
   private static DTNHost createHost(){
     return new DTNHost(
             new ArrayList<MessageListener>(),
@@ -78,10 +84,10 @@ public class DTNHostTest extends TestCase {
 
   private static MovementModel makeMovementModel() {
     return new MovementModel() {
-      @Override
-      public Path getPath() {
-        return null;
-      }
+        @Override
+        public Path getPath() {
+            return new Path();
+        }
 
       @Override
       public Coord getInitialLocation() {

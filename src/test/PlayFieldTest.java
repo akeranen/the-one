@@ -36,12 +36,20 @@ public class PlayFieldTest {
 
     @Before
     public void setUpAllScenario(){
+        field = createTestPlayField();
+        event = VhmEventTest.createVhmEventWithDefaultValues();
+        field.vhmEventStarted(event);
+    }
+
+    /**
+     * Creates a minimal PlayField instance that can be used in tests
+     * @return a PlayField instance
+     */
+    static PlayField createTestPlayField(){
         SimScenario.reset();
         TestSettings.addSettingsToEnableSimScenario(new TestSettings());
         DTNSimGUI gui = new DTNSimGUI();
-        field = new PlayField(SimScenario.getInstance().getWorld(),gui);
-        event = VhmEventTest.createVhmEventWithDefaultValues();
-        field.vhmEventStarted(event);
+        return new PlayField(SimScenario.getInstance().getWorld(),gui);
     }
 
 

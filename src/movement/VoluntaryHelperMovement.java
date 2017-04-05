@@ -282,7 +282,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * Method is called between each getPath() request when the current MM is
      * ready (isReady() method returns true).
-     * This is the place where the movement model (mostly) switches between the submodels.
+     * This is the place where the movement model (mostly) switches between the sub-models.
      *
      * @return true if success
      */
@@ -327,7 +327,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Sets the map based movement model carMM of type CarMovement as the current movement model
-     * and takes care of all neccessary paramter initialization/updates,
+     * and takes care of all necessary parameter initialization/updates,
      * to make the host of this movement model move towards a disaster.
      */
     private void chooseMovingToEventMode() {
@@ -339,7 +339,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Sets the random map based movement model as the current movement model
-     * and takes care of all neccessary paramter initialization/updates.
+     * and takes care of all necessary parameter initialization/updates.
      */
     private void chooseRandomMapBasedMode() {
         mode = movementMode.RANDOM_MAP_BASED_MODE;
@@ -448,12 +448,17 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
     /**
      * Sets the current movement model to be used the next time getPath() is
-     * called
+     * called, and make sure,
+     * that the new movement model is initialized with the hosts location as the current location,
+     * instead of the destination of the movement model that was used before.
      * @param mm Next movement model
      */
     @Override
     public void setCurrentMovementModel(SwitchableMovement mm) {
         super.setCurrentMovementModel(mm);
+        //overwrite the effect of ExtendedMovementModel.setCurrentMovementModel(),
+        //where the last location of the movement model, that was used before,
+        //is set as the new movement model's location
         getCurrentMovementModel().setLocation(host.getLocation());
     }
 

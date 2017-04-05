@@ -115,12 +115,12 @@ public class LevyWalkTest extends AbstractMovementModelTest{
             List<Coord> coords = p.getCoords();
             Coord nextWaypoint = coords.get(1);
             assertNotNull("Path did not include a valid next waypoint.",nextWaypoint);
-            //Bounds in test Settings are 1000x1000
+            //Bounds in test Settings are 10000x8000
             assertTrue("Path was outside the radius.",center.distance(nextWaypoint)<=TEST_RADIUS);
             assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX()>=0);
             assertTrue(MESSAGE_Y_BELOW_ZERO,nextWaypoint.getY()>=0);
-            assertTrue(MESSAGE_X_ABOVE_LIMIT,nextWaypoint.getX()<=MAX_COORD);
-            assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY()<=MAX_COORD);
+            assertTrue(MESSAGE_X_ABOVE_LIMIT,nextWaypoint.getX()<=MAX_COORD_X);
+            assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY()<=MAX_COORD_Y);
         }
     }
 

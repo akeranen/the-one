@@ -38,7 +38,7 @@ public class ProphetV2Router extends ActiveRouter {
 	/** delivery predictability transitivity scaling constant default value */
 	public static final double DEFAULT_BETA = 0.9;
 	/** delivery predictability aging constant */
-	public static final double GAMMA = 0.999885791;
+	public static final double DEFAULT_GAMMA = 0.999885791;
 	Random randomGenerator = new Random();
 
 	/** Prophet router's setting namespace ({@value})*/
@@ -55,10 +55,18 @@ public class ProphetV2Router extends ActiveRouter {
 	 */
 	public static final String BETA_S = "beta";
 
+	/**
+	 * Predictability aging constant (gamma) -setting id ({@value}).
+	 * Default value for setting is {@link #DEFAULT_GAMMA}.
+	 */
+	public static final String GAMMA_S = "gamma";
+
 	/** the value of nrof seconds in time unit -setting */
 	private int secondsInTimeUnit;
 	/** value of beta setting */
 	private double beta;
+	/** value of gamma setting */
+	private double gamma;
 
 	/** delivery predictabilities */
 	private Map<DTNHost, Double> preds;
@@ -84,6 +92,12 @@ public class ProphetV2Router extends ActiveRouter {
 		else {
 			beta = DEFAULT_BETA;
 		}
+		if (prophetSettings.contains(GAMMA_S)) {
+			gamma = prophetSettings.getDouble(GAMMA_S);
+		}
+		else {
+			gamma = DEFAULT_GAMMA;
+		}
 
 		initPreds();
 		initEncTimes();
@@ -98,6 +112,7 @@ public class ProphetV2Router extends ActiveRouter {
 		super(r);
 		this.secondsInTimeUnit = r.secondsInTimeUnit;
 		this.beta = r.beta;
+		this.gamma = r.gamma;
 		initPreds();
 		initEncTimes();
 	}
@@ -227,7 +242,7 @@ public class ProphetV2Router extends ActiveRouter {
 			return;
 		}
 
-		double mult = Math.pow(GAMMA, timeDiff);
+		double mult = Math.pow(gamma, timeDiff);
 		for (Map.Entry<DTNHost, Double> e : preds.entrySet()) {
 			e.setValue(e.getValue()*mult);
 		}

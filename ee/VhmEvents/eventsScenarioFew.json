@@ -36,26 +36,26 @@
 		"type" : "DISASTER",
 		"event_range" : 32,
 		"safe_range" : 991,
-		"max_range" : 9000,
+		"max_range" : 8000,
 		"intensity" : 10,
-		"start" : 100,
+		"start" : 30,
 		"end" : 259200,
 		"location" : {
-			"x" : 7776,
-			"y" : 12106
+			"x" : 6047,
+			"y" : 14757
 		}
 	},
 	"event2" :{
 		"type" : "DISASTER",
 		"event_range" : 43,
 		"safe_range" : 855,
-		"max_range" : 8000,
+		"max_range" : 8500,
 		"intensity" : 8,
-		"start" : 150,
+		"start" : 50,
 		"end" : 259200,
 		"location" : {
-			"x" : 5433,
-			"y" : 3898
+			"x" : 14651,
+			"y" : 4268
 		}
 	},
 	"event3" :{
@@ -67,8 +67,8 @@
 		"start" : 172800,
 		"end" : 259200,
 		"location" : {
-			"x" : 6540,
-			"y" : 1418
+			"x" : 17034,
+			"y" : 13443
 		}
 	}
 }

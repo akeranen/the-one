@@ -8,6 +8,7 @@ import input.ExternalEvent;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Contains tests for the BroadcastCreateEvent class.
@@ -30,12 +31,7 @@ public class BroadcastCreateEventTest extends AbstractMessageCreateEventTest {
     public void testProcessEventCreatesBroadcastMessageWithCorrectResponseSize() {
         int responseSize = 50;
 
-        BroadcastCreateEvent event = new BroadcastCreateEvent(
-                this.creator.getAddress(), "messageId", 100, responseSize, 23);
-        event.processEvent(this.world);
-        this.messageChecker.next();
-
-        Message createdMessage = this.messageChecker.getLastMsg();
+        Message createdMessage = getMessage(responseSize);
         assertEquals(
                 "Broadcast message should have been created with different response size.",
                 responseSize,
@@ -51,4 +47,20 @@ public class BroadcastCreateEventTest extends AbstractMessageCreateEventTest {
                 "MSG @34.2 messageId [" + this.creator.getAddress() + "->everyone] size:100 CREATE",
                 event.toString());
     }
+    
+    @Test
+    public void testPriorities(){
+        int responseSize = 50;
+        Message createdMessage = getMessage(responseSize);
+        assertTrue(((BroadcastMessage)createdMessage).getPriority() <= 10);
+        assertTrue(((BroadcastMessage)createdMessage).getPriority() >= 2);
+    }
+    
+    private Message getMessage(int responseSize){
+        BroadcastCreateEvent event = new BroadcastCreateEvent(
+                this.creator.getAddress(), "messageId", 100, responseSize, 23);
+        event.processEvent(this.world);
+        this.messageChecker.next();
+        return this.messageChecker.getLastMsg();
+    }    
 }

@@ -28,17 +28,18 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     @Test
     public void testProcessEventCreatesMulticastMessageWithCorrectGroupAddress() {
         int groupAddress = 0;
-
-        MulticastCreateEvent event = new MulticastCreateEvent(
-                this.creator.getAddress(),groupAddress, "messageId", 100, 23);
-        event.processEvent(this.world);
-        this.messageChecker.next();
-
-        Message createdMessage = this.messageChecker.getLastMsg();
+        Message createdMessage = getMessage(groupAddress);
         assertEquals(
                 "Multicast message should have been created with different group address.",
                 groupAddress,
                 ((MulticastMessage)createdMessage).getGroup().getAddress());
+    }
+    
+    @Test
+    public void testPriorities(){
+        int groupAddress = 0;
+        Message createdMessage = getMessage(groupAddress);
+        assertEquals(((MulticastMessage)createdMessage).getPriority(), 1);
     }
 
     @Test
@@ -60,5 +61,13 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     @Override
     protected ExternalEvent getInstanceOfMessageEvent(DTNHost creator, String messageID, int size, double time) {
         return new MulticastCreateEvent(creator.getAddress(),0,messageID,size,time);
+    }
+    
+    private Message getMessage(int groupAddress){
+        MulticastCreateEvent event = new MulticastCreateEvent(
+                this.creator.getAddress(),groupAddress, "messageId", 100, 23);
+        event.processEvent(this.world);
+        this.messageChecker.next();
+        return this.messageChecker.getLastMsg();
     }
 }

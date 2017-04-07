@@ -41,11 +41,7 @@ public class VhmEventGraphicTest {
     public void testDrawDrawsRectangleAtEventLocation() {
         this.vhmEventGraphic.draw(this.mockedGraphics);
 
-        Mockito.verify(this.mockedGraphics).drawRect(
-                (int)this.event.getLocation().getX() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                (int)this.event.getLocation().getY() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                VhmEventGraphic.EVENT_RECT_SIZE,
-                VhmEventGraphic.EVENT_RECT_SIZE);
+        verifyRectangleIsDrawnAtEventLocation(mockedGraphics,event,Mockito.atLeastOnce());
     }
 
     @Test
@@ -126,5 +122,14 @@ public class VhmEventGraphicTest {
                 "VHM event graphic hash code should have equaled the event's ID.",
                 this.event.getID(),
                 this.vhmEventGraphic.hashCode());
+    }
+
+    public static void verifyRectangleIsDrawnAtEventLocation(Graphics2D mockedGraphics, VhmEvent event,
+                                                             VerificationMode usedMode){
+        Mockito.verify(mockedGraphics,usedMode).drawRect(
+                (int)event.getLocation().getX() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
+                (int)event.getLocation().getY() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
+                VhmEventGraphic.EVENT_RECT_SIZE,
+                VhmEventGraphic.EVENT_RECT_SIZE);
     }
 }

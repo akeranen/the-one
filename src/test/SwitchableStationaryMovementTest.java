@@ -7,7 +7,7 @@ import movement.SwitchableStationaryMovement;
 import org.junit.Test;
 
 /**
- * Contains tests for the switchabel stationary movement
+ * Contains tests for the {@link SwitchableStationaryMovement}
  *
  * Created by Marius Meyer on 01.04.17.
  */
@@ -57,15 +57,16 @@ public class SwitchableStationaryMovementTest {
     }
 
     @Test
-    public void testSetLocationShouldSetLocaton(){
-        TestCase.assertEquals(new Coord(0,0),model.getInitialLocation());
+    public void testSetLocationShouldSetLocation(){
         model.setLocation(new Coord(1,1));
-        TestCase.assertEquals(new Coord(1,1),model.getInitialLocation());
+        TestCase.assertEquals("Location of model should be the set one",
+                new Coord(1,1),model.getInitialLocation());
     }
 
     @Test
     public void testIsReadyReturnsFalse(){
-        TestCase.assertFalse(model.isReady());
+        TestCase.assertFalse("Should return false every time",
+                model.isReady());
     }
 
     private static void checkModelForSameParameters(SwitchableStationaryMovement original,

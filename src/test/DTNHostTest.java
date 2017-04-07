@@ -11,7 +11,6 @@ import junit.framework.TestCase;
 import movement.ExtendedMovementModel;
 import movement.MovementModel;
 import movement.Path;
-import org.junit.Before;
 import routing.MessageRouter;
 import routing.PassiveRouter;
 
@@ -22,12 +21,12 @@ import java.util.ArrayList;
  */
 public class DTNHostTest extends TestCase {
 
-    private DummyExtendedMovementModel movementModel = new DummyExtendedMovementModel();
     private static Path expectedPath = new Path();
 
-    @Before
-    public void clearGroupAndResetHostAddresses(){
+    public DTNHostTest(){
         DTNHost.reset();
+        expectedPath.setSpeed(1);
+        expectedPath.addWaypoint(new Coord(1,1));
     }
 
   //==========================================================================//
@@ -46,10 +45,14 @@ public class DTNHostTest extends TestCase {
     }
 
     public void testInterruptMovement(){
+        DummyExtendedMovementModel movementModel = new DummyExtendedMovementModel();
         movementModel.setCurrentMovementModel(new DummyMovement(null));
         DTNHost host = createHost(movementModel);
-        movementModel.newOrders();
+        //switch internal movement model
+        ((ExtendedMovementModel)host.getMovementModel()).getPath();
+        //call interrupt on host
         host.interruptMovement();
+        //new movement model should be selected and used
         host.move(0);
         assertEquals("Host should switch movement model and return expected path",
                 expectedPath,host.getPath());
@@ -73,7 +76,7 @@ public class DTNHostTest extends TestCase {
 
         @Override
         public Coord getInitialLocation() {
-            return null;
+            return new Coord(0,0);
         }
 
         @Override

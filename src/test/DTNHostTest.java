@@ -3,18 +3,15 @@ package test;
 
 import core.Coord;
 import core.DTNHost;
-import core.Group;
 import core.MessageListener;
 import core.MovementListener;
 import core.NetworkInterface;
 import core.Settings;
 import junit.framework.TestCase;
+import movement.ExtendedMovementModel;
 import movement.MovementModel;
 import movement.Path;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import routing.MessageRouter;
 import routing.PassiveRouter;
 
@@ -25,26 +22,14 @@ import java.util.ArrayList;
  */
 public class DTNHostTest extends TestCase {
 
-  @Before
-  public void clearGroupAndResetHostAddresses(){
-    Group.clearGroups();
-    DTNHost.reset();
-  }
+    private DummyExtendedMovementModel movementModel = new DummyExtendedMovementModel();
+    private static Path expectedPath = new Path();
 
-  //==========================================================================//
-  // Setup/cleanup
-  //==========================================================================//
-  @BeforeClass
-  public static void setUpBeforeClass()
-      throws Exception {
+    @Before
+    public void clearGroupAndResetHostAddresses(){
+        DTNHost.reset();
+    }
 
-  }
-
-  @AfterClass
-  public static void tearDownAfterClass()
-      throws Exception {
-
-  }
   //==========================================================================//
 
 
@@ -53,57 +38,66 @@ public class DTNHostTest extends TestCase {
   //==========================================================================//
   /**
    * Tests the case where the DTNHost has no interfaces configured.
-   *
-   * @throws Exception
    */
-  @Test
-  public void testNoInterfaces()
-  throws Exception {
-    final DTNHost host = createHost();
-
-    // Tests
-    assertFalse("Radio reported as active.", host.isRadioActive());
-  }
-
-    public void testInterruptMovement(){
-        DTNHost host = createHost();
-        host.interruptMovement();
-        assertNull("Path should be null",host.getPath());
+    public void testNoInterfaces() {
+        final DTNHost host = createHost(new DummyMovement(null));
+        // Tests
+        assertFalse("Radio reported as active.", host.isRadioActive());
     }
 
-  private static DTNHost createHost(){
-    return new DTNHost(
+    public void testInterruptMovement(){
+        movementModel.setCurrentMovementModel(new DummyMovement(null));
+        DTNHost host = createHost(movementModel);
+        movementModel.newOrders();
+        host.interruptMovement();
+        host.move(0);
+        assertEquals("Host should switch movement model and return expected path",
+                expectedPath,host.getPath());
+    }
+
+    private static class DummyExtendedMovementModel extends ExtendedMovementModel{
+
+        DummyExtendedMovementModel(){
+            super(new TestSettings());
+        }
+
+        /**
+         * Set a DummyMovement with the expected path as the current model
+         * @return true every time
+         */
+        @Override
+        public boolean newOrders() {
+            setCurrentMovementModel(new DummyMovement(expectedPath));
+            return true;
+        }
+
+        @Override
+        public Coord getInitialLocation() {
+            return null;
+        }
+
+        @Override
+        public MovementModel replicate() {
+            DummyExtendedMovementModel copy = new DummyExtendedMovementModel();
+            copy.setCurrentMovementModel(getCurrentMovementModel());
+            return copy;
+        }
+    }
+
+    private static DTNHost createHost(MovementModel movementModel){
+        return new DTNHost(
             new ArrayList<MessageListener>(),
             new ArrayList<MovementListener>(),
             "",
             new ArrayList<NetworkInterface>(),
             null,
-            makeMovementModel(),
+            movementModel,
             makeMessageRouter());
-  }
+    }
 
-  private static MovementModel makeMovementModel() {
-    return new MovementModel() {
-        @Override
-        public Path getPath() {
-            return new Path();
-        }
-
-      @Override
-      public Coord getInitialLocation() {
-        return null;
-      }
-
-      @Override
-      public MovementModel replicate() {
-        return makeMovementModel();
-      }
-    };
-  }
-
-  private static MessageRouter makeMessageRouter() {
-    return new PassiveRouter(new Settings());
-  }
+    private static MessageRouter makeMessageRouter() {
+        return new PassiveRouter(new Settings());
+    }
   //==========================================================================//
 
 

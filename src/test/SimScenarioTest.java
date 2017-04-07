@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Contains tests for the changes done for the VoluntaryHelperMovement
+ * Contains tests for the changes done on {@link SimScenario} for the VoluntaryHelperMovement
  *
  * Created by Marius Meyer on 01.04.17.
  */
@@ -26,7 +26,7 @@ public class SimScenarioTest {
 
 
     @Test
-    public void testMapIsSetCorrectlyAfterCreatingHosts(){
+    public void testMapIsSetCorrectlyAfterCreatingHostsWhenVhmIsUsed(){
         SimMap scenarioMap = SimScenario.getInstance().getMap();
         settings.setNameSpace(SimScenario.GROUP_NS);
         SimMap originalMap =

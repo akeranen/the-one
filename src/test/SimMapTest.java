@@ -11,11 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Contains tests for SimMap functions added for VHM
+ * Contains tests for {@link SimMap} functions added for the
+ * Voluntary Helper Movement
  *
  * Created by Marius Meyer on 05.04.17.
  */
 public class SimMapTest {
+
+    private static final String CLOSEST_NODE_MESSAGE = "The closest node should be the node at position (0,0)";
 
     //coordinates used for the second MapNode far away
     private static final double BIG_X_COORD  = 500;
@@ -46,12 +49,21 @@ public class SimMapTest {
 
     @Test
     public void testGetClosestNodeByCoordDirectlyOnNode(){
-        TestCase.assertEquals(map.getNodeByCoord(ZERO_COORD),map.getClosestNodeByCoord(ZERO_COORD));
+        TestCase.assertEquals(CLOSEST_NODE_MESSAGE,
+                map.getNodeByCoord(ZERO_COORD),map.getClosestNodeByCoord(ZERO_COORD));
     }
 
     @Test
     public void testGetClosestNodeByCoordNotDirectlyOnNode(){
-        TestCase.assertEquals(map.getNodeByCoord(ZERO_COORD),map.getClosestNodeByCoord(SEARCH_COORD));
+        TestCase.assertEquals(CLOSEST_NODE_MESSAGE,
+                map.getNodeByCoord(ZERO_COORD),map.getClosestNodeByCoord(SEARCH_COORD));
+    }
+
+    @Test
+    public void testGetClosestNodeWithZeroMapNodesReturnsNull(){
+        SimMap emptyMap = new SimMap(new HashMap<>());
+        TestCase.assertNull("null should be returned on empty map",
+                emptyMap.getClosestNodeByCoord(SEARCH_COORD));
     }
 
 }

@@ -11,15 +11,19 @@ import core.MessageListener;
 
 /**
  * Report for generating statistics about the delivery probability of One-to-One messages.
+ * The results are calculated as summary for the whole simulation run.
+ * Format is like
+ * Message stats for scenario deliveryProbabilityReport sim_time: 10073.4000
+ * created: 339 delivered: 80 delivery_prob: 0.2360
+ * 
+ * where the total simulation time is part of the header line. Created gives the number of created messages,
+ * delivered are the number of messages reaching its target. The quotient is the delivery probability. 
+ *
+ *
  * @author Nils Weidmann
  *
  */
 public final class DeliveryProbabilityReport  extends Report implements MessageListener {
-
-    private Map<String, Double> creationTimes;
-    private List<Double> latencies;
-    private List<Integer> hopCounts;
-    private List<Double> roundTripTimes;
 
     private int nrofCreated;
     private int nrofDelivered;
@@ -32,11 +36,11 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
     }
     
     public int getNrofCreated() {
-    	return nrofCreated;
+        return nrofCreated;
     }
     
     public int getNrofDelivered() {
-    	return nrofDelivered;
+        return nrofDelivered;
     }
     /**
      * Sets basic settings
@@ -44,11 +48,6 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
     @Override
     protected void init() {
         super.init();
-        this.creationTimes = new HashMap<>();
-        this.latencies = new ArrayList<>();
-        this.hopCounts = new ArrayList<>();
-        this.roundTripTimes = new ArrayList<>();
-
         this.nrofCreated = 0;
         this.nrofDelivered = 0;
     }
@@ -88,14 +87,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
         }
         
         if (m.getType() == core.Message.MessageType.ONE_TO_ONE && finalTarget) {
-            this.latencies.add(getSimTime() -
-            this.creationTimes.get(m.getId()) );
             this.nrofDelivered++;
-            this.hopCounts.add(m.getHops().size() - 1);
-
-            if (m.isResponse()) {
-                this.roundTripTimes.add(getSimTime() - m.getRequest().getCreationTime());
-            }
         }
     }
     
@@ -108,8 +100,6 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
             addWarmupID(m.getId());
             return;
         }
-
-        this.creationTimes.put(m.getId(), getSimTime());
 
         if (m.getType().equals(Message.MessageType.ONE_TO_ONE)) {
             this.nrofCreated += 1;
@@ -125,20 +115,10 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
     public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {
         // Method is not used, but must be implemented due to the class hierarchy
     }
-    
+
     /**
      * Writes the results of the report to a text file
-     * The results are calculated as summary for the whole simulation run.
-     *
-     * Format is like
-     * Message stats for scenario deliveryProbabilityReport sim_time: 10073.4000
-     * created: 339 delivered: 80 delivery_prob: 0.2360
-     * 
-     * where the total simulation time is part of the header line. Created gives the number of created messages,
-     * delivered are the number of messages reaching its target. The quotient is the delivery probability. 
-     *
      */
-
     @Override
     public void done() {
         write("Message stats for scenario " + getScenarioName() +

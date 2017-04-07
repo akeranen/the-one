@@ -3,8 +3,10 @@ package test;
 import core.BroadcastMessage;
 import core.ConnectionListener;
 import core.DTNHost;
+import core.Group;
 import core.Message;
 import core.MessageListener;
+import core.MulticastMessage;
 import core.Settings;
 import core.SimScenario;
 import org.junit.After;
@@ -65,12 +67,7 @@ public class DeliveryProbabilityReportTest {
      * @param setWarmUp Sets the warmup time to 100 for the testWarmUpTime method
      */
     private void addSettingsToEnableSimScenario(boolean setWarmUp) {
-        settings.putSetting("Group.groupID", "group");
-        settings.putSetting("Group.nrofHosts", "3");
-        settings.putSetting("Group.nrofInterfaces", "0");
-        settings.putSetting("Group.movementModel", "StationaryMovement");
-        settings.putSetting("Group.nodeLocation", "0, 0");
-        settings.putSetting("Group.router", "EpidemicRouter");
+        TestSettings.addSettingsToEnableSimScenario(settings);
         
         if (setWarmUp) {
         	settings.putSetting("DeliveryProbabilityReport.warmup", "100");
@@ -175,11 +172,20 @@ public class DeliveryProbabilityReportTest {
     	init(false);
     	DTNHost a = this.utils.createHost();
     	DTNHost b = this.utils.createHost();
+    	Group g = Group.createGroup(0);
+    	g.addHost(a);
+    	g.addHost(b);
     			
     	a.createNewMessage(new BroadcastMessage(a, "m1", 50));
     	a.sendMessage("m1", b);
     	b.messageTransferred("m1", a);
-    	assertEquals(report.getNrofDelivered(), 0);
+    	assertEquals("Broadcast messages should be ignored.", report.getNrofDelivered(), 0);
+    	
+    	a.createNewMessage(new MulticastMessage(a, g, "m1", 50));
+    	a.sendMessage("m1", b);
+    	b.messageTransferred("m1", a);
+    	assertEquals("Multicast messages should be ignored.", report.getNrofDelivered(), 0);
+    	
     }
     
     @Test

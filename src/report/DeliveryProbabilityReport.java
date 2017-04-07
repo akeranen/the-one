@@ -14,7 +14,7 @@ import core.MessageListener;
  * @author Nils Weidmann
  *
  */
-public class DeliveryProbabilityReport  extends Report implements MessageListener {
+public final class DeliveryProbabilityReport  extends Report implements MessageListener {
 
     private Map<String, Double> creationTimes;
     private List<Double> latencies;

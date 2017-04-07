@@ -17,11 +17,11 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     /**
      * size of the rectangle marking the event location
      */
-    private static final int EVENT_RECT_SIZE = 2;
+    public static final int EVENT_RECT_SIZE = 2;
     /**
      * size factor to convert a radius to a diameter
      */
-    private static final int EVENT_RANGE_SIZE_FACTOR = 2;
+    public static final int EVENT_RANGE_SIZE_FACTOR = 2;
 
     /**
      * Color of the circle around the event representing {@link VhmEvent#eventRange}
@@ -92,7 +92,7 @@ public class VhmEventGraphic extends PlayFieldGraphic {
                     scale(event.getLocation().getY()));
         }
 
-		/* draw event rectangle */
+        /* draw event rectangle */
         g2.setColor(eventLocationColor);
         g2.drawRect(scale(event.getLocation().getX() - 1), scale(event.getLocation().getY() - 1),
                 scale(EVENT_RECT_SIZE), scale(EVENT_RECT_SIZE));

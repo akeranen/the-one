@@ -1,5 +1,6 @@
 package test;
 
+import core.BroadcastMessage;
 import core.ConnectionListener;
 import core.DTNHost;
 import core.Message;
@@ -30,8 +31,14 @@ public class DeliveryProbabilityReportTest {
     private DeliveryProbabilityReport report;
     private TestUtils utils;
     private File outFile;
+    private TestSettings settings;
 
-    public void init() throws IOException{
+/**
+ * Does basic initializations for the test scenario    
+ * @param setWarmUp Sets the warmup time to 100 for the testWarmUpTime method
+ * @throws IOException Rethrows the IOException of createTempFile
+ */
+    public void init(boolean setWarmUp) throws IOException{
 
         SimScenario.reset();
         Settings.init(null);
@@ -40,9 +47,9 @@ public class DeliveryProbabilityReportTest {
         this.outFile = File.createTempFile("mgtest", ".tmp");
         this.outFile.deleteOnExit();
 
-        TestSettings settings = new TestSettings();
+        settings = new TestSettings();
         settings.putSetting("DeliveryProbabilityReport.output", outFile.getAbsolutePath());
-        this.addSettingsToEnableSimScenario(settings);
+        this.addSettingsToEnableSimScenario(setWarmUp);
 
         this.report = new DeliveryProbabilityReport();
         ArrayList<MessageListener> messageListeners = new ArrayList<>(1);
@@ -51,20 +58,23 @@ public class DeliveryProbabilityReportTest {
         this.utils = new TestUtils(new ArrayList<ConnectionListener>(), messageListeners, settings);
         this.utils.setGroupId("group");
 
-        this.playScenario();
     }
     
     /**
      * Adds settings for the scenario  
-     * @param settings
+     * @param setWarmUp Sets the warmup time to 100 for the testWarmUpTime method
      */
-    private void addSettingsToEnableSimScenario(TestSettings settings) {
+    private void addSettingsToEnableSimScenario(boolean setWarmUp) {
         settings.putSetting("Group.groupID", "group");
         settings.putSetting("Group.nrofHosts", "3");
         settings.putSetting("Group.nrofInterfaces", "0");
         settings.putSetting("Group.movementModel", "StationaryMovement");
         settings.putSetting("Group.nodeLocation", "0, 0");
         settings.putSetting("Group.router", "EpidemicRouter");
+        
+        if (setWarmUp) {
+        	settings.putSetting("DeliveryProbabilityReport.warmup", "100");
+        }
     }
 
     @After
@@ -110,13 +120,13 @@ public class DeliveryProbabilityReportTest {
 
     /**
      * Tests that message events creating and delivery are counted correctly.
-     * TODO: Add this test to Test all.
      * @throws IOException If the temporary file cannot be opened, read or closed.
      */
     @Test
     public void testDoneCorrectlyCountsMessageEvents() throws  IOException{
 
-    	init();
+    	init(false);
+    	this.playScenario();
 		this.report.done();
 
 		try (
@@ -139,4 +149,58 @@ public class DeliveryProbabilityReportTest {
                     reader.readLine());
         }
 	}
+    
+    @Test
+    /**
+     * Tests if the warm-up time is considered in the report
+     * @throws IOException rethrows the IOException of the init method
+     */
+    public void testWarmUpTime() throws IOException {
+        init(true);
+        DTNHost a = this.utils.createHost();
+    	DTNHost b = this.utils.createHost();
+    	
+    	a.createNewMessage(new Message(a, b, "m1", 50));
+    	a.sendMessage("m1", b);
+    	b.messageTransferred("m1", a);
+    	assertEquals(report.getNrofDelivered(), 0);
+    }
+    
+    @Test
+    /** 
+     * Tests if broadcast messages are ignored
+     * @throws IOException IOException rethrows the IOException of the init method
+     */
+    public void testIgnoreOtherMessageTypes() throws  IOException {
+    	init(false);
+    	DTNHost a = this.utils.createHost();
+    	DTNHost b = this.utils.createHost();
+    			
+    	a.createNewMessage(new BroadcastMessage(a, "m1", 50));
+    	a.sendMessage("m1", b);
+    	b.messageTransferred("m1", a);
+    	assertEquals(report.getNrofDelivered(), 0);
+    }
+    
+    @Test
+    /**
+     * Tests if the second time, a node receives a message, it is ignored
+     * @throws IOException IOException rethrows the IOException of the init method
+     */
+    public void testIgnoreSecondDelivery() throws  IOException {
+    	init(false);
+    	DTNHost a = this.utils.createHost();
+    	DTNHost b = this.utils.createHost();
+    	DTNHost c = this.utils.createHost();
+    	
+    	a.createNewMessage(new Message(a, b, "m1", 50));
+    	
+    	a.sendMessage("m1", b);
+    	b.messageTransferred("m1", a);
+    	assertEquals(report.getNrofDelivered(), 1);
+    	
+    	a.sendMessage("m1", b);
+    	b.messageTransferred("m1", a);
+    	assertEquals(report.getNrofDelivered(), 1);
+    }
 }

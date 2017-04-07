@@ -30,17 +30,24 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
     public DeliveryProbabilityReport() {
         init();
     }
-
+    
+    public int getNrofCreated() {
+    	return nrofCreated;
+    }
+    
+    public int getNrofDelivered() {
+    	return nrofDelivered;
+    }
     /**
      * Sets basic settings
      */
     @Override
     protected void init() {
         super.init();
-        this.creationTimes = new HashMap<String, Double>();
-        this.latencies = new ArrayList<Double>();
-        this.hopCounts = new ArrayList<Integer>();
-        this.roundTripTimes = new ArrayList<Double>();
+        this.creationTimes = new HashMap<>();
+        this.latencies = new ArrayList<>();
+        this.hopCounts = new ArrayList<>();
+        this.roundTripTimes = new ArrayList<>();
 
         this.nrofCreated = 0;
         this.nrofDelivered = 0;
@@ -87,7 +94,7 @@ public class DeliveryProbabilityReport  extends Report implements MessageListene
             this.hopCounts.add(m.getHops().size() - 1);
 
             if (m.isResponse()) {
-                this.roundTripTimes.add(getSimTime() -    m.getRequest().getCreationTime());
+                this.roundTripTimes.add(getSimTime() - m.getRequest().getCreationTime());
             }
         }
     }

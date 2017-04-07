@@ -3,7 +3,6 @@ package test;
 import core.SimScenario;
 import gui.DTNSimGUI;
 import gui.playfield.PlayField;
-import gui.playfield.VhmEventGraphic;
 import input.VhmEvent;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,14 +11,11 @@ import org.mockito.Mockito;
 import java.awt.Graphics2D;
 
 /**
- * Contains tests for the VhmListener methods in the PlayField class
+ * Contains tests for the VhmListener methods in the {@link PlayField} class
  *
  * Created by Marius Meyer on 01.04.17.
  */
 public class PlayFieldTest {
-
-    /** The number of directions available in one dimension. */
-    private static final int NUM_DIRECTIONS = 2;
 
     /**
      * graphics for drawing in the tests
@@ -33,9 +29,8 @@ public class PlayFieldTest {
         //set up is done in functions with @before annotation
     }
 
-
     @Before
-    public void setUpAllScenario(){
+    public void setUpPlayFieldAndCallVhmEventStartedMethod(){
         field = createTestPlayField();
         event = VhmEventTest.createVhmEventWithDefaultValues();
         field.vhmEventStarted(event);
@@ -48,31 +43,20 @@ public class PlayFieldTest {
     static PlayField createTestPlayField(){
         SimScenario.reset();
         TestSettings.addSettingsToEnableSimScenario(new TestSettings());
-        DTNSimGUI gui = new DTNSimGUI();
-        return new PlayField(SimScenario.getInstance().getWorld(),gui);
+        return new PlayField(SimScenario.getInstance().getWorld(),new DTNSimGUI());
     }
 
-
     @Test
-    public void testVhmEventStartedAddsAndDrawsAnEvent(){
+    public void testPaintDrawsEventAfterEventStart(){
         field.paint(mockedGraphics);
-        Mockito.verify(this.mockedGraphics).drawRect(
-                (int)this.event.getLocation().getX() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                (int)this.event.getLocation().getY() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                VhmEventGraphic.EVENT_RECT_SIZE,
-                VhmEventGraphic.EVENT_RECT_SIZE);
+        VhmEventGraphicTest.verifyRectangleIsDrawnAtEventLocation(mockedGraphics,event,Mockito.atLeastOnce());
     }
 
     @Test
-    public void testVhmEventEndedRemovesAndDoesntDrawAnEvent(){
+    public void testPaintDoesntDrawEventAfterEventEnd(){
         field.vhmEventEnded(event);
         field.paint(mockedGraphics);
-        Mockito.verify(this.mockedGraphics,Mockito.never()).drawRect(
-                (int)this.event.getLocation().getX() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                (int)this.event.getLocation().getY() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                VhmEventGraphic.EVENT_RECT_SIZE,
-                VhmEventGraphic.EVENT_RECT_SIZE);
+
+        VhmEventGraphicTest.verifyRectangleIsDrawnAtEventLocation(mockedGraphics,event,Mockito.never());
     }
-
-
 }

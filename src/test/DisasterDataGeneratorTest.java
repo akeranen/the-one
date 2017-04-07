@@ -3,12 +3,10 @@ package test;
 import core.Coord;
 import core.DTNHost;
 import core.DisasterData;
-import core.UpdateListener;
 import core.World;
 import input.DisasterDataCreateEvent;
 import input.DisasterDataGenerator;
 import input.DisasterDataNotifier;
-import input.EventQueue;
 import input.ExternalEvent;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -23,7 +21,7 @@ import java.util.List;
  * Created by Britta Heymann on 06.04.2017.
  */
 public class DisasterDataGeneratorTest {
-    /* Properties used in tests. */
+    /* Properties for the generator used in tests. */
     private static final int MIN_SIZE = 3;
     private static final int MAX_SIZE = 10;
     private static final int MIN_OFFSET = 7;
@@ -35,9 +33,6 @@ public class DisasterDataGeneratorTest {
     /** Number of tries in tests using (pseudo) randomness. */
     private static final int NUM_TRIES = 100;
 
-    private TestSettings settings;
-    private DisasterDataGenerator generator;
-
     /** Creator location used for tests. */
     private static final Coord CREATOR_LOCATION = new Coord(34, 502);
 
@@ -45,6 +40,12 @@ public class DisasterDataGeneratorTest {
     private World world;
     private static final int WORLD_WIDTH = 100;
     private static final int WORLD_HEIGHT = 50;
+
+    /** Settings used to initialize the generator. */
+    private TestSettings settings = new TestSettings();
+
+    /** The generator used in tests. */
+    private DisasterDataGenerator generator;
 
     /** Object recording created disaster data. */
     private RecordingDisasterDataCreationListener recorder = new RecordingDisasterDataCreationListener();
@@ -56,18 +57,8 @@ public class DisasterDataGeneratorTest {
 
     @Before
     public void setUp() {
-        /* Create settings. */
-        this.settings = new TestSettings();
-        this.settings.putSetting(
-                DisasterDataGenerator.DATA_SIZE,
-                String.format("%d,%d", MIN_SIZE, MAX_SIZE));
-        this.settings.putSetting(
-                DisasterDataGenerator.DATA_LOCATION_OFFSET,
-                String.format("%d,%d", MIN_OFFSET, MAX_OFFSET));
-        this.settings.putSetting(
-                DisasterDataGenerator.DATA_TIME_DIFFERENCE,
-                String.format("%f,%f", MIN_TIME_DIFFERENCE, MAX_TIME_DIFFERENCE));
-        this.settings.putSetting(DisasterDataGenerator.SEED, Integer.toString(SEED));
+        /* Initialize settings. */
+        this.addGeneratorPropertiesToSettings();
 
         /* Use them to create the generator. */
         this.generator = new DisasterDataGenerator(this.settings);
@@ -86,13 +77,30 @@ public class DisasterDataGeneratorTest {
                 WORLD_WIDTH,
                 WORLD_HEIGHT,
                 1,
-                new ArrayList<UpdateListener>(),
+                new ArrayList<>(),
                 false,
-                new ArrayList<EventQueue>());
+                new ArrayList<>());
+    }
+
+    /**
+     * Adds {@link DisasterDataGenerator} properties to settings object: data size range, location offset range, and
+     * time difference range.
+     */
+    private void addGeneratorPropertiesToSettings() {
+        this.settings.putSetting(
+                DisasterDataGenerator.DATA_SIZE,
+                String.format("%d,%d", MIN_SIZE, MAX_SIZE));
+        this.settings.putSetting(
+                DisasterDataGenerator.DATA_LOCATION_OFFSET,
+                String.format("%d,%d", MIN_OFFSET, MAX_OFFSET));
+        this.settings.putSetting(
+                DisasterDataGenerator.DATA_TIME_DIFFERENCE,
+                String.format("%f,%f", MIN_TIME_DIFFERENCE, MAX_TIME_DIFFERENCE));
+        this.settings.putSetting(DisasterDataGenerator.SEED, Integer.toString(SEED));
     }
 
     @Test
-    public void testNextEventCreatesDisasterDataCreateEvent() {
+    public void testNextEventCreatesEventOfTypeDisasterDataCreateEvent() {
         ExternalEvent event = this.generator.nextEvent();
         TestCase.assertTrue("Expected different type of event.", event instanceof DisasterDataCreateEvent);
     }
@@ -156,6 +164,11 @@ public class DisasterDataGeneratorTest {
                 secondGenerator.nextEventsTime());
     }
 
+    /**
+     * Creates the next {@link DisasterDataCreateEvent} via the {@link DisasterDataGenerator}, processes it, and
+     * returns the resulting {@link DisasterData} object.
+     * @return A newly generated {@link DisasterData} object.
+     */
     private DisasterData createNextData() {
         DisasterDataCreateEvent event = (DisasterDataCreateEvent)this.generator.nextEvent();
         event.processEvent(this.world);

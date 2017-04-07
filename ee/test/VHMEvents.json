@@ -24,3 +24,4 @@
 "event19" :{ "type" : "DISASTER", "event_range" : 1558.87272733274, "safe_range" : 3117.74545466548, "max_range" : 4676.61818199823, "intensity" : 6, "start" : 47460, "end" : 74010, "location" : { "x" : 14809, "y" : 18785} },
 "event20" :{ "type" : "DISASTER", "event_range" : 114.757946146764, "safe_range" : 229.515892293529, "max_range" : 344.273838440293, "intensity" : 6, "start" : 161300, "end" : 185930, "location" : { "x" : 13520, "y" : 12912} }
 }
+

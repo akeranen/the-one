@@ -583,13 +583,4 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
         return this.getAddress() - h.getAddress();
     }
 
-    /**
-     * Returns the instance of the movement model of the node is using.
-     *
-     * @return the movement model used by the node
-     */
-    public MovementModel getMovementModel(){
-        return this.movement;
-    }
-
 }

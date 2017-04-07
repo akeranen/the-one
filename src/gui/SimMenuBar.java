@@ -53,8 +53,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	private JCheckBoxMenuItem showNodeConnections;
 	private JCheckBoxMenuItem showBuffer;
 
-	public JCheckBoxMenuItem showEventAllRanges;
-	public JCheckBoxMenuItem showEventName;
+	private JCheckBoxMenuItem showEventAllRanges;
+	private JCheckBoxMenuItem showEventName;
 
 	private JCheckBoxMenuItem enableMapGraphic;
 	private JCheckBoxMenuItem autoClearOverlay;
@@ -271,5 +271,23 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		JOptionPane.showMessageDialog(null, txt, "warning",
 				JOptionPane.WARNING_MESSAGE);
 	}
+
+    /**
+    * Return the check box item used to control the visibility of event names.
+    * Used for testing purposes.
+    * @return the check box item used to control the visibility of event names
+    */
+    public JCheckBoxMenuItem getShowEventName(){
+        return showEventName;
+    }
+
+    /**
+    * Return the check box item used to control the visibility of event ranges.
+    * Used for testing purposes.
+    * @return the check box item used to control the visibility of event ranges
+    */
+    public JCheckBoxMenuItem getShowEventAllRanges(){
+        return showEventAllRanges;
+    }
 
 }

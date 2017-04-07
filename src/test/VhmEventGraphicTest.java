@@ -81,6 +81,22 @@ public class VhmEventGraphicTest {
         this.checkRangeWasDrawn(this.event.getMaxRange(), Mockito.never());
     }
 
+    @Test
+    public void testSetAndGetDrawAllRanges(){
+        VhmEventGraphic.setDrawAllRanges(true);
+        assertTrue("Getter method should return true",VhmEventGraphic.getDrawAllRanges());
+        VhmEventGraphic.setDrawAllRanges(false);
+        assertFalse("Getter method should return false",VhmEventGraphic.getDrawAllRanges());
+    }
+
+    @Test
+    public void testSetAndGetDrawEventName(){
+        VhmEventGraphic.setDrawEventName(true);
+        assertTrue("Getter method should return true",VhmEventGraphic.getDrawEventName());
+        VhmEventGraphic.setDrawEventName(false);
+        assertFalse("Getter method should return true",VhmEventGraphic.getDrawEventName());
+    }
+
     /**
      * Checks if a circle with the provided radius has been drawn the expected number of times.
      * @param radius The radius to check for.

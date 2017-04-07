@@ -87,6 +87,11 @@ public class ExternalEventsQueueTest extends TestCase {
         assertTrue(tmpBinFile.delete()); // make sure all locks are gone
     }
 
+    /**
+     * Tests, if the {@link ExternalEventsQueue} uses the {@link VhmEventReader} to load VHM events from a given JSON
+     * file.
+     * @throws IOException if the JSON file including the VHM events could not be opened.
+     */
     public void testVhmEventEEQ() throws IOException{
         eeq = new ExternalEventsQueue(TEMP_VHM_FILE_PATH, PRELOAD_NUMBER);
 

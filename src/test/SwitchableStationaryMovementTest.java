@@ -39,7 +39,8 @@ public class SwitchableStationaryMovementTest {
 
     @Test
     public void testGetPathShouldReturnNull(){
-        TestCase.assertNull(model.getPath());
+        TestCase.assertNull("The returned path should be null, because the node is not moving",
+                model.getPath());
     }
 
     @Test

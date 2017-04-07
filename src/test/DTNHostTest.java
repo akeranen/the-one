@@ -44,22 +44,33 @@ public class DTNHostTest extends TestCase {
         assertFalse("Radio reported as active.", host.isRadioActive());
     }
 
+    /**
+     * Tests, if the current movement model of a host is interrupted after the interruptMovement method is called.
+     * The method tests this by switching the movement model. The returned path by the host should then be the one
+     * of the new movement model.
+     */
     public void testInterruptMovement(){
         DummyExtendedMovementModel movementModel = new DummyExtendedMovementModel();
         movementModel.setCurrentMovementModel(new DummyMovement(null));
         DTNHost host = createHost(movementModel);
-        //switch internal movement model
-        ((ExtendedMovementModel)host.getMovementModel()).getPath();
+        host.move(0);
         //call interrupt on host
         host.interruptMovement();
-        //new movement model should be selected and used
         host.move(0);
         assertEquals("Host should switch movement model and return expected path",
                 expectedPath,host.getPath());
     }
 
+    /**
+     * Dummy class for a {@link ExtendedMovementModel}. It is used in the {@link DTNHostTest#testInterruptMovement()}
+     * test to switch movement models.
+     */
     private static class DummyExtendedMovementModel extends ExtendedMovementModel{
 
+        /**
+         * Default constructor. Super constructor is called with {@link TestSettings} instance to set all needed
+         * parameters.
+         */
         DummyExtendedMovementModel(){
             super(new TestSettings());
         }
@@ -74,6 +85,10 @@ public class DTNHostTest extends TestCase {
             return true;
         }
 
+        /**
+         * Returns the initial location of the movement model.
+         * @return always returns (0,0).
+         */
         @Override
         public Coord getInitialLocation() {
             return new Coord(0,0);

@@ -32,6 +32,9 @@ public class DisasterDataGeneratorTest extends AbstractDisasterDataGeneratorTest
     /** Creator location used for tests. */
     private static final Coord CREATOR_LOCATION = new Coord(34, 502);
 
+    /** Number of tries in tests using (pseudo) randomness. */
+    private static final int NUM_TRIES = 100;
+
     @Override
     protected AbstractDisasterDataGenerator createGenerator() {
         /* Adds DisasterDataGenerator specific properties to settings object:
@@ -112,5 +115,13 @@ public class DisasterDataGeneratorTest extends AbstractDisasterDataGeneratorTest
                 "Generators with same seed should have the same first event time.",
                 this.generator.nextEventsTime(),
                 secondGenerator.nextEventsTime());
+    }
+
+    /**
+     * Returns the number of tries in tests using (pseudo) randomness.
+     */
+    @Override
+    protected int getNumberTries() {
+        return NUM_TRIES;
     }
 }

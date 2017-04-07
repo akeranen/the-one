@@ -26,9 +26,6 @@ public abstract class AbstractDisasterDataGeneratorTest {
     private static final int MAX_SIZE = 10;
     private static final int SEED = 42;
 
-    /** Number of tries in tests using (pseudo) randomness. */
-    protected static final int NUM_TRIES = 100;
-
     /** World used in tests. */
     protected World world;
     private static final int WORLD_WIDTH = 100;
@@ -99,7 +96,7 @@ public abstract class AbstractDisasterDataGeneratorTest {
     public void testSizeIsCorrect() {
         int minUsedSize = Integer.MAX_VALUE;
         int maxUsedSize = Integer.MIN_VALUE;
-        for (int i = 0; i < NUM_TRIES; i++) {
+        for (int i = 0; i < this.getNumberTries(); i++) {
             int dataSize = this.createNextData().getSize();
             minUsedSize = Integer.min(minUsedSize, dataSize);
             maxUsedSize = Integer.max(maxUsedSize, dataSize);
@@ -124,4 +121,9 @@ public abstract class AbstractDisasterDataGeneratorTest {
         event.processEvent(this.world);
         return this.recorder.getLastData();
     }
+
+    /**
+     * Returns the number of tries in tests using (pseudo) randomness.
+     */
+    protected abstract int getNumberTries();
 }

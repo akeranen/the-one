@@ -4,13 +4,6 @@
  */
 package routing;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
 import core.Application;
 import core.Connection;
 import core.DTNHost;
@@ -22,6 +15,14 @@ import core.SimClock;
 import core.SimError;
 import routing.util.RoutingInfo;
 import util.Tuple;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Superclass for message routers.
@@ -221,7 +222,7 @@ public abstract class MessageRouter {
 	 * @return true if a message with the same ID has been received by
 	 * this host as the final recipient.
 	 */
-	protected boolean isDeliveredMessage(Message m) {
+	public boolean isDeliveredMessage(Message m) {
 		return (this.deliveredMessages.containsKey(m.getId()));
 	}
 
@@ -444,6 +445,12 @@ public abstract class MessageRouter {
 			for (MessageListener ml : this.mListeners) {
 				ml.newMessage(m);
 			}
+            /*add multicast or broadcast message to received messages for the sender
+            to prevent it from being handled as new message
+            */
+            if (m.getType() == Message.MessageType.BROADCAST || m.getType() == Message.MessageType.MULTICAST){
+                this.deliveredMessages.put(m.getId(),m);
+            }
 		}
 	}
 

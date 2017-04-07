@@ -6,3 +6,6 @@ Events1.class = MulticastEventGenerator
 Events1.interval = 600,600
 # Adapt range of message source/destination addresses to fewer hosts.
 Events1.hosts = 0,10
+
+Report.nrofReports = 1
+Report.report1 = MulticastMessageDeliveryReport

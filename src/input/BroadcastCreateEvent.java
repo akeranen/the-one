@@ -16,6 +16,7 @@ public class BroadcastCreateEvent extends MessageEvent {
     private int responseSize;
     /** this priority range leads to using priorities 2-10 */
     private static final int PRIORITY_RANGE = 9;
+    private static final int PRIORITY_OFFSET = 2;
 
     /**
      * Creates a broadcast creation event with a optional response request
@@ -40,7 +41,7 @@ public class BroadcastCreateEvent extends MessageEvent {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
         Random rn = new Random();
         // offset 2, as message and multicast have priorities 0 and 1
-        int priority = rn.nextInt(PRIORITY_RANGE)+2;
+        int priority = rn.nextInt(PRIORITY_RANGE)+ PRIORITY_OFFSET;
         BroadcastMessage messageToCreate = new BroadcastMessage(from, this.id, this.size, priority);
         messageToCreate.setResponseSize(this.responseSize);
         from.createNewMessage(messageToCreate);

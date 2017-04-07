@@ -38,7 +38,7 @@
 		"safe_range" : 991,
 		"max_range" : 8000,
 		"intensity" : 10,
-		"start" : 30,
+		"start" : 0,
 		"end" : 259200,
 		"location" : {
 			"x" : 6047,
@@ -51,7 +51,7 @@
 		"safe_range" : 855,
 		"max_range" : 8500,
 		"intensity" : 8,
-		"start" : 50,
+		"start" : 0,
 		"end" : 259200,
 		"location" : {
 			"x" : 14651,
@@ -64,7 +64,7 @@
 		"safe_range" : 970,
 		"max_range" : 9000,
 		"intensity" : 10,
-		"start" : 172800,
+		"start" : 0,
 		"end" : 259200,
 		"location" : {
 			"x" : 17034,

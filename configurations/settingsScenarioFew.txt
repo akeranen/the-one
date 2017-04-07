@@ -12,7 +12,7 @@ wInterface.transmitRange = 30
 wInterface.scanInterval = 30
 
 # Common settings for all groups
-Group.movementModel = MapBasedMovement
+Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
 # Buffer size of 10 MB
 Group.bufferSize = 10M
@@ -60,9 +60,7 @@ Events.nrof = 17
 # max number of external events to preload (default = 500)
 Events1.nrofPreload = 7
 # path to external events file 
-#Events1.filePath = ee/test/eventsScenarioOne.json
-# using this one, as long as the according branch isn't merged
-Events1.filePath = ee/test/VHMTestEvents.json
+Events1.filePath = ee/VhmEvents/eventsScenarioFew.json
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
@@ -239,7 +237,7 @@ Report.report4 = ImmediateMessageDelayReport
 # World's size for Movement Models without implicit size (width, height; meters)
 MovementModel.worldSize = 25000, 25000
 
-#MapBasedMovement.nrofMapFiles = 3
-#MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt
+MapBasedMovement.nrofMapFiles = 1
+MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt
 #MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
 #MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt

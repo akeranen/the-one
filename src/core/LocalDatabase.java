@@ -1,8 +1,10 @@
 package core;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Local database which stores {@link DisasterData} along with
@@ -28,7 +30,7 @@ public class LocalDatabase {
     private int usedSize;
 
     /** All stored data */
-    private List<DisasterData> dataList = new ArrayList<>();
+    private Set<DisasterData> data = new HashSet<>();
 
     /**
      * Initializes a new instance of the {@link LocalDatabase} class.
@@ -48,7 +50,7 @@ public class LocalDatabase {
      * @param time The current time, important for deletion check.
      */
     public void add (DisasterData newDataItem, Coord location, double time){
-        this.dataList.add(newDataItem);
+        this.data.add(newDataItem);
         this.usedSize += newDataItem.getSize();
         this.deleteIrrelevantData(location, time);
     }
@@ -62,7 +64,7 @@ public class LocalDatabase {
      */
     private void deleteIrrelevantData(Coord location, double time) {
         double deletionThreshold = this.computeDeletionThreshold();
-        for (Iterator<DisasterData> dataIterator = this.dataList.iterator(); dataIterator.hasNext();) {
+        for (Iterator<DisasterData> dataIterator = this.data.iterator(); dataIterator.hasNext();) {
             DisasterData dataItem = dataIterator.next();
             if (LocalDatabase.computeUtility(dataItem, location, time) < deletionThreshold){
                 this.usedSize -= dataItem.getSize();
@@ -92,7 +94,7 @@ public class LocalDatabase {
      */
     public List<DisasterData> getAllDataWithMinimumUtility(double minUtility, Coord location, double time){
         List<DisasterData> dataWithMinUtility = new ArrayList<>();
-        for (DisasterData dataItem : this.dataList) {
+        for (DisasterData dataItem : this.data) {
             if (LocalDatabase.computeUtility(dataItem, location, time) >= minUtility){
                 dataWithMinUtility.add(dataItem);
             }

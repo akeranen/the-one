@@ -31,6 +31,18 @@ public class MulticastCreateEvent extends MessageEvent {
         super(from, to, id, time, prio);
         this.size = size;
     }
+    
+    /**
+     * Creates a message event.
+     *
+     * @param from Where the message comes from
+     * @param to   Who the message goes to
+     * @param id   ID of the message
+     * @param time Time when the message event occurs
+     */
+    public MulticastCreateEvent(int from, int to, String id, int size, double time){
+        this(from, to, id, size, time, INVALID_PRIORITY);
+    }
 
     /**
      * Creates the multicast message this event represents.

@@ -12,6 +12,8 @@ import core.World;
  * External event for creating a message.
  */
 public class MessageCreateEvent extends MessageEvent {
+    /** Default value for messages without any priority */
+    public static final int INVALID_PRIORITY = -1;
 	private int size;
 	private int responseSize;
 
@@ -32,7 +34,21 @@ public class MessageCreateEvent extends MessageEvent {
 		this.size = size;
 		this.responseSize = responseSize;
 	}
-
+	
+	/**
+     * Creates a message creation event with a optional response request
+     * @param from The creator of the message
+     * @param to Where the message is destined to
+     * @param id ID of the message
+     * @param size Size of the message
+     * @param responseSize Size of the requested response message or 0 if
+     * no response is requested
+     * @param time Time, when the message is created
+     */
+	public MessageCreateEvent(int from, int to, String id, int size,
+            int responseSize, double time){
+	    this(from, to, id, size, responseSize, time, INVALID_PRIORITY);
+	}
 
 	/**
 	 * Creates the message this event represents.

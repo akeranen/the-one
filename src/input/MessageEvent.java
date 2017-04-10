@@ -8,8 +8,8 @@ package input;
  * A message related external event
  */
 public abstract class MessageEvent extends ExternalEvent {
-    /** fixed priority for one-to-one messages */
-    public static final int MESSAGE_PRIORITY = 0;
+    /** Default value for messages without any priority */
+    public static final int INVALID_PRIORITY = -1;
 	/** address of the node the message is from */
 	protected int fromAddr;
 	/** address of the node the message is to */
@@ -33,6 +33,17 @@ public abstract class MessageEvent extends ExternalEvent {
 		this.toAddr= to;
 		this.id = id;
 		this.priority = prio;
+	}
+	
+	/**
+     * Creates a message event.
+     * @param from Where the message comes from
+     * @param to Who the message goes to
+     * @param id ID of the message
+     * @param time Time when the message event occurs
+     */
+	public MessageEvent(int from, int to, String id, double time){
+	    this(from, to, id, time, INVALID_PRIORITY);
 	}
 
 	@Override

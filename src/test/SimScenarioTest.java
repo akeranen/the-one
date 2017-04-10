@@ -21,6 +21,7 @@ public class SimScenarioTest {
 
     @Before
     public void loadTestSettingsForVhm(){
+        SimScenario.reset();
         Settings.init(SETTINGS_TEST_FILE_PATH);
     }
 

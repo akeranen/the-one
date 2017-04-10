@@ -69,7 +69,7 @@ Events2.interval = 60,300
 # Message sizes (0.1KB - 1KB)
 Events2.size = 0.1k,1k
 # range of message source/destination addresses
-Events2.hosts = 0,19999
+Events2.hosts = 0,9999
 # Message ID prefix
 Events2.prefix = b
 
@@ -80,7 +80,7 @@ Events3.interval = 60,120
 # Message sizes (500KB - 4MB)
 Events3.size = 500k,4M
 # range of message source/destination addresses
-Events3.hosts = 0,19999
+Events3.hosts = 0,9999
 # Message ID prefix
 Events3.prefix = B
 
@@ -91,9 +91,9 @@ Events4.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events4.size = 0.1k,1k
 # range of message source/destination addresses
-Events4.hosts = 0,19999
+Events4.hosts = 0,9999
 # Message ID prefix
-Events4.prefix = m1
+Events4.prefix = a
 
 Events5.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -101,9 +101,9 @@ Events5.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events5.size = 0.1k,1k
 # range of message source/destination addresses
-Events5.hosts = 0,19999
+Events5.hosts = 0,9999
 # Message ID prefix
-Events5.prefix = m2
+Events5.prefix = c
 
 Events6.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -111,9 +111,9 @@ Events6.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events6.size = 0.1k,1k
 # range of message source/destination addresses
-Events6.hosts = 0,19999
+Events6.hosts = 0,9999
 # Message ID prefix
-Events6.prefix = m3
+Events6.prefix = d
 
 Events7.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -121,9 +121,9 @@ Events7.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events7.size = 0.1k,1k
 # range of message source/destination addresses
-Events7.hosts = 0,19999
+Events7.hosts = 0,9999
 # Message ID prefix
-Events7.prefix = m4
+Events7.prefix = e
 
 Events8.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -131,9 +131,9 @@ Events8.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events8.size = 0.1k,1k
 # range of message source/destination addresses
-Events8.hosts = 0,19999
+Events8.hosts = 0,9999
 # Message ID prefix
-Events8.prefix = m5
+Events8.prefix = f
 
 Events9.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -141,9 +141,9 @@ Events9.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events9.size = 0.1k,1k
 # range of message source/destination addresses
-Events9.hosts = 0,19999
+Events9.hosts = 0,9999
 # Message ID prefix
-Events9.prefix = m6
+Events9.prefix = g
 
 Events10.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -151,9 +151,9 @@ Events10.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events10.size = 0.1k,1k
 # range of message source/destination addresses
-Events10.hosts = 0,19999
+Events10.hosts = 0,9999
 # Message ID prefix
-Events10.prefix = m7
+Events10.prefix = h
 
 Events11.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -161,9 +161,9 @@ Events11.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events11.size = 0.1k,1k
 # range of message source/destination addresses
-Events11.hosts = 0,19999
+Events11.hosts = 0,9999
 # Message ID prefix
-Events11.prefix = m8
+Events11.prefix = i
 
 Events12.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -171,9 +171,9 @@ Events12.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events12.size = 0.1k,1k
 # range of message source/destination addresses
-Events12.hosts = 0,19999
+Events12.hosts = 0,9999
 # Message ID prefix
-Events12.prefix = m9
+Events12.prefix = j
 
 Events13.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -181,9 +181,9 @@ Events13.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events13.size = 0.1k,1k
 # range of message source/destination addresses
-Events13.hosts = 0,19999
+Events13.hosts = 0,9999
 # Message ID prefix
-Events13.prefix = m10
+Events13.prefix = k
 
 # Class for fourth message type (Multicasts large)
 Events14.class = MulticastEventGenerator
@@ -192,7 +192,7 @@ Events14.interval = 10,30
 # Message sizes (500KB - 4MB)
 Events14.size = 500k,4M
 # range of message source/destination addresses
-Events14.hosts = 0,19999
+Events14.hosts = 0,9999
 # Message ID prefix
 Events14.prefix = M
 
@@ -203,9 +203,9 @@ Events15.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events15.size = 0.1k,1k
 # range of message source/destination addresses
-Events15.hosts = 0,19999
+Events15.hosts = 0,9999
 # Message ID prefix
-Events15.prefix = pm1
+Events15.prefix = n
 
 Events16.class = MessageEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
@@ -213,9 +213,9 @@ Events16.interval = 1,30
 # Message sizes (0.1KB - 1KB)
 Events16.size = 0.1k,1k
 # range of message source/destination addresses
-Events16.hosts = 0,19999
+Events16.hosts = 0,9999
 # Message ID prefix
-Events16.prefix = pm2
+Events16.prefix = o
 
 # Class for sixth message type (1-to-1 messages large)
 Events17.class = MessageEventGenerator
@@ -224,18 +224,16 @@ Events17.interval = 50,150
 # Message sizes (500KB - 4MB)
 Events17.size = 500k,4M
 # range of message source/destination addresses
-Events17.hosts = 0,19999
+Events17.hosts = 0,9999
 # Message ID prefix
-Events17.prefix = PM
+Events17.prefix = P
 
+# TODO: add reports for delivery probability and DB synchronization when implemented
 Report.nrofReports = 4
 Report.report1 = BroadcastDeliveryReport
 Report.report2 = MulticastMessageDeliveryReport
 Report.report3 = TrafficReport
 Report.report4 = ImmediateMessageDelayReport
-
-# World's size for Movement Models without implicit size (width, height; meters)
-MovementModel.worldSize = 25000, 25000
 
 MapBasedMovement.nrofMapFiles = 1
 MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt

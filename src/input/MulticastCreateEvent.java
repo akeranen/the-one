@@ -19,7 +19,7 @@ public class MulticastCreateEvent extends MessageEvent {
     private int size;
 
     /**
-     * Creates a message event.
+     * Creates a multicast creation event.
      *
      * @param from Where the message comes from
      * @param to   Who the message goes to
@@ -33,12 +33,11 @@ public class MulticastCreateEvent extends MessageEvent {
     }
     
     /**
-     * Creates a message event.
-     *
-     * @param from Where the message comes from
-     * @param to   Who the message goes to
-     * @param id   ID of the message
-     * @param time Time when the message event occurs
+     * Creates a multicast creation event.
+     * Using the same parameters as the previous constructor, but the priority.
+     * Used for MulticastCreateEvents without explicit priority. Therefore, gets
+     * the INVALID_PRIORITY.
+     * Calls the previous constructor.
      */
     public MulticastCreateEvent(int from, int to, String id, int size, double time){
         this(from, to, id, size, time, INVALID_PRIORITY);

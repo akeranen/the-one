@@ -3,6 +3,7 @@ package test;
 import core.SettingsError;
 import input.MessageCreateEvent;
 import input.MessageEventGenerator;
+
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -45,6 +46,17 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
         this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,1");
         this.settings.putSetting(MessageEventGenerator.TO_HOST_RANGE_S, "0,1");
         new MessageEventGenerator(this.settings);
+    }
+    
+    @Test
+    public void testPriorities(){
+        AbstractMessageEventGenerator generator = new MessageEventGenerator(this.settings);
+        MessageCreateEvent event;
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
+            event = (MessageCreateEvent) generator.nextEvent();
+            assertTrue(event.getPriority() <= 10);
+            assertTrue(event.getPriority() >= 1);
+        }
     }
 
     /**

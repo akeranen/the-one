@@ -52,15 +52,19 @@ public class BroadcastCreateEventTest extends AbstractMessageCreateEventTest {
     public void testPriorities(){
         int responseSize = 50;
         Message createdMessage = getMessage(responseSize);
-        assertTrue(((BroadcastMessage)createdMessage).getPriority() <= 10);
-        assertTrue(((BroadcastMessage)createdMessage).getPriority() >= 2);
+        assertTrue(((BroadcastMessage)createdMessage).getPriority() == -1);
+        createdMessage = getMessageWithPriority(responseSize, PRIORITY);
     }
     
     private Message getMessage(int responseSize){
+        return getMessageWithPriority(responseSize, Message.INVALID_PRIORITY);
+    }    
+    
+    private Message getMessageWithPriority(int responseSize, int prio){
         BroadcastCreateEvent event = new BroadcastCreateEvent(
-                this.creator.getAddress(), "messageId", 100, responseSize, 23);
+                this.creator.getAddress(), "messageId", 100, responseSize, 23, prio);
         event.processEvent(this.world);
         this.messageChecker.next();
         return this.messageChecker.getLastMsg();
-    }    
+    }  
 }

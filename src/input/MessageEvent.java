@@ -37,10 +37,8 @@ public abstract class MessageEvent extends ExternalEvent {
 	
 	/**
      * Creates a message event.
-     * @param from Where the message comes from
-     * @param to Who the message goes to
-     * @param id ID of the message
-     * @param time Time when the message event occurs
+     * Uses the same parameters as the previous constructor, but the priority.
+     * Calls the previous constructor with the INVALID_PRIORITY.
      */
 	public MessageEvent(int from, int to, String id, double time){
 	    this(from, to, id, time, INVALID_PRIORITY);
@@ -50,4 +48,8 @@ public abstract class MessageEvent extends ExternalEvent {
 	public String toString() {
 		return "MSG @" + this.time + " " + id;
 	}
+	
+	public int getPriority(){
+        return this.priority;
+    }
 }

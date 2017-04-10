@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  * Created by Marius Meyer on 10.03.17.
  */
 public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
-
+    
     @Before
     public void createGroup(){
         Group.clearGroups();
@@ -39,7 +39,9 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     public void testPriorities(){
         int groupAddress = 0;
         Message createdMessage = getMessage(groupAddress);
-        assertEquals(((MulticastMessage)createdMessage).getPriority(), 1);
+        assertEquals(((MulticastMessage)createdMessage).getPriority(), -1);
+        createdMessage = getMessageWithPriority(groupAddress, PRIORITY);
+        assertEquals(((MulticastMessage)createdMessage).getPriority(), PRIORITY);
     }
 
     @Test
@@ -64,8 +66,12 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     }
     
     private Message getMessage(int groupAddress){
+        return getMessageWithPriority(groupAddress, Message.INVALID_PRIORITY);
+    }
+    
+    private Message getMessageWithPriority(int groupAddress, int prio){
         MulticastCreateEvent event = new MulticastCreateEvent(
-                this.creator.getAddress(),groupAddress, "messageId", 100, 23);
+                this.creator.getAddress(),groupAddress, "messageId", 100, 23, prio);
         event.processEvent(this.world);
         this.messageChecker.next();
         return this.messageChecker.getLastMsg();

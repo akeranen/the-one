@@ -36,14 +36,11 @@ public class MessageCreateEvent extends MessageEvent {
 	}
 	
 	/**
-     * Creates a message creation event with a optional response request
-     * @param from The creator of the message
-     * @param to Where the message is destined to
-     * @param id ID of the message
-     * @param size Size of the message
-     * @param responseSize Size of the requested response message or 0 if
-     * no response is requested
-     * @param time Time, when the message is created
+     * Creates a message event.
+     * Using the same parameters as the previous constructor, but the priority.
+     * Used for MulticastCreateEvents without explicit priority. Therefore, gets
+     * the INVALID_PRIORITY.
+     * Calls the previous constructor.
      */
 	public MessageCreateEvent(int from, int to, String id, int size,
             int responseSize, double time){

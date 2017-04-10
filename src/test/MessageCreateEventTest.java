@@ -15,11 +15,10 @@ public class MessageCreateEventTest extends AbstractMessageCreateEventTest {
     
     @Test
     public void testPriorities(){
-        ExternalEvent event = getInstanceOfMessageEvent(this.creator,"messageId",100,23);
-        event.processEvent(this.world);
-        this.messageChecker.next();
-        Message createdMessage = this.messageChecker.getLastMsg();
-        assertEquals(createdMessage.getPriority(), 0);
+        Message createdMessage = getMessage();
+        assertEquals((createdMessage).getPriority(), -1);
+        createdMessage = getMessageWithPriority(PRIORITY);
+        assertEquals((createdMessage).getPriority(), PRIORITY);
     }
 
     @Override
@@ -30,5 +29,16 @@ public class MessageCreateEventTest extends AbstractMessageCreateEventTest {
     @Override
     protected ExternalEvent getInstanceOfMessageEvent(DTNHost creator, String messageID, int size, double time) {
         return new MessageCreateEvent(creator.getAddress(),0,messageID,size,50,time);
+    }
+    
+    private Message getMessage(){
+        return getMessageWithPriority(Message.INVALID_PRIORITY);
+    }
+    
+    private Message getMessageWithPriority(int prio){
+        MessageCreateEvent event = new MessageCreateEvent(this.creator.getAddress(),0,"messageId",100,50,30,prio);
+        event.processEvent(this.world);
+        this.messageChecker.next();
+        return messageChecker.getLastMsg();
     }
 }

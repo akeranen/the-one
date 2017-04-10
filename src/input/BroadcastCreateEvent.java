@@ -1,7 +1,5 @@
 package input;
 
-import java.util.Random;
-
 import core.BroadcastMessage;
 import core.DTNHost;
 import core.World;
@@ -32,13 +30,11 @@ public class BroadcastCreateEvent extends MessageEvent {
     }
     
     /**
-     * Creates a broadcast creation event with a optional response request
-     * @param from The creator of the message
-     * @param id ID of the message
-     * @param size Size of the message
-     * @param responseSize Size of the requested response message or 0 if
-     * no response is requested
-     * @param time Time, when the message is created
+     * Creates a broadcast creation event.
+     * Using the same parameters as the previous constructor, but the priority.
+     * Used for MulticastCreateEvents without explicit priority. Therefore, gets
+     * the INVALID_PRIORITY.
+     * Calls the previous constructor.
      */
     public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time){
         this(from, id, size, responseSize, time, INVALID_PRIORITY);

@@ -20,8 +20,9 @@ import test.TestSettings;
 public class BroadcastMessageTest {
     private TestUtils utils;
 
-    private BroadcastMessage msg;
+    private BroadcastMessage msg, msgPrio;
     private DTNHost from;
+    private final static int priority = 3;
 
     @Before
     public void setUp() throws Exception {
@@ -31,6 +32,7 @@ public class BroadcastMessageTest {
                 new TestSettings());
 
         msg = new BroadcastMessage(from, "M", 100);
+        msgPrio = new BroadcastMessage(from, "N", 100, priority);
     }
 
     @Test(expected = java.lang.UnsupportedOperationException.class)
@@ -70,4 +72,10 @@ public class BroadcastMessageTest {
                 "everyone",
                 this.msg.recipientsToString());
     }
+    
+    @Test
+   	public void testPriority(){
+   		assertEquals(msg.getPriority(), Message.INVALID_PRIORITY);
+   		assertEquals(msgPrio.getPriority(), priority);
+   	}
 }

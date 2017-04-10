@@ -25,13 +25,13 @@ public class LevyWalkTest extends AbstractMovementModelTest{
     // Radius around the center the nodes should stay in
     private static final int TEST_RADIUS = 100;
     // Coordinate of the center of the 1000x1000 Simulation Area
-    private static final int CENTER_COORD = 500;
+    private static final int CENTER_COORD = 4000;
     // Coordinate at the edge of the simulation area, so that we can test whether nodes walk out of the simulation
     private static final int EDGE_COORD = 50;
     // Illegal radius to check whether we can set bad values as a radius
     private static final int NEGATIVE_RADIUS=-1;
     //Coordinates outside the simulation area, we should not be able to set these as a center
-    private static final int COORD_ABOVE_BOUNDS=1001;
+    private static final int COORD_ABOVE_BOUNDS=10001;
     private static final int COORD_BELOW_BOUNDS=-1;
     private static final String CENTER_OUTSIDE_AREA="Coordinate outside simulation area could be set as center";
 

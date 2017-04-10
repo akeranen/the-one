@@ -16,6 +16,8 @@ public abstract class MessageEvent extends ExternalEvent {
 	protected int toAddr;
 	/** identifier of the message */
 	protected String id;
+	/** priority of the message */
+	protected int priority;
 
 	/**
 	 * Creates a message event.
@@ -23,12 +25,14 @@ public abstract class MessageEvent extends ExternalEvent {
 	 * @param to Who the message goes to
 	 * @param id ID of the message
 	 * @param time Time when the message event occurs
+	 * @param prio Priority of the message
 	 */
-	public MessageEvent(int from, int to, String id, double time) {
+	public MessageEvent(int from, int to, String id, double time, int prio) {
 		super(time);
 		this.fromAddr = from;
 		this.toAddr= to;
 		this.id = id;
+		this.priority = prio;
 	}
 
 	@Override

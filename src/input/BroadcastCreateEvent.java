@@ -14,10 +14,6 @@ import core.World;
 public class BroadcastCreateEvent extends MessageEvent {
     private int size;
     private int responseSize;
-    /** this priority range leads to using priorities 2-10 */
-    private static final int PRIORITY_RANGE = 9;
-    /** offset 2, as message and multicast have priorities 0 and 1 */
-    private static final int PRIORITY_OFFSET = 2;
 
     /**
      * Creates a broadcast creation event with a optional response request
@@ -28,8 +24,8 @@ public class BroadcastCreateEvent extends MessageEvent {
      * no response is requested
      * @param time Time, when the message is created
      */
-    public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time) {
-        super(from, -1, id, time);
+    public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time, int prio) {
+        super(from, -1, id, time, prio);
         this.size = size;
         this.responseSize = responseSize;
     }
@@ -40,9 +36,7 @@ public class BroadcastCreateEvent extends MessageEvent {
     @Override
     public void processEvent(World world) {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
-        Random rn = new Random();
-        int priority = rn.nextInt(PRIORITY_RANGE)+ PRIORITY_OFFSET;
-        BroadcastMessage messageToCreate = new BroadcastMessage(from, this.id, this.size, priority);
+        BroadcastMessage messageToCreate = new BroadcastMessage(from, this.id, this.size, this.priority);
         messageToCreate.setResponseSize(this.responseSize);
         from.createNewMessage(messageToCreate);
     }

@@ -24,10 +24,11 @@ public class MessageCreateEvent extends MessageEvent {
 	 * @param responseSize Size of the requested response message or 0 if
 	 * no response is requested
 	 * @param time Time, when the message is created
+	 * @param prio Priority of the messsage
 	 */
 	public MessageCreateEvent(int from, int to, String id, int size,
-			int responseSize, double time) {
-		super(from,to, id, time);
+			int responseSize, double time, int prio) {
+		super(from,to, id, time, prio);
 		this.size = size;
 		this.responseSize = responseSize;
 	}
@@ -41,7 +42,7 @@ public class MessageCreateEvent extends MessageEvent {
 		DTNHost to = world.getNodeByAddress(this.toAddr);
 		DTNHost from = world.getNodeByAddress(this.fromAddr);
 
-		Message m = new Message(from, to, this.id, this.size, MESSAGE_PRIORITY);
+		Message m = new Message(from, to, this.id, this.size, this.priority);
 		m.setResponseSize(this.responseSize);
 		from.createNewMessage(m);
 	}

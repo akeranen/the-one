@@ -31,7 +31,7 @@ public class VhmEventTest {
     private static final double EVENT_RANGE = 200;
     private static final double SAFE_RANGE = 450;
     private static final double MAX_RANGE = 650;
-    private static final int INTENSITY = 2;
+    private static final int INTENSITY = 10;
 
     /** Delta used when asserting double equality. */
     private static final double DOUBLE_COMPARING_DELTA = 0.01;
@@ -239,20 +239,31 @@ public class VhmEventTest {
     /**
      * Creates a {@link JsonObjectBuilder} that contains the minimal specifications needed for providing the built
      * object to {@link VhmEvent}'s constructor.
+     *
+     * @param type the type of the created {@link VhmEvent}
      * @return The created {@link JsonObjectBuilder}.
      */
-    private static JsonObjectBuilder createMinimalVhmEventBuilder() {
+    static JsonObjectBuilder createMinimalVhmEventBuilder(VhmEvent.VhmEventType type) {
         return Json.createObjectBuilder()
-                .add(VhmEvent.EVENT_TYPE, VhmEvent.VhmEventType.DISASTER.toString())
+                .add(VhmEvent.EVENT_TYPE, type.toString())
                 .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder())
                 .add(VhmEvent.EVENT_RANGE, EVENT_RANGE);
     }
 
     /**
+     * Creates a {@link JsonObjectBuilder} that contains the minimal specifications needed for providing the built
+     * object to {@link VhmEvent}'s constructor.
+     *
+     * @return The created {@link JsonObjectBuilder}.
+     */
+    private static JsonObjectBuilder createMinimalVhmEventBuilder() {
+        return createMinimalVhmEventBuilder(VhmEvent.VhmEventType.DISASTER);
+    }
+    /**
      * Creates a {@link JsonObjectBuilder} for building a location.
      * @return The created {@link JsonObjectBuilder}.
      */
-    private static JsonObjectBuilder createLocationBuilder() {
+    static JsonObjectBuilder createLocationBuilder() {
         return Json.createObjectBuilder()
                 .add(VhmEvent.EVENT_LOCATION_X, X_COORDINATE)
                 .add(VhmEvent.EVENT_LOCATION_Y, Y_COORDINATE);

@@ -2,6 +2,7 @@ package test;
 
 import core.Coord;
 import movement.CarMovement;
+import movement.LevyWalkMovement;
 import movement.PanicMovement;
 import movement.ShortestPathMapBasedMovement;
 import movement.SwitchableStationaryMovement;
@@ -20,6 +21,9 @@ public class VhmBehaviorTest extends AbstractVhmTest{
 
     private static final String WRONG_MOVEMENT_MODE = "Wrong movement mode is set";
     private static final String WRONG_MOVEMENT_MODEL = "Wrong movement model is selected";
+
+    //big delta for higher tolerance for probabilistic functions
+    private static final double PROB_DELTA = 0.01;
 
     private static final Coord LOCATION_INSIDE_EVENT_RANGE = new Coord(4000,2100);
     private static final Coord LOCATION_INSIDE_SAFE_RANGE = new Coord(4000,2300);
@@ -177,6 +181,85 @@ public class VhmBehaviorTest extends AbstractVhmTest{
         testInjuredState();
     }
 
+    @Test
+    public void testInjuryProbabilityIsUsedCorrectly(){
+        int injuredCount = 0;
+        vhm.setInjuryProbability(TEST_PROBABILITY);
+        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
+        for (int i = 0; i < TEST_RUNS; i++){
+            vhm.vhmEventStarted(disaster);
+            vhm.vhmEventEnded(disaster);
+            if (vhm.getMode() == VoluntaryHelperMovement.movementMode.INJURED_MODE){
+                injuredCount++;
+            }
+            vhm.setMode(VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE);
+        }
+        assertEquals("Measured injury probability differs from value specified",
+                TEST_PROBABILITY,(double)injuredCount / TEST_RUNS,PROB_DELTA);
+    }
+
+    @Test
+    public void testHospitalWaitProbability(){
+        int waitingCount = 0;
+        vhm.setWaitProbability(TEST_PROBABILITY);
+        host.setLocation(hospital.getLocation());
+        vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
+        vhm.setChosenDisaster(disaster);
+        vhm.setChosenHospital(hospital);
+        for (int i = 0; i < TEST_RUNS; i++){
+            vhm.newOrders();
+            if (vhm.getMode() == VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE){
+                waitingCount++;
+            }
+            vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
+        }
+        assertEquals("Measured wait probability differs from value specified",
+                TEST_PROBABILITY,(double) waitingCount / TEST_RUNS,PROB_DELTA);
+    }
+
+    @Test
+    public void testAfterArrivalSwitchToLevyWalkIfLocalHelper(){
+        vhm.setLocalHelper(true);
+        vhm.setMode(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
+        includeDisaster();
+        vhm.setChosenDisaster(disaster);
+        vhm.newOrders();
+        testLevyWalkState();
+    }
+
+    @Test
+    public void testAfterArrivalSwitchToTransportIfNotLocalHelper(){
+        vhm.setLocalHelper(false);
+        vhm.setMode(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
+        includeDisaster();
+        includeHospital();
+        vhm.setChosenDisaster(disaster);
+        vhm.newOrders();
+        testTransportState();
+    }
+
+    @Test
+    public void testAfterTransportingDoLevyWalkIfDecideToWait(){
+        vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
+        vhm.setChosenDisaster(disaster);
+        vhm.setChosenHospital(hospital);
+        vhm.setWaitProbability(1);
+        vhm.newOrders();
+        testWaitState();
+    }
+
+    @Test
+    public void testAfterTransportingMoveToNextEventIfNotDecideToWait(){
+        vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
+        vhm.setChosenDisaster(disaster);
+        vhm.setChosenHospital(hospital);
+        includeDisaster();
+        includeHospital();
+        vhm.setWaitProbability(0);
+        vhm.newOrders();
+        testMoveToState();
+    }
+
     /*
     -----------------------------------------------------------------
     Method test section
@@ -220,6 +303,20 @@ public class VhmBehaviorTest extends AbstractVhmTest{
                 VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 ShortestPathMapBasedMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    private void testLevyWalkState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                LevyWalkMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    private void testWaitState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                LevyWalkMovement.class,vhm.getCurrentMovementModel().getClass());
     }
 
 }

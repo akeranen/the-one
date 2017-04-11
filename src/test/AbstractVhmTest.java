@@ -26,8 +26,8 @@ import static junit.framework.TestCase.assertNull;
 public abstract class AbstractVhmTest  extends AbstractMovementModelTest{
 
     private static final double TEST_TIME = 200;
-    private static final double TEST_PROBABILITY = 0.24;
-    private static final double DELTA = 0.001;
+    protected static final double TEST_PROBABILITY = 0.24;
+    protected static final double DELTA = 0.001;
 
     protected VoluntaryHelperMovement vhm;
     protected DTNHost host;
@@ -35,6 +35,7 @@ public abstract class AbstractVhmTest  extends AbstractMovementModelTest{
             VhmEventTest.createJsonForCompletelySpecifiedEvent());
     protected VhmEvent hospital = new VhmEvent("testHospital",
             VhmEventTest.createMinimalVhmEventBuilder(VhmEvent.VhmEventType.HOSPITAL).build());
+
 
     @Override
     public MovementModel initializeModel(TestSettings testSettings) {
@@ -184,5 +185,11 @@ public abstract class AbstractVhmTest  extends AbstractMovementModelTest{
         List<VhmEvent> disasters = new ArrayList<>(1);
         disasters.add(disaster);
         vhm.setDisasters(disasters);
+    }
+
+    void includeHospital(){
+        List<VhmEvent> hospitals = new ArrayList<>(1);
+        hospitals.add(hospital);
+        vhm.setHospitals(hospitals);
     }
 }

@@ -23,6 +23,16 @@ Group1.isLocalHelper = true
 Group2.groupID = c
 Group2.speed = 10, 30
 
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 25000, 25000
+
+## Map based movement -movement model specific settings
+MapBasedMovement.nrofMapFiles = 3
+
+MapBasedMovement.mapFile1 = data/paderborn_pedestrians_and_cars.wkt
+MapBasedMovement.mapFile2 = data/paderborn_cars_only.wkt
+MapBasedMovement.mapFile3 = data/paderborn_pedestrians_only.wkt
+
 ## Message creation parameters
 # How many event generators
 Events.nrof = 2
@@ -40,6 +50,6 @@ Events1.prefix = M
 
 #Settings for the disaster and hospital events
 # max number of external events to preload (default = 500)
-Events2.nrofPreload = 3
+Events2.nrofPreload = 24
 # path to external events file
-Events2.filePath = ee/test/VHMTestEvents.json
+Events2.filePath = ee/VHMEvents/eventsScenarioMany.json

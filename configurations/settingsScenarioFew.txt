@@ -33,25 +33,27 @@ Group.group_count = 1000, 5000
 # Size of multicast groups
 Group.group_size = 3,30
 
+# TODO: specify parameters for the EnergyModel
+
 # group1 (locally helping pedestrians) specific settings
 Group1.groupID = p
 Group1.isLocalHelper = true
 Group1.speed = 1, 2
 Group1.nrofHosts = 8550
-#Group1.okMaps = 1,2
+Group1.okMaps = 1,2
 
 # group2 (transporting pedestrians) specific settings
 Group2.groupID = t
 Group2.isLocalHelper = false
 Group2.speed = 1, 2
 Group2.nrofHosts = 450
-#Group2.okMaps = 1,2
+Group2.okMaps = 1,2
 
 # group3 (cars) specific settings
 Group3.groupID = c
 Group3.speed = 8, 14
 Group3.nrofHosts = 1000
-#Group3.okMaps = 2,3
+Group3.okMaps = 2,3
 
 # How many event generators
 Events.nrof = 17
@@ -61,6 +63,8 @@ Events.nrof = 17
 Events1.nrofPreload = 7
 # path to external events file 
 Events1.filePath = ee/VhmEvents/eventsScenarioFew.json
+
+# TODO: add priorities for all the message generators
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
@@ -228,6 +232,10 @@ Events17.hosts = 0,9999
 # Message ID prefix
 Events17.prefix = P
 
+# TODO: add more generators for DB sync, HELLO messages (?), and neighbor queries (?)
+# TODO: don't forget to also update nrofEvents!
+# TODO: specifiy generation of data for the database
+
 # TODO: add reports for delivery probability and DB synchronization when implemented
 Report.nrofReports = 4
 Report.report1 = BroadcastDeliveryReport
@@ -235,7 +243,10 @@ Report.report2 = MulticastMessageDeliveryReport
 Report.report3 = TrafficReport
 Report.report4 = ImmediateMessageDelayReport
 
-MapBasedMovement.nrofMapFiles = 1
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 25000, 25000
+
+MapBasedMovement.nrofMapFiles = 3
 MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt
-#MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
-#MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt
+MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
+MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt

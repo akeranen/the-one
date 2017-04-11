@@ -55,9 +55,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
      * @param dropped
      */
     public void messageDeleted(Message m, DTNHost where, boolean dropped) {
-        if (isWarmupID(m.getId())) {
-            return;
-        }
+        // Method is not used, but must be implemented due to the class hierarchy
     }
     
     /**

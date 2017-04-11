@@ -36,11 +36,10 @@ public class DeliveryProbabilityReportTest {
     private TestSettings settings;
 
 /**
- * Does basic initializations for the test scenario    
- * @param setWarmUp Sets the warmup time to 100 for the testWarmUpTime method
+ * Does setting initializations for the test scenario    
  * @throws IOException Rethrows the IOException of createTempFile
  */
-    public void init(boolean setWarmUp) throws IOException{
+    public void initSettings() throws IOException{
 
         SimScenario.reset();
         Settings.init(null);
@@ -51,8 +50,13 @@ public class DeliveryProbabilityReportTest {
 
         settings = new TestSettings();
         settings.putSetting("DeliveryProbabilityReport.output", outFile.getAbsolutePath());
-        this.addSettingsToEnableSimScenario(setWarmUp);
-
+        TestSettings.addSettingsToEnableSimScenario(settings);
+    }
+    
+/**
+ * Creates the Report and Test Utils
+ */
+    public void initReport() {
         this.report = new DeliveryProbabilityReport();
         ArrayList<MessageListener> messageListeners = new ArrayList<>(1);
         messageListeners.add(this.report);
@@ -60,18 +64,6 @@ public class DeliveryProbabilityReportTest {
         this.utils = new TestUtils(new ArrayList<ConnectionListener>(), messageListeners, settings);
         this.utils.setGroupId("group");
 
-    }
-    
-    /**
-     * Adds settings for the scenario  
-     * @param setWarmUp Sets the warmup time to 100 for the testWarmUpTime method
-     */
-    private void addSettingsToEnableSimScenario(boolean setWarmUp) {
-        TestSettings.addSettingsToEnableSimScenario(settings);
-        
-        if (setWarmUp) {
-        	settings.putSetting("DeliveryProbabilityReport.warmup", "100");
-        }
     }
 
     @After
@@ -122,7 +114,8 @@ public class DeliveryProbabilityReportTest {
     @Test
     public void testDoneCorrectlyCountsMessageEvents() throws  IOException{
 
-    	init(false);
+    	initSettings();
+    	initReport();
     	this.playScenario();
 		this.report.done();
 
@@ -153,7 +146,9 @@ public class DeliveryProbabilityReportTest {
      * @throws IOException rethrows the IOException of the init method
      */
     public void testWarmUpTime() throws IOException {
-        init(true);
+        initSettings();
+        settings.putSetting("DeliveryProbabilityReport.warmup", "100");
+        initReport();
         DTNHost a = this.utils.createHost();
     	DTNHost b = this.utils.createHost();
     	
@@ -169,7 +164,9 @@ public class DeliveryProbabilityReportTest {
      * @throws IOException IOException rethrows the IOException of the init method
      */
     public void testIgnoreOtherMessageTypes() throws  IOException {
-    	init(false);
+    	
+    	initSettings();
+    	initReport();
     	DTNHost a = this.utils.createHost();
     	DTNHost b = this.utils.createHost();
     	Group g = Group.createGroup(0);
@@ -194,7 +191,9 @@ public class DeliveryProbabilityReportTest {
      * @throws IOException IOException rethrows the IOException of the init method
      */
     public void testIgnoreSecondDelivery() throws  IOException {
-    	init(false);
+    	
+    	initSettings();
+    	initReport();
     	DTNHost a = this.utils.createHost();
     	DTNHost b = this.utils.createHost();
     	DTNHost c = this.utils.createHost();
@@ -205,8 +204,8 @@ public class DeliveryProbabilityReportTest {
     	b.messageTransferred("m1", a);
     	assertEquals(report.getNrofDelivered(), 1);
     	
-    	a.sendMessage("m1", b);
-    	b.messageTransferred("m1", a);
+    	a.sendMessage("m1", c);
+    	c.messageTransferred("m1", a);
     	assertEquals(report.getNrofDelivered(), 1);
     }
 }

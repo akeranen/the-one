@@ -12,8 +12,6 @@ import core.World;
  * External event for creating a message.
  */
 public class MessageCreateEvent extends MessageEvent {
-    /** Default value for messages without any priority */
-    public static final int INVALID_PRIORITY = -1;
 	private int size;
 	private int responseSize;
 

@@ -139,6 +139,10 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0]);
     }
     
+    /**
+     * Draws a random priority from the configured address range
+     * @return A random priority
+     */
     protected int drawPriority(){
         if(priorityRange[1] == priorityRange[0]){
             return priorityRange[0];

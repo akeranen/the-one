@@ -29,15 +29,20 @@ public class LocalDatabase {
     /** Size used by stored data. */
     private int usedSize;
 
+    /** The database's owner. */
+    private DTNHost owner;
+
     /** All stored data */
     private Set<DisasterData> data = new HashSet<>();
 
     /**
      * Initializes a new instance of the {@link LocalDatabase} class.
      *
+     * @param owner The database's owner.
      * @param totalSize Size of the database in bytes.
      */
-    public LocalDatabase(int totalSize) {
+    public LocalDatabase(DTNHost owner, int totalSize) {
+        this.owner = owner;
         this.totalSize = totalSize;
     }
 
@@ -46,27 +51,26 @@ public class LocalDatabase {
      * checks whether any old data needs to be deleted.
      *
      * @param newDataItem The data item to add.
-     * @param location The current location, important for deletion check.
-     * @param time The current time, important for deletion check.
      */
-    public void add (DisasterData newDataItem, Coord location, double time){
+    public void add (DisasterData newDataItem){
         this.data.add(newDataItem);
         this.usedSize += newDataItem.getSize();
-        this.deleteIrrelevantData(location, time);
+        this.deleteIrrelevantData();
     }
 
     /**
      * Checks all data items whether their utility
      * is below the threshold and removes them if it is.
-     *
-     * @param location The current location.
-     * @param time The current time.
      */
-    private void deleteIrrelevantData(Coord location, double time) {
+    private void deleteIrrelevantData() {
         double deletionThreshold = this.computeDeletionThreshold();
+
+        double currentTime = SimClock.getTime();
+        Coord currentLocation = this.owner.getLocation();
+
         for (Iterator<DisasterData> dataIterator = this.data.iterator(); dataIterator.hasNext();) {
             DisasterData dataItem = dataIterator.next();
-            if (LocalDatabase.computeUtility(dataItem, location, time) < deletionThreshold){
+            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) < deletionThreshold){
                 this.usedSize -= dataItem.getSize();
                 dataIterator.remove();
             }
@@ -84,18 +88,19 @@ public class LocalDatabase {
     }
 
     /**
-     * Returns all data that has at least the specified utility if utility is computed w. r. t. the given location and
+     * Returns all data that has at least the specified utility if utility is computed w. r. t. the current location and
      * time.
      *
      * @param minUtility The minimum utility the data has to have for it to be returned.
-     * @param location The location to use for utility computation.
-     * @param time The time to use for utility computation.
      * @return All data with utility at least the given threshold.
      */
-    public List<DisasterData> getAllDataWithMinimumUtility(double minUtility, Coord location, double time){
+    public List<DisasterData> getAllDataWithMinimumUtility(double minUtility){
+        double currentTime = SimClock.getTime();
+        Coord currentLocation = this.owner.getLocation();
+
         List<DisasterData> dataWithMinUtility = new ArrayList<>();
         for (DisasterData dataItem : this.data) {
-            if (LocalDatabase.computeUtility(dataItem, location, time) >= minUtility){
+            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) >= minUtility){
                 dataWithMinUtility.add(dataItem);
             }
         }

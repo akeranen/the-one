@@ -60,7 +60,7 @@ Events.nrof = 17
 
 #Settings for the disaster and hospital events
 # max number of external events to preload (default = 500)
-Events1.nrofPreload = 7
+Events1.nrofPreload = 24
 # path to external events file 
 Events1.filePath = ee/VhmEvents/eventsScenarioMany.json
 

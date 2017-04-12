@@ -1,11 +1,11 @@
-## Scenario: many events, long time
+## Scenario: few events, long time
 ## Scenario used for the evaluation of the different routing protocols
 ## Scenario settings
 # 259200s = 72h = 3d
 Scenario.endTime = 259200
 # Define 3 different node groups
 Scenario.nrofHostGroups = 3
-Scenario.name = scenario_with_many_events
+Scenario.name = scenario_for_three_days
 
 # "WiFi" interface for all nodes
 wInterface.type = InterferenceLimitedInterface
@@ -68,13 +68,13 @@ Group3.nrofHosts = 1000
 Group3.okMaps = 2,3
 
 # How many event generators
-Events.nrof = 17
+Events.nrof = 7
 
 #Settings for the disaster and hospital events
 # max number of external events to preload (default = 500)
 Events1.nrofPreload = 24
 # path to external events file 
-Events1.filePath = ee/VhmEvents/eventsScenarioMany.json
+Events1.filePath = [ee/VhmEvents/eventsScenarioFew.json ; ee/VhmEvents/eventsScenarioMany.json]
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
@@ -103,179 +103,57 @@ Events3.prefix = B
 Events3.priorities = 2,10
 
 # Class for third message type (Multicasts small)
-# The following ten generators are the same, as we want to have interval of 0.1 to 3.
-# This way, it is artificially constructed
 Events4.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
-Events4.interval = 1,30
+Events4.interval = 0.1,3
 # Message sizes (0.1KB - 1KB)
 Events4.size = 0.1k,1k
 # range of message source/destination addresses
 Events4.hosts = 0,9999
 # Message ID prefix
-Events4.prefix = a
+Events4.prefix = m
 # Message priority 1
 Events4.priorities = 1,1
 
+# Class for fourth message type (Multicasts large)
 Events5.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events5.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events5.size = 0.1k,1k
+# Creation interval in seconds (one new message every 10 to 30 seconds)
+Events5.interval = 10,30
+# Message sizes (500KB - 4MB)
+Events5.size = 500k,4M
 # range of message source/destination addresses
 Events5.hosts = 0,9999
 # Message ID prefix
-Events5.prefix = c
+Events5.prefix = M
 # Message priority 1
 Events5.priorities = 1,1
 
-Events6.class = MulticastEventGenerator
+# Class for fifth message type (1-to-1 messages small)
+# The following two generators are the same, as we want to have interval of 0.5 to 15.
+Events6.class = MessageEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
-Events6.interval = 1,30
+Events6.interval = 0.5,15
 # Message sizes (0.1KB - 1KB)
 Events6.size = 0.1k,1k
 # range of message source/destination addresses
 Events6.hosts = 0,9999
 # Message ID prefix
-Events6.prefix = d
-# Message priority 1
-Events6.priorities = 1,1
+Events6.prefix = p
+# Message priority 0
+Events6.priorities = 0,0
 
-Events7.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events7.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events7.size = 0.1k,1k
+# Class for sixth message type (1-to-1 messages large)
+Events7.class = MessageEventGenerator
+# Creation interval in seconds (one new message every 50 to 150 seconds)
+Events7.interval = 50,150
+# Message sizes (500KB - 4MB)
+Events7.size = 500k,4M
 # range of message source/destination addresses
 Events7.hosts = 0,9999
 # Message ID prefix
-Events7.prefix = e
-# Message priority 1
-Events7.priorities = 1,1
-
-Events8.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events8.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events8.size = 0.1k,1k
-# range of message source/destination addresses
-Events8.hosts = 0,9999
-# Message ID prefix
-Events8.prefix = f
-# Message priority 1
-Events8.priorities = 1,1
-
-Events9.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events9.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events9.size = 0.1k,1k
-# range of message source/destination addresses
-Events9.hosts = 0,9999
-# Message ID prefix
-Events9.prefix = g
-# Message priority 1
-Events9.priorities = 1,1
-
-Events10.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events10.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events10.size = 0.1k,1k
-# range of message source/destination addresses
-Events10.hosts = 0,9999
-# Message ID prefix
-Events10.prefix = h
-# Message priority 1
-Events10.priorities = 1,1
-
-Events11.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events11.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events11.size = 0.1k,1k
-# range of message source/destination addresses
-Events11.hosts = 0,9999
-# Message ID prefix
-Events11.prefix = i
-# Message priority 1
-Events11.priorities = 1,1
-
-Events12.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events12.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events12.size = 0.1k,1k
-# range of message source/destination addresses
-Events12.hosts = 0,9999
-# Message ID prefix
-Events12.prefix = j
-# Message priority 1
-Events12.priorities = 1,1
-
-Events13.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events13.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events13.size = 0.1k,1k
-# range of message source/destination addresses
-Events13.hosts = 0,9999
-# Message ID prefix
-Events13.prefix = k
-# Message priority 1
-Events13.priorities = 1,1
-
-# Class for fourth message type (Multicasts large)
-Events14.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 10 to 30 seconds)
-Events14.interval = 10,30
-# Message sizes (500KB - 4MB)
-Events14.size = 500k,4M
-# range of message source/destination addresses
-Events14.hosts = 0,9999
-# Message ID prefix
-Events14.prefix = M
-# Message priority 1
-Events14.priorities = 1,1
-
-# Class for fifth message type (1-to-1 messages small)
-# The following two generators are the same, as we want to have interval of 0.5 to 15.
-Events15.class = MessageEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events15.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events15.size = 0.1k,1k
-# range of message source/destination addresses
-Events15.hosts = 0,9999
-# Message ID prefix
-Events15.prefix = n
+Events7.prefix = P
 # Message priority 0
-Events15.priorities = 0,0
-
-Events16.class = MessageEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
-Events16.interval = 1,30
-# Message sizes (0.1KB - 1KB)
-Events16.size = 0.1k,1k
-# range of message source/destination addresses
-Events16.hosts = 0,9999
-# Message ID prefix
-Events16.prefix = o
-# Message priority 0
-Events16.priorities = 0,0
-
-# Class for sixth message type (1-to-1 messages large)
-Events17.class = MessageEventGenerator
-# Creation interval in seconds (one new message every 50 to 150 seconds)
-Events17.interval = 50,150
-# Message sizes (500KB - 4MB)
-Events17.size = 500k,4M
-# range of message source/destination addresses
-Events17.hosts = 0,9999
-# Message ID prefix
-Events17.prefix = P
-# Message priority 0
-Events17.priorities = 0,0
+Events7.priorities = 0,0
 
 # TODO: add more generators for DB sync, HELLO messages (?), and neighbor queries (?)
 # TODO: don't forget to also update nrofEvents!

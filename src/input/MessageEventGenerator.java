@@ -85,7 +85,7 @@ public class MessageEventGenerator extends AbstractMessageEventGenerator {
     public ExternalEvent nextEvent() {
         int responseSize = 0; /* zero stands for one way messages */
         int msgSize;
-        int interval;
+        double interval;
         int from;
         int to;
 
@@ -95,11 +95,10 @@ public class MessageEventGenerator extends AbstractMessageEventGenerator {
 
         msgSize = drawMessageSize();
         interval = drawNextEventTimeDiff();
-        int priority = drawPriority();
 
 		/* Create event and advance to next event */
         ExternalEvent messageCreateEvent = new MessageCreateEvent(
-                from, to, this.getID(), msgSize, responseSize, this.nextEventsTime, priority);
+                from, to, this.getID(), msgSize, responseSize, this.nextEventsTime);
 
         this.advanceToNextEvent(interval);
 

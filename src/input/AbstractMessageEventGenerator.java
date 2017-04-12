@@ -183,7 +183,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * {@see Double.MAX_VALUE} instead.
      * @param noEventsInterval Time span in which no events should happen.
      */
-    protected void advanceToNextEvent(int noEventsInterval) {
+    protected void advanceToNextEvent(double noEventsInterval) {
         this.nextEventsTime += noEventsInterval;
         if (this.msgTime != null && this.nextEventsTime > this.msgTime[1]) {
             this.nextEventsTime = Double.MAX_VALUE;

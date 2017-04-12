@@ -125,6 +125,20 @@ public class Settings {
 					" first value should be smaller or equal to second value");
 		}
 	}
+	
+	public void assertValidRange(double range[], String sname)
+	        throws SettingsError {
+	        if (range.length != 2) {
+	            throw new SettingsError("Range setting " +
+	                    getFullPropertyName(sname) +
+	                    " should contain only two comma separated integer values");
+	        }
+	        if (range[0] > range[1]) {
+	            throw new SettingsError("Range setting's " +
+	                    getFullPropertyName(sname) +
+	                    " first value should be smaller or equal to second value");
+	        }
+	    }
 
 	/**
 	 * Makes sure that the given settings value is positive

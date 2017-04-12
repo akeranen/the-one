@@ -3,7 +3,6 @@ package test;
 import core.SettingsError;
 import input.MessageCreateEvent;
 import input.MessageEventGenerator;
-
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;

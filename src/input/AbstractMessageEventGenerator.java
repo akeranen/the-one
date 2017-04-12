@@ -79,13 +79,16 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         this.sizeRange = s.getCsvInts(MESSAGE_SIZE_S);
         this.msgInterval = s.getCsvInts(MESSAGE_INTERVAL_S);
         this.hostRange = s.getCsvInts(HOST_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
-        this.priorityRange = s.getCsvInts(PRIORITY_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         this.idPrefix = s.getSetting(MESSAGE_ID_PREFIX_S);
 
         if (s.contains(MESSAGE_TIME_S)) {
             this.msgTime = s.getCsvDoubles(MESSAGE_TIME_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         } else {
             this.msgTime = null;
+        }
+        
+        if(s.contains(PRIORITY_S)){
+            this.priorityRange = s.getCsvInts(PRIORITY_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE); 
         }
 
         /* Make sure simulation stays reproducible. */

@@ -67,6 +67,10 @@ public abstract class Connection {
 		return node == this.fromNode;
 	}
 
+	public DTNHost getInitiator() {
+		return this.fromNode;
+	}
+
 	/**
 	 * Sets the state of the connection.
 	 * @param state True if the connection is up, false if not

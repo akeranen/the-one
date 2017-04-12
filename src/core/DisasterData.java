@@ -7,7 +7,7 @@ package core;
  */
 public class DisasterData {
     /**
-     * Types of data used in //TODO: Link to application class.
+     * Types of data used in {@link applications.DatabaseApplication}.
      */
     public enum DataType {
         /**

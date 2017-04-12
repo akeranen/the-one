@@ -67,7 +67,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         }
         if (groupSizeRange[1] > hostRange[1] - hostRange[0]) {
             throw new SimError(
-                    "Biggest possible group size is greater than the number" + " of hosts specified in host range.");
+                    "Biggest possible group size is greater than the number of hosts specified in host range.");
         }
         // Create groups if no groups are existing yet
         if (Group.getGroups().length == 0) {

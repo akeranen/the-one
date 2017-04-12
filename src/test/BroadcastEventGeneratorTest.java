@@ -32,6 +32,17 @@ public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         this.settings.putSetting(AbstractMessageEventGenerator.HOST_RANGE_S, "0,1");
         new BroadcastEventGenerator(this.settings);
     }
+    
+    @Test
+    public void testPriorities(){
+        AbstractMessageEventGenerator generator = new BroadcastEventGenerator(this.settings);
+        BroadcastCreateEvent event;
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
+            event = (BroadcastCreateEvent) generator.nextEvent();
+            assertTrue(event.getPriority() <= 10);
+            assertTrue(event.getPriority() >= 1);
+        }
+    }
 
     /**
      * Gets the class name of the class to generate message events with.

@@ -121,6 +121,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         /* Draw additional message properties and create message. */
         int interval = this.drawNextEventTimeDiff();
         int group = this.drawHostAddress(this.groupAddressRange);
+        int priority = this.drawPriority();
         Integer[] groupMembers = Group.getGroup(group).getMembers();
         int sender = groupMembers[rng.nextInt(groupMembers.length)];
         ExternalEvent messageCreateEvent = new MulticastCreateEvent(
@@ -128,7 +129,8 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
                 group,
                 this.getID(),
                 this.drawMessageSize(),
-                this.nextEventsTime);
+                this.nextEventsTime,
+                priority);
 
         /* Update next event time before returning. */
         this.advanceToNextEvent(interval);

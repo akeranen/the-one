@@ -38,6 +38,9 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * and after the second value. By default, messages are created for the
      * whole simulation time. */
     public static final String MESSAGE_TIME_S = "time";
+    /** Message priority range -setting id ({@value}}). Defines the range of
+     * possible ranges */
+    public static final String PRIORITY_S = "priorities";
 
     /**
      * The minimum number of hosts needed for communication.
@@ -58,6 +61,8 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     private int[] msgInterval;
     /** Time range for message creation (min, max) */
     protected double[] msgTime;
+    /** Range of possible priorities */
+    protected int[] priorityRange = {0, 0};
 
     /** Random number generator for this Class */
     protected Random rng;
@@ -80,6 +85,10 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
             this.msgTime = s.getCsvDoubles(MESSAGE_TIME_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         } else {
             this.msgTime = null;
+        }
+        
+        if(s.contains(PRIORITY_S)){
+            this.priorityRange = s.getCsvInts(PRIORITY_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE); 
         }
 
         /* Make sure simulation stays reproducible. */
@@ -131,6 +140,17 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
             return hostRange[0];
         }
         return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0]);
+    }
+    
+    /**
+     * Draws a random priority from the configured address range
+     * @return A random priority
+     */
+    protected int drawPriority(){
+        if(priorityRange[1] == priorityRange[0]){
+            return priorityRange[0];
+        }
+        return priorityRange[0]+ rng.nextInt(priorityRange[1] - priorityRange[0]);
     }
 
     /**

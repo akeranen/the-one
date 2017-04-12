@@ -3,8 +3,13 @@ package test;
 import core.Coord;
 import core.DTNHost;
 import input.VhmEvent;
+import movement.CarMovement;
+import movement.LevyWalkMovement;
 import movement.MapBasedMovement;
 import movement.MovementModel;
+import movement.PanicMovement;
+import movement.ShortestPathMapBasedMovement;
+import movement.SwitchableStationaryMovement;
 import movement.VoluntaryHelperMovement;
 import org.junit.Test;
 
@@ -24,6 +29,9 @@ import static junit.framework.TestCase.assertNull;
  * Created by Marius Meyer on 10.04.17.
  */
 public abstract class AbstractVhmTest  extends AbstractMovementModelTest{
+
+    private static final String WRONG_MOVEMENT_MODE = "Wrong movement mode is set";
+    private static final String WRONG_MOVEMENT_MODEL = "Wrong movement model is selected";
 
     private static final double TEST_TIME = 200;
     protected static final double TEST_PROBABILITY = 0.24;
@@ -156,6 +164,65 @@ public abstract class AbstractVhmTest  extends AbstractMovementModelTest{
         vhm.setHospitals(hospitals);
         assertEquals("Exactly one hospital should be in list",1,vhm.getHospitals().size());
         assertEquals("The hospital in the list should be the one added",hospital,vhm.getHospitals().get(0));
+    }
+
+    /*
+    -----------------------------------------------------------------
+    State testing
+
+    In This section, the different states of the VHM are tested in separate
+    functions. They can be called from other tests to check, if a state was
+    fully reached.
+    -----------------------------------------------------------------
+     */
+
+    void testInjuredState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.INJURED_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL, SwitchableStationaryMovement.class,
+                vhm.getCurrentMovementModel().getClass());
+    }
+
+    void testPanicState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.PANIC_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                PanicMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    void testMoveToState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                CarMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    void testTransportState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                CarMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    void testRandomMapBasedState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                ShortestPathMapBasedMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    void testLevyWalkState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                LevyWalkMovement.class,vhm.getCurrentMovementModel().getClass());
+    }
+
+    void testWaitState(){
+        assertEquals(WRONG_MOVEMENT_MODE,
+                VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE,vhm.getMode());
+        assertEquals(WRONG_MOVEMENT_MODEL,
+                LevyWalkMovement.class,vhm.getCurrentMovementModel().getClass());
     }
 
     /*

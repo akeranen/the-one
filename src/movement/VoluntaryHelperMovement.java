@@ -190,6 +190,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
 
+    /**
+     * The random number generator that this instance of this mobility model uses.
+     */
     private Random mrng;
 
     /**
@@ -266,7 +269,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     @Override
     public void setHost(DTNHost host) {
         super.setHost(host);
+        //set the seed of the RNG to the hash code of the host,
+        //to avoid that all instances of this mobility model make the exact same decisions.
         int seed = host.toString().hashCode();
+        //Initialize the RNG with the seed
         mrng = new Random(seed);
 
         //set the movement mode and model

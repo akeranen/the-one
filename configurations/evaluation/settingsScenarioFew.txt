@@ -1,3 +1,5 @@
+## Scenario: few events, long time
+## Scenario used for the evaluation of the different routing protocols
 ## Scenario settings
 # 259200s = 72h = 3d
 Scenario.endTime = 259200
@@ -29,29 +31,33 @@ Group.hospitalWaitProbability = 0.1
 # Weight of a disasters intensity for determining if a node will help at the disaster site [0, 1]
 Group.intensityWeight = 0.7
 # Number of multicast groups
-Group.group_count = 1000, 5000
+Group.group_count = 1000,5000
 # Size of multicast groups
 Group.group_size = 3,30
 
 # TODO: specify parameters for the EnergyModel
+# this can be done as soon as somebody comes up with reasonable values for the parameters
+# available parameters are: initialEnergy, scanEnergy, transmitEnergy, energyWarmup
+# for explanations of these parameters, have a look on the wiki page or the EnergyModel class
 
 # group1 (locally helping pedestrians) specific settings
 Group1.groupID = p
 Group1.isLocalHelper = true
-Group1.speed = 1, 2
+Group1.speed = 1,2
 Group1.nrofHosts = 8550
 Group1.okMaps = 1,2
 
 # group2 (transporting pedestrians) specific settings
 Group2.groupID = t
 Group2.isLocalHelper = false
-Group2.speed = 1, 2
+Group2.speed = 1,2
 Group2.nrofHosts = 450
 Group2.okMaps = 1,2
 
 # group3 (cars) specific settings
 Group3.groupID = c
-Group3.speed = 8, 14
+Group3.isLocalHelper = false
+Group3.speed = 8,14
 Group3.nrofHosts = 1000
 Group3.okMaps = 2,3
 
@@ -60,11 +66,13 @@ Events.nrof = 17
 
 #Settings for the disaster and hospital events
 # max number of external events to preload (default = 500)
-Events1.nrofPreload = 24
+Events1.nrofPreload = 7
 # path to external events file 
-Events1.filePath = ee/VhmEvents/eventsScenarioMany.json
+Events1.filePath = ee/VhmEvents/eventsScenarioFew.json
 
 # TODO: add priorities for all the message generators
+# this can be done as soon as somebody comes up with reasonable values
+# to give a fixed priority for some generator, just add the same value twice
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
@@ -89,6 +97,8 @@ Events3.hosts = 0,9999
 Events3.prefix = B
 
 # Class for third message type (Multicasts small)
+# The following ten generators are the same, as we want to have interval of 0.1 to 3.
+# This way, it is artificially construated
 Events4.class = MulticastEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
 Events4.interval = 1,30
@@ -201,6 +211,7 @@ Events14.hosts = 0,9999
 Events14.prefix = M
 
 # Class for fifth message type (1-to-1 messages small)
+# The following two generators are the same, as we want to have interval of 0.5 to 15.
 Events15.class = MessageEventGenerator
 # Creation interval in seconds (one new message every 1 to 30 seconds)
 Events15.interval = 1,30
@@ -235,8 +246,11 @@ Events17.prefix = P
 # TODO: add more generators for DB sync, HELLO messages (?), and neighbor queries (?)
 # TODO: don't forget to also update nrofEvents!
 # TODO: specifiy generation of data for the database
+# these tasks can be done at the earliest when they are implemented and merged into the master
 
-# TODO: add reports for delivery probability and DB synchronization when implemented
+# TODO: add reports for delivery probability and DB synchronization
+# this can be done as soon as they are implemented and merged to the master
+# don't forget to also update Report.nrofReports!
 Report.nrofReports = 4
 Report.report1 = BroadcastDeliveryReport
 Report.report2 = MulticastMessageDeliveryReport
@@ -244,7 +258,7 @@ Report.report3 = TrafficReport
 Report.report4 = ImmediateMessageDelayReport
 
 # World's size for Movement Models without implicit size (width, height; meters)
-MovementModel.worldSize = 25000, 25000
+MovementModel.worldSize = 25000,25000
 
 MapBasedMovement.nrofMapFiles = 3
 MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt

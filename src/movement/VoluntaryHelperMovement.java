@@ -12,6 +12,7 @@ import movement.map.SimMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import static input.VhmEvent.VhmEventType.DISASTER;
 import static input.VhmEvent.VhmEventType.HOSPITAL;
@@ -189,6 +190,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
 
+    private Random mrng;
 
     /**
      * Creates a new VoluntaryHelperMovement.
@@ -264,6 +266,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     @Override
     public void setHost(DTNHost host) {
         super.setHost(host);
+        int seed = host.toString().hashCode();
+        mrng = new Random(seed);
 
         //set the movement mode and model
         this.startOver();
@@ -394,7 +398,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * at the location of the selected hospital after transporting injured people to it.
      */
     private void chooseMovementAfterTransportingMode() {
-        if (rng.nextDouble() >= waitProbability) {
+        if (mrng.nextDouble() >= waitProbability) {
             //have the host move back to the disaster he came from again
             chooseMovingToEventMode();
         } else {
@@ -499,7 +503,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         // based on the distance to the disaster, as well as the intensity and maximum range of the disaster
         // and the intensity weight factor.
         if(distance <= event.getMaxRange()) {
-            help = rng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY)
+            help = mrng.nextDouble() <= (intensityWeight * (event.getIntensity() / VhmEvent.MAX_INTENSITY)
                     + (1 - intensityWeight) * ((event.getMaxRange() - distance) / event.getMaxRange()));
         }
 
@@ -513,7 +517,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     private boolean chooseNextHospital() {
         if (!hospitals.isEmpty()) {
-            chosenHospital = hospitals.get(rng.nextInt(hospitals.size()));
+            chosenHospital = hospitals.get(mrng.nextInt(hospitals.size()));
             return true;
         } else {
             return false;
@@ -549,7 +553,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         if (event.getType() == DISASTER && mode != movementMode.INJURED_MODE) {
             //check if the node is to close to the disaster
             if (host != null && host.getLocation().distance(event.getLocation()) <= event.getEventRange()) {
-                if (rng.nextDouble() <= injuryProbability) {
+                if (mrng.nextDouble() <= injuryProbability) {
                     //simulate that the host was injured and is immobile
                     setMovementAsForcefullySwitched();
                     mode = movementMode.INJURED_MODE;

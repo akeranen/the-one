@@ -20,7 +20,7 @@ public class VhmBehaviorTest extends AbstractVhmTest{
     private static final String INVALID_MODE_SWITCH = "Mode shouldn't have switched";
 
     //big delta for higher tolerance for probabilistic functions
-    private static final double PROB_DELTA = 0.01;
+    private static final double PROB_DELTA = 0.05;
     private static final double TEST_HELP_TIME = 30;
     private static final double TEST_HOSPITAL_WAIT_TIME = 45;
     private static final double TEST_INTENSITY_WEIGHT = 0.34;
@@ -346,6 +346,7 @@ public class VhmBehaviorTest extends AbstractVhmTest{
         host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
         vhm.setInjuryProbability(0);
         vhm.setMode(VoluntaryHelperMovement.movementMode.INJURED_MODE);
+        vhm.setCurrentMovementModel(vhm.getStationaryMM());
         vhm.vhmEventStarted(disaster);
         testInjuredState();
     }

@@ -104,7 +104,7 @@ public class ExternalEventsQueueTest extends TestCase {
             VhmEvent queueEvent = (VhmEvent) eeq.nextEvent();
             VhmEvent originalEvent = (VhmEvent) event;
             assertEquals("Next event should start at different time",event.getTime(),queueEvent.getTime());
-            assertEquals("Events should be equal",originalEvent.getID(),queueEvent.getID());
+            assertEquals("Events should be equal",originalEvent,queueEvent);
         }
         assertEquals("No events should be left in buffer",0,eeq.eventsLeftInBuffer());
     }

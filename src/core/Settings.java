@@ -37,6 +37,7 @@ public class Settings {
 	protected static Properties props;
 	/** file name of the default settings file ({@value}) */
 	public static final String DEF_SETTINGS_FILE ="default_settings.txt";
+	private static final int TWO = 2;
 
 	/**
 	 * Setting to define the file name where all read settings are written
@@ -126,27 +127,28 @@ public class Settings {
 		}
 	}
 	
-	/**
-     * Checks that the given double array contains a valid range. I.e.,
-     * the length of the array must be two and
+    /**
+     * Checks that the given double array contains a valid range. I.e., the
+     * length of the array must be two and
      * <code>first_value <= second_value</code>.
-     * @param range The range array
-     * @param sname Name of the setting (for error messages)
-     * @throws SettingsError If the given array didn't qualify as a range
+     * 
+     * @param range
+     *            The range array
+     * @param sname
+     *            Name of the setting (for error messages)
+     * @throws SettingsError
+     *             If the given array didn't qualify as a range
      */
-	public void assertValidRange(double range[], String sname)
-	        throws SettingsError {
-	        if (range.length != 2) {
-	            throw new SettingsError("Range setting " +
-	                    getFullPropertyName(sname) +
-	                    " should contain only two comma separated double values");
-	        }
-	        if (range[0] > range[1]) {
-	            throw new SettingsError("Range setting's " +
-	                    getFullPropertyName(sname) +
-	                    " first value should be smaller or equal to second value");
-	        }
-	    }
+    public void assertValidRange(double[] range, String sname) throws SettingsError {
+        if (range.length != TWO) {
+            throw new SettingsError("Range setting " + getFullPropertyName(sname)
+                    + " should contain only two comma separated double values");
+        }
+        if (range[0] > range[1]) {
+            throw new SettingsError("Range setting's " + getFullPropertyName(sname)
+                    + " first value should be smaller or equal to second value");
+        }
+    }
 
 	/**
 	 * Makes sure that the given settings value is positive

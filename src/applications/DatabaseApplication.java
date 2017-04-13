@@ -154,7 +154,9 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         List<DisasterData> interestingData = senderDatabase.getAllDataWithMinimumUtility(this.utilityThreshold);
         List<DataMessage> messages = new ArrayList<>(interestingData.size());
         for (DisasterData data : interestingData) {
-            messages.add(new DataMessage(sender, receiver, "DB Sync", data));
+            // Create message out of the data.
+            // DataMessages, like 1-to-1s, always have lowest priority (0).
+            messages.add(new DataMessage(sender, receiver, "DbSync", data, 0));
         }
         return messages;
     }

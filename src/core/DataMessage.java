@@ -8,9 +8,8 @@ package core;
 public class DataMessage extends Message {
     private DisasterData data;
 
-    public DataMessage(DTNHost from, DTNHost to, String id, DisasterData data) {
-        // TODO: Change to normal one-to-one priority once we have one.
-        super(from, to, id, data.getSize(), INVALID_PRIORITY);
+    public DataMessage(DTNHost from, DTNHost to, String id, DisasterData data, int priority) {
+        super(from, to, id, data.getSize(), priority);
         this.data = data;
     }
     /**
@@ -20,7 +19,7 @@ public class DataMessage extends Message {
      */
     @Override
     public Message replicate() {
-        Message m = new DataMessage(this.from, this.getTo(), this.id, this.data);
+        Message m = new DataMessage(this.from, this.getTo(), this.id, this.data, this.getPriority());
         super.copyFrom(m);
         return m;
     }

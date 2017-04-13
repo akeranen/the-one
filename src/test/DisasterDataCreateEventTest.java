@@ -13,10 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 /**
  * Tests for the {@link DisasterDataCreateEvent} class.
@@ -26,16 +23,13 @@ import java.util.Set;
 public class DisasterDataCreateEventTest {
     /** Number of {@link DTNHost}s in the scenario. */
     private static final int NUMBER_HOSTS = 3;
-    /** Number of tries to call processEvent for all hosts to be selected at least once. */
-    private static final int TRIES_FOR_ALL_HOSTS = NUMBER_HOSTS * 100;
 
     /* Properties of the data used in tests. */
     private static final DisasterData.DataType TYPE = DisasterData.DataType.RESOURCE;
+    private static final int CREATOR_ADDRESS = 0;
     private static final int SIZE = 350;
     private static final double TIME = 20.4;
     private static final Coord OFFSET = new Coord(2, 3);
-
-    private Random random = new Random();
 
     /** World used in tests. */
     private World world;
@@ -46,7 +40,7 @@ public class DisasterDataCreateEventTest {
     private RecordingDisasterDataCreationListener recorder = new RecordingDisasterDataCreationListener();
 
     /** {@link DisasterDataCreateEvent} used in tests. */
-    private DisasterDataCreateEvent event = new DisasterDataCreateEvent(TYPE, SIZE, OFFSET, TIME, this.random);
+    private DisasterDataCreateEvent event = new DisasterDataCreateEvent(CREATOR_ADDRESS, TYPE, SIZE, OFFSET, TIME);
 
     public DisasterDataCreateEventTest() {
         // Constructor logic is handled in @Before methods.
@@ -56,6 +50,7 @@ public class DisasterDataCreateEventTest {
     @Before
     public void setUp() {
         /* Create hosts. */
+        DTNHost.reset();
         TestUtils utils = new TestUtils(null, null, new TestSettings());
         List<DTNHost> hosts = new ArrayList<>(NUMBER_HOSTS);
         for (int i = 0; i < NUMBER_HOSTS; i++) {
@@ -95,8 +90,10 @@ public class DisasterDataCreateEventTest {
         this.event.processEvent(this.world);
 
         DisasterData data = this.recorder.getLastData();
-        Coord creatorLocation = this.recorder.getLastCreator().getLocation();
+        DTNHost creator = this.recorder.getLastCreator();
+        Coord creatorLocation = creator.getLocation();
 
+        TestCase.assertEquals("Creator address is not as expected.", CREATOR_ADDRESS, creator.getAddress());
         TestCase.assertEquals("Type is not as expected.", TYPE, data.getType());
         TestCase.assertEquals("Size is not as expected.", SIZE, data.getSize());
         TestCase.assertEquals("Creation time is not as expected.", TIME, data.getCreation());
@@ -107,23 +104,11 @@ public class DisasterDataCreateEventTest {
     }
 
     @Test
-    public void testAllHostsMayBeChosen() {
-        Set<DTNHost> selectedHosts = new HashSet<>();
-
-        for (int i = 0; i < TRIES_FOR_ALL_HOSTS; i++) {
-            this.event.processEvent(this.world);
-            selectedHosts.add(this.recorder.getLastCreator());
-        }
-
-        TestCase.assertEquals("Not all hosts have been selected.", NUMBER_HOSTS, selectedHosts.size());
-    }
-
-    @Test
     public void testToString() {
         java.util.Locale.setDefault(java.util.Locale.US);
         TestCase.assertEquals(
                 "ToString returned unexpected string.",
-                "DATA @20.40 RESOURCE size:350 offset:(2.00,3.00) CREATE",
+                "DATA @20.40 RESOURCE size:350 offset:(2.00,3.00) CREATE by host 0",
                 this.event.toString());
     }
 }

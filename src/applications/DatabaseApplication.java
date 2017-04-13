@@ -8,6 +8,8 @@ import core.LocalDatabase;
 import core.Message;
 import core.Settings;
 import input.DisasterDataCreationListener;
+import input.DisasterDataNotifier;
+import routing.MessageRouter;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -43,9 +45,15 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     /** Application ID */
     public static final String APP_ID = "AdHocNetworksInDisasterScenarios";
 
+    /**
+     * Factor used for seeding the pseudo-random number generator that decides the database size.
+     * Without this factor, hosts with similar addresses would get similar database sizes.
+     */
+    private static final int SEED_VARIETY_FACTOR = 7079;
+
     /* Some properties that are the same across all application instances. */
     private double utilityThreshold;
-    private int[] databaseSizeRange;
+    private long[] databaseSizeRange;
     private int seed;
 
     /** The host this application instance is attached to. */
@@ -66,7 +74,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
 
         /* Read properties from settings */
         this.utilityThreshold = s.getDouble(UTILITY_THRESHOLD);
-        this.databaseSizeRange = s.getCsvInts(DATABASE_SIZE_RANGE, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+        this.databaseSizeRange = s.getCsvLongs(DATABASE_SIZE_RANGE, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         this.seed = s.getInt(SIZE_RANDOMIZER_SEED);
 
         /* Check they are valid. */
@@ -82,11 +90,28 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      *
      * @param application The {@link DatabaseApplication} instance to copy.
      */
-    private DatabaseApplication(DatabaseApplication application) {
+    public DatabaseApplication(DatabaseApplication application) {
         super(application);
         this.utilityThreshold = application.utilityThreshold;
         this.databaseSizeRange = application.databaseSizeRange;
         this.seed = application.seed;
+
+        DisasterDataNotifier.addListener(this);
+    }
+
+    /**
+     * Returns the {@link DatabaseApplication} instance of the provided {@link MessageRouter}, if it has one.
+     *
+     * @param router The router to check for a {@link DatabaseApplication}.
+     * @return The found {@link DatabaseApplication} or null if there is none.
+     */
+    public static DatabaseApplication findDatabaseApplication(MessageRouter router) {
+        for (Application application : router.getApplications(APP_ID)) {
+            if (application instanceof DatabaseApplication) {
+                return (DatabaseApplication)application;
+            }
+        }
+        return null;
     }
 
     /**
@@ -107,7 +132,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * @param databaseSizeRange Database size range to check.
      * @throws IllegalArgumentException for a wrong range.
      */
-    private static void checkDatabaseSizeRange(int[] databaseSizeRange) {
+    private static void checkDatabaseSizeRange(long[] databaseSizeRange) {
         if (databaseSizeRange[1] < databaseSizeRange[0]) {
             throw new IllegalArgumentException("Database size range must be non-empty!");
         }
@@ -126,7 +151,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      */
     @Override
     public void update(DTNHost host) {
-        if (this.isInitialized()) {
+        if (!this.isInitialized()) {
             this.initialize(host);
         }
     }
@@ -181,7 +206,9 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         for (DisasterData data : interestingData) {
             // Create message out of the data.
             // DataMessages, like 1-to-1s, always have lowest priority (0).
-            messages.add(new DataMessage(this.host, receiver, "DbSync", data, 0));
+            DataMessage message = new DataMessage(this.host, receiver, data.toString(), data, 0);
+            message.setAppID(APP_ID);
+            messages.add(message);
         }
         return messages;
     }
@@ -200,6 +227,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         // If the host is not known yet, stash the information until it is known.
         if (!this.isInitialized()) {
             this.stashedCreationData.add(new Tuple<>(creator, data));
+            return;
         }
 
         // Otherwise, check if the creator is the attached host and add the data to database if that's the case.
@@ -214,7 +242,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * @return A value indicating whether we know the host this application instance is attached to.
      */
     private boolean isInitialized() {
-        return this.host == null;
+        return this.host != null;
     }
 
     /**
@@ -239,12 +267,13 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * Selects a valid random database size.
      * @return The selected size.
      */
-    private int selectRandomDatabaseSize() {
+    private long selectRandomDatabaseSize() {
         // Random generators need to be different for each host to have different database sizes.
         // Create one.
-        Random pseudoRandom = new Random(this.seed * this.host.getAddress());
+        Random pseudoRandom = new Random(this.seed ^ (SEED_VARIETY_FACTOR * this.host.getAddress()));
         // Then, randomly choose a database size.
-        return this.databaseSizeRange[0] + pseudoRandom.nextInt(this.databaseSizeRange[1] + 1);
+        return Math.round(this.databaseSizeRange[0]
+                + pseudoRandom.nextDouble() * (this.databaseSizeRange[1] - this.databaseSizeRange[0]));
     }
 
     @Override

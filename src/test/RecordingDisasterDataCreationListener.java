@@ -24,13 +24,13 @@ public class RecordingDisasterDataCreationListener implements DisasterDataCreati
     /**
      * Called when a {@link DisasterData} got created by a {@link DisasterDataCreateEvent}.
      *
-     * @param by   {@link DTNHost} that created the data.
+     * @param creator {@link DTNHost} that created the data.
      * @param data The created {@link DisasterData}.
      */
     @Override
-    public void disasterDataCreated(DTNHost by, DisasterData data) {
+    public void disasterDataCreated(DTNHost creator, DisasterData data) {
         numDisasterDataCreatedCalls++;
-        this.lastCreator = by;
+        this.lastCreator = creator;
         this.lastData = data;
     }
 

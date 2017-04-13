@@ -44,15 +44,21 @@ public class LocalDatabaseTest {
 
     /* The database used in tests. */
     private LocalDatabase database;
+    private DTNHost owner;
+
+    public LocalDatabaseTest() {
+        // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
+        // This is dealt with by the setUp method.
+    }
 
     @Before
     public void setUp() {
         // Create database.
-        DTNHost owner = new TestDTNHost(new ArrayList<>(), null, new TestSettings());
-        this.database = new LocalDatabase(owner, DB_SIZE);
+        this.owner = new TestDTNHost(new ArrayList<>(), null, new TestSettings());
+        this.database = new LocalDatabase(this.owner, DB_SIZE);
 
         // Set owner's location to current location.
-        owner.setLocation(CURR_LOCATION);
+        this.owner.setLocation(CURR_LOCATION);
 
         // Set time to current time.
         SimClock.getInstance().setTime(CURR_TIME);
@@ -194,6 +200,52 @@ public class LocalDatabaseTest {
 
         List<DisasterData> lowUtility = this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
         TestCase.assertEquals("Expected all data items to be returned.", ALL_ITEMS, lowUtility.size());
+    }
+
+    /**
+     * Tests that utility values decrease if time advances.
+     */
+    @Test
+    public void testCurrentTimeInfluencesUtilityValue() {
+        /* Create data at current location and place. */
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
+        this.database.add(data);
+
+        /* Make sure it has maximum utility value. */
+        TestCase.assertTrue(
+                "Expected data item to have maximum utility.",
+                this.database.getAllDataWithMinimumUtility(1).contains(data));
+
+        /* Advance time. */
+        SimClock.getInstance().advance(CURR_TIME);
+
+        /* It should not have maximum utility value now. */
+        TestCase.assertFalse(
+                "Utility value should decrease with time.",
+                this.database.getAllDataWithMinimumUtility(1).contains(data));
+    }
+
+    /**
+     * Tests that utility values decrease if the distance between location and the data item increases.
+     */
+    @Test
+    public void testCurrentLocationInfluencesUtilityValue() {
+        /* Create data at current location and place. */
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
+        this.database.add(data);
+
+        /* Make sure it has maximum utility value. */
+        TestCase.assertTrue(
+                "Expected data item to have maximum utility.",
+                this.database.getAllDataWithMinimumUtility(1).contains(data));
+
+        /* Change location. */
+        this.owner.setLocation(ORIGIN);
+
+        /* It should not have maximum utility value now. */
+        TestCase.assertFalse(
+                "Utility value should decrease with increasing distance.",
+                this.database.getAllDataWithMinimumUtility(1).contains(data));
     }
 
     /**

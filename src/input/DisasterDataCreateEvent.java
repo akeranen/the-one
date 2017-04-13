@@ -5,8 +5,6 @@ import core.DTNHost;
 import core.DisasterData;
 import core.World;
 
-import java.util.Random;
-
 /**
  * An {@link ExternalEvent} creating a {@link DisasterData}.
  *
@@ -15,6 +13,9 @@ import java.util.Random;
 public class DisasterDataCreateEvent extends ExternalEvent {
     private static final long serialVersionUID = 1;
 
+    /* Address of the host that will create the data. */
+    private int creatorAddress;
+
     /* Properties of the disaster data to create. */
     private DisasterData.DataType type;
     private int size;
@@ -22,23 +23,21 @@ public class DisasterDataCreateEvent extends ExternalEvent {
     /* Offset between host location and data location. */
     private transient Coord offset;
 
-    /* Random instance to use to select a host. */
-    private Random random;
-
     /**
      * Initializes a new instance of the {@link DisasterDataCreateEvent} class.
+     * @param creatorAddress Address of the host that will create the {@link DisasterData}.
      * @param type Type of the {@link DisasterData} to create.
      * @param size Size of the {@link DisasterData} to create.
      * @param offset Offset between host location and data location.
      * @param time Time of the event and creation time of the {@link DisasterData} to create.
-     * @param random Random instance to use to select a host.
      */
-    public DisasterDataCreateEvent(DisasterData.DataType type, int size, Coord offset, double time, Random random) {
+    public DisasterDataCreateEvent(
+            int creatorAddress, DisasterData.DataType type, int size, Coord offset, double time) {
         super(time);
+        this.creatorAddress = creatorAddress;
         this.type = type;
         this.size = size;
         this.offset = offset;
-        this.random = random;
     }
 
     /**
@@ -48,18 +47,9 @@ public class DisasterDataCreateEvent extends ExternalEvent {
      */
     @Override
     public void processEvent(World world) {
-        DTNHost creator = this.chooseRandomCreator(world);
+        DTNHost creator = world.getNodeByAddress(this.creatorAddress);
         DisasterData data = new DisasterData(this.type, this.size, this.time, this.determineLocation(creator));
         DisasterDataNotifier.dataCreated(creator, data);
-    }
-
-    /**
-     * Chooses a random {@link DTNHost}.
-     * @param world World object containing {@link DTNHost}s.
-     * @return The chosen {@link DTNHost}.
-     */
-    private DTNHost chooseRandomCreator(World world) {
-        return world.getHosts().get(this.random.nextInt(world.getHosts().size()));
     }
 
     /**
@@ -81,6 +71,8 @@ public class DisasterDataCreateEvent extends ExternalEvent {
      */
     @Override
     public String toString() {
-        return String.format("DATA @%.2f %s size:%s offset:%s CREATE", this.time, this.type, this.size, this.offset);
+        return String.format(
+                "DATA @%.2f %s size:%s offset:%s CREATE by host %d",
+                this.time, this.type, this.size, this.offset, this.creatorAddress);
     }
 }

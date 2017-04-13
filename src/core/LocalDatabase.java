@@ -25,9 +25,9 @@ public class LocalDatabase {
     private static final double SLOWER_DECREASE_DIVISOR = 2;
 
     /** Total size of the database in bytes. */
-    private int totalSize;
+    private long totalSize;
     /** Size used by stored data. */
-    private int usedSize;
+    private long usedSize;
 
     /** The database's owner. */
     private DTNHost owner;
@@ -41,7 +41,7 @@ public class LocalDatabase {
      * @param owner The database's owner.
      * @param totalSize Size of the database in bytes.
      */
-    public LocalDatabase(DTNHost owner, int totalSize) {
+    public LocalDatabase(DTNHost owner, long totalSize) {
         this.owner = owner;
         this.totalSize = totalSize;
     }

@@ -126,12 +126,20 @@ public class Settings {
 		}
 	}
 	
+	/**
+     * Checks that the given double array contains a valid range. I.e.,
+     * the length of the array must be two and
+     * <code>first_value <= second_value</code>.
+     * @param range The range array
+     * @param sname Name of the setting (for error messages)
+     * @throws SettingsError If the given array didn't qualify as a range
+     */
 	public void assertValidRange(double range[], String sname)
 	        throws SettingsError {
 	        if (range.length != 2) {
 	            throw new SettingsError("Range setting " +
 	                    getFullPropertyName(sname) +
-	                    " should contain only two comma separated integer values");
+	                    " should contain only two comma separated double values");
 	        }
 	        if (range[0] > range[1]) {
 	            throw new SettingsError("Range setting's " +

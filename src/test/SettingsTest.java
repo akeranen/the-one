@@ -7,6 +7,8 @@ package test;
 import java.io.File;
 import java.io.PrintWriter;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 import core.Settings;
 
@@ -18,6 +20,7 @@ public class SettingsTest extends TestCase {
 
 	private static final String CSV_RS_S = "csvRunSetting";
 	private static final int[] CSV_RS_V = {1,2,3,4};
+	private static final double[] VALID_RANGE = {1.2,2.5};
 
 	private static final String TST = "tstSetting";
 	private static final String TST_RES = "tst";
@@ -67,6 +70,10 @@ public class SettingsTest extends TestCase {
 		Settings.setRunIndex(0);
 	}
 
+	@Test
+	public void testAssertValidRange(){
+	    s.assertValidRange(VALID_RANGE, TST);
+	}
 
 	public void testContains() {
 		assertTrue(s.contains("Ns.setting1"));

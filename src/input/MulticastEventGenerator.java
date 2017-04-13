@@ -101,6 +101,10 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         }
     }
 
+    /**
+     * variable used to create groups only the first time
+     * {@link MulticastEventGenerator#nextEvent()} is called.
+     */
     private static synchronized void setNodesAsAssigned(){
         nodesAreAssignedToGroups = true;
     }
@@ -123,12 +127,14 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         int group = this.drawHostAddress(this.groupAddressRange);
         Integer[] groupMembers = Group.getGroup(group).getMembers();
         int sender = groupMembers[rng.nextInt(groupMembers.length)];
+        int priority = this.drawPriority();
         ExternalEvent messageCreateEvent = new MulticastCreateEvent(
                 sender,
                 group,
                 this.getID(),
                 this.drawMessageSize(),
-                this.nextEventsTime);
+                this.nextEventsTime,
+                priority);
 
         /* Update next event time before returning. */
         this.advanceToNextEvent(interval);

@@ -1,11 +1,14 @@
 package test;
 
 import core.Coord;
+import core.DTNHost;
 import core.SimClock;
 import movement.CarMovement;
 import movement.ShortestPathMapBasedMovement;
 import movement.VoluntaryHelperMovement;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -15,28 +18,31 @@ import static junit.framework.TestCase.assertFalse;
  * Tests for behavior of VoluntaryHelperMovement
  * Created by Marius Meyer on 10.04.17.
  */
-public class VhmBehaviorTest extends AbstractVhmTest{
+public class VhmBehaviorTest {
 
     private static final String INVALID_MODE_SWITCH = "Mode shouldn't have switched";
 
     //big delta for higher tolerance for probabilistic functions
     private static final double PROB_DELTA = 0.05;
-    private static final double TEST_HELP_TIME = 30;
-    private static final double TEST_HOSPITAL_WAIT_TIME = 45;
-    private static final double TEST_INTENSITY_WEIGHT = 0.34;
 
-    private static final Coord LOCATION_INSIDE_EVENT_RANGE = new Coord(4000,2100);
-    private static final Coord LOCATION_INSIDE_SAFE_RANGE = new Coord(4000,2300);
-    private static final Coord LOCATION_INSIDE_MAX_RANGE = new Coord(4000,2500);
-    private static final Coord LOCATION_OUTSIDE_MAX_RANGE = new Coord(4000,2700);
+    private static final int TEST_RUNS = 2000;
+
+    private TestSettings testSettings = VhmTestHelper.createMinimalSettingsForVoluntaryHelperMovement();
+    private VhmProperties vhm;
+    private DTNHost host = new TestUtils(new ArrayList<>(),new ArrayList<>(),testSettings).createHost();
 
     public VhmBehaviorTest(){
-        //nothing to doe here, Set up is done in super class.
+        host.setLocation(new Coord(0,0));
+        vhm = VhmTestHelper.createMinimalVhm(host);
     }
 
     @Test
-    public void testSetHostSetsHostAndChoosesRandomMapBased(){
+    public void testSetHostSetsHost(){
         assertEquals("Host was not set as expected",host,vhm.getHost());
+    }
+
+    @Test
+    public void testInitialMMIsRandomMapBasedIfNoEventIsStartedOrWasNotChosen(){
         assertEquals("Wrong movement mode was chosen",
                 VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE, vhm.getMode());
         assertEquals("Wrong movement model is used",
@@ -44,40 +50,45 @@ public class VhmBehaviorTest extends AbstractVhmTest{
     }
 
     @Test
-    public void testSetHostSetsHostAndMoveToEventIsUsedWhenDisasterWasChosen(){
-        includeDisaster();
+    public void testInitialMMisMoveToNodeIfAnEventIsAvailiableAndWasChosen(){
+        VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
         //node will help at disaster with intensity 10.
         vhm.setIntensityWeight(1);
-        host.setLocation(LOCATION_INSIDE_SAFE_RANGE);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         vhm.setHost(host);
         assertEquals("Model should choose to move to event",
                 VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE, vhm.getMode());
         assertEquals("CarMovement should be used as movement model",
                 CarMovement.class, vhm.getCurrentMovementModel().getClass());
         assertEquals("The destination should be the nearest map node to the event location",
-                vhm.getMap().getClosestNodeByCoord(disaster.getLocation()).getLocation(),
-                vhm.getCarMM().getPath().getCoords().get(vhm.getCarMM().getPath().getCoords().size() - 1));
+                vhm.getMap().getClosestNodeByCoord(VhmTestHelper.disaster.getLocation()).getLocation(),
+                ((CarMovement)vhm.getCurrentMovementModel()).getPath().getCoords().
+                        get(((CarMovement)vhm.getCurrentMovementModel()).getPath().getCoords().size() - 1));
     }
 
     @Test
     public void testHospitalEventStartedAndIsAddedToHospitalsAndNotToDisasters(){
-        vhm.vhmEventStarted(hospital);
-        assertTrue("Hospital was not added to list of hospitals",vhm.getHospitals().contains(hospital));
-        assertFalse("Hospital was falsely added to list of disasters",vhm.getDisasters().contains(hospital));
+        vhm.vhmEventStarted(VhmTestHelper.hospital);
+        assertTrue("Hospital was not added to list of hospitals",
+                vhm.getHospitals().contains(VhmTestHelper.hospital));
+        assertFalse("Hospital was falsely added to list of disasters",
+                vhm.getDisasters().contains(VhmTestHelper.hospital));
     }
 
     @Test
     public void testHospitalEventEndedRemovesHospitalFromList(){
-        vhm.vhmEventStarted(hospital);
-        vhm.vhmEventEnded(hospital);
-        assertFalse("Hospital wasn't removed from list",vhm.getHospitals().contains(hospital));
+        vhm.vhmEventStarted(VhmTestHelper.hospital);
+        vhm.vhmEventEnded(VhmTestHelper.hospital);
+        assertFalse("Hospital wasn't removed from list",vhm.getHospitals().contains(VhmTestHelper.hospital));
     }
 
     @Test
     public void testDisasterEventStartedAndIsAddedToDisastersAndNotToHospitals(){
-        vhm.vhmEventStarted(disaster);
-        assertTrue("Disaster was not added to list of disasters",vhm.getDisasters().contains(disaster));
-        assertFalse("Disaster was falsely added to list of hospitals",vhm.getHospitals().contains(disaster));
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        assertTrue("Disaster was not added to list of disasters",
+                vhm.getDisasters().contains(VhmTestHelper.disaster));
+        assertFalse("Disaster was falsely added to list of hospitals",
+                vhm.getHospitals().contains(VhmTestHelper.disaster));
     }
 
     /**
@@ -86,9 +97,9 @@ public class VhmBehaviorTest extends AbstractVhmTest{
     @Test
     public void testDisasterEventStartedHelp(){
         vhm.setIntensityWeight(1);
-        host.setLocation(LOCATION_INSIDE_MAX_RANGE);
-        vhm.vhmEventStarted(disaster);
-        testMoveToState();
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        VhmTestHelper.testMoveToState(vhm);
     }
 
     /**
@@ -97,287 +108,303 @@ public class VhmBehaviorTest extends AbstractVhmTest{
     @Test
     public void testDisasterEventStartedNodesOutsideRangeDontHelp(){
         vhm.setIntensityWeight(1);
-        host.setLocation(LOCATION_OUTSIDE_MAX_RANGE);
-        vhm.vhmEventStarted(disaster);
-        testRandomMapBasedState();
+        host.setLocation(VhmTestHelper.LOCATION_OUTSIDE_MAX_RANGE);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        VhmTestHelper.testRandomMapBasedState(vhm);
     }
 
     @Test
     public void testDisasterEventEndedRemoveDisasterFromList(){
-        vhm.vhmEventStarted(disaster);
-        vhm.vhmEventEnded(disaster);
-        assertFalse("Disaster wasn't removed from list",vhm.getDisasters().contains(hospital));
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        vhm.vhmEventEnded(VhmTestHelper.disaster);
+        assertFalse("Disaster wasn't removed from list",vhm.getDisasters().contains(VhmTestHelper.hospital));
     }
 
     @Test
     public void testNodeWorkingOnDisasterStartOverAfterDisasterEnds(){
         vhm.setIntensityWeight(1);
-        host.setLocation(LOCATION_INSIDE_MAX_RANGE);
-        vhm.vhmEventStarted(disaster);
-        vhm.vhmEventEnded(disaster);
-        testRandomMapBasedState();
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        vhm.vhmEventEnded(VhmTestHelper.disaster);
+        VhmTestHelper.testRandomMapBasedState(vhm);
+
     }
 
     @Test
     public void testPanicingNodesIgnoreEndOfDisaster(){
         vhm.setInjuryProbability(0);
-        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
-        vhm.vhmEventStarted(disaster);
-        vhm.vhmEventEnded(disaster);
-        testPanicState();
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        vhm.vhmEventEnded(VhmTestHelper.disaster);
+        VhmTestHelper.testPanicState(vhm);
     }
 
     @Test
     public void testInjuredNodesIgnoreEndOfDisaster(){
         vhm.setInjuryProbability(1);
-        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
-        vhm.vhmEventStarted(disaster);
-        vhm.vhmEventEnded(disaster);
-        testInjuredState();
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        vhm.vhmEventEnded(VhmTestHelper.disaster);
+        VhmTestHelper.testInjuredState(vhm);
     }
 
     @Test
     public void testInjuryProbabilityIsUsedCorrectly(){
         int injuredCount = 0;
-        vhm.setInjuryProbability(TEST_PROBABILITY);
-        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
+        vhm.setInjuryProbability(VhmTestHelper.PROBABILITY);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         for (int i = 0; i < TEST_RUNS; i++){
-            vhm.vhmEventStarted(disaster);
-            vhm.vhmEventEnded(disaster);
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            vhm.vhmEventEnded(VhmTestHelper.disaster);
             if (vhm.getMode() == VoluntaryHelperMovement.movementMode.INJURED_MODE){
                 injuredCount++;
             }
-            vhm.setMode(VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE);
+            VhmTestHelper.setToRandomMapBasedState(vhm);
         }
         assertEquals("Measured injury probability differs from value specified",
-                TEST_PROBABILITY,(double)injuredCount / TEST_RUNS,PROB_DELTA);
+                VhmTestHelper.PROBABILITY,(double)injuredCount / TEST_RUNS,PROB_DELTA);
     }
 
     @Test
     public void testHospitalWaitProbability(){
         int waitingCount = 0;
-        vhm.setWaitProbability(TEST_PROBABILITY);
-        host.setLocation(hospital.getLocation());
-        vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
-        vhm.setChosenDisaster(disaster);
-        vhm.setChosenHospital(hospital);
+        vhm.setWaitProbability(VhmTestHelper.PROBABILITY);
+        host.setLocation(VhmTestHelper.hospital.getLocation());
+        VhmTestHelper.setToTransportMode(vhm);
         for (int i = 0; i < TEST_RUNS; i++){
             vhm.newOrders();
             if (vhm.getMode() == VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE){
                 waitingCount++;
             }
-            vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
+            VhmTestHelper.setToTransportMode(vhm);
         }
         assertEquals("Measured wait probability differs from value specified",
-                TEST_PROBABILITY,(double) waitingCount / TEST_RUNS,PROB_DELTA);
+                VhmTestHelper.PROBABILITY,(double) waitingCount / TEST_RUNS,PROB_DELTA);
     }
 
     @Test
     public void testAfterArrivalSwitchToLevyWalkIfLocalHelper(){
         vhm.setLocalHelper(true);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
-        includeDisaster();
-        vhm.setChosenDisaster(disaster);
+        VhmTestHelper.setToMoveToMode(vhm);
         vhm.newOrders();
-        testLevyWalkState();
+        VhmTestHelper.testLevyWalkState(vhm);
     }
 
     @Test
-    public void testAfterArrivalSwitchToTransportIfNotLocalHelper(){
+    public void testAfterArrivalSwitchToTransportIfNotLocalHelperAndHospitalAvailable(){
         vhm.setLocalHelper(false);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
-        includeDisaster();
-        includeHospital();
-        vhm.setChosenDisaster(disaster);
+        vhm.vhmEventStarted(VhmTestHelper.hospital);
+        VhmTestHelper.setToMoveToMode(vhm);
         vhm.newOrders();
-        testTransportState();
+        VhmTestHelper.testTransportState(vhm);
+    }
+
+    @Test
+    public void testAfterArrivalSwitchToRandomMapBasedIfNotLocalHelperAndNoHospitalAvailable(){
+        vhm.setLocalHelper(false);
+        VhmTestHelper.setToMoveToMode(vhm);
+        vhm.newOrders();
+        VhmTestHelper.testRandomMapBasedState(vhm);
     }
 
     @Test
     public void testAfterTransportingDoLevyWalkIfDecideToWait(){
-        vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
-        vhm.setChosenDisaster(disaster);
-        vhm.setChosenHospital(hospital);
+        VhmTestHelper.setToTransportMode(vhm);
         vhm.setWaitProbability(1);
         vhm.newOrders();
-        testWaitState();
+        VhmTestHelper.testWaitState(vhm);
     }
 
     @Test
     public void testAfterTransportingMoveToNextEventIfNotDecideToWait(){
-        vhm.setMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
-        vhm.setChosenDisaster(disaster);
-        vhm.setChosenHospital(hospital);
-        includeDisaster();
-        includeHospital();
+        VhmTestHelper.setToTransportMode(vhm);
         vhm.setWaitProbability(0);
         vhm.newOrders();
-        testMoveToState();
+        VhmTestHelper.testMoveToState(vhm);
     }
 
     @Test
     public void testNodesAreHelpingDuringTheSpecifiedHelpTimeAndSwitchToRandomIfNoEventChosen(){
+        vhm = VhmTestHelper.createVhmWithHelpAndWaitTimes(host);
         SimClock.getInstance().setTime(0);
-        vhm.setHelpTime(TEST_HELP_TIME);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE);
-        vhm.setCurrentMovementModel(vhm.getLevyWalkMM());
-        SimClock.getInstance().setTime(TEST_HELP_TIME - DELTA);
+        VhmTestHelper.setToLocalHelperMode(vhm);
+        SimClock.getInstance().setTime(VhmTestHelper.HELP_TIME - VhmTestHelper.DELTA);
         vhm.newOrders();
-        testLevyWalkState();
-        SimClock.getInstance().setTime(TEST_HELP_TIME + DELTA);
+        assertEquals("The mode should not have been switched",
+                VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE,vhm.getMode());
+        SimClock.getInstance().setTime(VhmTestHelper.HELP_TIME + VhmTestHelper.DELTA);
         vhm.newOrders();
-        testRandomMapBasedState();
+        VhmTestHelper.testRandomMapBasedState(vhm);
     }
 
     @Test
     public void testNodesAreWaitingDuringTheSpecifiedWaitTimeAndSwitchToRandomIfNoEventChosen(){
+        vhm = VhmTestHelper.createVhmWithHelpAndWaitTimes(host);
         SimClock.getInstance().setTime(0);
-        vhm.setHospitalWaitTime(TEST_HOSPITAL_WAIT_TIME);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE);
-        vhm.setCurrentMovementModel(vhm.getLevyWalkMM());
-        SimClock.getInstance().setTime(TEST_HOSPITAL_WAIT_TIME - DELTA);
+        VhmTestHelper.setToHospitalWaitMode(vhm);
+        SimClock.getInstance().setTime(VhmTestHelper.HOSPITAL_WAIT_TIME - VhmTestHelper.DELTA);
         vhm.newOrders();
-        testWaitState();
-        SimClock.getInstance().setTime(TEST_HOSPITAL_WAIT_TIME + DELTA);
+        assertEquals("The mode should not have been switched",
+                VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE,vhm.getMode());
+        SimClock.getInstance().setTime(VhmTestHelper.HOSPITAL_WAIT_TIME + VhmTestHelper.DELTA);
         vhm.newOrders();
-        testRandomMapBasedState();
+        VhmTestHelper.testRandomMapBasedState(vhm);
     }
 
     @Test
     public void testAfterLevyWalkDoNextEventIfEventIsAvailable(){
+        vhm = VhmTestHelper.createVhmWithHelpAndWaitTimes(host);
         SimClock.getInstance().setTime(0);
         vhm.setIntensityWeight(1);
-        includeDisaster();
-        host.setLocation(LOCATION_INSIDE_SAFE_RANGE);
-        vhm.setHelpTime(TEST_HELP_TIME);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE);
-        SimClock.getInstance().setTime(TEST_HELP_TIME + DELTA);
+        VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        VhmTestHelper.setToLocalHelperMode(vhm);
+        SimClock.getInstance().setTime(VhmTestHelper.HELP_TIME + VhmTestHelper.DELTA);
         vhm.newOrders();
-        testMoveToState();
+        VhmTestHelper.testMoveToState(vhm);
     }
 
     @Test
     public void testAfterWaitHospitalDoNextEventIfEventIsAvailable(){
+        vhm = VhmTestHelper.createVhmWithHelpAndWaitTimes(host);
         SimClock.getInstance().setTime(0);
         vhm.setIntensityWeight(1);
-        includeDisaster();
-        host.setLocation(LOCATION_INSIDE_SAFE_RANGE);
-        vhm.setHospitalWaitTime(TEST_HOSPITAL_WAIT_TIME);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE);
-        SimClock.getInstance().setTime(TEST_HOSPITAL_WAIT_TIME + DELTA);
+        VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        VhmTestHelper.setToHospitalWaitMode(vhm);
+        SimClock.getInstance().setTime(VhmTestHelper.HOSPITAL_WAIT_TIME + VhmTestHelper.DELTA);
         vhm.newOrders();
-        testMoveToState();
+        VhmTestHelper.testMoveToState(vhm);
     }
 
     @Test
     public void testAfterPanicSwitchToRandomIfNoEventChosen(){
-        vhm.setMode(VoluntaryHelperMovement.movementMode.PANIC_MODE);
+        VhmTestHelper.setToPanicMode(vhm);
         vhm.newOrders();
-        testRandomMapBasedState();
+        VhmTestHelper.testRandomMapBasedState(vhm);
     }
 
     @Test
     public void testAfterPanicDoNextEventIfEventIsAvailable(){
-        vhm.setMode(VoluntaryHelperMovement.movementMode.PANIC_MODE);
-        host.setLocation(LOCATION_INSIDE_SAFE_RANGE);
-        includeDisaster();
+        VhmTestHelper.setToPanicMode(vhm);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
         vhm.setIntensityWeight(1);
         vhm.newOrders();
-        testMoveToState();
+        VhmTestHelper.testMoveToState(vhm);
     }
 
     @Test
     public void testAllStatesExceptRandomMapBasedIgnoreStartingEventsInSafeRange(){
-        host.setLocation(LOCATION_INSIDE_SAFE_RANGE);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         vhm.setIntensityWeight(1);
+        VhmTestHelper.setToHospitalWaitMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE);
+        VhmTestHelper.setToLocalHelperMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE);
+        VhmTestHelper.setToMoveToMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
+        VhmTestHelper.setToPanicMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.PANIC_MODE);
+        VhmTestHelper.setToTransportMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
+        VhmTestHelper.setToInjuredMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.INJURED_MODE);
     }
 
     private void checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode mode){
-        vhm.setMode(mode);
-        vhm.vhmEventStarted(disaster);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
         assertEquals(INVALID_MODE_SWITCH,mode,vhm.getMode());
-        vhm.vhmEventEnded(disaster);
+        vhm.vhmEventEnded(VhmTestHelper.disaster);
         assertEquals(INVALID_MODE_SWITCH,mode,vhm.getMode());
     }
 
     @Test
-    public void testAllStatesSwitchToPanicIfInEventRange(){
-        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
+    public void testAllStatesSwitchToPanicIfInEventRangeExceptInjured(){
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         vhm.setInjuryProbability(0);
-        checkIfModeSwitchesToPanic(VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE);
-        checkIfModeSwitchesToPanic(VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE);
-        checkIfModeSwitchesToPanic(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
-        checkIfModeSwitchesToPanic(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
-        checkIfModeSwitchesToPanic(VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE);
+        VhmTestHelper.setToHospitalWaitMode(vhm);
+        checkIfModeSwitchesToPanic();
+        VhmTestHelper.setToLocalHelperMode(vhm);
+        checkIfModeSwitchesToPanic();
+        VhmTestHelper.setToMoveToMode(vhm);
+        checkIfModeSwitchesToPanic();
+        VhmTestHelper.setToTransportMode(vhm);
+        checkIfModeSwitchesToPanic();
+        VhmTestHelper.setToRandomMapBasedState(vhm);
+        checkIfModeSwitchesToPanic();
+        VhmTestHelper.setToPanicMode(vhm);
+        checkIfModeSwitchesToPanic();
     }
 
-    private void checkIfModeSwitchesToPanic(VoluntaryHelperMovement.movementMode mode){
-        vhm.setMode(mode);
-        vhm.vhmEventStarted(disaster);
-        testPanicState();
+    private void checkIfModeSwitchesToPanic(){
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        VhmTestHelper.testPanicState(vhm);
     }
 
     @Test
     public void testAllStatesSwitchToInjuredIfInEventRange(){
-        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         vhm.setInjuryProbability(1);
-        checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE);
-        checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE);
-        checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE);
-        checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode.PANIC_MODE);
-        checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
-        checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE);
+        VhmTestHelper.setToHospitalWaitMode(vhm);
+        checkIfModeSwitchesToInjured();
+        VhmTestHelper.setToLocalHelperMode(vhm);
+        checkIfModeSwitchesToInjured();
+        VhmTestHelper.setToMoveToMode(vhm);
+        checkIfModeSwitchesToInjured();
+        VhmTestHelper.setToPanicMode(vhm);
+        checkIfModeSwitchesToInjured();
+        VhmTestHelper.setToTransportMode(vhm);
+        checkIfModeSwitchesToInjured();
+        VhmTestHelper.setToRandomMapBasedState(vhm);
+        checkIfModeSwitchesToInjured();
     }
 
-    private void checkIfModeSwitchesToInjured(VoluntaryHelperMovement.movementMode mode){
-        vhm.setMode(mode);
-        vhm.vhmEventStarted(disaster);
-        testInjuredState();
+    private void checkIfModeSwitchesToInjured(){
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        VhmTestHelper.testInjuredState(vhm);
     }
 
     @Test
     public void testInjuredDoNotPanic(){
-        host.setLocation(LOCATION_INSIDE_EVENT_RANGE);
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         vhm.setInjuryProbability(0);
-        vhm.setMode(VoluntaryHelperMovement.movementMode.INJURED_MODE);
-        vhm.setCurrentMovementModel(vhm.getStationaryMM());
-        vhm.vhmEventStarted(disaster);
-        testInjuredState();
+        VhmTestHelper.setToInjuredMode(vhm);
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        assertEquals("Injured mode should not be changed at this point",
+                VoluntaryHelperMovement.movementMode.INJURED_MODE, vhm.getMode());
     }
 
     @Test
     public void testHelpFunction(){
-        checkHelpFunctionForLocation(LOCATION_INSIDE_SAFE_RANGE);
-        checkHelpFunctionForLocation(LOCATION_INSIDE_MAX_RANGE);
-        checkHelpFunctionForLocation(LOCATION_OUTSIDE_MAX_RANGE);
+        checkHelpFunctionForLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        checkHelpFunctionForLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
+        checkHelpFunctionForLocation(VhmTestHelper.LOCATION_OUTSIDE_MAX_RANGE);
     }
 
     private void checkHelpFunctionForLocation(Coord location){
         int helpCount = 0;
-        vhm.setIntensityWeight(TEST_INTENSITY_WEIGHT);
+        vhm.setIntensityWeight(VhmTestHelper.INTENSITY_WEIGHT);
         host.setLocation(location);
         for (int i = 0; i < TEST_RUNS; i++){
-            vhm.setMode(VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE);
-            vhm.vhmEventStarted(disaster);
+            VhmTestHelper.setToRandomMapBasedState(vhm);
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
             if (vhm.getMode().equals(VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE)){
                 helpCount++;
             }
         }
         double calculatedHelpProb = 0;
-        if (location.distance(disaster.getLocation()) < disaster.getMaxRange()) {
-            calculatedHelpProb = TEST_INTENSITY_WEIGHT +
-                    (1 - TEST_INTENSITY_WEIGHT) *
-                            (disaster.getMaxRange() - location.distance(disaster.getLocation())) /
-                            disaster.getMaxRange();
+        if (location.distance(VhmTestHelper.disaster.getLocation()) < VhmTestHelper.disaster.getMaxRange()) {
+            calculatedHelpProb = VhmTestHelper.INTENSITY_WEIGHT +
+                    (1 - VhmTestHelper.INTENSITY_WEIGHT) *
+                            (VhmTestHelper.disaster.getMaxRange() -
+                                    location.distance(VhmTestHelper.disaster.getLocation())) /
+                            VhmTestHelper.disaster.getMaxRange();
         }
         assertEquals("Help probability differs from calculation given in specification",
                 calculatedHelpProb,(double) helpCount / TEST_RUNS,PROB_DELTA);
     }
 
+    //TODO: Add tests for dying battery, after feature is implemented
+    //TODO: Add tests for node reset, after feature is implemented
 }

@@ -31,51 +31,51 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * setting key for the node being a local helper or a "voluntary ambulance"
      */
-    private static final String IS_LOCAL_HELPER_SETTING = "isLocalHelper";
+    public static final String IS_LOCAL_HELPER_SETTING = "isLocalHelper";
     /**
      * setting key for the time the node will help at a disaster site (seconds)
      */
-    private static final String HELP_TIME_SETTING = "helpTime";
+    public static final String HELP_TIME_SETTING = "helpTime";
     /**
      * setting key for the time the node will stay at the hospital after transporting someone to it (seconds)
      */
-    private static final String HOSPITAL_WAIT_TIME_SETTING = "hospitalWaitTime";
+    public static final String HOSPITAL_WAIT_TIME_SETTING = "hospitalWaitTime";
     /**
      * setting key for the probability that the node gets injured if an event happens to close to it [0, 1]
      */
-    private static final String INJURY_PROBABILITY_SETTING = "injuryProbability";
+    public static final String INJURY_PROBABILITY_SETTING = "injuryProbability";
     /**
      * setting key for the probability that the node stays at the hospital after transporting someone to it [0, 1]
      */
-    private static final String HOSPITAL_WAIT_PROBABILITY_SETTING = "hospitalWaitProbability";
+    public static final String HOSPITAL_WAIT_PROBABILITY_SETTING = "hospitalWaitProbability";
     /**
      * setting key for the weight of a disasters intensity for determining
      * if the node will help at the disaster site [0, 1]
      */
-    private static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
+    public static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
 
     //default values for the settings
     /**
      * default value for the time the node will help at a disaster site (seconds)
      */
-    private static final double DEFAULT_HELP_TIME = 3600;
+    public static final double DEFAULT_HELP_TIME = 3600;
     /**
      * default value for the time the node will stay at the hospital after transporting someone to it (seconds)
      */
-    private static final double DEFAULT_HOSPITAL_WAIT_TIME = 3600;
+    public static final double DEFAULT_HOSPITAL_WAIT_TIME = 3600;
     /**
      * default value for the probability that the node gets injured if an event happens to close to it [0, 1]
      */
-    private static final double DEFAULT_INJURY_PROBABILITY = 0.5;
+    public static final double DEFAULT_INJURY_PROBABILITY = 0.5;
     /**
      * default value for the probability that the node stays at the hospital after transporting someone to it [0, 1]
      */
-    private static final double DEFAULT_HOSPITAL_WAIT_PROBABILITY = 0.5;
+    public static final double DEFAULT_HOSPITAL_WAIT_PROBABILITY = 0.5;
     /**
      * default value for the weight of a disasters intensity for determining
      * if the node will help at the disaster site [0, 1]
      */
-    private static final double DEFAULT_INTENSITY_WEIGHT = 0.5;
+    public static final double DEFAULT_INTENSITY_WEIGHT = 0.5;
 
     /**
      * the movement modes the node can be in
@@ -115,31 +115,31 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * tells, if the node is a local helper or a "voluntary ambulance"
      */
-    private boolean isLocalHelper;
+    protected boolean isLocalHelper;
     /**
      * how long the node will stay at the hospital (seconds)
      */
-    private double hospitalWaitTime;
+    protected double hospitalWaitTime;
     /**
      * how long the node will help at a disaster site (seconds)
      */
-    private double helpTime;
+    protected double helpTime;
     /**
      * probability that the node gets injured if an event happens to close to it [0, 1]
      */
-    private double injuryProbability;
+    protected double injuryProbability;
     /**
      * probability that the node stays at the hospital after transporting someone to it [0, 1]
      */
-    private double waitProbability;
+    protected double waitProbability;
     /**
      * weight of a disasters intensity for determining if the node will help at the disaster site [0, 1]
      */
-    private double intensityWeight;
+    protected double intensityWeight;
     /**
      * the current movement mode of the node
      */
-    private movementMode mode;
+    protected movementMode mode;
     /**
      * start time of waiting at the hospital or local helping movement
      */
@@ -151,11 +151,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * the selected disaster
      */
-    private VhmEvent chosenDisaster;
+    protected VhmEvent chosenDisaster;
     /**
      * the selected hospital
      */
-    private VhmEvent chosenHospital;
+    protected VhmEvent chosenHospital;
 
     //the sub-movement-models
     /**
@@ -183,11 +183,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * List of disasters
      */
-    private List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<VhmEvent>());
+    protected List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<VhmEvent>());
     /**
      * List of hospitals
      */
-    private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
+    protected List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
 
 
     /**
@@ -221,7 +221,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      *
      * @param prototype The prototype MovementModel
      */
-    public VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
+    protected VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
         super(prototype);
 
         //copy the settings from the prototype
@@ -605,138 +605,5 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             setMovementAsForcefullySwitched();
             startOver();
         }
-    }
-
-    /**
-     * Returns the current movement mode
-     * @return the current movement mode
-     */
-    public movementMode getMode() {
-        return mode;
-    }
-
-    /**
-     * Sets the current movement mode
-     *
-     * @param mode the new movement mode
-     */
-    public void setMode(movementMode mode) {
-        this.mode = mode;
-    }
-
-    public ShortestPathMapBasedMovement getShortestPathMapBasedMM() {
-        return shortestPathMapBasedMM;
-    }
-
-    public CarMovement getCarMM() {
-        return carMM;
-    }
-
-    public LevyWalkMovement getLevyWalkMM() {
-        return levyWalkMM;
-    }
-
-    public SwitchableStationaryMovement getStationaryMM() {
-        return stationaryMM;
-    }
-
-    public PanicMovement getPanicMM() {
-        return panicMM;
-    }
-
-    public boolean isLocalHelper() {
-        return isLocalHelper;
-    }
-
-    public void setLocalHelper(boolean localHelper) {
-        isLocalHelper = localHelper;
-    }
-
-    public double getHospitalWaitTime() {
-        return hospitalWaitTime;
-    }
-
-    public void setHospitalWaitTime(double hospitalWaitTime) {
-        this.hospitalWaitTime = hospitalWaitTime;
-    }
-
-    public double getHelpTime() {
-        return helpTime;
-    }
-
-    public void setHelpTime(double helpTime) {
-        this.helpTime = helpTime;
-    }
-
-    public double getInjuryProbability() {
-        return injuryProbability;
-    }
-
-    public void setInjuryProbability(double injuryProbability) {
-        this.injuryProbability = injuryProbability;
-    }
-
-    public double getWaitProbability() {
-        return waitProbability;
-    }
-
-    public void setWaitProbability(double waitProbability) {
-        this.waitProbability = waitProbability;
-    }
-
-    public double getIntensityWeight() {
-        return intensityWeight;
-    }
-
-    public void setIntensityWeight(double intensityWeight) {
-        this.intensityWeight = intensityWeight;
-    }
-
-    public double getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(double startTime) {
-        this.startTime = startTime;
-    }
-
-    public boolean isJustChanged() {
-        return justChanged;
-    }
-
-    public void setJustChanged(boolean justChanged) {
-        this.justChanged = justChanged;
-    }
-
-    public VhmEvent getChosenDisaster() {
-        return chosenDisaster;
-    }
-
-    public void setChosenDisaster(VhmEvent chosenDisaster) {
-        this.chosenDisaster = chosenDisaster;
-    }
-
-    public VhmEvent getChosenHospital() {
-        return chosenHospital;
-    }
-
-    public void setChosenHospital(VhmEvent chosenHospital) {
-        this.chosenHospital = chosenHospital;
-    }
-
-    public List<VhmEvent> getDisasters() {
-        return Collections.synchronizedList(new ArrayList<>(disasters));
-    }
-
-    public void setDisasters(List<VhmEvent> disasters) {
-        this.disasters = Collections.synchronizedList(new ArrayList<>(disasters));
-    }
-
-    public List<VhmEvent> getHospitals() {
-        return Collections.synchronizedList(new ArrayList<>(hospitals));
-    }
-
-    public void setHospitals(List<VhmEvent> hospitals) {
-        this.hospitals = Collections.synchronizedList(new ArrayList<>(hospitals));
     }
 }

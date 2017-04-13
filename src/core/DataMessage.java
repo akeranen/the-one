@@ -20,7 +20,7 @@ public class DataMessage extends Message {
     @Override
     public Message replicate() {
         Message m = new DataMessage(this.from, this.getTo(), this.id, this.data, this.getPriority());
-        super.copyFrom(m);
+        m.copyFrom(this);
         return m;
     }
 

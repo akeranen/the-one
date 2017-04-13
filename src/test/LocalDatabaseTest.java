@@ -22,19 +22,19 @@ public class LocalDatabaseTest {
     private static final int DB_SIZE = 100;
 
     /* Used location for all DB operations. */
-    private static final Coord CURR_LOCATION = new Coord(3, 4);
+    private static final Coord CURR_LOCATION = new Coord(300, 400);
     /* The current time. */
-    private static final double CURR_TIME = 10;
+    private static final double CURR_TIME = 1800;
 
     private static final Coord ORIGIN = new Coord(0,0);
 
     /* Some utility values used in tests. */
     private static final double IMPOSSIBLE_HIGH_UTILITY = 1.1;
     /* Rounded down utility values for different data types with data created at time 0 at origin. */
-    private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.32;
-    private static final double APPROXIMATE_ORIGIN_MAP_UTILITY = 0.17;
-    private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.08;
-    private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.05;
+    private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.91;
+    private static final double APPROXIMATE_ORIGIN_MAP_UTILITY = 0.84;
+    private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.77;
+    private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
 
     /* Numbers from 1 to 4 data items that are expected to be returned in a certain test. */
     private static final int SINGLE_ITEM = 1;

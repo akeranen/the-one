@@ -9,11 +9,12 @@ import core.DisasterData;
  *
  * Created by Britta Heymann on 05.04.2017.
  */
+@FunctionalInterface
 public interface DisasterDataCreationListener {
     /**
      * Called when a {@link DisasterData} got created by a {@link DisasterDataCreateEvent}.
-     * @param by {@link DTNHost} that created the data.
+     * @param creator {@link DTNHost} that created the data.
      * @param data The created {@link DisasterData}.
      */
-    void disasterDataCreated(DTNHost by, DisasterData data);
+    void disasterDataCreated(DTNHost creator, DisasterData data);
 }

@@ -16,6 +16,8 @@ import java.util.Set;
  */
 public class LocalDatabase {
     private static final int CUBIC = 3;
+    private static final int METERS_IN_KILOMETER = 1000;
+    private static final int SECONDS_IN_HOUR = 3600;
 
     /* Parameters for utility function. */
     private static final double DEFAULT_BASE = 2;
@@ -25,9 +27,9 @@ public class LocalDatabase {
     private static final double SLOWER_DECREASE_DIVISOR = 2;
 
     /** Total size of the database in bytes. */
-    private int totalSize;
+    private long totalSize;
     /** Size used by stored data. */
-    private int usedSize;
+    private long usedSize;
 
     /** The database's owner. */
     private DTNHost owner;
@@ -41,7 +43,7 @@ public class LocalDatabase {
      * @param owner The database's owner.
      * @param totalSize Size of the database in bytes.
      */
-    public LocalDatabase(DTNHost owner, int totalSize) {
+    public LocalDatabase(DTNHost owner, long totalSize) {
         this.owner = owner;
         this.totalSize = totalSize;
     }
@@ -149,10 +151,10 @@ public class LocalDatabase {
 
         //Distance between data and current location
         //The farther away an item is, the lower its utility
-        double distance = dataItem.getLocation().distance(location);
+        double distance = dataItem.getLocation().distance(location) / METERS_IN_KILOMETER;
         //How long it has been since the data item has been created
         //The older an item is, the lower its utility
-        double age = time - dataItem.getCreation();
+        double age = (time - dataItem.getCreation()) / SECONDS_IN_HOUR;
 
         /* Compute utility. */
         return alpha * Math.pow(DEFAULT_BASE, -(distance/SLOWER_DECREASE_DIVISOR)) + (1-alpha) * Math.pow(gamma,-age);

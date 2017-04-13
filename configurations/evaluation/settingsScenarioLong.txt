@@ -1,11 +1,15 @@
-## Scenario: few events, long time
+## Scenarios with duration of three days and with few / many events
 ## Scenario used for the evaluation of the different routing protocols
 ## Scenario settings
 # 259200s = 72h = 3d
 Scenario.endTime = 259200
+Scenario.updateInterval = 0.1
+Scenario.simulateConnections = true
 # Define 3 different node groups
 Scenario.nrofHostGroups = 3
-Scenario.name = scenario_for_three_days
+# to get a correct matching between name and events file, the number of runs should
+# be chosen appropriate
+Scenario.name = [three_days_few_events ; three_days_many_events]
 
 # "WiFi" interface for all nodes
 wInterface.type = InterferenceLimitedInterface
@@ -36,15 +40,16 @@ Group.group_count = 1000,5000
 # Size of multicast groups
 Group.group_size = 3,30
 # Specifies how much energy the hosts have at the beginning of the simulation
-Group.initialEnergy = 0.1,1
+# suggestion for the energy model: use at the earliest, when node reset is merged into master
+#Group.initialEnergy = 0.1,1
 # Specifies how much energy is used for scanning
-Group.scanEnergy = 0.00001
+#Group.scanEnergy = 0.00001
 # Specifies how much energy is used for transmitting
-Group.transmitEnergy = 0.0001
+#Group.transmitEnergy = 0.0001
 # energy starts to decrease from the beginning of the simulation
-Group.energyWarmup = 0.0
+#Group.energyWarmup = 0.0
 # Specifies how much energy is used per device discovery response
-Group.scanResponseEnergy = 0.00001
+#Group.scanResponseEnergy = 0.00001
 
 # group1 (locally helping pedestrians) specific settings
 Group1.groupID = p
@@ -104,7 +109,7 @@ Events3.priorities = 2,10
 
 # Class for third message type (Multicasts small)
 Events4.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
+# Creation interval in seconds (one new message every 0.1 to 3 seconds)
 Events4.interval = 0.1,3
 # Message sizes (0.1KB - 1KB)
 Events4.size = 0.1k,1k
@@ -129,9 +134,8 @@ Events5.prefix = M
 Events5.priorities = 1,1
 
 # Class for fifth message type (1-to-1 messages small)
-# The following two generators are the same, as we want to have interval of 0.5 to 15.
 Events6.class = MessageEventGenerator
-# Creation interval in seconds (one new message every 1 to 30 seconds)
+# Creation interval in seconds (one new message every 0.5 to 15 seconds)
 Events6.interval = 0.5,15
 # Message sizes (0.1KB - 1KB)
 Events6.size = 0.1k,1k
@@ -160,14 +164,18 @@ Events7.priorities = 0,0
 # TODO: specifiy generation of data for the database
 # these tasks can be done at the earliest when they are implemented and merged into the master
 
-# TODO: add reports for delivery probability and DB synchronization
-# this can be done as soon as they are implemented and merged to the master
+## Reports - all report names have to be valid report classes
+# TODO: add reports for DB synchronization
+# this can be done as soon as it is implemented and merged to the master
 # don't forget to also update Report.nrofReports!
-Report.nrofReports = 4
+Report.nrofReports = 5
+# length of the warm up period (simulated seconds)
+Report.warmup = 0
 Report.report1 = BroadcastDeliveryReport
 Report.report2 = MulticastMessageDeliveryReport
 Report.report3 = TrafficReport
 Report.report4 = ImmediateMessageDelayReport
+Report.report5 = DeliveryProbabilityReport
 
 # World's size for Movement Models without implicit size (width, height; meters)
 MovementModel.worldSize = 25000,25000

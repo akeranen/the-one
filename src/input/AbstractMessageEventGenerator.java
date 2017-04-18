@@ -46,8 +46,6 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * The minimum number of hosts needed for communication.
      */
     protected static final int NUMBER_HOSTS_NEEDED_FOR_COMMUNICATION = 2;
-    /** used for the "equality check" of two doubles */
-    private static final double EPSILON = 0.00000001;
 
     /** Time of the next event (simulated seconds) */
     protected double nextEventsTime;
@@ -125,11 +123,8 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         /* ...but happens only after the usual interval between messages.
         That interval is not fixed; we randomly choose a interval duration between msgInterval[0] and msgInterval[1]
         to select it.*/
-        double diffToShortestPossibleInterval = 0;
-        if (Math.abs(msgInterval[0] - msgInterval[1]) >= EPSILON) {
-            diffToShortestPossibleInterval = rng.nextDouble()*(msgInterval[1]-msgInterval[0])+ msgInterval[0];
-        }
-        this.nextEventsTime = earliestMessageTime + msgInterval[0] + diffToShortestPossibleInterval;
+        double diffToShortestPossibleInterval = rng.nextDouble() * (msgInterval[1] - msgInterval[0]) + msgInterval[0];
+        this.nextEventsTime = earliestMessageTime + diffToShortestPossibleInterval;
     }
 
     /**
@@ -171,12 +166,8 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * Generates a (random) time difference between two events
      * @return the time difference
      */
-    protected double drawNextEventTimeDiff() {
-        double timeDiff = 0;
-        if (Math.abs(msgInterval[0] - msgInterval[1]) >= EPSILON) {
-            timeDiff = rng.nextDouble()*(msgInterval[1]-msgInterval[0])+ msgInterval[0];
-        }
-        return msgInterval[0] + timeDiff;
+    public double drawNextEventTimeDiff() {
+        return rng.nextDouble() * (msgInterval[1] - msgInterval[0]) + msgInterval[0];
     }
 
     /**

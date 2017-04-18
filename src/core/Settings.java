@@ -37,7 +37,6 @@ public class Settings {
 	protected static Properties props;
 	/** file name of the default settings file ({@value}) */
 	public static final String DEF_SETTINGS_FILE ="default_settings.txt";
-	private static final int TWO = 2;
 
 	/**
 	 * Setting to define the file name where all read settings are written
@@ -140,7 +139,7 @@ public class Settings {
      *             If the given array didn't qualify as a range
      */
     public void assertValidRange(double[] range, String sname) throws SettingsError {
-        if (range.length != TWO) {
+        if (range.length != EXPECTED_VALUE_NUMBER_FOR_RANGE) {
             throw new SettingsError("Range setting " + getFullPropertyName(sname)
                     + " should contain only two comma separated double values");
         }

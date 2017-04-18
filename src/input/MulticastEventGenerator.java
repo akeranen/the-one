@@ -1,10 +1,12 @@
 package input;
+
 import core.DTNHost;
 import core.Group;
 import core.Settings;
 import core.SimError;
 import core.SimScenario;
 import core.World;
+
 /**
  * Multicast creation external events generator. Creates uniformly distributed
  * multicast creation patterns whose message size and inter-message intervals
@@ -13,29 +15,36 @@ import core.World;
  * Created by Marius Meyer on 08.03.17.
  */
 public class MulticastEventGenerator extends AbstractMessageEventGenerator {
+    
     /** range of group count that is used in the generator */
     public static final String GROUP_COUNT_RANGE_S = "group_count";
+    
     /**
      * range of group sizes used in the generator
      */
     public static final String GROUP_SIZE_RANGE_S = "group_size";
+    
     // default values, if nothing is given in the settings file
     private static final int[] DEFAULT_GROUP_COUNT = { 2, 10 };
     private static final int DEFAULT_MIN_GROUP_SIZE = 3;
     private static final int DEFAULT_MAX_GROUP_SIZE = 10;
+    
     /**
      * Sizes of the groups, that are created for the message generator
      */
     private int[] groupSizeRange = { DEFAULT_MIN_GROUP_SIZE, DEFAULT_MAX_GROUP_SIZE };
+    
     /**
      * address range of the created groups
      */
     private int[] groupAddressRange;
+    
     /**
      * variable used to create groups only the first time
      * {@link MulticastEventGenerator#nextEvent()} is called.
      */
     private static boolean nodesAreAssignedToGroups;
+    
     /**
      * Constructor, initializes the interval between events, and the size of
      * messages generated, as well as number of hosts in the network.
@@ -68,6 +77,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
             nodesAreAssignedToGroups = false;
         }
     }
+    
     /**
      * Assigns nodes randomly to the existing groups, respecting the defined
      * group size range.
@@ -89,6 +99,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
             }
         }
     }
+    
     /**
      * variable used to create groups only the first time
      * {@link MulticastEventGenerator#nextEvent()} is called.
@@ -96,6 +107,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
     private static synchronized void setNodesAsAssigned() {
         nodesAreAssignedToGroups = true;
     }
+    
     /**
      * Returns the next multicast creation event.
      * 

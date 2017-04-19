@@ -72,7 +72,7 @@ public class MessageTransferAcceptPolicyTest {
         g.addHost(recipient2);
         this.multicast = new MulticastMessage(this.sender,g,"G",0);
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
-        this.dataMessage = new DataMessage(this.sender, this.recipient, "D", data, 1);
+        this.dataMessage = new DataMessage(this.sender, this.recipient, "D", data, 0, 1);
 
         // Prepare settings for simple policy.
         this.settings.putSetting(MessageTransferAcceptPolicy.MTA_POLICY_NS, POLICY_NS);

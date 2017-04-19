@@ -1,5 +1,7 @@
 package core;
 
+import util.Tuple;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -94,16 +96,18 @@ public class LocalDatabase {
      * time.
      *
      * @param minUtility The minimum utility the data has to have for it to be returned.
-     * @return All data with utility at least the given threshold.
+     * @return All data items with their respective utility if the utility was greater or equal than the given
+     * threshold.
      */
-    public List<DisasterData> getAllDataWithMinimumUtility(double minUtility){
+    public List<Tuple<DisasterData, Double>> getAllDataWithMinimumUtility(double minUtility){
         double currentTime = SimClock.getTime();
         Coord currentLocation = this.owner.getLocation();
 
-        List<DisasterData> dataWithMinUtility = new ArrayList<>();
+        List<Tuple<DisasterData, Double>> dataWithMinUtility = new ArrayList<>();
         for (DisasterData dataItem : this.data) {
-            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) >= minUtility){
-                dataWithMinUtility.add(dataItem);
+            double utility = LocalDatabase.computeUtility(dataItem, currentLocation, currentTime);
+            if (utility >= minUtility){
+                dataWithMinUtility.add(new Tuple<>(dataItem, utility));
             }
         }
         return dataWithMinUtility;

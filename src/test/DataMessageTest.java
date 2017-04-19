@@ -19,6 +19,7 @@ public class DataMessageTest {
     /** Properties of data resp. data message used in tests. */
     private static final int DATA_SIZE = 34;
     private static final int PRIORITY = 2;
+    private static final double UTILITY = 0.1;
 
     /** Data used in test message. */
     private DisasterData data = new DisasterData(DisasterData.DataType.MARKER, DATA_SIZE, 0, new Coord(0, 0));
@@ -33,7 +34,7 @@ public class DataMessageTest {
     @Before
     public void setUp() {
         TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
-        this.message = new DataMessage(utils.createHost(), utils.createHost(), "D1", this.data, PRIORITY);
+        this.message = new DataMessage(utils.createHost(), utils.createHost(), "D1", this.data, UTILITY, PRIORITY);
     }
 
     @Test
@@ -44,6 +45,11 @@ public class DataMessageTest {
     @Test
     public void testGetData() {
         TestCase.assertEquals("Expected different data item.", this.data, this.message.getData());
+    }
+
+    @Test
+    public void testGetUtility() {
+        TestCase.assertEquals("Expected different utility.", this.data, this.message.getUtility());
     }
 
     @Test
@@ -66,5 +72,11 @@ public class DataMessageTest {
     public void testReplicateCopiesData() {
         Message copy = this.message.replicate();
         TestCase.assertEquals("Copy should point to same data.", this.data, ((DataMessage)copy).getData());
+    }
+
+    @Test
+    public void testReplicateCopiesUtility() {
+        Message copy = this.message.replicate();
+        TestCase.assertEquals("Utility value should not have changed.", UTILITY, ((DataMessage)copy).getUtility());
     }
 }

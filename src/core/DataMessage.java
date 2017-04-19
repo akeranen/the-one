@@ -7,9 +7,11 @@ package core;
  */
 public class DataMessage extends Message {
     private DisasterData data;
+    private double utility;
 
-    public DataMessage(DTNHost from, DTNHost to, String id, DisasterData data, int priority) {
+    public DataMessage(DTNHost from, DTNHost to, String id, DisasterData data, double utility, int priority) {
         super(from, to, id, data.getSize(), priority);
+        this.utility = utility;
         this.data = data;
     }
     /**
@@ -19,13 +21,21 @@ public class DataMessage extends Message {
      */
     @Override
     public Message replicate() {
-        Message m = new DataMessage(this.from, this.getTo(), this.id, this.data, this.getPriority());
+        Message m = new DataMessage(this.from, this.getTo(), this.id, this.data, this.utility, this.getPriority());
         m.copyFrom(this);
         return m;
     }
 
     public DisasterData getData() {
         return data;
+    }
+
+    /**
+     * Gets the utility that has been computed when this message was created.
+     * @return The original utility.
+     */
+    public double getUtility() {
+        return this.utility;
     }
 
     /**

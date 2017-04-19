@@ -9,7 +9,6 @@ import core.Message;
 import core.Settings;
 import input.DisasterDataCreationListener;
 import input.DisasterDataNotifier;
-import routing.MessageRouter;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -50,6 +49,11 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * Without this factor, hosts with similar addresses would get similar database sizes.
      */
     private static final int SEED_VARIETY_FACTOR = 7079;
+
+    /**
+     * DataMessages, like 1-to-1s, always have lowest priority (0).
+     */
+    private static final int DATA_MESSAGE_PRIORITY = 0;
 
     /* Some properties that are the same across all application instances. */
     private double utilityThreshold;
@@ -97,21 +101,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         this.seed = application.seed;
 
         DisasterDataNotifier.addListener(this);
-    }
-
-    /**
-     * Returns the {@link DatabaseApplication} instance of the provided {@link MessageRouter}, if it has one.
-     *
-     * @param router The router to check for a {@link DatabaseApplication}.
-     * @return The found {@link DatabaseApplication} or null if there is none.
-     */
-    public static DatabaseApplication findDatabaseApplication(MessageRouter router) {
-        for (Application application : router.getApplications(APP_ID)) {
-            if (application instanceof DatabaseApplication) {
-                return (DatabaseApplication)application;
-            }
-        }
-        return null;
     }
 
     /**
@@ -189,27 +178,34 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     }
 
     /**
-     * Creates database synchronization messages that should be sent to the provided receiver.
+     * Creates database synchronization messages containing data that might be interesting to neighbors.
      *
      * @param databaseOwner The DTNHost this instance of the application is attached to.
-     * @param receiver DTNHost to find data messages for.
-     * @return The created messages.
+     * @return The created messages. They don't have a receiver yet, so {@link Message#getTo()} will return null.
      */
-    public List<DataMessage> createDataMessages(DTNHost databaseOwner, DTNHost receiver) {
+    public List<DataMessage> createDataMessages(DTNHost databaseOwner) {
         // If we don't know who the application is attached to yet, use the new knowledge for initialization.
         if (!this.isInitialized()) {
             this.initialize(databaseOwner);
         }
 
-        List<DisasterData> interestingData = this.database.getAllDataWithMinimumUtility(this.utilityThreshold);
+        // Find all data which could be interesting for neighbors.
+        List<Tuple<DisasterData, Double>> interestingData =
+                this.database.getAllDataWithMinimumUtility(this.utilityThreshold);
+
+        // Then create a message out of each data item.
         List<DataMessage> messages = new ArrayList<>(interestingData.size());
-        for (DisasterData data : interestingData) {
-            // Create message out of the data.
-            // DataMessages, like 1-to-1s, always have lowest priority (0).
-            DataMessage message = new DataMessage(this.host, receiver, data.toString(), data, 0);
+        DTNHost unknownReceiver = null;
+        for (Tuple<DisasterData, Double> dataWithUtility : interestingData) {
+            DisasterData data = dataWithUtility.getKey();
+            double utilityValue = dataWithUtility.getValue();
+            DataMessage message = new DataMessage(
+                    this.host, unknownReceiver, data.toString(), data, utilityValue, DATA_MESSAGE_PRIORITY);
             message.setAppID(APP_ID);
             messages.add(message);
         }
+
+        // And return all messages.
         return messages;
     }
 

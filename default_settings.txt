@@ -182,20 +182,3 @@ Report.report5 = DeliveryProbabilityReport
 ## see World class for details.
 Optimization.cellSizeMult = 5
 Optimization.randomizeUpdateOrder = true
-
-
-## GUI settings
-
-# GUI underlay image settings
-GUI.UnderlayImage.fileName = data/helsinki_underlay.png
-# Image offset in pixels (x, y)
-GUI.UnderlayImage.offset = 64, 20
-# Scaling factor for the image
-GUI.UnderlayImage.scale = 4.75
-# Image rotation (radians)
-GUI.UnderlayImage.rotate = -0.015
-
-# how many events to show in the log panel (default = 30)
-GUI.EventLogPanel.nrofEvents = 100
-# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
-#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$

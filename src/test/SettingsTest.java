@@ -85,6 +85,7 @@ public class SettingsTest extends TestCase {
             fail();
         } catch (SettingsError se){
             assertEquals(
+                    "assertValidRange didn't detect wrong ordering of values",
                     "Range setting's tstSetting first value "
                     + "should be smaller or equal to second value",
                     se.getMessage());
@@ -98,6 +99,7 @@ public class SettingsTest extends TestCase {
             fail();
         } catch (SettingsError se){
             assertEquals(
+                    "assertValidRange didn't detect wrong length of range",
                     "Range setting tstSetting should contain only "
                     + "two comma separated double values",
                     se.getMessage());

@@ -119,6 +119,9 @@ public class TestUtils {
 			host.setName(name);
 		}
 
+		if (settings.getNameSpace() == IFACE_NS) {
+			settings.restoreNameSpace();
+		}
 		this.allHosts.add(host);
 		return host;
 	}

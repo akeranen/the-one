@@ -77,10 +77,6 @@ public class ConnectionTest extends TestCase {
 		assertTrue(c[3].isInitiator(h[2]));
 	}
 
-	public void testGetInitiator() {
-	    assertEquals("Expected different initiator.", h[0], c[0].getInitiator());
-    }
-
 	public void testStartTransfer() {
 		assertTrue(h[1].recvFrom == h[0]);
 		assertTrue(h[1].recvMessage.getId().equals(m[0].getId()));

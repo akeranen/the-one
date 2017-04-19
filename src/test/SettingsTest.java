@@ -6,7 +6,9 @@ package test;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Arrays;
 
+import core.SettingsError;
 import junit.framework.TestCase;
 import core.Settings;
 
@@ -21,14 +23,18 @@ public class SettingsTest extends TestCase {
 
 	private static final String TST = "tstSetting";
 	private static final String TST_RES = "tst";
+	private static final long[] LONGS = {-4L, 2L, 3_000_000_000L};
+	private static final double[] DOUBLES = {1.1, 2.2, 3.3};
+	private static final String CSV_DOUBLES_SETTING = "csvDoubles";
 	private static final String[] INPUT = {
 		"Ns.setting1 = 1",
 		"Ns.setting2 = true",
 		TST + " = " + TST_RES,
 		"tstSetting2 = tst2",
 		"double = 1.1",
-		"csvDoubles = 1.1,2.2,3.3",
+		CSV_DOUBLES_SETTING + " = " + Arrays.toString(DOUBLES),
 		"csvInts 1,2,3",
+		"csvLongs = " + Arrays.toString(LONGS),
 		"booleanTrue = true",
 		"booleanFalse = false",
 		"int = 1",
@@ -90,16 +96,16 @@ public class SettingsTest extends TestCase {
 		assertEquals("3",csv[2]);
 	}
 
-	public void testGetCsvDoubles() {
-		double[] csv = s.getCsvDoubles("csvDoubles",3);
-		assertEquals(csv.length, 3);
-		assertEquals(1.1,csv[0]);
-		assertEquals(2.2,csv[1]);
-		assertEquals(3.3,csv[2]);
-	}
+    public void testGetCsvDoubles() {
+        double[] csv = s.getCsvDoubles(CSV_DOUBLES_SETTING,DOUBLES.length);
+        assertEquals(csv.length, DOUBLES.length);
+        for (int i = 0; i < DOUBLES.length; i++) {
+            assertEquals(DOUBLES[i], csv[i]);
+        }
+    }
 
 	public void testGetCsvDoublesUnknownAmount() {
-		double[] csv = s.getCsvDoubles("csvDoubles");
+		double[] csv = s.getCsvDoubles(CSV_DOUBLES_SETTING);
 		assertEquals(csv.length, 3);
 		assertEquals(1.1,csv[0]);
 		assertEquals(2.2,csv[1]);
@@ -121,6 +127,26 @@ public class SettingsTest extends TestCase {
 		assertEquals(2,csv[1]);
 		assertEquals(3,csv[2]);
 	}
+
+    public void testGetCsvLongsThrowsOnDoubles() {
+        try {
+            s.getCsvLongs(CSV_DOUBLES_SETTING, LONGS.length);
+            fail();
+        } catch (SettingsError e) {
+            assertEquals(
+                    "Unexpected error thrown.",
+                    "Expected long value for setting 'csvDoubles', got '1.1'.",
+                    e.getMessage());
+        }
+    }
+
+    public void testGetCsvLongsWorksForLongs() {
+        long[] csv = s.getCsvLongs("csvLongs", LONGS.length);
+        assertEquals("Incorrect number of longs was read.", csv.length, LONGS.length);
+        for (int i = 0; i < LONGS.length; i++) {
+            assertEquals("Read wrong long value.", LONGS[i], csv[i]);
+        }
+    }
 
 	public void testGetInt() {
 		assertEquals(1,s.getInt("int"));

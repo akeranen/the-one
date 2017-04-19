@@ -46,4 +46,10 @@ public class DisasterDataTest {
     public void testGetLocation() {
         TestCase.assertEquals("Location should have been different.", LOCATION, this.data.getLocation());
     }
+
+    @Test
+    public void testToString() {
+        TestCase.assertEquals(
+                "String representation was not as expected.", "RESOURCE@20.40@(2.00,3.00)", this.data.toString());
+    }
 }

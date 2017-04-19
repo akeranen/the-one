@@ -7,6 +7,7 @@ import core.SettingsError;
 import input.BroadcastCreateEvent;
 import input.BroadcastEventGenerator;
 import input.MessageEventGenerator;
+import input.MulticastEventGenerator;
 import input.AbstractMessageEventGenerator;
 
 import static org.junit.Assert.assertTrue;
@@ -47,14 +48,8 @@ public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     
     @Test
     public void testDoubleTimeEventDiff(){
-        this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_INTERVAL_S, "0.1,1");
-        double time;
-        AbstractMessageEventGenerator generator = new BroadcastEventGenerator(this.settings);
-        for(int i = 0; i < NR_TRIALS_IN_TEST; i++){
-            time = generator.drawNextEventTimeDiff();
-            assertTrue(time <= 1);
-            assertTrue(time >= 0.1);
-        }
+        generator = new BroadcastEventGenerator(this.settings);
+        super.testDoubleTimeEventDiff();
     }
 
     /**

@@ -123,8 +123,8 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         /* ...but happens only after the usual interval between messages.
         That interval is not fixed; we randomly choose a interval duration between msgInterval[0] and msgInterval[1]
         to select it.*/
-        double diffToShortestPossibleInterval = rng.nextDouble() * (msgInterval[1] - msgInterval[0]) + msgInterval[0];
-        this.nextEventsTime = earliestMessageTime + diffToShortestPossibleInterval;
+        double randomTime = rng.nextDouble() * (msgInterval[1] - msgInterval[0]) + msgInterval[0];
+        this.nextEventsTime = earliestMessageTime + randomTime;
     }
 
     /**

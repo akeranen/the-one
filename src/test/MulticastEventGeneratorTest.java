@@ -6,7 +6,6 @@ import core.SettingsError;
 import core.SimError;
 import core.SimScenario;
 import input.AbstractMessageEventGenerator;
-import input.MessageEventGenerator;
 import input.MulticastCreateEvent;
 import input.MulticastEventGenerator;
 import org.junit.Before;
@@ -105,14 +104,8 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     
     @Test
     public void testDoubleTimeEventDiff(){
-        this.settings.putSetting(AbstractMessageEventGenerator.MESSAGE_INTERVAL_S, "0.1,1");
-        double time;
-        AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
-        for(int i = 0; i < NR_TRIALS_IN_TEST; i++){
-            time = generator.drawNextEventTimeDiff();
-            assertTrue(time <= 1);
-            assertTrue(time >= 0.1);
-        }
+        generator = new MulticastEventGenerator(this.settings);
+        super.testDoubleTimeEventDiff();
     }
 
     /**

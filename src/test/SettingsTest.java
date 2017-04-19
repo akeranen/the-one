@@ -82,6 +82,7 @@ public class SettingsTest extends TestCase {
     public void testAssertValidRangeWithWrongOrdering(){
         try{
             s.assertValidRange(INVALID_RANGE, TST);
+            fail();
         } catch (SettingsError se){
             assertEquals(
                     "Range setting's tstSetting first value "
@@ -94,6 +95,7 @@ public class SettingsTest extends TestCase {
     public void testAssertValidRangeWithWrongRange(){
         try{
             s.assertValidRange(SHORT_RANGE, TST);
+            fail();
         } catch (SettingsError se){
             assertEquals(
                     "Range setting tstSetting should contain only "

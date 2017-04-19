@@ -2,7 +2,6 @@ package test;
 
 import core.Settings;
 import input.AbstractMessageEventGenerator;
-import input.MulticastEventGenerator;
 
 import static org.junit.Assert.assertTrue;
 

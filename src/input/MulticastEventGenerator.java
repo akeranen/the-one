@@ -136,4 +136,4 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         this.advanceToNextEvent(interval);
         return messageCreateEvent;
     }
-}
+} 

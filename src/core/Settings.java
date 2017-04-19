@@ -784,7 +784,7 @@ public class Settings {
         long number = (long)doubleValue;
 
         if (number != doubleValue) {
-            throw new SettingsError("Expected long value for setting'" + name + "', got '" + doubleValue + "'.");
+            throw new SettingsError("Expected long value for setting '" + name + "', got '" + doubleValue + "'.");
         }
         return number;
     }

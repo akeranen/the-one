@@ -1,5 +1,5 @@
-/* CBR router
- * CBR.java
+/* CBRRouter router
+ * CBRRouter.java
  *
  * @Author Sujata Pal
  *
@@ -27,7 +27,7 @@ import core.*;
 import core.ConnectionListener;
 
 
-public class CBR extends ActiveRouter {
+public class CBRRouter extends ActiveRouter {
    
    
     protected Map<Integer, ArrayList<Integer>> nodesInf;
@@ -39,7 +39,7 @@ public class CBR extends ActiveRouter {
      * the given Settings object.
      * @param s The settings object
      */
-    public CBR(Settings s) {
+    public CBRRouter(Settings s) {
         super(s);
         init();
        
@@ -49,7 +49,7 @@ public class CBR extends ActiveRouter {
      * Copy constructor.
      * @param r The router prototype where setting values are copied from
      */
-    protected CBR(CBR r) {
+    protected CBRRouter(CBRRouter r) {
         super(r);
         init();
        
@@ -106,8 +106,7 @@ public class CBR extends ActiveRouter {
     @Override
     public void update() {
         super.update();
-        //if(SimClock.getIntTime() == 43200)
-            //System.out.println("[" + this.getHost() + "]  list: " + this.nodesInf + "\n");
+     
         if (isTransferring() || !canStartTransfer()) {
             return;
         }
@@ -136,7 +135,7 @@ public class CBR extends ActiveRouter {
                 Connection con = connections.get(i);
                 DTNHost otherNode = con.getOtherNode(self);
                
-                CBR otherRouter = (CBR) otherNode.getRouter();
+                CBRRouter otherRouter = (CBRRouter) otherNode.getRouter();
                         
 
                 //if other end of the connection contain (meet with the) destination node of the current msg
@@ -144,21 +143,18 @@ public class CBR extends ActiveRouter {
                     ArrayList<Integer> items = otherRouter.nodesInf.get(msgDst.getAddress());                   
                    
                     int encounter = items.get(0);
-                    if (encounter > maxEnc)
-                    {
+                    if (encounter > maxEnc) {
                         maxEnc = encounter;
                         maxEncHost = otherNode;
                         conEnc = con;
                     }
-
                 }
 
                 Random r = new Random();
                 k = r.nextInt(n);
                
             }
-            if(maxEnc == 0)
-            {   
+            if(maxEnc == 0) {   
                 conEnc = connections.get(k);
             }
             int retVal = startTransfer(m, conEnc);
@@ -170,15 +166,14 @@ public class CBR extends ActiveRouter {
             }
         }
 
-       
         return null;
     }
    
    
        
     @Override
-    public CBR replicate() {
-        return new CBR(this);
+    public CBRRouter replicate() {
+        return new CBRRouter(this);
     }
 
 }

@@ -23,8 +23,8 @@ public abstract class AbstractMovementModelTest {
 
     protected MovementModel model;
     protected TestSettings testSettings;
-    protected static final int MAX_COORD_X = 10000;
-    protected static final int MAX_COORD_Y = 8000;
+    protected static final int MAX_COORD_X = 1000;
+    protected static final int MAX_COORD_Y = 1000;
     protected static final int TEST_RUNS = 2000;
     protected static final String PATH_OUTSIDE_SIMULATION = "Path was outside the simulation area, ";
     protected static final String MESSAGE_X_BELOW_ZERO = PATH_OUTSIDE_SIMULATION +
@@ -43,9 +43,6 @@ public abstract class AbstractMovementModelTest {
     public void setUp(){
         Settings.init(null);
         testSettings = new TestSettings();
-        testSettings.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
-        testSettings.putSetting(MovementModel.WORLD_SIZE,MAX_COORD_X+", "+MAX_COORD_Y);
-        testSettings.restoreNameSpace();
         model = initializeModel(testSettings);
         //Gets the initial location as it is necessary for getPath
         model.getInitialLocation();

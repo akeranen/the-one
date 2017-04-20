@@ -52,7 +52,6 @@ public class VhmBehaviorTest {
     @Test
     public void testInitialMMisMoveToNodeIfAnEventIsAvailiableAndWasChosen(){
         VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
-        //node will help at disaster with intensity 10.
         vhm.setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         vhm.setHost(host);
@@ -114,7 +113,7 @@ public class VhmBehaviorTest {
     }
 
     @Test
-    public void testDisasterEventEndedRemoveDisasterFromList(){
+    public void testDisasterEventEndedRemovesDisasterFromList(){
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         vhm.vhmEventEnded(VhmTestHelper.disaster);
         assertFalse("Disaster wasn't removed from list",vhm.getDisasters().contains(VhmTestHelper.hospital));
@@ -148,10 +147,13 @@ public class VhmBehaviorTest {
         VhmTestHelper.testInjuredState(vhm);
     }
 
+    /**
+     * Tests, if the probability a node gets injured is close to the probability specified in the settings
+     */
     @Test
     public void testInjuryProbabilityIsUsedCorrectly(){
         int injuredCount = 0;
-        vhm.setInjuryProbability(VhmTestHelper.PROBABILITY);
+        vhm.setInjuryProbability(VhmTestHelper.INJURY_PROBABILITY);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         for (int i = 0; i < TEST_RUNS; i++){
             vhm.vhmEventStarted(VhmTestHelper.disaster);
@@ -162,13 +164,16 @@ public class VhmBehaviorTest {
             VhmTestHelper.setToRandomMapBasedState(vhm);
         }
         assertEquals("Measured injury probability differs from value specified",
-                VhmTestHelper.PROBABILITY,(double)injuredCount / TEST_RUNS,PROB_DELTA);
+                VhmTestHelper.INJURY_PROBABILITY,(double)injuredCount / TEST_RUNS,PROB_DELTA);
     }
 
+    /**
+     * Tests, if the probability a node waits at a hospital is close to the probability specified in the settings
+     */
     @Test
-    public void testHospitalWaitProbability(){
+    public void testHospitalWaitProbabilityIsUsedCorrectly(){
         int waitingCount = 0;
-        vhm.setWaitProbability(VhmTestHelper.PROBABILITY);
+        vhm.setWaitProbability(VhmTestHelper.WAIT_PROBABILITY);
         host.setLocation(VhmTestHelper.hospital.getLocation());
         VhmTestHelper.setToTransportMode(vhm);
         for (int i = 0; i < TEST_RUNS; i++){
@@ -179,7 +184,7 @@ public class VhmBehaviorTest {
             VhmTestHelper.setToTransportMode(vhm);
         }
         assertEquals("Measured wait probability differs from value specified",
-                VhmTestHelper.PROBABILITY,(double) waitingCount / TEST_RUNS,PROB_DELTA);
+                VhmTestHelper.WAIT_PROBABILITY,(double) waitingCount / TEST_RUNS,PROB_DELTA);
     }
 
     @Test
@@ -216,7 +221,7 @@ public class VhmBehaviorTest {
     }
 
     @Test
-    public void testAfterTransportingMoveToNextEventIfNotDecideToWait(){
+    public void testAfterTransportingMoveToChosenDisasterIfNotDecideToWait(){
         VhmTestHelper.setToTransportMode(vhm);
         vhm.setWaitProbability(0);
         vhm.newOrders();
@@ -382,6 +387,11 @@ public class VhmBehaviorTest {
         checkHelpFunctionForLocation(VhmTestHelper.LOCATION_OUTSIDE_MAX_RANGE);
     }
 
+    /**
+     * Sets the host to the given location and checks, if the resulting help probability is close to the calculated
+     * one
+     * @param location the location of the host
+     */
     private void checkHelpFunctionForLocation(Coord location){
         int helpCount = 0;
         vhm.setIntensityWeight(VhmTestHelper.INTENSITY_WEIGHT);

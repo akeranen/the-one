@@ -12,8 +12,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 
 /**
- * Abstract test class for {@link VoluntaryHelperMovement}.
- * Includes set up and necessary variables and functions as well as basic method functionality tests.
+ * Test class for {@link VoluntaryHelperMovement}.
+ * Includes basic method functionality tests especially for getters and setters.
  *
  * Created by Marius Meyer on 10.04.17.
  */
@@ -24,6 +24,7 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     private static final String INJURY_PROB_DIFFERS = "Injury probability differs from specified one";
     private static final String WAIT_PROB_DIFFERS = "Wait probability differs from specified one";
     private static final String INTESITY_WEIGHT_DIFFERS = "Intensity weight differs from specified one";
+    private static final String MOVEMENT_MODE_DIFFERS = "The wrong movement mode was returned";
 
     protected VhmProperties vhm;
     protected DTNHost host;
@@ -45,6 +46,8 @@ public class VhmBasicTest extends AbstractMovementModelTest{
 
     @Test
     public void testGetInitialLocation(){
+        //Returns an initial location using the ShortestPathMapBasedMovement.
+        //This location is generated at random but shouldn't be null.
         TestCase.assertNotNull("An initial location should be set",vhm.getInitialLocation());
     }
 
@@ -71,11 +74,11 @@ public class VhmBasicTest extends AbstractMovementModelTest{
         TestCase.assertEquals(WAIT_TIME_DIFFERS,
                 VhmTestHelper.HOSPITAL_WAIT_TIME,vhm.getHospitalWaitTime(),VhmTestHelper.DELTA);
         TestCase.assertEquals(WAIT_PROB_DIFFERS,
-                VhmTestHelper.PROBABILITY,vhm.getWaitProbability(),VhmTestHelper.DELTA);
+                VhmTestHelper.WAIT_PROBABILITY,vhm.getWaitProbability(),VhmTestHelper.DELTA);
         TestCase.assertEquals(INJURY_PROB_DIFFERS,
-                VhmTestHelper.PROBABILITY,vhm.getInjuryProbability(),VhmTestHelper.DELTA);
+                VhmTestHelper.INJURY_PROBABILITY,vhm.getInjuryProbability(),VhmTestHelper.DELTA);
         TestCase.assertEquals(INTESITY_WEIGHT_DIFFERS,
-                VhmTestHelper.PROBABILITY,vhm.getIntensityWeight(),VhmTestHelper.DELTA);
+                VhmTestHelper.INTENSITY_WEIGHT,vhm.getIntensityWeight(),VhmTestHelper.DELTA);
         TestCase.assertTrue("Node should be local helper",vhm.isLocalHelper());
     }
 
@@ -90,7 +93,7 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     }
 
     @Test
-    public void testIsLocalHelper(){
+    public void testGetAndSetLocalHelper(){
         vhm.setLocalHelper(true);
         TestCase.assertTrue("local helper should be set",vhm.isLocalHelper());
         vhm.setLocalHelper(false);
@@ -98,40 +101,41 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     }
 
     @Test
-    public void testInjuryProbability(){
-        vhm.setInjuryProbability(VhmTestHelper.PROBABILITY);
+    public void testGetAndSetInjuryProbability(){
+        vhm.setInjuryProbability(VhmTestHelper.INJURY_PROBABILITY);
         TestCase.assertEquals("Injury probability should be set to different value",
-                VhmTestHelper.PROBABILITY,vhm.getInjuryProbability(), VhmTestHelper.DELTA);
+                VhmTestHelper.INJURY_PROBABILITY,vhm.getInjuryProbability(), VhmTestHelper.DELTA);
     }
 
     @Test
-    public void testWaitProbability(){
-        vhm.setWaitProbability(VhmTestHelper.PROBABILITY);
+    public void testGetAndSetWaitProbability(){
+        vhm.setWaitProbability(VhmTestHelper.WAIT_PROBABILITY);
         TestCase.assertEquals("Wait probability should be set to different value",
-                VhmTestHelper.PROBABILITY, vhm.getWaitProbability(), VhmTestHelper.DELTA);
+                VhmTestHelper.WAIT_PROBABILITY, vhm.getWaitProbability(), VhmTestHelper.DELTA);
     }
 
     @Test
-    public void testChosenDisaster(){
+    public void testGetChosenDisaster(){
         TestCase.assertNull("No disaster should be chosen at this point",vhm.getChosenDisaster());
         vhm.setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
-        TestCase.assertEquals("Not the correct disaster was set as chosen",
+        TestCase.assertEquals("A disaster should be chosen",
                 VhmTestHelper.disaster,vhm.getChosenDisaster());
     }
 
     @Test
-    public void testIntensityWeight(){
-        vhm.setIntensityWeight(VhmTestHelper.PROBABILITY);
-        TestCase.assertEquals("Wrong intensity weight was set", VhmTestHelper.PROBABILITY,vhm.getIntensityWeight());
+    public void testGetAndSetIntensityWeight(){
+        vhm.setIntensityWeight(VhmTestHelper.INTENSITY_WEIGHT);
+        TestCase.assertEquals("Wrong intensity weight was set",
+                VhmTestHelper.INTENSITY_WEIGHT,vhm.getIntensityWeight());
     }
 
     @Test
-    public void testChosenHospital(){
+    public void testGetChosenHospital(){
         TestCase.assertNull("No hospital should be chosen at this point",vhm.getChosenHospital());
         VhmTestHelper.setToTransportMode(vhm);
-        TestCase.assertEquals("Not the correct hospital was set as chosen",
+        TestCase.assertEquals("A hosptial should be chosen",
                 VhmTestHelper.hospital,vhm.getChosenHospital());
     }
 
@@ -143,5 +147,47 @@ public class VhmBasicTest extends AbstractMovementModelTest{
                 testMovement,vhm.getCurrentMovementModel());
         TestCase.assertEquals("Wrong location is set for switched movement model",
                 host.getLocation(),vhm.getCurrentMovementModel().getLastLocation());
+    }
+
+    @Test
+    public void testGetRegisteredDisasters(){
+        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        TestCase.assertEquals("List of disasters should only include one item",
+                1,vhm.getDisasters().size());
+        TestCase.assertEquals("Item in the list should be the started disaster",
+                VhmTestHelper.disaster,vhm.getDisasters().get(0));
+    }
+
+    @Test
+    public void testGetRegisteredHospitals(){
+        vhm.vhmEventStarted(VhmTestHelper.hospital);
+        TestCase.assertEquals("List of hospitals should only include one item",
+                1,vhm.getHospitals().size());
+        TestCase.assertEquals("Item in the list should be the started hospital",
+                VhmTestHelper.hospital,vhm.getHospitals().get(0));
+    }
+
+    @Test
+    public void testGetMode(){
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE,vhm.getMode());
+        VhmTestHelper.setToTransportMode(vhm);
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE, vhm.getMode());
+        VhmTestHelper.setToHospitalWaitMode(vhm);
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE, vhm.getMode());
+        VhmTestHelper.setToLocalHelperMode(vhm);
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE, vhm.getMode());
+        VhmTestHelper.setToMoveToMode(vhm);
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE, vhm.getMode());
+        VhmTestHelper.setToInjuredMode(vhm);
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.INJURED_MODE, vhm.getMode());
+        VhmTestHelper.setToPanicMode(vhm);
+        TestCase.assertEquals(MOVEMENT_MODE_DIFFERS,
+                VoluntaryHelperMovement.movementMode.PANIC_MODE, vhm.getMode());
     }
 }

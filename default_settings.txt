@@ -71,7 +71,7 @@ Group3.okMaps = 2,3
 
 
 # How many event generators
-Events.nrof = 7
+Events.nrof = 9
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
@@ -151,9 +151,36 @@ Events7.prefix = P
 # Message priority 0
 Events7.priorities = 0,0
 
+# Class for map data
+Events8.class = MapDataGenerator
+# Data sizes ( 500kB - 3MB )
+Events8.size = 500k,3M
+# range of message source/destination addresses
+Events8.hosts = 0,9999
+# seed for the pseudo random generator
+Events8.seed = 0
+# number of map data per host
+Events8.numMaps = 1,1
+
+# Class for disaster data
+Events9.class = DisasterDataGenerator
+# Data sizes ( 50kB - 100kB )
+Events9.size = 50k,100k
+# range of message source/destination addresses
+Events9.hosts = 0,9999
+# seed for the pseudo random generator
+Events9.seed = 0
+# data location offset for the distance between created data item and the creator
+Events9.location_offset = 0,100
+# Creation interval in seconds (one new message every 1 to 3 seconds)
+Events9.interval = 1,3
+
+
+
 # TODO: add more generators for DB sync, HELLO messages (?), and neighbor queries (?)
 # TODO: don't forget to also update nrofEvents!
-# TODO: specifiy generation of data for the database
+# TODO: specifiy generation of data for the 
+# TODO: add settings for the DatabaseApplication when it is merged
 # these tasks can be done at the earliest when they are implemented and merged into the master
 
 

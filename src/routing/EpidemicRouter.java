@@ -4,7 +4,14 @@
  */
 package routing;
 
+import applications.DatabaseApplication;
+import core.Connection;
+import core.Message;
 import core.Settings;
+import routing.util.DatabaseApplicationUtil;
+import util.Tuple;
+
+import java.util.List;
 
 /**
  * Epidemic message router with drop-oldest buffer and only single transferring
@@ -34,7 +41,7 @@ public class EpidemicRouter extends ActiveRouter {
 	@Override
 	public void update() {
 		super.update();
-		if (isTransferring() || !canStartTransfer()) {
+		if (isTransferring() || (!canStartTransfer() && !hasDatabase())) {
 			return; // transferring, don't try other connections yet
 		}
 
@@ -45,6 +52,27 @@ public class EpidemicRouter extends ActiveRouter {
 
 		// then try any/all message to any/all connection
 		this.tryAllMessagesToAllConnections();
+		this.tryDataMessages();
+	}
+
+	private boolean hasDatabase() {
+		return DatabaseApplicationUtil.findDatabaseApplication(this) != null;
+	}
+
+	private Tuple<Message, Connection> tryDataMessages() {
+
+		DatabaseApplication application = DatabaseApplicationUtil.findDatabaseApplication(this);
+		if (application == null) {
+			return null;
+		}
+		List<Tuple<Message, Connection>> messages =
+				DatabaseApplicationUtil.createDataMessages(this, this.getHost(), this.getConnections());
+
+		if (messages.isEmpty()) {
+			return null;
+		}
+		// try to send messages
+		return tryMessagesForConnected(messages);
 	}
 
 

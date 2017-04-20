@@ -86,8 +86,8 @@ public abstract class AbstractMovementModelTest {
                 //Bounds in test Settings are 10000x8000
                 assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX() >= 0);
                 assertTrue(MESSAGE_Y_BELOW_ZERO, nextWaypoint.getY() >= 0);
-                assertTrue(MESSAGE_X_ABOVE_LIMIT, nextWaypoint.getX() <= MAX_COORD_X);
-                assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY() <= MAX_COORD_Y);
+                assertTrue(MESSAGE_X_ABOVE_LIMIT, nextWaypoint.getX() <= model.getMaxX());
+                assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY() <= model.getMaxY());
             }
         }
     }

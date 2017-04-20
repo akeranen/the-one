@@ -14,8 +14,6 @@ import movement.SwitchableStationaryMovement;
 import movement.VoluntaryHelperMovement;
 
 import static junit.framework.TestCase.assertEquals;
-import static test.AbstractMovementModelTest.MAX_COORD_X;
-import static test.AbstractMovementModelTest.MAX_COORD_Y;
 
 /**
  * Class containing constants and helper functions used to test the {@link VhmProperties}
@@ -53,6 +51,9 @@ public final class VhmTestHelper {
      */
     public static final double DELTA = 0.001;
 
+    private static final int MAX_COORD_X = 10_000;
+
+    private static final int MAX_COORD_Y = 8000;
 
     public static final VhmEvent disaster = new VhmEvent("testDisaster",
             VhmEventTest.createJsonForCompletelySpecifiedEvent());

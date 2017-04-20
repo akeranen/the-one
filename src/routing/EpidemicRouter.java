@@ -4,7 +4,6 @@
  */
 package routing;
 
-import applications.DatabaseApplication;
 import core.Connection;
 import core.Message;
 import core.Settings;
@@ -52,27 +51,15 @@ public class EpidemicRouter extends ActiveRouter {
 
 		// then try any/all message to any/all connection
 		this.tryAllMessagesToAllConnections();
-		this.tryDataMessages();
+		//find data messages
+		List<Tuple<Message, Connection>> dataMessages =
+				DatabaseApplicationUtil.createDataMessages(this, this.getHost(), this.getConnections());
+		// try to sending data messages
+		tryMessagesForConnected(dataMessages);
 	}
 
 	private boolean hasDatabase() {
 		return DatabaseApplicationUtil.findDatabaseApplication(this) != null;
-	}
-
-	private Tuple<Message, Connection> tryDataMessages() {
-
-		DatabaseApplication application = DatabaseApplicationUtil.findDatabaseApplication(this);
-		if (application == null) {
-			return null;
-		}
-		List<Tuple<Message, Connection>> messages =
-				DatabaseApplicationUtil.createDataMessages(this, this.getHost(), this.getConnections());
-
-		if (messages.isEmpty()) {
-			return null;
-		}
-		// try to send messages
-		return tryMessagesForConnected(messages);
 	}
 
 

@@ -59,10 +59,10 @@ public class VhmBehaviorTest {
                 VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE, vhm.getMode());
         assertEquals("CarMovement should be used as movement model",
                 CarMovement.class, vhm.getCurrentMovementModel().getClass());
+        vhm.getPath();
         assertEquals("The destination should be the nearest map node to the event location",
                 vhm.getMap().getClosestNodeByCoord(VhmTestHelper.disaster.getLocation()).getLocation(),
-                ((CarMovement)vhm.getCurrentMovementModel()).getPath().getCoords().
-                        get(((CarMovement)vhm.getCurrentMovementModel()).getPath().getCoords().size() - 1));
+                        vhm.getCurrentMovementModel().getLastLocation());
     }
 
     @Test

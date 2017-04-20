@@ -59,6 +59,7 @@ public class VhmBehaviorTest {
                 VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE, vhm.getMode());
         assertEquals("CarMovement should be used as movement model",
                 CarMovement.class, vhm.getCurrentMovementModel().getClass());
+        //create a new path and set the last location
         vhm.getPath();
         assertEquals("The destination should be the nearest map node to the event location",
                 vhm.getMap().getClosestNodeByCoord(VhmTestHelper.disaster.getLocation()).getLocation(),

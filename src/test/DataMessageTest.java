@@ -49,7 +49,7 @@ public class DataMessageTest {
 
     @Test
     public void testGetUtility() {
-        TestCase.assertEquals("Expected different utility.", this.data, this.message.getUtility());
+        TestCase.assertEquals("Expected different utility.", UTILITY, this.message.getUtility());
     }
 
     @Test

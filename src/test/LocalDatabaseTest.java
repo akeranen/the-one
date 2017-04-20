@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import util.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,9 @@ public class LocalDatabaseTest {
     private static final double APPROXIMATE_ORIGIN_MAP_UTILITY = 0.84;
     private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.77;
     private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
+
+    private static final String UNEXPECTED_UTILITY = "Expected differnt utility.";
+    private static final double UTILITY_EXACTNESS = 0.01;
 
     /* Numbers from 1 to 4 data items that are expected to be returned in a certain test. */
     private static final int SINGLE_ITEM = 1;
@@ -139,7 +143,7 @@ public class LocalDatabaseTest {
         }
 
         /* Query database. */
-        List<DisasterData> allData = this.database.getAllDataWithMinimumUtility(0);
+        List<Tuple<DisasterData, Double>> allData = this.database.getAllDataWithMinimumUtility(0);
         TestCase.assertEquals("Expected all data to be returned.", data.length, allData.size());
     }
 
@@ -149,7 +153,8 @@ public class LocalDatabaseTest {
         this.database.add(new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION));
 
         /* Query database. */
-        List<DisasterData> highUtilityData = this.database.getAllDataWithMinimumUtility(IMPOSSIBLE_HIGH_UTILITY);
+        List<Tuple<DisasterData, Double>> highUtilityData =
+                this.database.getAllDataWithMinimumUtility(IMPOSSIBLE_HIGH_UTILITY);
         TestCase.assertEquals("Expected nothing to be returned.", 0, highUtilityData.size());
     }
 
@@ -162,9 +167,10 @@ public class LocalDatabaseTest {
         this.database.add(lessUsefulData);
 
         /* Query database with high threshold. */
-        List<DisasterData> highUtilityData = this.database.getAllDataWithMinimumUtility(1);
+        List<Tuple<DisasterData, Double>> highUtilityData = this.database.getAllDataWithMinimumUtility(1);
         TestCase.assertEquals("Expected a single high utility data item.", 1, highUtilityData.size());
-        TestCase.assertEquals("Expected the useful data item to be returned.", usefulData, highUtilityData.get(0));
+        TestCase.assertEquals(
+                "Expected the useful data item to be returned.", usefulData, highUtilityData.get(0).getKey());
     }
 
     @Test
@@ -183,23 +189,41 @@ public class LocalDatabaseTest {
 
         /* The different types should have different utility values.
         Test getting data items slightly below these values one after the other. */
-        List<DisasterData> highestUtility =
+        List<Tuple<DisasterData, Double>> highestUtility =
                 this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
         TestCase.assertEquals("Expected only one data item to be returned.", SINGLE_ITEM, highestUtility.size());
-        TestCase.assertEquals("Expected the skill as highest utility item.", skill, highestUtility.get(0));
+        TestCase.assertTrue("Expected the skill as highest utility item.", containsData(highestUtility, skill));
+        TestCase.assertEquals(
+                UNEXPECTED_UTILITY,
+                APPROXIMATE_ORIGIN_SKILL_UTILITY,
+                getUtility(highestUtility, skill),
+                UTILITY_EXACTNESS);
 
-        List<DisasterData> highUtility =
+        List<Tuple<DisasterData, Double>> highUtility =
                 this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_MAP_UTILITY);
         TestCase.assertEquals("Expected two data items to be returned.", TWO_ITEMS, highUtility.size());
-        TestCase.assertTrue("Expected the map to be returned.", highUtility.contains(map));
+        TestCase.assertTrue("Expected the map to be returned.", containsData(highUtility, map));
+        TestCase.assertEquals(
+                UNEXPECTED_UTILITY, APPROXIMATE_ORIGIN_MAP_UTILITY, getUtility(highUtility, map), UTILITY_EXACTNESS);
 
-        List<DisasterData> mediumUtility =
+        List<Tuple<DisasterData, Double>> mediumUtility =
                 this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_MARKER_UTILITY);
         TestCase.assertEquals("Expected three data items to be returned.", ONE_ITEM_MISSING, mediumUtility.size());
-        TestCase.assertTrue("Expected the marker to be returned.", mediumUtility.contains(marker));
+        TestCase.assertTrue("Expected the marker to be returned.", containsData(mediumUtility, marker));
+        TestCase.assertEquals(
+                UNEXPECTED_UTILITY,
+                APPROXIMATE_ORIGIN_MARKER_UTILITY,
+                getUtility(mediumUtility, marker),
+                UTILITY_EXACTNESS);
 
-        List<DisasterData> lowUtility = this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
+        List<Tuple<DisasterData, Double>> lowUtility =
+                this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
         TestCase.assertEquals("Expected all data items to be returned.", ALL_ITEMS, lowUtility.size());
+        TestCase.assertEquals(
+                UNEXPECTED_UTILITY,
+                APPROXIMATE_ORIGIN_RESOURCE_UTILITY,
+                getUtility(lowUtility, resource),
+                UTILITY_EXACTNESS);
     }
 
     /**
@@ -210,19 +234,16 @@ public class LocalDatabaseTest {
         /* Create data at current location and place. */
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
         this.database.add(data);
-
-        /* Make sure it has maximum utility value. */
-        TestCase.assertTrue(
-                "Expected data item to have maximum utility.",
-                this.database.getAllDataWithMinimumUtility(1).contains(data));
+        double originalUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
 
         /* Advance time. */
         SimClock.getInstance().advance(CURR_TIME);
 
-        /* It should not have maximum utility value now. */
-        TestCase.assertFalse(
-                "Utility value should decrease with time.",
-                this.database.getAllDataWithMinimumUtility(1).contains(data));
+        /* Check new utility value is smaller than original one. */
+        double newUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
+        TestCase.assertTrue(
+                "Utility value should decrease with increasing age.",
+                newUtility + UTILITY_EXACTNESS < originalUtility);
     }
 
     /**
@@ -233,19 +254,16 @@ public class LocalDatabaseTest {
         /* Create data at current location and place. */
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
         this.database.add(data);
-
-        /* Make sure it has maximum utility value. */
-        TestCase.assertTrue(
-                "Expected data item to have maximum utility.",
-                this.database.getAllDataWithMinimumUtility(1).contains(data));
+        double originalUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
 
         /* Change location. */
         this.owner.setLocation(ORIGIN);
 
-        /* It should not have maximum utility value now. */
-        TestCase.assertFalse(
+        /* Check new utility value is smaller than the original one. */
+        double newUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
+        TestCase.assertTrue(
                 "Utility value should decrease with increasing distance.",
-                this.database.getAllDataWithMinimumUtility(1).contains(data));
+                newUtility + UTILITY_EXACTNESS < originalUtility);
     }
 
     /**
@@ -254,7 +272,41 @@ public class LocalDatabaseTest {
      * @return All data stored in the database.
      */
     private List<DisasterData> getAllData() {
-        /* Returns all data as the minimum possible utility value is 0. */
-        return this.database.getAllDataWithMinimumUtility(0);
+        // Find all data with utility >= 0, i.e. all data overall.
+        List<Tuple<DisasterData, Double>> allDataWithUtility = this.database.getAllDataWithMinimumUtility(0);
+
+        // Translate the data - utility values into data only.
+        List<DisasterData> allData = new ArrayList<>(allDataWithUtility.size());
+        for (Tuple<DisasterData, Double> tuple : allDataWithUtility) {
+            allData.add(tuple.getKey());
+        }
+        return allData;
+    }
+
+    /**
+     * Checks whether the given list contains the given data item.
+     *
+     * @param list List to check.
+     * @param data Data item to search for.
+     * @return Whether the list contains a tuple that has the data item as its key.
+     */
+    private static boolean containsData(List<Tuple<DisasterData, Double>> list, DisasterData data) {
+        return list.stream().anyMatch(dataItem -> dataItem.getKey().equals(data));
+    }
+
+    /**
+     * Extracts the data item's utility value from the given list.
+     *
+     * @param list List to take the utility value from.
+     * @param data Data item to check the utility for.
+     * @return The utility value of the provided data item as defined by the provided list.
+     */
+    private static double getUtility(List<Tuple<DisasterData, Double>> list, DisasterData data) {
+        for (Tuple<DisasterData, Double> dataItem : list) {
+            if (dataItem.getKey().equals(data)) {
+                return dataItem.getValue();
+            }
+        }
+        throw new IllegalArgumentException("Data " + data + " was not to be found in list.");
     }
 }

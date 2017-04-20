@@ -23,8 +23,7 @@ public abstract class AbstractMovementModelTest {
 
     protected MovementModel model;
     protected TestSettings testSettings;
-    protected static final int MAX_COORD_X = 1000;
-    protected static final int MAX_COORD_Y = 1000;
+    protected static final int MAX_COORD = 1000;
     protected static final int TEST_RUNS = 2000;
     protected static final String PATH_OUTSIDE_SIMULATION = "Path was outside the simulation area, ";
     protected static final String MESSAGE_X_BELOW_ZERO = PATH_OUTSIDE_SIMULATION +

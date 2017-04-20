@@ -119,8 +119,8 @@ public class LevyWalkTest extends AbstractMovementModelTest{
             assertTrue("Path was outside the radius.",center.distance(nextWaypoint)<=TEST_RADIUS);
             assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX()>=0);
             assertTrue(MESSAGE_Y_BELOW_ZERO,nextWaypoint.getY()>=0);
-            assertTrue(MESSAGE_X_ABOVE_LIMIT,nextWaypoint.getX()<=MAX_COORD_X);
-            assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY()<=MAX_COORD_Y);
+            assertTrue(MESSAGE_X_ABOVE_LIMIT,nextWaypoint.getX()<=MAX_COORD);
+            assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY()<=MAX_COORD);
         }
     }
 

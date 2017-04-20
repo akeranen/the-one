@@ -6,8 +6,6 @@ import core.SettingsError;
 
 import input.BroadcastCreateEvent;
 import input.BroadcastEventGenerator;
-import input.MessageEventGenerator;
-import input.MulticastEventGenerator;
 import input.AbstractMessageEventGenerator;
 
 import static org.junit.Assert.assertTrue;
@@ -46,10 +44,12 @@ public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTe
         }
     }
     
-    @Test
-    public void testDoubleTimeEventDiff(){
-        generator = new BroadcastEventGenerator(this.settings);
-        super.testDoubleTimeEventDiff();
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected void createGenerator(){
+        this.generator = new BroadcastEventGenerator(this.settings);
     }
 
     /**

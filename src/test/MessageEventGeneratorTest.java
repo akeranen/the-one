@@ -73,4 +73,12 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
     protected String getMessageEventGeneratorClassName() {
         return MessageEventGenerator.class.toString();
     }
+    
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected void createGenerator(){
+        this.generator = new MessageEventGenerator(this.settings);
+    }
 }

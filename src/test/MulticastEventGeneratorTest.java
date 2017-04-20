@@ -115,6 +115,12 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     protected String getMessageEventGeneratorClassName() {
         return MulticastEventGenerator.class.toString();
     }
-
-
+    
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected void createGenerator(){
+        this.generator = new MulticastEventGenerator(this.settings);
+    }
 }

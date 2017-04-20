@@ -214,6 +214,14 @@ public class VhmEventTest {
         assertEquals("Hash code should equal the event id.", event.getID(), event.hashCode());
     }
 
+    @Test
+    public void testResetVhmIdCounterSetsCounterToZero(){
+        VhmEvent event1 = createVhmEventWithDefaultValues();
+        VhmEvent.resetVhmEventIdCounter();
+        VhmEvent event2 = createVhmEventWithDefaultValues();
+        assertEquals("The ID of the event should be 0",0,event2.getID());
+    }
+
     /**
      * Creates a {@link JsonObject} that completely specifies a {@link VhmEvent} s. t. no default values will be used.
      * @return The created {@link JsonObject}.

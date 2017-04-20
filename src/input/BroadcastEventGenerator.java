@@ -26,12 +26,14 @@ public class BroadcastEventGenerator extends AbstractMessageEventGenerator {
         /* Draw additional message properties and create message. */
         int interval = this.drawNextEventTimeDiff();
         int sender = this.drawHostAddress(this.hostRange);
+        int priority = this.drawPriority();
         ExternalEvent messageCreateEvent = new BroadcastCreateEvent(
                 sender,
                 this.getID(),
                 this.drawMessageSize(),
                 responseSize,
-                this.nextEventsTime);
+                this.nextEventsTime,
+                priority);
 
         /* Update next event time before returning. */
         this.advanceToNextEvent(interval);

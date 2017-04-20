@@ -133,6 +133,22 @@ public class VhmEventGraphic extends PlayFieldGraphic {
     }
 
     /**
+     * Returns, if the event names are drawn
+     * @return true, if the event names are drawn
+     */
+    public static boolean getDrawEventName(){
+        return drawEventName;
+    }
+
+    /**
+     * Returns, if all event ranges are drawn
+     * @return true, if all event ranges are drawn
+     */
+    public static boolean getDrawAllRanges(){
+        return drawAllRanges;
+    }
+
+    /**
      * Checks, if a event graphics is equal to another one by comparing the {@link VhmEvent#id}
      * of the events they are representing.
      *

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Contains tests for the MulticastEventGenerator class
@@ -95,11 +96,37 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     public void testPriorities(){
         AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
         MulticastCreateEvent event;
+        final int maxPrio=10;
+        final int minPrio=1;
         for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
             event = (MulticastCreateEvent) generator.nextEvent();
-            assertTrue(event.getPriority() <= 10);
-            assertTrue(event.getPriority() >= 1);
+            assertTrue(event.getPriority() <= maxPrio);
+            assertTrue(event.getPriority() >= minPrio);
         }
+    }
+
+    /**
+     * If multiple MulticastEventGenerators exist, only one should create the groups (in the constructor)
+     * and only one should fill them (in createGroups).
+     * If the EventGenerators disagree on the number of groups, problematic behavior like messages to empty groups
+     * might occur.
+     */
+    @Test
+    public void testTwoGeneratorsWorkWithTheSameNumberOfGroups(){
+        AbstractMessageEventGenerator generator1 = new MulticastEventGenerator(this.settings);
+        int noOfGroupsFrom1 = Group.getGroups().length;
+        AbstractMessageEventGenerator generator2 = new MulticastEventGenerator(this.settings);
+        int notOfGroupsFrom2 = Group.getGroups().length;
+        assertEquals("Second generator should not change number of groups",
+                noOfGroupsFrom1, notOfGroupsFrom2);
+
+        //nextEvent retrieves random groups, so calling it checks whether this works
+        final int largeNrTrials=100;
+        for(int i = 0; i < largeNrTrials; i++) {
+            generator1.nextEvent();
+            generator2.nextEvent();
+        }
+
     }
 
     /**

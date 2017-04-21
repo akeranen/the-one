@@ -120,7 +120,7 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
      * Gets a generator of the class to generate message events with.
      */
     @Override
-    protected void createGenerator(){
-        this.generator = new MulticastEventGenerator(this.settings);
+    protected AbstractMessageEventGenerator createGenerator(){
+        return new MulticastEventGenerator(this.settings);
     }
 }

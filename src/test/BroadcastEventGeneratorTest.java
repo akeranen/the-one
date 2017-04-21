@@ -48,8 +48,8 @@ public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTe
      * Gets a generator of the class to generate message events with.
      */
     @Override
-    protected void createGenerator(){
-        this.generator = new BroadcastEventGenerator(this.settings);
+    protected AbstractMessageEventGenerator createGenerator(){
+        return new BroadcastEventGenerator(this.settings);
     }
 
     /**

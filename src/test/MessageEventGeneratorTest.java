@@ -78,7 +78,7 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
      * Gets a generator of the class to generate message events with.
      */
     @Override
-    protected void createGenerator(){
-        this.generator = new MessageEventGenerator(this.settings);
+    protected AbstractMessageEventGenerator createGenerator(){
+        return new MessageEventGenerator(this.settings);
     }
 }

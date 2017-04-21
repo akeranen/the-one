@@ -166,5 +166,6 @@ public class DatabaseApplicationUtilTest {
         s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.0");
         s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
         s.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE, "0,0");
+        s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "0");
     }
 }

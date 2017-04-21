@@ -7,8 +7,10 @@ import core.DisasterData;
 import core.LocalDatabase;
 import core.Message;
 import core.Settings;
+import core.SimClock;
 import input.DisasterDataCreationListener;
 import input.DisasterDataNotifier;
+import routing.MessageRouter;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -40,6 +42,12 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * The other part of the seed is the {@link DTNHost}'s address.
      */
     public static final String SIZE_RANDOMIZER_SEED = "seed";
+    /**
+     * Minimum time between map sending in seconds -setting id ({@value}).
+     * If {@link routing.util.DatabaseApplicationUtil#createDataMessages(MessageRouter, DTNHost, List)} is called and
+     * no map has been sent in the specified interval, a randomly chosen map data item is sent to all neighbors.
+     */
+    public static final String MIN_INTERVAL_MAP_SENDING = "mapSendingInterval";
 
     /** Application ID */
     public static final String APP_ID = "AdHocNetworksInDisasterScenarios";
@@ -59,6 +67,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     private double utilityThreshold;
     private long[] databaseSizeRange;
     private int seed;
+    private double mapSendingInterval;
 
     /** The host this application instance is attached to. */
     private DTNHost host;
@@ -68,6 +77,12 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
 
     /** Stash for created data if attached host is not known yet. */
     private List<Tuple<DTNHost, DisasterData>> stashedCreationData = Collections.synchronizedList(new ArrayList<>());
+
+    /** The last time when a map data item was sent to neighbors. */
+    private double lastMapSendingTime;
+
+    /** Pseudo-random number generator for this application. */
+    private Random pseudoRandom;
 
     /**
      * Creates a new instance of the {@link DatabaseApplication} class.
@@ -80,10 +95,14 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         this.utilityThreshold = s.getDouble(UTILITY_THRESHOLD);
         this.databaseSizeRange = s.getCsvLongs(DATABASE_SIZE_RANGE, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         this.seed = s.getInt(SIZE_RANDOMIZER_SEED);
+        this.mapSendingInterval = s.getDouble(MIN_INTERVAL_MAP_SENDING);
 
         /* Check they are valid. */
         DatabaseApplication.checkUtilityThreshold(this.utilityThreshold);
         DatabaseApplication.checkDatabaseSizeRange(this.databaseSizeRange);
+
+        /* Set last map sending time. */
+        this.lastMapSendingTime = 0.0;
 
         /* Set App ID. */
         super.setAppID(APP_ID);
@@ -99,6 +118,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         this.utilityThreshold = application.utilityThreshold;
         this.databaseSizeRange = application.databaseSizeRange;
         this.seed = application.seed;
+        this.mapSendingInterval = application.mapSendingInterval;
 
         DisasterDataNotifier.addListener(this);
     }
@@ -193,6 +213,17 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         List<Tuple<DisasterData, Double>> interestingData =
                 this.database.getAllNonMapDataWithMinimumUtility(this.utilityThreshold);
 
+        // If it's been a while, add a map item to that data.
+        if (SimClock.getTime() - this.lastMapSendingTime >= this.mapSendingInterval) {
+            List<DisasterData> allMaps = this.database.getMapData();
+            if (!allMaps.isEmpty()) {
+                DisasterData map = allMaps.get(this.pseudoRandom.nextInt(allMaps.size()));
+                // Set utility to the maximum one as we just want to generate realistic traffic.
+                interestingData.add(new Tuple<>(map, 1.0));
+                this.lastMapSendingTime = SimClock.getTime();
+            }
+        }
+
         // Then create a message out of each data item.
         List<DataMessage> messages = new ArrayList<>(interestingData.size());
         DTNHost unknownReceiver = null;
@@ -248,6 +279,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      */
     private void initialize(DTNHost host) {
         this.host = host;
+        this.pseudoRandom = new Random(this.seed ^ (SEED_VARIETY_FACTOR * this.host.getAddress()));
         this.database = new LocalDatabase(this.host, selectRandomDatabaseSize());
 
         // We can now handle our stash.
@@ -264,12 +296,8 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * @return The selected size.
      */
     private long selectRandomDatabaseSize() {
-        // Random generators need to be different for each host to have different database sizes.
-        // Create one.
-        Random pseudoRandom = new Random(this.seed ^ (SEED_VARIETY_FACTOR * this.host.getAddress()));
-        // Then, randomly choose a database size.
         return Math.round(this.databaseSizeRange[0]
-                + pseudoRandom.nextDouble() * (this.databaseSizeRange[1] - this.databaseSizeRange[0]));
+                + this.pseudoRandom.nextDouble() * (this.databaseSizeRange[1] - this.databaseSizeRange[0]));
     }
 
     @Override

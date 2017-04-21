@@ -10,7 +10,7 @@ Events1.filePath = ee/test/VHMTestEvents.json
 Scenario.nrofHostGroups = 1
 
 
-Group.movementModel = ShortestPathMapBasedMovement
+Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
 Group.bufferSize = 5M
 Group.waitTime = 0, 120

@@ -33,18 +33,16 @@ public class LocalDatabaseTest {
     private static final double IMPOSSIBLE_HIGH_UTILITY = 1.1;
     /* Rounded down utility values for different data types with data created at time 0 at origin. */
     private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.91;
-    private static final double APPROXIMATE_ORIGIN_MAP_UTILITY = 0.84;
     private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.77;
     private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
 
-    private static final String UNEXPECTED_UTILITY = "Expected differnt utility.";
+    private static final String UNEXPECTED_UTILITY = "Expected different utility.";
     private static final double UTILITY_EXACTNESS = 0.01;
 
-    /* Numbers from 1 to 4 data items that are expected to be returned in a certain test. */
+    /* Numbers from 1 to 3 data items that are expected to be returned in certain tests. */
     private static final int SINGLE_ITEM = 1;
     private static final int TWO_ITEMS = 2;
-    private static final int ONE_ITEM_MISSING = 3;
-    private static final int ALL_ITEMS = 4;
+    private static final int ALL_ITEMS = 3;
 
     /* The database used in tests. */
     private LocalDatabase database;
@@ -128,10 +126,10 @@ public class LocalDatabaseTest {
     }
 
     @Test
-    public void testGetAllDataWithMinimumUtilityReturnsAllForZero() {
+    public void testGetAllNonMapDataWithMinimumUtilityReturnsAllNonMapForZero() {
         /* Create data with widely differing utility values. Size is always 0 s.t. nothing gets deleted. */
         DisasterData[] data = new DisasterData[] {
-                new DisasterData(DisasterData.DataType.MAP, 0, CURR_TIME, CURR_LOCATION),
+                new DisasterData(DisasterData.DataType.SKILL, 0, CURR_TIME, CURR_LOCATION),
                 new DisasterData(DisasterData.DataType.SKILL, 0, 0.0, CURR_LOCATION),
                 new DisasterData(DisasterData.DataType.RESOURCE, 0, 0.0, ORIGIN),
                 new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, ORIGIN)
@@ -143,46 +141,83 @@ public class LocalDatabaseTest {
         }
 
         /* Query database. */
-        List<Tuple<DisasterData, Double>> allData = this.database.getAllDataWithMinimumUtility(0);
+        List<Tuple<DisasterData, Double>> allData = this.database.getAllNonMapDataWithMinimumUtility(0);
         TestCase.assertEquals("Expected all data to be returned.", data.length, allData.size());
     }
 
     @Test
-    public void testGetAllDataWithMinimumUtilityReturnsNoneForUtilityAbove1() {
+    public void testGetAllNonMapDataWithMinimumUtilityDoesNotReturnMaps() {
+        this.database.add(new DisasterData(DisasterData.DataType.MAP, 0, CURR_TIME, CURR_LOCATION));
+        List<Tuple<DisasterData, Double>> nonMapData = this.database.getAllNonMapDataWithMinimumUtility(0);
+        TestCase.assertEquals("Map was returned as non-map data.", 0, nonMapData.size());
+    }
+
+    @Test
+    public void testGetAllNonMapDataWithMinimumUtilityReturnsNoneForUtilityAbove1() {
         /* Add super useful data. */
         this.database.add(new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION));
 
         /* Query database. */
         List<Tuple<DisasterData, Double>> highUtilityData =
-                this.database.getAllDataWithMinimumUtility(IMPOSSIBLE_HIGH_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(IMPOSSIBLE_HIGH_UTILITY);
         TestCase.assertEquals("Expected nothing to be returned.", 0, highUtilityData.size());
     }
 
     @Test
-    public void testGetAllDataWithMinimumUtilityOnlyReturnsDataAboveThreshold() {
+    public void testGetAllNonMapDataWithMinimumUtilityOnlyReturnsDataAboveThreshold() {
         /* Add data with different usefulness. */
-        DisasterData usefulData = new DisasterData(DisasterData.DataType.MAP, 0, CURR_TIME, CURR_LOCATION);
-        DisasterData lessUsefulData = new DisasterData(DisasterData.DataType.MAP, 0, 0, ORIGIN);
+        DisasterData usefulData = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
+        DisasterData lessUsefulData = new DisasterData(DisasterData.DataType.MARKER, 0, 0, ORIGIN);
         this.database.add(usefulData);
         this.database.add(lessUsefulData);
 
         /* Query database with high threshold. */
-        List<Tuple<DisasterData, Double>> highUtilityData = this.database.getAllDataWithMinimumUtility(1);
+        List<Tuple<DisasterData, Double>> highUtilityData = this.database.getAllNonMapDataWithMinimumUtility(1);
         TestCase.assertEquals("Expected a single high utility data item.", 1, highUtilityData.size());
         TestCase.assertEquals(
                 "Expected the useful data item to be returned.", usefulData, highUtilityData.get(0).getKey());
     }
 
     @Test
-    public void testUtilityValues() {
+    public void testGetMapDataReturnsAllMaps() {
+        DisasterData map1 = new DisasterData(DisasterData.DataType.MAP, 0, CURR_TIME, CURR_LOCATION);
+        DisasterData map2 = new DisasterData(DisasterData.DataType.MAP, 0, 0, ORIGIN);
+        this.database.add(map1);
+        this.database.add(map2);
+
+        List<DisasterData> maps = this.database.getMapData();
+        TestCase.assertEquals("Expected different number of maps.", TWO_ITEMS, maps.size());
+        TestCase.assertTrue("Map 1 was not returned.", maps.contains(map1));
+        TestCase.assertTrue("Map 2 was not returned.", maps.contains(map2));
+    }
+
+    @Test
+    public void testGetMapDataDoesNotReturnNonMapData() {
+        /* Create non-map data of all different types.. */
+        DisasterData[] data = new DisasterData[] {
+                new DisasterData(DisasterData.DataType.SKILL, 0, 0.0, ORIGIN),
+                new DisasterData(DisasterData.DataType.RESOURCE, 0, 0.0, ORIGIN),
+                new DisasterData(DisasterData.DataType.MARKER, 0, 0.0, ORIGIN)
+        };
+
+        /* Add it to database. */
+        for (DisasterData dataItem : data) {
+            this.database.add(dataItem);
+        }
+
+        /* Check it's not returned. */
+        List<DisasterData> mapData = this.database.getMapData();
+        TestCase.assertEquals("Returned non-map data.", 0, mapData.size());
+    }
+
+    @Test
+    public void testUtilityValuesForNonMapData() {
         /* Create data with different types. Size is always 0 s.t. nothing gets deleted. */
-        DisasterData map = new DisasterData(DisasterData.DataType.MAP, 0, 0.0, ORIGIN);
         DisasterData skill = new DisasterData(DisasterData.DataType.SKILL, 0, 0.0, ORIGIN);
         DisasterData marker = new DisasterData(DisasterData.DataType.MARKER, 0, 0.0, ORIGIN);
         DisasterData resource = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0.0, ORIGIN);
 
         /* Add it to database. */
-        this.database.add(map);
         this.database.add(skill);
         this.database.add(marker);
         this.database.add(resource);
@@ -190,7 +225,7 @@ public class LocalDatabaseTest {
         /* The different types should have different utility values.
         Test getting data items slightly below these values one after the other. */
         List<Tuple<DisasterData, Double>> highestUtility =
-                this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
         TestCase.assertEquals("Expected only one data item to be returned.", SINGLE_ITEM, highestUtility.size());
         TestCase.assertTrue("Expected the skill as highest utility item.", containsData(highestUtility, skill));
         TestCase.assertEquals(
@@ -199,16 +234,9 @@ public class LocalDatabaseTest {
                 getUtility(highestUtility, skill),
                 UTILITY_EXACTNESS);
 
-        List<Tuple<DisasterData, Double>> highUtility =
-                this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_MAP_UTILITY);
-        TestCase.assertEquals("Expected two data items to be returned.", TWO_ITEMS, highUtility.size());
-        TestCase.assertTrue("Expected the map to be returned.", containsData(highUtility, map));
-        TestCase.assertEquals(
-                UNEXPECTED_UTILITY, APPROXIMATE_ORIGIN_MAP_UTILITY, getUtility(highUtility, map), UTILITY_EXACTNESS);
-
         List<Tuple<DisasterData, Double>> mediumUtility =
-                this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_MARKER_UTILITY);
-        TestCase.assertEquals("Expected three data items to be returned.", ONE_ITEM_MISSING, mediumUtility.size());
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_MARKER_UTILITY);
+        TestCase.assertEquals("Expected two data items to be returned.", TWO_ITEMS, mediumUtility.size());
         TestCase.assertTrue("Expected the marker to be returned.", containsData(mediumUtility, marker));
         TestCase.assertEquals(
                 UNEXPECTED_UTILITY,
@@ -217,7 +245,7 @@ public class LocalDatabaseTest {
                 UTILITY_EXACTNESS);
 
         List<Tuple<DisasterData, Double>> lowUtility =
-                this.database.getAllDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
         TestCase.assertEquals("Expected all data items to be returned.", ALL_ITEMS, lowUtility.size());
         TestCase.assertEquals(
                 UNEXPECTED_UTILITY,
@@ -234,13 +262,13 @@ public class LocalDatabaseTest {
         /* Create data at current location and place. */
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
         this.database.add(data);
-        double originalUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
+        double originalUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
 
         /* Advance time. */
         SimClock.getInstance().advance(CURR_TIME);
 
         /* Check new utility value is smaller than original one. */
-        double newUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
+        double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
         TestCase.assertTrue(
                 "Utility value should decrease with increasing age.",
                 newUtility + UTILITY_EXACTNESS < originalUtility);
@@ -254,13 +282,13 @@ public class LocalDatabaseTest {
         /* Create data at current location and place. */
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
         this.database.add(data);
-        double originalUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
+        double originalUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
 
         /* Change location. */
         this.owner.setLocation(ORIGIN);
 
         /* Check new utility value is smaller than the original one. */
-        double newUtility = getUtility(this.database.getAllDataWithMinimumUtility(0), data);
+        double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
         TestCase.assertTrue(
                 "Utility value should decrease with increasing distance.",
                 newUtility + UTILITY_EXACTNESS < originalUtility);
@@ -272,14 +300,19 @@ public class LocalDatabaseTest {
      * @return All data stored in the database.
      */
     private List<DisasterData> getAllData() {
-        // Find all data with utility >= 0, i.e. all data overall.
-        List<Tuple<DisasterData, Double>> allDataWithUtility = this.database.getAllDataWithMinimumUtility(0);
+        // Find all non-map data with utility >= 0, i.e. all non-map data overall.
+        List<Tuple<DisasterData, Double>> nonMaps = this.database.getAllNonMapDataWithMinimumUtility(0);
+        // Get maps.
+        List<DisasterData> maps = this.database.getMapData();
 
-        // Translate the data - utility values into data only.
-        List<DisasterData> allData = new ArrayList<>(allDataWithUtility.size());
-        for (Tuple<DisasterData, Double> tuple : allDataWithUtility) {
+        // Add all data items to a common collection.
+        List<DisasterData> allData = new ArrayList<>(nonMaps.size() + maps.size());
+        for (Tuple<DisasterData, Double> tuple : nonMaps) {
             allData.add(tuple.getKey());
         }
+        allData.addAll(maps);
+
+        // Return it.
         return allData;
     }
 

@@ -7,10 +7,12 @@ import core.DisasterData;
 import core.LocalDatabase;
 import core.Message;
 import core.Settings;
+import core.SettingsError;
 import core.SimClock;
 import input.DisasterDataCreationListener;
 import input.DisasterDataNotifier;
 import routing.MessageRouter;
+import sun.plugin.dom.exception.InvalidStateException;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -127,11 +129,11 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * Checks that the utility threshold is between 0 and 1.
      *
      * @param threshold Threshold to check.
-     * @throws IllegalArgumentException for wrong thresholds.
+     * @throws SettingsError for wrong thresholds.
      */
     private static void checkUtilityThreshold(double threshold) {
         if (threshold < 0 || threshold > 1) {
-            throw new IllegalArgumentException("Utility threshold must be between 0 and 1.");
+            throw new SettingsError("Utility threshold must be between 0 and 1.");
         }
     }
 
@@ -139,14 +141,14 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * Checks that the sizes form a non-empty range and are all non-negative.
      *
      * @param databaseSizeRange Database size range to check.
-     * @throws IllegalArgumentException for a wrong range.
+     * @throws SettingsError for a wrong range.
      */
     private static void checkDatabaseSizeRange(long[] databaseSizeRange) {
         if (databaseSizeRange[1] < databaseSizeRange[0]) {
-            throw new IllegalArgumentException("Database size range must be non-empty!");
+            throw new SettingsError("Database size range must be non-empty!");
         }
         if (databaseSizeRange[0] < 0) {
-            throw new IllegalArgumentException("Database size may not be negative!");
+            throw new SettingsError("Database size may not be negative!");
         }
     }
 
@@ -261,6 +263,19 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         if (creator.equals(this.host)) {
             this.database.add(data);
         }
+    }
+
+    /**
+     * Gets the total size of the database this application manages.
+     *
+     * @return The application's database's total size.
+     */
+    public long getDatabaseSize() {
+        if (!this.isInitialized()) {
+            throw new InvalidStateException("Cannot get database size before application was initialized!");
+        }
+
+        return this.database.getTotalSize();
     }
 
     /**

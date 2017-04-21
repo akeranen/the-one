@@ -131,6 +131,15 @@ public class LocalDatabase {
     }
 
     /**
+     * Returns the total database size.
+     *
+     * @return The total database size.
+     */
+    public long getTotalSize() {
+        return this.totalSize;
+    }
+
+    /**
      * Computes the utility value of a data item given the current location and time.
      *
      * @param dataItem The item to compute the utility value for.

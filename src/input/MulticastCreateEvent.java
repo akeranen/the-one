@@ -19,16 +19,28 @@ public class MulticastCreateEvent extends MessageEvent {
     private int size;
 
     /**
-     * Creates a message event.
+     * Creates a multicast creation event.
      *
      * @param from Where the message comes from
      * @param to   Who the message goes to
      * @param id   ID of the message
      * @param time Time when the message event occurs
+     * @param prio Priority of the message
      */
-    public MulticastCreateEvent(int from, int to, String id, int size, double time) {
-        super(from, to, id, time);
+    public MulticastCreateEvent(int from, int to, String id, int size, double time, int prio) {
+        super(from, to, id, time, prio);
         this.size = size;
+    }
+    
+    /**
+     * Creates a multicast creation event.
+     * Using the same parameters as the previous constructor, but the priority.
+     * Used for MulticastCreateEvents without explicit priority. Therefore, gets
+     * the INVALID_PRIORITY.
+     * Calls the previous constructor.
+     */
+    public MulticastCreateEvent(int from, int to, String id, int size, double time){
+        this(from, to, id, size, time, INVALID_PRIORITY);
     }
 
     /**
@@ -38,7 +50,7 @@ public class MulticastCreateEvent extends MessageEvent {
     public void processEvent(World world) {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
         MulticastMessage messageToCreate =
-                new MulticastMessage(from, Group.getGroup(toAddr), this.id, this.size);
+                new MulticastMessage(from, Group.getGroup(toAddr), this.id, this.size, this.priority);
         from.createNewMessage(messageToCreate);
     }
 

@@ -37,7 +37,7 @@ public class MessageBurstGenerator extends MessageEventGenerator {
 	public ExternalEvent nextEvent() {
 		int responseSize = 0; /* no responses requested */
 		int msgSize;
-		int interval;
+		double interval;
 		int from;
 		int to;
 		boolean nextBurst = false;

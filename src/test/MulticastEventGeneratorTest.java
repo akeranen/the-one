@@ -90,6 +90,23 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
                 INVALID_MAX_GROUP_SIZE);
         new MulticastEventGenerator(this.settings);
     }
+    
+    @Test
+    public void testPriorities(){
+        AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
+        MulticastCreateEvent event;
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
+            event = (MulticastCreateEvent) generator.nextEvent();
+            assertTrue(event.getPriority() <= 10);
+            assertTrue(event.getPriority() >= 1);
+        }
+    }
+    
+    @Test
+    public void testDoubleTimeEventDiff(){
+        generator = new MulticastEventGenerator(this.settings);
+        super.testDoubleTimeEventDiff();
+    }
 
     /**
      * Gets the class name of the class to generate message events with.
@@ -98,6 +115,12 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     protected String getMessageEventGeneratorClassName() {
         return MulticastEventGenerator.class.toString();
     }
-
-
+    
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected void createGenerator(){
+        this.generator = new MulticastEventGenerator(this.settings);
+    }
 }

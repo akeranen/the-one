@@ -3,6 +3,8 @@ package test;
 import core.SettingsError;
 import input.MessageCreateEvent;
 import input.MessageEventGenerator;
+import input.MulticastEventGenerator;
+
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -46,6 +48,23 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
         this.settings.putSetting(MessageEventGenerator.TO_HOST_RANGE_S, "0,1");
         new MessageEventGenerator(this.settings);
     }
+    
+    @Test
+    public void testPriorities(){
+        AbstractMessageEventGenerator generator = new MessageEventGenerator(this.settings);
+        MessageCreateEvent event;
+        for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
+            event = (MessageCreateEvent) generator.nextEvent();
+            assertTrue(event.getPriority() <= 10);
+            assertTrue(event.getPriority() >= 1);
+        }
+    }
+    
+    @Test
+    public void testDoubleTimeEventDiff(){
+        generator = new MulticastEventGenerator(this.settings);
+        super.testDoubleTimeEventDiff();
+    }
 
     /**
      * Gets the class name of the class to generate message events with.
@@ -53,5 +72,13 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
     @Override
     protected String getMessageEventGeneratorClassName() {
         return MessageEventGenerator.class.toString();
+    }
+    
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected void createGenerator(){
+        this.generator = new MessageEventGenerator(this.settings);
     }
 }

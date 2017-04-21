@@ -125,7 +125,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         to select it.*/
         int diffToShortestPossibleInterval = 0;
         if (msgInterval[0] != msgInterval[1]) {
-            diffToShortestPossibleInterval = rng.nextInt(msgInterval[1] - msgInterval[0]);
+            diffToShortestPossibleInterval = rng.nextInt(msgInterval[1] - msgInterval[0] + 1);
         }
         this.nextEventsTime = earliestMessageTime + msgInterval[0] + diffToShortestPossibleInterval;
     }
@@ -139,7 +139,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         if (hostRange[1] == hostRange[0]) {
             return hostRange[0];
         }
-        return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0]);
+        return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0] + 1);
     }
     
     /**
@@ -160,7 +160,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     protected int drawMessageSize() {
         int sizeDiff = 0;
         if (sizeRange[0] != sizeRange[1]) {
-            sizeDiff = rng.nextInt(sizeRange[1] - sizeRange[0]);
+            sizeDiff = rng.nextInt(sizeRange[1] - sizeRange[0] + 1);
         }
         return sizeRange[0] + sizeDiff;
     }
@@ -172,7 +172,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     protected int drawNextEventTimeDiff() {
         int timeDiff = 0;
         if (msgInterval[0] != msgInterval[1]) {
-            timeDiff = rng.nextInt(msgInterval[1] - msgInterval[0]);
+            timeDiff = rng.nextInt(msgInterval[1] - msgInterval[0] + 1);
         }
         return msgInterval[0] + timeDiff;
     }

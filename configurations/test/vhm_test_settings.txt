@@ -1,3 +1,8 @@
+# Test settings used in SimScenarioTest to initialize the SimScenario with 
+# a valid VoluntaryHelperMovement.
+Scenario.name = VHM_Unit_Test
+Scenario.endTime = 100
+
 Events.nrof = 1
 
 # max number of external events to preload (default = 500)

@@ -20,7 +20,6 @@ public abstract class AbstractMessageEventGeneratorTest {
     protected static final int NR_TRIALS_IN_TEST = 10;
 
     protected TestSettings settings;
-    protected AbstractMessageEventGenerator generator;
 
     @Before
     public void init() {

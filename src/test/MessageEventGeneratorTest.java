@@ -59,12 +59,6 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
             assertTrue(event.getPriority() >= 1);
         }
     }
-    
-    @Test
-    public void testDoubleTimeEventDiff(){
-        generator = new MulticastEventGenerator(this.settings);
-        super.testDoubleTimeEventDiff();
-    }
 
     /**
      * Gets the class name of the class to generate message events with.

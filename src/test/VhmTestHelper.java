@@ -11,6 +11,7 @@ import movement.MovementModel;
 import movement.PanicMovement;
 import movement.ShortestPathMapBasedMovement;
 import movement.SwitchableStationaryMovement;
+import movement.VhmProperties;
 import movement.VoluntaryHelperMovement;
 
 import static junit.framework.TestCase.assertEquals;
@@ -97,9 +98,9 @@ public final class VhmTestHelper {
      * @return the same settings instance extended by new parameters
      */
     private static TestSettings addHelpAndWaitTimesToSettings(TestSettings settings){
-        settings.putSetting(VhmProperties.HELP_TIME_SETTING,
+        settings.putSetting(movement.VhmProperties.HELP_TIME_SETTING,
                 Double.toString(HELP_TIME));
-        settings.putSetting(VhmProperties.HOSPITAL_WAIT_TIME_SETTING,
+        settings.putSetting(movement.VhmProperties.HOSPITAL_WAIT_TIME_SETTING,
                 Double.toString(HOSPITAL_WAIT_TIME));
         return settings;
     }
@@ -113,11 +114,11 @@ public final class VhmTestHelper {
     private static TestSettings createSettingsWithoutDefaultValues(){
         TestSettings settings = createMinimalSettingsForVoluntaryHelperMovement();
         addHelpAndWaitTimesToSettings(settings);
-        settings.putSetting(VoluntaryHelperMovement.HOSPITAL_WAIT_PROBABILITY_SETTING,
+        settings.putSetting(movement.VhmProperties.HOSPITAL_WAIT_PROBABILITY_SETTING,
                 Double.toString(WAIT_PROBABILITY));
-        settings.putSetting(VoluntaryHelperMovement.INJURY_PROBABILITY_SETTING,Double.toString(INJURY_PROBABILITY));
-        settings.putSetting(VoluntaryHelperMovement.INTENSITY_WEIGHT_SETTING,Double.toString(INTENSITY_WEIGHT));
-        settings.putSetting(VoluntaryHelperMovement.IS_LOCAL_HELPER_SETTING,Boolean.toString(true));
+        settings.putSetting(movement.VhmProperties.INJURY_PROBABILITY_SETTING,Double.toString(INJURY_PROBABILITY));
+        settings.putSetting(movement.VhmProperties.INTENSITY_WEIGHT_SETTING,Double.toString(INTENSITY_WEIGHT));
+        settings.putSetting(movement.VhmProperties.IS_LOCAL_HELPER_SETTING,Boolean.toString(true));
         return settings;
     }
 
@@ -128,8 +129,8 @@ public final class VhmTestHelper {
      * @param host the host this movement model is used in
      * @return the {@link VoluntaryHelperMovement} instance
      */
-    static VhmProperties createMinimalVhm(DTNHost host){
-        VhmProperties model = new VhmProperties(createMinimalSettingsForVoluntaryHelperMovement());
+    static VoluntaryHelperMovement createMinimalVhm(DTNHost host){
+        VoluntaryHelperMovement model = new VoluntaryHelperMovement(createMinimalSettingsForVoluntaryHelperMovement());
         model.setHost(host);
         return model;
     }
@@ -142,10 +143,10 @@ public final class VhmTestHelper {
      * @param host the host this movement model is used in
      * @return the {@link VoluntaryHelperMovement} instance
      */
-    static VhmProperties createVhmWithHelpAndWaitTimes(DTNHost host){
+    static VoluntaryHelperMovement createVhmWithHelpAndWaitTimes(DTNHost host){
         TestSettings testSettings = createMinimalSettingsForVoluntaryHelperMovement();
         addHelpAndWaitTimesToSettings(testSettings);
-        VhmProperties model = new VhmProperties(testSettings);
+        VoluntaryHelperMovement model = new VoluntaryHelperMovement(testSettings);
         model.setHost(host);
         return model;
     }
@@ -157,8 +158,8 @@ public final class VhmTestHelper {
      * @param host the host this movement model is used in
      * @return the {@link VoluntaryHelperMovement} instance
      */
-    static VhmProperties createVhmWithoutDefaultSettings(DTNHost host){
-        VhmProperties model = new VhmProperties(createSettingsWithoutDefaultValues());
+    static VoluntaryHelperMovement createVhmWithoutDefaultSettings(DTNHost host){
+        VoluntaryHelperMovement model = new VoluntaryHelperMovement(createSettingsWithoutDefaultValues());
         model.setHost(host);
         return model;
     }
@@ -189,7 +190,7 @@ public final class VhmTestHelper {
      * @param event the starting event
      * @param model the {@link VhmProperties} the event should be added to
      */
-    public static void includeEvent(VhmEvent event, VhmProperties model){
+    public static void includeEvent(VhmEvent event, VoluntaryHelperMovement model){
         Coord oldHostLocation = model.getHost().getLocation();
         model.getHost().setLocation(LOCATION_OUTSIDE_MAX_RANGE);
         model.vhmEventStarted(event);
@@ -202,7 +203,7 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be set to random map based movement
      */
-    static void setToRandomMapBasedState(VhmProperties vhm){
+    static void setToRandomMapBasedState(VoluntaryHelperMovement vhm){
         Coord oldLocation = vhm.getHost().getLocation();
         //set the host outside of the max event range, so the starting event will be ignored
         vhm.getHost().setLocation(LOCATION_OUTSIDE_MAX_RANGE);
@@ -218,16 +219,16 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be modified
      */
-    static void setToMoveToMode(VhmProperties vhm){
+    static void setToMoveToMode(VoluntaryHelperMovement vhm){
         setToRandomMapBasedState(vhm);
         Coord oldLocation = vhm.getHost().getLocation();
-        double oldIntensityWeight = vhm.getIntensityWeight();
+        double oldIntensityWeight = vhm.getProperties().getIntensityWeight();
         //sets the host in the correct distance to choose the stateChangeDisaster
         vhm.getHost().setLocation(LOCATION_INSIDE_SAFE_RANGE);
         //set choose probability to 1.0 by only using the event intensity for calculation
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         vhm.vhmEventStarted(stateChangeDisaster);
-        vhm.setIntensityWeight(oldIntensityWeight);
+        vhm.getProperties().setIntensityWeight(oldIntensityWeight);
         vhm.getHost().setLocation(oldLocation);
         vhm.newOrders();
     }
@@ -237,10 +238,10 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be modified
      */
-    static void setToLocalHelperMode(VhmProperties vhm){
+    static void setToLocalHelperMode(VoluntaryHelperMovement vhm){
         setToMoveToMode(vhm);
         //sets the movement model to simulate a local helper for the case it is not already set
-        vhm.setLocalHelper(true);
+        vhm.getProperties().setLocalHelper(true);
         vhm.newOrders();
     }
 
@@ -249,12 +250,12 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be modified
      */
-    static void setToTransportMode(VhmProperties vhm){
+    static void setToTransportMode(VoluntaryHelperMovement vhm){
         setToMoveToMode(vhm);
         //add a hospital to the scenario in case there isn't already one
         vhm.vhmEventStarted(hospital);
         //sets the movement model to not simulate a local helper for the case it is set
-        vhm.setLocalHelper(false);
+        vhm.getProperties().setLocalHelper(false);
         vhm.newOrders();
     }
 
@@ -263,14 +264,14 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be modified
      */
-    static void setToHospitalWaitMode(VhmProperties vhm){
-        double oldWaitProb = vhm.getWaitProbability();
+    static void setToHospitalWaitMode(VoluntaryHelperMovement vhm){
+        double oldWaitProb = vhm.getProperties().getWaitProbability();
         //set the wait probability to 1, so the node will wait at the hospital
-        vhm.setWaitProbability(1);
+        vhm.getProperties().setWaitProbability(1);
         setToTransportMode(vhm);
         //after transport mode wait mode will be executed
         vhm.newOrders();
-        vhm.setWaitProbability(oldWaitProb);
+        vhm.getProperties().setWaitProbability(oldWaitProb);
     }
 
     /**
@@ -278,19 +279,19 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be modified
      */
-    static void setToPanicMode(VhmProperties vhm){
+    static void setToPanicMode(VoluntaryHelperMovement vhm){
         //reset node
         setToRandomMapBasedState(vhm);
         Coord oldLocation = vhm.getHost().getLocation();
-        double oldInjuryProb = vhm.getInjuryProbability();
+        double oldInjuryProb = vhm.getProperties().getInjuryProbability();
         //set node into event range
         vhm.getHost().setLocation(LOCATION_INSIDE_EVENT_RANGE);
         //node shouldn't get injured
-        vhm.setInjuryProbability(0);
+        vhm.getProperties().setInjuryProbability(0);
         //start diasaster
         vhm.vhmEventStarted(stateChangeDisaster);
         //reset to old settings
-        vhm.setInjuryProbability(oldInjuryProb);
+        vhm.getProperties().setInjuryProbability(oldInjuryProb);
         vhm.getHost().setLocation(oldLocation);
         vhm.newOrders();
     }
@@ -300,15 +301,15 @@ public final class VhmTestHelper {
      *
      * @param vhm the movement model that should be modified
      */
-    static void setToInjuredMode(VhmProperties vhm){
+    static void setToInjuredMode(VoluntaryHelperMovement vhm){
         setToRandomMapBasedState(vhm);
         Coord oldLocation = vhm.getHost().getLocation();
-        double oldInjuryProb = vhm.getInjuryProbability();
+        double oldInjuryProb = vhm.getProperties().getInjuryProbability();
         vhm.getHost().setLocation(LOCATION_INSIDE_EVENT_RANGE);
         //same as for panic mode, only the injury probability is set to 1.
-        vhm.setInjuryProbability(1);
+        vhm.getProperties().setInjuryProbability(1);
         vhm.vhmEventStarted(stateChangeDisaster);
-        vhm.setInjuryProbability(oldInjuryProb);
+        vhm.getProperties().setInjuryProbability(oldInjuryProb);
         vhm.getHost().setLocation(oldLocation);
         vhm.newOrders();
     }
@@ -318,9 +319,9 @@ public final class VhmTestHelper {
      * injury state
      * @param vhm the movement model that is checked
      */
-    static void testInjuredState(VhmProperties vhm){
+    static void testInjuredState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.INJURED_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.INJURED_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL, SwitchableStationaryMovement.class,
                 vhm.getCurrentMovementModel().getClass());
     }
@@ -330,9 +331,9 @@ public final class VhmTestHelper {
      * panic state
      * @param vhm the movement model that is checked
      */
-    static void testPanicState(VhmProperties vhm){
+    static void testPanicState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.PANIC_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.PANIC_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 PanicMovement.class,vhm.getCurrentMovementModel().getClass());
     }
@@ -342,9 +343,9 @@ public final class VhmTestHelper {
      * move to state
      * @param vhm the movement model that is checked
      */
-    static void testMoveToState(VhmProperties vhm){
+    static void testMoveToState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.MOVING_TO_EVENT_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.MOVING_TO_EVENT_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 CarMovement.class,vhm.getCurrentMovementModel().getClass());
     }
@@ -354,9 +355,9 @@ public final class VhmTestHelper {
      * transport state
      * @param vhm the movement model that is checked
      */
-    static void testTransportState(VhmProperties vhm){
+    static void testTransportState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.TRANSPORTING_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 CarMovement.class,vhm.getCurrentMovementModel().getClass());
     }
@@ -366,9 +367,9 @@ public final class VhmTestHelper {
      * random map based state
      * @param vhm the movement model that is checked
      */
-    static void testRandomMapBasedState(VhmProperties vhm){
+    static void testRandomMapBasedState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.RANDOM_MAP_BASED_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 ShortestPathMapBasedMovement.class,vhm.getCurrentMovementModel().getClass());
     }
@@ -378,9 +379,9 @@ public final class VhmTestHelper {
      * local help state
      * @param vhm the movement model that is checked
      */
-    static void testLevyWalkState(VhmProperties vhm){
+    static void testLevyWalkState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.LOCAL_HELP_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.LOCAL_HELP_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 LevyWalkMovement.class,vhm.getCurrentMovementModel().getClass());
     }
@@ -390,9 +391,9 @@ public final class VhmTestHelper {
      * wait at hospital state
      * @param vhm the movement model that is checked
      */
-    static void testWaitState(VhmProperties vhm){
+    static void testWaitState(VoluntaryHelperMovement vhm){
         assertEquals(WRONG_MOVEMENT_MODE,
-                VhmProperties.movementMode.HOSPITAL_WAIT_MODE,vhm.getMode());
+                VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE,vhm.getMode());
         assertEquals(WRONG_MOVEMENT_MODEL,
                 LevyWalkMovement.class,vhm.getCurrentMovementModel().getClass());
     }

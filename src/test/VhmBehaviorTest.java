@@ -28,7 +28,7 @@ public class VhmBehaviorTest {
     private static final int TEST_RUNS = 2000;
 
     private TestSettings testSettings = VhmTestHelper.createMinimalSettingsForVoluntaryHelperMovement();
-    private VhmProperties vhm;
+    private VoluntaryHelperMovement vhm;
     private DTNHost host = new TestUtils(new ArrayList<>(),new ArrayList<>(),testSettings).createHost();
 
     public VhmBehaviorTest(){
@@ -52,7 +52,7 @@ public class VhmBehaviorTest {
     @Test
     public void testInitialMMisMoveToNodeIfAnEventIsAvailableAndWasChosen(){
         VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         vhm.setHost(host);
         assertEquals("Model should choose to move to event",
@@ -96,7 +96,7 @@ public class VhmBehaviorTest {
      */
     @Test
     public void testDisasterEventStartedHelp(){
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         VhmTestHelper.testMoveToState(vhm);
@@ -107,7 +107,7 @@ public class VhmBehaviorTest {
      */
     @Test
     public void testDisasterEventStartedNodesOutsideRangeDontHelp(){
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_OUTSIDE_MAX_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         VhmTestHelper.testRandomMapBasedState(vhm);
@@ -122,7 +122,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testNodeWorkingOnDisasterStartsOverAfterDisasterEnds(){
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         vhm.vhmEventEnded(VhmTestHelper.disaster);
@@ -132,7 +132,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testPanicingNodesIgnoreEndOfDisaster(){
-        vhm.setInjuryProbability(0);
+        vhm.getProperties().setInjuryProbability(0);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         vhm.vhmEventEnded(VhmTestHelper.disaster);
@@ -141,7 +141,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testInjuredNodesIgnoreEndOfDisaster(){
-        vhm.setInjuryProbability(1);
+        vhm.getProperties().setInjuryProbability(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         vhm.vhmEventEnded(VhmTestHelper.disaster);
@@ -154,7 +154,7 @@ public class VhmBehaviorTest {
     @Test
     public void testInjuryProbabilityIsUsedCorrectly(){
         int injuredCount = 0;
-        vhm.setInjuryProbability(VhmTestHelper.INJURY_PROBABILITY);
+        vhm.getProperties().setInjuryProbability(VhmTestHelper.INJURY_PROBABILITY);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
         for (int i = 0; i < TEST_RUNS; i++){
             vhm.vhmEventStarted(VhmTestHelper.disaster);
@@ -174,7 +174,7 @@ public class VhmBehaviorTest {
     @Test
     public void testHospitalWaitProbabilityIsUsedCorrectly(){
         int waitingCount = 0;
-        vhm.setWaitProbability(VhmTestHelper.WAIT_PROBABILITY);
+        vhm.getProperties().setWaitProbability(VhmTestHelper.WAIT_PROBABILITY);
         host.setLocation(VhmTestHelper.hospital.getLocation());
         VhmTestHelper.setToTransportMode(vhm);
         for (int i = 0; i < TEST_RUNS; i++){
@@ -190,7 +190,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testAfterArrivalSwitchToLevyWalkIfLocalHelper(){
-        vhm.setLocalHelper(true);
+        vhm.getProperties().setLocalHelper(true);
         VhmTestHelper.setToMoveToMode(vhm);
         vhm.newOrders();
         VhmTestHelper.testLevyWalkState(vhm);
@@ -198,7 +198,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testAfterArrivalSwitchToTransportIfNotLocalHelperAndHospitalAvailable(){
-        vhm.setLocalHelper(false);
+        vhm.getProperties().setLocalHelper(false);
         vhm.vhmEventStarted(VhmTestHelper.hospital);
         VhmTestHelper.setToMoveToMode(vhm);
         vhm.newOrders();
@@ -207,7 +207,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testAfterArrivalSwitchToRandomMapBasedIfNotLocalHelperAndNoHospitalAvailable(){
-        vhm.setLocalHelper(false);
+        vhm.getProperties().setLocalHelper(false);
         VhmTestHelper.setToMoveToMode(vhm);
         vhm.newOrders();
         VhmTestHelper.testRandomMapBasedState(vhm);
@@ -216,7 +216,7 @@ public class VhmBehaviorTest {
     @Test
     public void testAfterTransportingDoLevyWalkIfDecideToWait(){
         VhmTestHelper.setToTransportMode(vhm);
-        vhm.setWaitProbability(1);
+        vhm.getProperties().setWaitProbability(1);
         vhm.newOrders();
         VhmTestHelper.testWaitState(vhm);
     }
@@ -224,7 +224,7 @@ public class VhmBehaviorTest {
     @Test
     public void testAfterTransportingMoveToChosenDisasterIfNotDecideToWait(){
         VhmTestHelper.setToTransportMode(vhm);
-        vhm.setWaitProbability(0);
+        vhm.getProperties().setWaitProbability(0);
         vhm.newOrders();
         VhmTestHelper.testMoveToState(vhm);
     }
@@ -261,7 +261,7 @@ public class VhmBehaviorTest {
     public void testAfterLevyWalkDoNextEventIfEventIsAvailable(){
         vhm = VhmTestHelper.createVhmWithHelpAndWaitTimes(host);
         SimClock.getInstance().setTime(0);
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         VhmTestHelper.setToLocalHelperMode(vhm);
@@ -274,7 +274,7 @@ public class VhmBehaviorTest {
     public void testAfterWaitHospitalDoNextEventIfEventIsAvailable(){
         vhm = VhmTestHelper.createVhmWithHelpAndWaitTimes(host);
         SimClock.getInstance().setTime(0);
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         VhmTestHelper.setToHospitalWaitMode(vhm);
@@ -295,7 +295,7 @@ public class VhmBehaviorTest {
         VhmTestHelper.setToPanicMode(vhm);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         vhm.newOrders();
         VhmTestHelper.testMoveToState(vhm);
     }
@@ -303,7 +303,7 @@ public class VhmBehaviorTest {
     @Test
     public void testAllStatesExceptRandomMapBasedIgnoreStartingEventsInSafeRange(){
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
-        vhm.setIntensityWeight(1);
+        vhm.getProperties().setIntensityWeight(1);
         VhmTestHelper.setToHospitalWaitMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.HOSPITAL_WAIT_MODE);
         VhmTestHelper.setToLocalHelperMode(vhm);
@@ -328,7 +328,7 @@ public class VhmBehaviorTest {
     @Test
     public void testAllStatesSwitchToPanicIfInEventRangeExceptInjured(){
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
-        vhm.setInjuryProbability(0);
+        vhm.getProperties().setInjuryProbability(0);
         VhmTestHelper.setToHospitalWaitMode(vhm);
         checkIfModeSwitchesToPanic();
         VhmTestHelper.setToLocalHelperMode(vhm);
@@ -351,7 +351,7 @@ public class VhmBehaviorTest {
     @Test
     public void testAllStatesSwitchToInjuredIfInEventRange(){
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
-        vhm.setInjuryProbability(1);
+        vhm.getProperties().setInjuryProbability(1);
         VhmTestHelper.setToHospitalWaitMode(vhm);
         checkIfModeSwitchesToInjured();
         VhmTestHelper.setToLocalHelperMode(vhm);
@@ -374,7 +374,7 @@ public class VhmBehaviorTest {
     @Test
     public void testInjuredDoNotPanic(){
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
-        vhm.setInjuryProbability(0);
+        vhm.getProperties().setInjuryProbability(0);
         VhmTestHelper.setToInjuredMode(vhm);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         assertEquals("Injured mode should not be changed at this point",
@@ -398,7 +398,7 @@ public class VhmBehaviorTest {
      */
     private void checkHelpFunctionForLocation(Coord location){
         int helpCount = 0;
-        vhm.setIntensityWeight(VhmTestHelper.INTENSITY_WEIGHT);
+        vhm.getProperties().setIntensityWeight(VhmTestHelper.INTENSITY_WEIGHT);
         host.setLocation(location);
         for (int i = 0; i < TEST_RUNS; i++){
             VhmTestHelper.setToRandomMapBasedState(vhm);

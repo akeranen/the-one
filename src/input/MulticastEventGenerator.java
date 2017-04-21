@@ -43,7 +43,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      * variable used to create groups only the first time
      * {@link MulticastEventGenerator#nextEvent()} is called.
      */
-    private static boolean nodesAreAssignedToGroups = false;
+    private static boolean nodesAreAssignedToGroups;
 
     /**
      * Constructor, initializes the interval between events, and the size of
@@ -59,8 +59,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         // Check if groups are existing yet
         if (Group.getGroups().length == 0) {
            createNewGroups(s);
-        }
-        else{
+        } else {
             //Get information about existing groups
             this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
             this.groupAddressRange[0] = 1;
@@ -96,7 +95,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         for (int i = 1; i <= groupCount; i++) {
             Group.createGroup(i);
         }
-        nodesAreAssignedToGroups = false;
+        setNodesAsUnassigned();
     }
 
     /**
@@ -127,6 +126,14 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      */
     private static synchronized void setNodesAsAssigned() {
         nodesAreAssignedToGroups = true;
+    }
+
+    /**
+     * variable used to create groups only the first time
+     * {@link MulticastEventGenerator#nextEvent()} is called.
+     */
+    private static synchronized void setNodesAsUnassigned() {
+        nodesAreAssignedToGroups = false;
     }
 
     /**

@@ -4,11 +4,7 @@
  */
 package routing;
 
-import core.Connection;
-import core.Message;
 import core.Settings;
-import routing.util.DatabaseApplicationUtil;
-import util.Tuple;
 
 /**
  * Epidemic message router with drop-oldest buffer and only single transferring
@@ -38,7 +34,7 @@ public class EpidemicRouter extends ActiveRouter {
 	@Override
 	public void update() {
 		super.update();
-		if (isTransferring() || this.getConnections().isEmpty() || DatabaseApplicationUtil.hasNoMessagesToSend(this)) {
+		if (isTransferring() || !canStartTransfer()) {
 			return; // transferring, don't try other connections yet
 		}
 
@@ -49,18 +45,6 @@ public class EpidemicRouter extends ActiveRouter {
 
 		// then try any/all message to any/all connection
 		this.tryAllMessagesToAllConnections();
-		// Finally, send database synchronization messages.
-		this.tryDataMessages();
-	}
-
-	/**
-	 * Tries to send database synchronization messages to neighbors.
-	 * @return The tuple whose connection accepted the message or null if
-	 * none of the connections accepted the message that was meant for them.
-	 */
-	private Tuple<Message, Connection> tryDataMessages() {
-		return tryMessagesForConnected(
-				DatabaseApplicationUtil.createDataMessages(this, this.getHost(), this.getConnections()));
 	}
 
 

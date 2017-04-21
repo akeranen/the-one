@@ -6,6 +6,7 @@ package report;
 
 
 import core.DTNHost;
+import core.DataMessage;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
@@ -88,7 +89,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 
 
 	public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {
-		if (isWarmupID(m.getId())) {
+		if (isWarmupID(m.getId()) || m instanceof DataMessage) {
 			return;
 		}
 
@@ -98,7 +99,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 
 	public void messageTransferred(Message m, DTNHost from, DTNHost to,
 			boolean finalTarget) {
-		if (isWarmupID(m.getId())) {
+		if (isWarmupID(m.getId()) || m instanceof DataMessage) {
 			return;
 		}
 
@@ -147,7 +148,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 
 
 	public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {
-		if (isWarmupID(m.getId())) {
+		if (isWarmupID(m.getId()) || m instanceof DataMessage) {
 			return;
 		}
 

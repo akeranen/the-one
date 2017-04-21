@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Marius Meyer on 17.03.17.
  */
 public abstract class AbstractMessageCreateEventTest {
+    public static final int PRIORITY = 5;
     protected TestUtils utils;
     protected MessageChecker messageChecker = new MessageChecker();
 

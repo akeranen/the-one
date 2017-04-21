@@ -213,6 +213,10 @@ public class VhmEvent extends ExternalEvent {
         return nextEventID++;
     }
 
+    public static synchronized void resetVhmEventIdCounter(){
+        nextEventID = 0;
+    }
+
     /**
      * Gets a JSON object and tries to return a double with the specified key.
      * If this key does not exist, it returns a predefined default value.

@@ -1,3 +1,8 @@
+# Test settings used in SimScenarioTest to initialize the SimScenario with 
+# a valid VoluntaryHelperMovement.
+Scenario.name = VHM_Unit_Test
+Scenario.endTime = 100
+
 Events.nrof = 1
 
 # max number of external events to preload (default = 500)
@@ -10,7 +15,7 @@ Events1.filePath = ee/test/VHMTestEvents.json
 Scenario.nrofHostGroups = 1
 
 
-Group.movementModel = ShortestPathMapBasedMovement
+Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
 Group.bufferSize = 5M
 Group.waitTime = 0, 120

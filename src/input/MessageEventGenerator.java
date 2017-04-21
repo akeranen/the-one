@@ -85,7 +85,7 @@ public class MessageEventGenerator extends AbstractMessageEventGenerator {
     public ExternalEvent nextEvent() {
         int responseSize = 0; /* zero stands for one way messages */
         int msgSize;
-        int interval;
+        double interval;
         int from;
         int to;
 

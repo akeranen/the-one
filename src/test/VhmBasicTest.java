@@ -12,8 +12,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 
 /**
- * Includes tests for {@link VoluntaryHelperMovement} and {@link movement.VhmProperties}.
- * Tests correct initialization and getter and setter methods of both classes.
+ * Includes basic method tests for {@link VoluntaryHelperMovement} without.
+ * Tests only correct initialization and getter and setter methods.
+ * The behavior of the model is tested in {@link VhmBehaviorTest}.
  *
  * Created by Marius Meyer on 10.04.17.
  */
@@ -41,8 +42,8 @@ public class VhmBasicTest extends AbstractMovementModelTest{
 
     @Test
     public void testReplicate(){
-        VhmTestHelper.compareVhmInstances(vhm.getProperties(),
-                ((VoluntaryHelperMovement) vhm.replicate()).getProperties());
+        VhmTestHelper.compareVhmInstances(vhm,
+                (VoluntaryHelperMovement) vhm.replicate());
     }
 
     @Test
@@ -98,28 +99,6 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     }
 
     @Test
-    public void testGetAndSetLocalHelper(){
-        vhm.getProperties().setLocalHelper(true);
-        TestCase.assertTrue("local helper should be set",vhm.getProperties().isLocalHelper());
-        vhm.getProperties().setLocalHelper(false);
-        TestCase.assertFalse("local helper shouldn't be set",vhm.getProperties().isLocalHelper());
-    }
-
-    @Test
-    public void testGetAndSetInjuryProbability(){
-        vhm.getProperties().setInjuryProbability(VhmTestHelper.INJURY_PROBABILITY);
-        TestCase.assertEquals("Injury probability should be set to different value",
-                VhmTestHelper.INJURY_PROBABILITY,vhm.getProperties().getInjuryProbability(), VhmTestHelper.DELTA);
-    }
-
-    @Test
-    public void testGetAndSetWaitProbability(){
-        vhm.getProperties().setWaitProbability(VhmTestHelper.WAIT_PROBABILITY);
-        TestCase.assertEquals("Wait probability should be set to different value",
-                VhmTestHelper.WAIT_PROBABILITY, vhm.getProperties().getWaitProbability(), VhmTestHelper.DELTA);
-    }
-
-    @Test
     public void testGetChosenDisaster(){
         TestCase.assertNull("No disaster should be chosen at this point",vhm.getChosenDisaster());
         vhm.getProperties().setIntensityWeight(1);
@@ -127,13 +106,6 @@ public class VhmBasicTest extends AbstractMovementModelTest{
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         TestCase.assertEquals("A disaster should be chosen",
                 VhmTestHelper.disaster,vhm.getChosenDisaster());
-    }
-
-    @Test
-    public void testGetAndSetIntensityWeight(){
-        vhm.getProperties().setIntensityWeight(VhmTestHelper.INTENSITY_WEIGHT);
-        TestCase.assertEquals("Wrong intensity weight was set",
-                VhmTestHelper.INTENSITY_WEIGHT,vhm.getProperties().getIntensityWeight());
     }
 
     @Test

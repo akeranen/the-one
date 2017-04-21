@@ -15,7 +15,9 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
 
 /**
- * Tests for behavior of VoluntaryHelperMovement
+ * Tests for behavior of the {@link VoluntaryHelperMovement}.
+ * Basic method tests are done in {@link VhmBasicTest}.
+ *
  * Created by Marius Meyer on 10.04.17.
  */
 public class VhmBehaviorTest {

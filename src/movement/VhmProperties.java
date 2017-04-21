@@ -114,16 +114,8 @@ public class VhmProperties {
         return hospitalWaitTime;
     }
 
-    public void setHospitalWaitTime(double hospitalWaitTime) {
-        this.hospitalWaitTime = hospitalWaitTime;
-    }
-
     public double getHelpTime() {
         return helpTime;
-    }
-
-    public void setHelpTime(double helpTime) {
-        this.helpTime = helpTime;
     }
 
     public double getInjuryProbability() {

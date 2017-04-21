@@ -170,18 +170,20 @@ public final class VhmTestHelper {
      * @param m1 the first {@link VoluntaryHelperMovement} for comparison
      * @param m2 the second {@link VoluntaryHelperMovement} for comparison
      */
-    static void compareVhmInstances(VhmProperties m1, VhmProperties m2){
-        assertEquals("local helper should be set to the same value",m1.isLocalHelper(),m2.isLocalHelper());
+    static void compareVhmInstances(VoluntaryHelperMovement m1, VoluntaryHelperMovement m2){
+        VhmProperties props1 = m1.getProperties();
+        VhmProperties props2 = m2.getProperties();
+        assertEquals("local helper should be set to the same value",props1.isLocalHelper(),props2.isLocalHelper());
         TestCase.assertEquals("Injury probability should be set to the same value",
-                m1.getInjuryProbability(),m2.getInjuryProbability(), DELTA);
+                props1.getInjuryProbability(),props2.getInjuryProbability(), DELTA);
         TestCase.assertEquals("Wait probability should be set to the same value",
-                m1.getWaitProbability(),m2.getWaitProbability(), DELTA);
+                props1.getWaitProbability(),props2.getWaitProbability(), DELTA);
         TestCase.assertEquals("Intensity weight should be set to the same value",
-                m1.getIntensityWeight(),m2.getIntensityWeight(), DELTA);
+                props1.getIntensityWeight(),props2.getIntensityWeight(), DELTA);
         TestCase.assertEquals("Help time should be set to the same value",
-                m1.getHelpTime(),m2.getHelpTime(), DELTA);
+                props1.getHelpTime(),props2.getHelpTime(), DELTA);
         TestCase.assertEquals("Hospital wait time should be set to the same value",
-                m1.getHospitalWaitTime(),m2.getHospitalWaitTime(), DELTA);
+                props1.getHospitalWaitTime(),props2.getHospitalWaitTime(), DELTA);
 
     }
 

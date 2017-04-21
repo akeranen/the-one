@@ -15,7 +15,6 @@ import java.util.List;
 
 import static input.VhmEvent.VhmEventType.DISASTER;
 import static input.VhmEvent.VhmEventType.HOSPITAL;
-import static movement.VoluntaryHelperMovement.movementMode.RANDOM_MAP_BASED_MODE;
 
 /**
  * This movement model simulates the movement of voluntary helpers in a disaster region.
@@ -70,21 +69,21 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * the selected disaster
      */
-    protected VhmEvent chosenDisaster;
+    private VhmEvent chosenDisaster;
     /**
      * the selected hospital
      */
-    protected VhmEvent chosenHospital;
+    private VhmEvent chosenHospital;
 
     //event lists
     /**
      * List of disasters
      */
-    protected List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<VhmEvent>());
+    private List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<VhmEvent>());
     /**
      * List of hospitals
      */
-    protected List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
+    private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
 
     /**
      * Class containing all parameters of the {@link VoluntaryHelperMovement}.
@@ -264,7 +263,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * and takes care of all necessary parameter initialization/updates.
      */
     private void chooseRandomMapBasedMode() {
-        mode = RANDOM_MAP_BASED_MODE;
+        mode = movementMode.RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
 
@@ -486,7 +485,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
                     panicMM.setEventLocation(event.getLocation());
                     panicMM.setSafeRange(event.getSafeRange());
                 }
-            } else if (host != null && mode == RANDOM_MAP_BASED_MODE && decideHelp(event)) {
+            } else if (host != null && mode == movementMode.RANDOM_MAP_BASED_MODE && decideHelp(event)) {
                 //chose the disaster and immediately switch to moving there
                 chosenDisaster = event;
                 setMovementAsForcefullySwitched();

@@ -198,11 +198,11 @@ MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt
 Report.nrofReports = 5
 # length of the warm up period (simulated seconds)
 Report.warmup = 0
-Report.report1 = BroadcastDeliveryReport
-Report.report2 = MulticastMessageDeliveryReport
-Report.report3 = TrafficReport
-Report.report4 = ImmediateMessageDelayReport
-Report.report5 = DeliveryProbabilityReport
+Report.report1 = ImmediateMessageDelayReport
+Report.report2 = DeliveryProbabilityReport
+Report.report3 = BroadcastDeliveryReport
+Report.report4 = MulticastMessageDeliveryReport
+Report.report5 = TrafficReport
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

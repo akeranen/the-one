@@ -264,13 +264,13 @@ public final class VhmTestHelper {
      * @param vhm the movement model that should be modified
      */
     static void setToHospitalWaitMode(VhmProperties vhm){
-        double oldWaitTime = vhm.getWaitProbability();
+        double oldWaitProb = vhm.getWaitProbability();
         //set the wait probability to 1, so the node will wait at the hospital
         vhm.setWaitProbability(1);
         setToTransportMode(vhm);
         //after transport mode wait mode will be executed
         vhm.newOrders();
-        vhm.setWaitProbability(oldWaitTime);
+        vhm.setWaitProbability(oldWaitProb);
     }
 
     /**
@@ -314,7 +314,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * injury state
      * @param vhm the movement model that is checked
      */
@@ -326,7 +326,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * panic state
      * @param vhm the movement model that is checked
      */
@@ -338,7 +338,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * move to state
      * @param vhm the movement model that is checked
      */
@@ -350,7 +350,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * transport state
      * @param vhm the movement model that is checked
      */
@@ -362,7 +362,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * random map based state
      * @param vhm the movement model that is checked
      */
@@ -374,7 +374,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * local help state
      * @param vhm the movement model that is checked
      */
@@ -386,7 +386,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Tests, if the movement model as set the mode and movement model correctly to represent the
+     * Tests, if the movement mode and current movement model are set correctly to represent the
      * wait at hospital state
      * @param vhm the movement model that is checked
      */

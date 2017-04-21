@@ -50,7 +50,7 @@ public class VhmBehaviorTest {
     }
 
     @Test
-    public void testInitialMMisMoveToNodeIfAnEventIsAvailiableAndWasChosen(){
+    public void testInitialMMisMoveToNodeIfAnEventIsAvailableAndWasChosen(){
         VhmTestHelper.includeEvent(VhmTestHelper.disaster, vhm);
         vhm.setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
@@ -103,7 +103,7 @@ public class VhmBehaviorTest {
     }
 
     /**
-     * Checks, if a node outside max range doesn't help when event starts, even if probability 1.
+     * Checks, if a node outside max range doesn't help when event starts
      */
     @Test
     public void testDisasterEventStartedNodesOutsideRangeDontHelp(){
@@ -121,7 +121,7 @@ public class VhmBehaviorTest {
     }
 
     @Test
-    public void testNodeWorkingOnDisasterStartOverAfterDisasterEnds(){
+    public void testNodeWorkingOnDisasterStartsOverAfterDisasterEnds(){
         vhm.setIntensityWeight(1);
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
@@ -149,7 +149,7 @@ public class VhmBehaviorTest {
     }
 
     /**
-     * Tests, if the probability a node gets injured is close to the probability specified in the settings
+     * Tests, if the frequency a node gets injured is close to the probability specified in the settings
      */
     @Test
     public void testInjuryProbabilityIsUsedCorrectly(){
@@ -169,7 +169,7 @@ public class VhmBehaviorTest {
     }
 
     /**
-     * Tests, if the probability a node waits at a hospital is close to the probability specified in the settings
+     * Tests, if the frequency a node waits at a hospital is close to the probability specified in the settings
      */
     @Test
     public void testHospitalWaitProbabilityIsUsedCorrectly(){
@@ -381,6 +381,9 @@ public class VhmBehaviorTest {
                 VoluntaryHelperMovement.movementMode.INJURED_MODE, vhm.getMode());
     }
 
+    /**
+     * Tests the help function is behaving as specified for different distances of a node to the event.
+     */
     @Test
     public void testHelpFunction(){
         checkHelpFunctionForLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
@@ -389,8 +392,8 @@ public class VhmBehaviorTest {
     }
 
     /**
-     * Sets the host to the given location and checks, if the resulting help probability is close to the calculated
-     * one
+     * Sets the host to the given location and checks, if the resulting help frequency is close to the probability
+     * specified by the help function
      * @param location the location of the host
      */
     private void checkHelpFunctionForLocation(Coord location){

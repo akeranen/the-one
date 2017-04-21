@@ -64,7 +64,7 @@ public class LocalDatabase {
 
     /**
      * Checks all data items whether their utility
-     * is below the threshold and removes them if it is.
+     * is below or equal to the threshold and removes them if it is.
      */
     private void deleteIrrelevantData() {
         double deletionThreshold = this.computeDeletionThreshold();
@@ -74,7 +74,7 @@ public class LocalDatabase {
 
         for (Iterator<DisasterData> dataIterator = this.data.iterator(); dataIterator.hasNext();) {
             DisasterData dataItem = dataIterator.next();
-            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) < deletionThreshold){
+            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) <= deletionThreshold){
                 this.usedSize -= dataItem.getSize();
                 dataIterator.remove();
             }

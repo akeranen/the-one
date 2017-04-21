@@ -16,7 +16,7 @@ import org.junit.Test;
 public class SimScenarioTest {
 
     private static final String MM_PACKAGE = "movement.";
-    private static final String SETTINGS_TEST_FILE_PATH = "configurations/VoluntaryHelperMovementTest.txt";
+    private static final String SETTINGS_TEST_FILE_PATH = "configurations/vhm_test_settings.txt";
     private Settings settings = new Settings();
 
     @Before

@@ -191,7 +191,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
 
         // Find all data which could be interesting for neighbors.
         List<Tuple<DisasterData, Double>> interestingData =
-                this.database.getAllDataWithMinimumUtility(this.utilityThreshold);
+                this.database.getAllNonMapDataWithMinimumUtility(this.utilityThreshold);
 
         // Then create a message out of each data item.
         List<DataMessage> messages = new ArrayList<>(interestingData.size());

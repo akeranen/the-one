@@ -139,7 +139,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         if (hostRange[1] == hostRange[0]) {
             return hostRange[0];
         }
-        return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0] + 1);
+        return hostRange[0] + rng.nextInt(hostRange[1] - hostRange[0]);
     }
     
     /**

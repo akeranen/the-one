@@ -10,8 +10,6 @@ import core.Settings;
 import routing.util.DatabaseApplicationUtil;
 import util.Tuple;
 
-import java.util.List;
-
 /**
  * Epidemic message router with drop-oldest buffer and only single transferring
  * connections at a time.
@@ -40,7 +38,7 @@ public class EpidemicRouter extends ActiveRouter {
 	@Override
 	public void update() {
 		super.update();
-		if (isTransferring() || (!canStartTransfer() && !hasDatabase())) {
+		if (isTransferring() || this.getConnections().isEmpty() || DatabaseApplicationUtil.hasNoMessagesToSend(this)) {
 			return; // transferring, don't try other connections yet
 		}
 
@@ -51,17 +49,19 @@ public class EpidemicRouter extends ActiveRouter {
 
 		// then try any/all message to any/all connection
 		this.tryAllMessagesToAllConnections();
-		//find data messages
-		List<Tuple<Message, Connection>> dataMessages =
-				DatabaseApplicationUtil.createDataMessages(this, this.getHost(), this.getConnections());
-		// try to sending data messages
-		tryMessagesForConnected(dataMessages);
+		// Finally, send database synchronization messages.
+		this.tryDataMessages();
 	}
 
-	private boolean hasDatabase() {
-		return DatabaseApplicationUtil.findDatabaseApplication(this) != null;
-	}
-
+    /**
+     * Tries to send database synchronization messages to neighbors.
+     * @return The tuple whose connection accepted the message or null if
+     * none of the connections accepted the message that was meant for them.
+     */
+    private Tuple<Message, Connection> tryDataMessages() {
+        return tryMessagesForConnected(
+                DatabaseApplicationUtil.createDataMessages(this, this.getHost(), this.getConnections()));
+    }
 
 	@Override
 	public EpidemicRouter replicate() {

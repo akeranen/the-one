@@ -43,6 +43,14 @@ public class BroadcastEventGeneratorTest extends AbstractMessageEventGeneratorTe
             assertTrue(event.getPriority() >= 1);
         }
     }
+    
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected AbstractMessageEventGenerator createGenerator(){
+        return new BroadcastEventGenerator(this.settings);
+    }
 
     /**
      * Gets the class name of the class to generate message events with.

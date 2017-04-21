@@ -80,7 +80,7 @@ Events2.interval = 60,300
 # Message sizes (0.1KB - 1KB)
 Events2.size = 0.1k,1k
 # range of message source/destination addresses
-Events2.hosts = 0,9999
+Events2.hosts = 0,10000
 # Message ID prefix
 Events2.prefix = b
 # Message priorities (2,10)
@@ -93,7 +93,7 @@ Events3.interval = 60,120
 # Message sizes (500KB - 4MB)
 Events3.size = 500k,4M
 # range of message source/destination addresses
-Events3.hosts = 0,9999
+Events3.hosts = 0,10000
 # Message ID prefix
 Events3.prefix = B
 # Message priorities (2,10)
@@ -106,7 +106,7 @@ Events4.interval = 0.1,3
 # Message sizes (0.1KB - 1KB)
 Events4.size = 0.1k,1k
 # range of message source/destination addresses
-Events4.hosts = 0,9999
+Events4.hosts = 0,10000
 # Message ID prefix
 Events4.prefix = m
 # Message priority 1
@@ -119,7 +119,7 @@ Events5.interval = 10,30
 # Message sizes (500KB - 4MB)
 Events5.size = 500k,4M
 # range of message source/destination addresses
-Events5.hosts = 0,9999
+Events5.hosts = 0,10000
 # Message ID prefix
 Events5.prefix = M
 # Message priority 1
@@ -132,7 +132,7 @@ Events6.interval = 0.5,15
 # Message sizes (0.1KB - 1KB)
 Events6.size = 0.1k,1k
 # range of message source/destination addresses
-Events6.hosts = 0,9999
+Events6.hosts = 0,10000
 # Message ID prefix
 Events6.prefix = p
 # Message priority 0
@@ -145,7 +145,7 @@ Events7.interval = 50,150
 # Message sizes (500KB - 4MB)
 Events7.size = 500k,4M
 # range of message source/destination addresses
-Events7.hosts = 0,9999
+Events7.hosts = 0,10000
 # Message ID prefix
 Events7.prefix = P
 # Message priority 0
@@ -177,9 +177,8 @@ Events9.interval = 1,3
 
 
 
-# TODO: add more generators for DB sync, HELLO messages (?), and neighbor queries (?)
+# TODO: add more generators for HELLO messages (?), and neighbor queries (?)
 # TODO: don't forget to also update nrofEvents!
-# TODO: specifiy generation of data for the 
 # TODO: add settings for the DatabaseApplication when it is merged
 # these tasks can be done at the earliest when they are implemented and merged into the master
 

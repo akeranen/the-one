@@ -3,6 +3,8 @@ package test;
 import core.SettingsError;
 import input.MessageCreateEvent;
 import input.MessageEventGenerator;
+import input.MulticastEventGenerator;
+
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -64,5 +66,13 @@ public class MessageEventGeneratorTest extends AbstractMessageEventGeneratorTest
     @Override
     protected String getMessageEventGeneratorClassName() {
         return MessageEventGenerator.class.toString();
+    }
+    
+    /**
+     * Gets a generator of the class to generate message events with.
+     */
+    @Override
+    protected AbstractMessageEventGenerator createGenerator(){
+        return new MessageEventGenerator(this.settings);
     }
 }

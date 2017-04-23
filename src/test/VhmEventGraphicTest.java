@@ -41,11 +41,7 @@ public class VhmEventGraphicTest {
     public void testDrawDrawsRectangleAtEventLocation() {
         this.vhmEventGraphic.draw(this.mockedGraphics);
 
-        Mockito.verify(this.mockedGraphics).drawRect(
-                (int)this.event.getLocation().getX() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                (int)this.event.getLocation().getY() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
-                VhmEventGraphic.EVENT_RECT_SIZE,
-                VhmEventGraphic.EVENT_RECT_SIZE);
+        verifyRectangleIsDrawnAtEventLocation(mockedGraphics,event,Mockito.atLeastOnce());
     }
 
     @Test
@@ -83,6 +79,22 @@ public class VhmEventGraphicTest {
         this.checkRangeWasDrawn(this.event.getEventRange(), Mockito.times(1));
         this.checkRangeWasDrawn(this.event.getSafeRange(), Mockito.never());
         this.checkRangeWasDrawn(this.event.getMaxRange(), Mockito.never());
+    }
+
+    @Test
+    public void testSetAndGetDrawAllRanges(){
+        VhmEventGraphic.setDrawAllRanges(true);
+        assertTrue("Getter method should return true",VhmEventGraphic.getDrawAllRanges());
+        VhmEventGraphic.setDrawAllRanges(false);
+        assertFalse("Getter method should return false",VhmEventGraphic.getDrawAllRanges());
+    }
+
+    @Test
+    public void testSetAndGetDrawEventName(){
+        VhmEventGraphic.setDrawEventName(true);
+        assertTrue("Getter method should return true",VhmEventGraphic.getDrawEventName());
+        VhmEventGraphic.setDrawEventName(false);
+        assertFalse("Getter method should return true",VhmEventGraphic.getDrawEventName());
     }
 
     /**
@@ -126,5 +138,14 @@ public class VhmEventGraphicTest {
                 "VHM event graphic hash code should have equaled the event's ID.",
                 this.event.getID(),
                 this.vhmEventGraphic.hashCode());
+    }
+
+    public static void verifyRectangleIsDrawnAtEventLocation(Graphics2D mockedGraphics, VhmEvent event,
+                                                             VerificationMode usedMode){
+        Mockito.verify(mockedGraphics,usedMode).drawRect(
+                (int)event.getLocation().getX() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
+                (int)event.getLocation().getY() - VhmEventGraphic.EVENT_RECT_SIZE / NUM_DIRECTIONS,
+                VhmEventGraphic.EVENT_RECT_SIZE,
+                VhmEventGraphic.EVENT_RECT_SIZE);
     }
 }

@@ -12,7 +12,6 @@ import core.SimClock;
 import input.DisasterDataCreationListener;
 import input.DisasterDataNotifier;
 import routing.MessageRouter;
-import sun.plugin.dom.exception.InvalidStateException;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -272,7 +271,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      */
     public long getDatabaseSize() {
         if (!this.isInitialized()) {
-            throw new InvalidStateException("Cannot get database size before application was initialized!");
+            throw new IllegalStateException("Cannot get database size before application was initialized!");
         }
 
         return this.database.getTotalSize();

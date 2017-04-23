@@ -1,10 +1,11 @@
 package core;
 
+import util.Tuple;
+
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Local database which stores {@link DisasterData} along with
@@ -34,8 +35,11 @@ public class LocalDatabase {
     /** The database's owner. */
     private DTNHost owner;
 
-    /** All stored data */
-    private Set<DisasterData> data = new HashSet<>();
+    /** All stored data with its cached utility*/
+    private HashMap<DisasterData, Double> data = new HashMap<>();
+
+    /** Last sim time we recomputed the utilities */
+    private double utilitesLastComputed;
 
     /**
      * Initializes a new instance of the {@link LocalDatabase} class.
@@ -55,26 +59,26 @@ public class LocalDatabase {
      * @param newDataItem The data item to add.
      */
     public void add (DisasterData newDataItem){
-        this.data.add(newDataItem);
+        double currentTime = SimClock.getTime();
+        Coord currentLocation = this.owner.getLocation();
+        this.data.put(newDataItem, computeUtility(newDataItem, currentLocation, currentTime));
         this.usedSize += newDataItem.getSize();
         this.deleteIrrelevantData();
     }
 
     /**
      * Checks all data items whether their utility
-     * is below the threshold and removes them if it is.
+     * is below or equal to the threshold and removes them if it is.
      */
     private void deleteIrrelevantData() {
         double deletionThreshold = this.computeDeletionThreshold();
 
-        double currentTime = SimClock.getTime();
-        Coord currentLocation = this.owner.getLocation();
+        recomputeUtilitiesIfNecessary();
 
-        for (Iterator<DisasterData> dataIterator = this.data.iterator(); dataIterator.hasNext();) {
-            DisasterData dataItem = dataIterator.next();
-            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) < deletionThreshold){
-                this.usedSize -= dataItem.getSize();
-                dataIterator.remove();
+        for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
+            if (dataWithUtility.getValue()<=deletionThreshold){
+                this.usedSize -= dataWithUtility.getKey().getSize();
+                data.remove(dataWithUtility);
             }
         }
     }
@@ -90,23 +94,67 @@ public class LocalDatabase {
     }
 
     /**
-     * Returns all data that has at least the specified utility if utility is computed w. r. t. the current location and
-     * time.
+     * Returns all data which is not of type {@link DisasterData.DataType#MAP} and that has at least the specified
+     * utility if utility is computed w. r. t. the current location and time.
      *
      * @param minUtility The minimum utility the data has to have for it to be returned.
-     * @return All data with utility at least the given threshold.
+     * @return All data items with their respective utility if the utility was greater or equal than the given
+     * threshold.
      */
-    public List<DisasterData> getAllDataWithMinimumUtility(double minUtility){
-        double currentTime = SimClock.getTime();
-        Coord currentLocation = this.owner.getLocation();
+    public List<Tuple<DisasterData, Double>> getAllNonMapDataWithMinimumUtility(double minUtility){
 
-        List<DisasterData> dataWithMinUtility = new ArrayList<>();
-        for (DisasterData dataItem : this.data) {
-            if (LocalDatabase.computeUtility(dataItem, currentLocation, currentTime) >= minUtility){
-                dataWithMinUtility.add(dataItem);
+        List<Tuple<DisasterData, Double>> dataWithMinUtility = new ArrayList<>();
+
+        recomputeUtilitiesIfNecessary();
+
+        for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
+
+            if (dataWithUtility.getValue()>=minUtility &&
+                    dataWithUtility.getKey().getType() != DisasterData.DataType.MAP){
+                dataWithMinUtility.add(new Tuple<>(dataWithUtility.getKey(), dataWithUtility.getValue()));
             }
         }
         return dataWithMinUtility;
+    }
+
+    /**
+     * Returns all data which is of type {@link DisasterData.DataType#MAP}.
+     *
+     * @return All map data.
+     */
+    public List<DisasterData> getMapData() {
+        List<DisasterData> mapData = new ArrayList<>();
+
+        for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
+            if (dataWithUtility.getKey().getType() == DisasterData.DataType.MAP){
+                mapData.add(dataWithUtility.getKey());
+            }
+        }
+        return mapData;
+    }
+
+    /**
+     * Returns the total database size.
+     *
+     * @return The total database size.
+     */
+    public long getTotalSize() {
+        return this.totalSize;
+    }
+
+    private void recomputeUtilitiesIfNecessary(){
+        final int recomputeEverySeconds = 1;
+        double currentTime = SimClock.getTime();
+
+        if ((currentTime-utilitesLastComputed)>recomputeEverySeconds){
+
+            Coord currentLocation = this.owner.getLocation();
+            for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
+                double utility = computeUtility(dataWithUtility.getKey(), currentLocation, currentTime);
+                data.put(dataWithUtility.getKey(), utility);
+            }
+        }
+        utilitesLastComputed=currentTime;
     }
 
     /**

@@ -70,14 +70,17 @@ public class DatabaseApplicationTest {
 
     @Before
     public void setUp() {
+        /* Add settings for database application */
         this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
         this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
         this.settings.putSetting(
                 DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
         this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
 
+        /* Create test utils. */
         this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.settings);
 
+        /* Create and initialize database application. */
         DatabaseApplication prototype = new DatabaseApplication(this.settings);
         this.app = new DatabaseApplication(prototype);
         this.hostAttachedToApp = this.utils.createHost();
@@ -85,8 +88,9 @@ public class DatabaseApplicationTest {
     }
 
     @After
-    public void resetTime() {
+    public void cleanUp() {
         SimClock.reset();
+        Group.clearGroups();
     }
 
     @Test(expected = SettingsError.class)
@@ -199,15 +203,10 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testReplicateResultsInCorrectApplicationType() {
+    public void testReplicate() {
         Application replication = this.app.replicate();
         TestCase.assertTrue("Wrong application type.", replication instanceof DatabaseApplication);
-    }
-
-    @Test
-    public void testReplicateCopiesAllProperties() {
-        DatabaseApplication replication = (DatabaseApplication)this.app.replicate();
-        DatabaseApplicationTest.checkPropertiesAreEqual(this.app, replication);
+        DatabaseApplicationTest.checkPropertiesAreEqual(this.app, (DatabaseApplication)replication);
     }
 
     @Test
@@ -237,7 +236,8 @@ public class DatabaseApplicationTest {
     @Test
     public void testHandleMessageStoresNewDisasterData() {
         /* Send data message to app. */
-        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(this.hostAttachedToApp);
+        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
+                DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DataMessage dataMessage = new DataMessage(
                 this.utils.createHost(), this.hostAttachedToApp, "data", usefulData, 0, 0);
         this.app.handle(dataMessage, this.hostAttachedToApp);
@@ -252,7 +252,8 @@ public class DatabaseApplicationTest {
     @Test
     public void testHandleMessageIgnoresDataMessagesToOtherRecipients() {
         /* Send data message through app. */
-        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(this.hostAttachedToApp);
+        DisasterData usefulData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DataMessage dataMessage =
                 new DataMessage(this.utils.createHost(), this.utils.createHost(), "data", usefulData, 0, 0);
         this.app.handle(dataMessage, this.hostAttachedToApp);
@@ -265,7 +266,8 @@ public class DatabaseApplicationTest {
     @Test
     public void testHandleMessageDropsDataMessage() {
         /* Send data message to app. */
-        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(this.hostAttachedToApp);
+        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
+                DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DataMessage dataMessage =
                 new DataMessage(this.utils.createHost(), this.hostAttachedToApp, "data", usefulData, 0, 0);
         TestCase.assertNull(
@@ -331,7 +333,8 @@ public class DatabaseApplicationTest {
     @Test
     public void testCreateDataMessagesOnlySendsOutInterestingData() {
         this.clock.setTime(TIME_IN_DISTANT_FUTURE);
-        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(this.hostAttachedToApp);
+        DisasterData usefulData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterData uselessData = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, new Coord(0, 0));
 
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData);
@@ -349,11 +352,20 @@ public class DatabaseApplicationTest {
 
     @Test
     public void testCreateDataMessagesSendsMapOutAfterMinInterval() {
-        this.clock.setTime(MAP_SENDING_INTERVAL);
-        DisasterData mapData = DatabaseApplicationTest.createUsefulMapData(this.hostAttachedToApp);
+        this.clock.setTime(MAP_SENDING_INTERVAL - SMALL_TIME_DIFF);
+
+        /* Insert map data into database. */
+        DisasterData mapData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.MAP, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, mapData);
 
+        /* Test map data is not returned shortly before interval... */
         List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
+
+        /* ... but is returned after it completed. */
+        this.clock.setTime(MAP_SENDING_INTERVAL);
+        messages = this.app.createDataMessages(this.hostAttachedToApp);
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
         TestCase.assertTrue(
                 "Expected map to be in a message.",
@@ -361,20 +373,11 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testCreateDataMessagesDoesNotSendMapShortlyBeforeIntervalEnd() {
-        this.clock.setTime(MAP_SENDING_INTERVAL - SMALL_TIME_DIFF);
-        DisasterData mapData = DatabaseApplicationTest.createUsefulMapData(this.hostAttachedToApp);
-        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, mapData);
-
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
-        TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
-    }
-
-    @Test
     public void testCreateDataMessagesMaySendOutEachMap() {
         List<DisasterData> mapData = new ArrayList<>();
         for (int i = 0; i < NUM_DATA_ITEMS; i++) {
-            DisasterData usefulMap = DatabaseApplicationTest.createUsefulMapData(this.hostAttachedToApp);
+            DisasterData usefulMap =
+                    DatabaseApplicationTest.createUsefulData(DisasterData.DataType.MAP, this.hostAttachedToApp);
             mapData.add(usefulMap);
             DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulMap);
         }
@@ -404,7 +407,8 @@ public class DatabaseApplicationTest {
 
     @Test
     public void testDisasterDataCreatedAddsOwnDataToDatabase() {
-        DisasterData data = DatabaseApplicationTest.createUsefulData(this.hostAttachedToApp);
+        DisasterData data =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, data);
         List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
         TestCase.assertEquals("Data was not added to database.", 1, messages.size());
@@ -415,7 +419,8 @@ public class DatabaseApplicationTest {
 
     @Test
     public void testDisasterDataCreatedDoesNotAddForeignDataToDatabase() {
-        DisasterData data = DatabaseApplicationTest.createUsefulData(this.hostAttachedToApp);
+        DisasterData data =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.utils.createHost(), data);
         List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
         TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
@@ -429,8 +434,8 @@ public class DatabaseApplicationTest {
         DTNHost host = this.utils.createHost();
 
         /* Notify about created data. */
-        DisasterData data1 = DatabaseApplicationTest.createUsefulData(host);
-        DisasterData data2 = DatabaseApplicationTest.createUsefulData(host);
+        DisasterData data1 = DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, host);
+        DisasterData data2 = DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, host);
         DisasterDataNotifier.dataCreated(host, data1);
         DisasterDataNotifier.dataCreated(host, data2);
 
@@ -447,6 +452,11 @@ public class DatabaseApplicationTest {
                 messages.stream().anyMatch(msg -> msg.getData().equals(data2)));
     }
 
+    /**
+     * Checks that the given app has not been initialized, i.e. is not connected to a {@link core.LocalDatabase} yet.
+     *
+     * @param uninitializedApp The app to check.
+     */
     private static void checkAppIsNotInitialized(DatabaseApplication uninitializedApp) {
         try {
             uninitializedApp.getDatabaseSize();
@@ -456,6 +466,13 @@ public class DatabaseApplicationTest {
         }
     }
 
+    /**
+     * Checks that all properties that have originally be read from settings are equal for the given
+     * {@link DatabaseApplication}s.
+     *
+     * @param original The original application (expected values).
+     * @param copy The copy (checked values).
+     */
     private static void checkPropertiesAreEqual(DatabaseApplication original, DatabaseApplication copy) {
         TestCase.assertEquals(
                 "Expected different utility threshold.", original.getUtilityThreshold(), copy.getUtilityThreshold());
@@ -469,11 +486,14 @@ public class DatabaseApplicationTest {
                 Arrays.equals(original.getDatabaseSizeRange(), copy.getDatabaseSizeRange()));
     }
 
-    private static DisasterData createUsefulData(DTNHost host) {
-        return new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), host.getLocation());
-    }
-
-    private static DisasterData createUsefulMapData(DTNHost host) {
-        return new DisasterData(DisasterData.DataType.MAP, 0, SimClock.getTime(), host.getLocation());
+    /**
+     * Creates a {@link DisasterData} object which is very useful wrt to current time and host position.
+     *
+     * @param type The type of {@link DisasterData} to create.
+     * @param host The host which decides the data's position.
+     * @return The created data.
+     */
+    private static DisasterData createUsefulData(DisasterData.DataType type, DTNHost host) {
+        return new DisasterData(type, 0, SimClock.getTime(), host.getLocation());
     }
 }

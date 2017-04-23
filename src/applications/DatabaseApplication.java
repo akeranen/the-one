@@ -319,4 +319,19 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         return new DatabaseApplication(this);
     }
 
+    public double getUtilityThreshold() {
+        return utilityThreshold;
+    }
+
+    public long[] getDatabaseSizeRange() {
+        return databaseSizeRange.clone();
+    }
+
+    public int getSeed() {
+        return seed;
+    }
+
+    public double getMapSendingInterval() {
+        return mapSendingInterval;
+    }
 }

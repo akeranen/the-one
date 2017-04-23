@@ -58,7 +58,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
 
         // Check if groups are existing yet
         if (Group.getGroups().length == 0) {
-           createNewGroups(s);
+            createNewGroups(s);
         } else {
             //Get information about existing groups
             this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
@@ -152,7 +152,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         }
 
         /* Draw additional message properties and create message. */
-        int interval = this.drawNextEventTimeDiff();
+        double interval = this.drawNextEventTimeDiff();
         int group = this.drawGroupAddress();
         int priority = this.drawPriority();
         Integer[] groupMembers = Group.getGroup(group).getMembers();

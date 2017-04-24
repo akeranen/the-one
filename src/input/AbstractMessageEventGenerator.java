@@ -58,7 +58,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     /** Size range of the messages (min, max) */
     private int[] sizeRange;
     /** Interval between messages (min, max) */
-    private int[] msgInterval;
+    private double[] msgInterval;
     /** Time range for message creation (min, max) */
     protected double[] msgTime;
     /** Range of possible priorities */
@@ -77,7 +77,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      */
     public AbstractMessageEventGenerator(Settings s, boolean checkForSufficientHostRange){
         this.sizeRange = s.getCsvInts(MESSAGE_SIZE_S);
-        this.msgInterval = s.getCsvInts(MESSAGE_INTERVAL_S);
+        this.msgInterval = s.getCsvDoubles(MESSAGE_INTERVAL_S);
         this.hostRange = s.getCsvInts(HOST_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         this.idPrefix = s.getSetting(MESSAGE_ID_PREFIX_S);
 
@@ -102,7 +102,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
             s.assertValidRange(this.sizeRange, MESSAGE_SIZE_S);
         }
         if (this.msgInterval.length == 1) {
-            this.msgInterval = new int[] {this.msgInterval[0],
+            this.msgInterval = new double[] {this.msgInterval[0],
                     this.msgInterval[0]};
         } else {
             s.assertValidRange(this.msgInterval, MESSAGE_INTERVAL_S);
@@ -123,11 +123,8 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
         /* ...but happens only after the usual interval between messages.
         That interval is not fixed; we randomly choose a interval duration between msgInterval[0] and msgInterval[1]
         to select it.*/
-        int diffToShortestPossibleInterval = 0;
-        if (msgInterval[0] != msgInterval[1]) {
-            diffToShortestPossibleInterval = rng.nextInt(msgInterval[1] - msgInterval[0]);
-        }
-        this.nextEventsTime = earliestMessageTime + msgInterval[0] + diffToShortestPossibleInterval;
+        double randomTime = rng.nextDouble() * (msgInterval[1] - msgInterval[0]) + msgInterval[0];
+        this.nextEventsTime = earliestMessageTime + randomTime;
     }
 
     /**
@@ -169,12 +166,8 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * Generates a (random) time difference between two events
      * @return the time difference
      */
-    protected int drawNextEventTimeDiff() {
-        int timeDiff = 0;
-        if (msgInterval[0] != msgInterval[1]) {
-            timeDiff = rng.nextInt(msgInterval[1] - msgInterval[0]);
-        }
-        return msgInterval[0] + timeDiff;
+    public double drawNextEventTimeDiff() {
+        return rng.nextDouble() * (msgInterval[1] - msgInterval[0]) + msgInterval[0];
     }
 
     /**
@@ -183,7 +176,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
      * {@see Double.MAX_VALUE} instead.
      * @param noEventsInterval Time span in which no events should happen.
      */
-    protected void advanceToNextEvent(int noEventsInterval) {
+    protected void advanceToNextEvent(double noEventsInterval) {
         this.nextEventsTime += noEventsInterval;
         if (this.msgTime != null && this.nextEventsTime > this.msgTime[1]) {
             this.nextEventsTime = Double.MAX_VALUE;

@@ -4,6 +4,7 @@ import util.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -75,10 +76,12 @@ public class LocalDatabase {
 
         recomputeUtilitiesIfNecessary();
 
-        for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
+        Iterator dataIterator = data.entrySet().iterator();
+        while (dataIterator.hasNext()){
+            Map.Entry<DisasterData, Double> dataWithUtility = (Map.Entry)dataIterator.next();
             if (dataWithUtility.getValue()<=deletionThreshold){
                 this.usedSize -= dataWithUtility.getKey().getSize();
-                data.remove(dataWithUtility);
+                data.remove(dataWithUtility.getKey());
             }
         }
     }

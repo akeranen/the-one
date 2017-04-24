@@ -64,7 +64,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * the current movement mode of the node
      */
-    protected VoluntaryHelperMovement.movementMode mode;
+    private VoluntaryHelperMovement.movementMode mode;
 
     /**
      * the selected disaster
@@ -148,7 +148,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      *
      * @param prototype The prototype MovementModel
      */
-    protected VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
+    private VoluntaryHelperMovement(VoluntaryHelperMovement prototype) {
         super(prototype);
 
         properties = new VhmProperties(prototype.getProperties());

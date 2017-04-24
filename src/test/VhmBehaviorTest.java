@@ -36,6 +36,7 @@ public class VhmBehaviorTest {
 
     public VhmBehaviorTest(){
         host.setLocation(new Coord(0,0));
+        VhmTestHelper.createMinimalSettingsForVoluntaryHelperMovement(testSettings);
         vhm = VhmTestHelper.createMinimalVhm(testSettings,host);
     }
 

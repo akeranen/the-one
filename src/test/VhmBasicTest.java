@@ -37,6 +37,7 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     public MovementModel initializeModel(TestSettings testSettings) {
         host = new TestUtils(new ArrayList<>(),new ArrayList<>(),
                 testSettings).createHost();
+        VhmTestHelper.createMinimalSettingsForVoluntaryHelperMovement(testSettings);
         vhm = VhmTestHelper.createMinimalVhm(testSettings,host);
         host.setLocation(new Coord(0,0));
         return vhm;

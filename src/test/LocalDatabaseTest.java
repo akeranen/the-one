@@ -107,6 +107,9 @@ public class LocalDatabaseTest {
         this.database.add(lessUsefulData);
         TestCase.assertEquals("Expected not that useful data to be in the DB for now.", 1, this.getAllData().size());
 
+        //Advance time so that the utilities are recomputed
+        SimClock.getInstance().advance(10);
+
         this.database.add(usefulData);
         List<DisasterData> allData = this.getAllData();
         TestCase.assertEquals("Expected data deletion.", 1, allData.size());
@@ -286,6 +289,9 @@ public class LocalDatabaseTest {
 
         /* Change location. */
         this.owner.setLocation(ORIGIN);
+
+        //Advance time so that the utilities are recomputed
+        SimClock.getInstance().advance(10);
 
         /* Check new utility value is smaller than the original one. */
         double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);

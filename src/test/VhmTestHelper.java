@@ -79,8 +79,7 @@ public final class VhmTestHelper {
      *
      * @return A {@link TestSettings} instance including all necessary parameters
      */
-    static TestSettings createMinimalSettingsForVoluntaryHelperMovement(){
-        TestSettings testSettings = new TestSettings();
+    static TestSettings createMinimalSettingsForVoluntaryHelperMovement(TestSettings testSettings){
         testSettings.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
         testSettings.putSetting(MovementModel.WORLD_SIZE,MAX_COORD_X+", "+MAX_COORD_Y);
         testSettings.restoreNameSpace();
@@ -112,7 +111,7 @@ public final class VhmTestHelper {
      * @return a {@link TestSettings} instance inculding entries for every parameter of the movement model
      */
     private static TestSettings createSettingsWithoutDefaultValues(){
-        TestSettings settings = createMinimalSettingsForVoluntaryHelperMovement();
+        TestSettings settings = createMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
         addHelpAndWaitTimesToSettings(settings);
         settings.putSetting(movement.VhmProperties.HOSPITAL_WAIT_PROBABILITY_SETTING,
                 Double.toString(WAIT_PROBABILITY));
@@ -129,8 +128,8 @@ public final class VhmTestHelper {
      * @param host the host this movement model is used in
      * @return the {@link VoluntaryHelperMovement} instance
      */
-    static VoluntaryHelperMovement createMinimalVhm(DTNHost host){
-        VoluntaryHelperMovement model = new VoluntaryHelperMovement(createMinimalSettingsForVoluntaryHelperMovement());
+    static VoluntaryHelperMovement createMinimalVhm(TestSettings settings,DTNHost host){
+        VoluntaryHelperMovement model = new VoluntaryHelperMovement(settings);
         model.setHost(host);
         return model;
     }
@@ -144,7 +143,7 @@ public final class VhmTestHelper {
      * @return the {@link VoluntaryHelperMovement} instance
      */
     static VoluntaryHelperMovement createVhmWithHelpAndWaitTimes(DTNHost host){
-        TestSettings testSettings = createMinimalSettingsForVoluntaryHelperMovement();
+        TestSettings testSettings = createMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
         addHelpAndWaitTimesToSettings(testSettings);
         VoluntaryHelperMovement model = new VoluntaryHelperMovement(testSettings);
         model.setHost(host);

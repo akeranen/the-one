@@ -2,6 +2,7 @@ package test;
 
 import core.Coord;
 import core.DTNHost;
+import input.VhmEvent;
 import input.VhmEventNotifier;
 import junit.framework.TestCase;
 import movement.MovementModel;
@@ -12,9 +13,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 
 /**
- * Includes basic method tests for {@link VoluntaryHelperMovement} without.
+ * Includes basic method tests for {@link VoluntaryHelperMovement}.
  * Tests only correct initialization and getter and setter methods.
- * The behavior of the model is tested in {@link VhmBehaviorTest}.
+ * The behavior of the model is tested in {@link VhmBehaviorTest} and the getter and setter methods are tested
+ * separately in {@link VhmPropertiesTest}.
  *
  * Created by Marius Meyer on 10.04.17.
  */
@@ -35,7 +37,7 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     public MovementModel initializeModel(TestSettings testSettings) {
         host = new TestUtils(new ArrayList<>(),new ArrayList<>(),
                 testSettings).createHost();
-        vhm = VhmTestHelper.createMinimalVhm(host);
+        vhm = VhmTestHelper.createMinimalVhm(testSettings,host);
         host.setLocation(new Coord(0,0));
         return vhm;
     }
@@ -112,8 +114,36 @@ public class VhmBasicTest extends AbstractMovementModelTest{
     public void testGetChosenHospital(){
         TestCase.assertNull("No hospital should be chosen at this point",vhm.getChosenHospital());
         VhmTestHelper.setToTransportMode(vhm);
-        TestCase.assertEquals("A hosptial should be chosen",
+        TestCase.assertEquals("Unexpected hosptial was chosen",
                 VhmTestHelper.hospital,vhm.getChosenHospital());
+    }
+
+    @Test
+    public void testChosenDisasterIsAlwaysADisaster(){
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        for (int i = 0; i < TEST_RUNS; i++){
+            VhmTestHelper.setToRandomMapBasedState(vhm);
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            vhm.vhmEventStarted(VhmTestHelper.hospital);
+            if (vhm.getChosenDisaster() != null){
+                TestCase.assertEquals(VhmEvent.VhmEventType.DISASTER,vhm.getChosenDisaster().getType());
+            }
+            vhm.vhmEventStarted(VhmTestHelper.hospital);
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            if (vhm.getChosenDisaster() != null){
+                TestCase.assertEquals(VhmEvent.VhmEventType.DISASTER,vhm.getChosenDisaster().getType());
+            }
+        }
+    }
+
+    @Test
+    public void testChosenHospitalIsAlwaysAHospital(){
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        for (int i = 0; i < TEST_RUNS; i++){
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            VhmTestHelper.setToTransportMode(vhm);
+            TestCase.assertEquals(VhmEvent.VhmEventType.HOSPITAL,vhm.getChosenHospital().getType());
+        }
     }
 
     @Test

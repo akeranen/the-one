@@ -3,6 +3,7 @@ package test;
 import core.Coord;
 import core.DTNHost;
 import core.SimClock;
+import input.VhmEvent;
 import movement.CarMovement;
 import movement.ShortestPathMapBasedMovement;
 import movement.VoluntaryHelperMovement;
@@ -29,13 +30,13 @@ public class VhmBehaviorTest {
 
     private static final int TEST_RUNS = 2000;
 
-    private TestSettings testSettings = VhmTestHelper.createMinimalSettingsForVoluntaryHelperMovement();
+    private TestSettings testSettings = new TestSettings();
     private VoluntaryHelperMovement vhm;
     private DTNHost host = new TestUtils(new ArrayList<>(),new ArrayList<>(),testSettings).createHost();
 
     public VhmBehaviorTest(){
         host.setLocation(new Coord(0,0));
-        vhm = VhmTestHelper.createMinimalVhm(host);
+        vhm = VhmTestHelper.createMinimalVhm(testSettings,host);
     }
 
     @Test
@@ -102,6 +103,11 @@ public class VhmBehaviorTest {
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         VhmTestHelper.testMoveToState(vhm);
+        //create new path back to the disaster
+        vhm.getPath();
+        assertEquals("Node should move to the chosen disaster",
+                vhm.getMap().getClosestNodeByCoord(VhmTestHelper.disaster.getLocation()).getLocation(),
+                vhm.getCurrentMovementModel().getLastLocation());
     }
 
     /**
@@ -129,7 +135,6 @@ public class VhmBehaviorTest {
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         vhm.vhmEventEnded(VhmTestHelper.disaster);
         VhmTestHelper.testRandomMapBasedState(vhm);
-
     }
 
     @Test
@@ -229,6 +234,11 @@ public class VhmBehaviorTest {
         vhm.getProperties().setWaitProbability(0);
         vhm.newOrders();
         VhmTestHelper.testMoveToState(vhm);
+        //create new path back to the disaster
+        vhm.getPath();
+        assertEquals("Node should move to the chosen disaster",
+                vhm.getMap().getClosestNodeByCoord(vhm.getChosenDisaster().getLocation()).getLocation(),
+                vhm.getCurrentMovementModel().getLastLocation());
     }
 
     @Test
@@ -411,7 +421,8 @@ public class VhmBehaviorTest {
         }
         double calculatedHelpProb = 0;
         if (location.distance(VhmTestHelper.disaster.getLocation()) < VhmTestHelper.disaster.getMaxRange()) {
-            calculatedHelpProb = VhmTestHelper.INTENSITY_WEIGHT +
+            calculatedHelpProb = VhmTestHelper.INTENSITY_WEIGHT *
+                    (VhmTestHelper.disaster.getIntensity() / VhmEvent.MAX_INTENSITY) +
                     (1 - VhmTestHelper.INTENSITY_WEIGHT) *
                             (VhmTestHelper.disaster.getMaxRange() -
                                     location.distance(VhmTestHelper.disaster.getLocation())) /

@@ -196,6 +196,7 @@ MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt
 # this can be done as soon as it is implemented and merged to the master
 # don't forget to also update Report.nrofReports!
 Report.nrofReports = 5
+Report.reportDir = reports/
 # length of the warm up period (simulated seconds)
 Report.warmup = 0
 Report.report1 = ImmediateMessageDelayReport

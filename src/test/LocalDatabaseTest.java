@@ -27,6 +27,9 @@ public class LocalDatabaseTest {
     /* The current time. */
     private static final double CURR_TIME = 1800;
 
+    /* Time interval that is so small utilities should not be recomputed */
+    private static final double HALF_A_SECOND = 0.5;
+
     private static final Coord ORIGIN = new Coord(0,0);
 
     /* Some utility values used in tests. */
@@ -298,6 +301,31 @@ public class LocalDatabaseTest {
         TestCase.assertTrue(
                 "Utility value should decrease with increasing distance.",
                 newUtility + UTILITY_EXACTNESS < originalUtility);
+    }
+    @Test
+    public void testUtilitiesAreRecomputedAtCorrectTimes(){
+        /* Advance time. */
+        SimClock.getInstance().advance(CURR_TIME);
+
+        /* Create data at current location and place. */
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, CURR_TIME, CURR_LOCATION);
+        this.database.add(data);
+        double originalUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
+
+        /* Advance clock a little but not enough that utilities should be recomputed */
+        SimClock.getInstance().advance(HALF_A_SECOND);
+        double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
+        TestCase.assertEquals(
+                "Utility value should not be recomputed yet.",
+                newUtility, originalUtility);
+
+        /* Advance clock again so that utilities should be recomputed */
+        SimClock.getInstance().advance(HALF_A_SECOND);
+        /* Check new utility value is smaller than original one. */
+        newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
+        TestCase.assertTrue(
+                "Utility value should have been recomputed.",
+                newUtility < originalUtility);
     }
 
     /**

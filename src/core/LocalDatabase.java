@@ -159,15 +159,15 @@ public class LocalDatabase {
     private void recomputeUtilitiesIfNecessary(){
         double currentTime = SimClock.getTime();
 
-        if ((currentTime-utilitesLastComputed)> UTILITY_COMPUTATION_INTERVAL){
+        if ((currentTime-utilitesLastComputed)>= UTILITY_COMPUTATION_INTERVAL){
 
             Coord currentLocation = this.owner.getLocation();
             for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
                 double utility = computeUtility(dataWithUtility.getKey(), currentLocation, currentTime);
                 data.put(dataWithUtility.getKey(), utility);
             }
+            utilitesLastComputed=currentTime;
         }
-        utilitesLastComputed=currentTime;
     }
 
     /**

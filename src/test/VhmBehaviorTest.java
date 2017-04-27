@@ -4,6 +4,7 @@ import core.Coord;
 import core.DTNHost;
 import core.SimClock;
 import input.VhmEvent;
+import junit.framework.TestCase;
 import movement.CarMovement;
 import movement.PanicMovement;
 import movement.ShortestPathMapBasedMovement;
@@ -25,6 +26,7 @@ import static junit.framework.TestCase.assertFalse;
 public class VhmBehaviorTest {
 
     private static final String INVALID_MODE_SWITCH = "Mode shouldn't have switched";
+    private static final String CHOSEN_DISASTER_TYPE = "VhmEvent chosen as disaster should have the type disaster";
 
     //big delta for higher tolerance for probabilistic functions
     private static final double PROB_DELTA = 0.05;
@@ -78,6 +80,38 @@ public class VhmBehaviorTest {
                 vhm.getHospitals().contains(VhmTestHelper.hospital));
         assertFalse("Hospital was falsely added to list of disasters",
                 vhm.getDisasters().contains(VhmTestHelper.hospital));
+    }
+
+    @Test
+    public void testChosenDisasterIsAlwaysADisaster(){
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        for (int i = 0; i < TEST_RUNS; i++){
+            VhmTestHelper.setToRandomMapBasedState(vhm);
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            vhm.vhmEventStarted(VhmTestHelper.hospital);
+            if (vhm.getChosenDisaster() != null){
+                TestCase.assertEquals(CHOSEN_DISASTER_TYPE,
+                        VhmEvent.VhmEventType.DISASTER,vhm.getChosenDisaster().getType());
+            }
+            VhmTestHelper.setToRandomMapBasedState(vhm);
+            vhm.vhmEventStarted(VhmTestHelper.hospital);
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            if (vhm.getChosenDisaster() != null){
+                TestCase.assertEquals(CHOSEN_DISASTER_TYPE,
+                        VhmEvent.VhmEventType.DISASTER,vhm.getChosenDisaster().getType());
+            }
+        }
+    }
+
+    @Test
+    public void testChosenHospitalIsAlwaysAHospital(){
+        host.setLocation(VhmTestHelper.LOCATION_INSIDE_SAFE_RANGE);
+        for (int i = 0; i < TEST_RUNS; i++){
+            vhm.vhmEventStarted(VhmTestHelper.disaster);
+            VhmTestHelper.setToTransportMode(vhm);
+            TestCase.assertEquals("VhmEvent chosen as hospital should have the type hospital",
+                    VhmEvent.VhmEventType.HOSPITAL,vhm.getChosenHospital().getType());
+        }
     }
 
     @Test

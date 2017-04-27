@@ -30,6 +30,9 @@ public class LocalDatabaseTest {
     /* Time interval that is so small utilities should not be recomputed */
     private static final double HALF_A_SECOND = 0.5;
 
+    /* Time interval long enough so that utility computation is triggered */
+    private static final double TEN_SECONDS = 10;
+
     private static final Coord ORIGIN = new Coord(0,0);
 
     /* Some utility values used in tests. */
@@ -111,7 +114,7 @@ public class LocalDatabaseTest {
         TestCase.assertEquals("Expected not that useful data to be in the DB for now.", 1, this.getAllData().size());
 
         //Advance time so that the utilities are recomputed
-        SimClock.getInstance().advance(10);
+        SimClock.getInstance().advance(TEN_SECONDS);
 
         this.database.add(usefulData);
         List<DisasterData> allData = this.getAllData();
@@ -294,7 +297,7 @@ public class LocalDatabaseTest {
         this.owner.setLocation(ORIGIN);
 
         //Advance time so that the utilities are recomputed
-        SimClock.getInstance().advance(10);
+        SimClock.getInstance().advance(TEN_SECONDS);
 
         /* Check new utility value is smaller than the original one. */
         double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
@@ -302,6 +305,14 @@ public class LocalDatabaseTest {
                 "Utility value should decrease with increasing distance.",
                 newUtility + UTILITY_EXACTNESS < originalUtility);
     }
+
+    /**
+     * As utilities should be cached to avoid frequent computations (costs runtime and is unnecessary, since utility
+     * depends on location and time and those do not change much within a single second).
+     *
+     * This tests checks that utilities are not cached if a second has not passed yet, but should be computed
+     * once every second, so the computations happen not too often but they happen.
+     */
     @Test
     public void testUtilitiesAreRecomputedAtCorrectTimes(){
         /* Advance time. */
@@ -327,6 +338,58 @@ public class LocalDatabaseTest {
                 "Utility value should have been recomputed.",
                 newUtility < originalUtility);
     }
+
+    /**
+     * See {@link #testUtilitiesAreRecomputedAtCorrectTimes()}.
+     *
+     * As we do not retrieve the map data with utilities, we have to check
+     * whether deletion of irrelevant items removes map data at the right time.
+     *
+     * We insert data which is very useful at the point of insertion.
+     * We change the location. Previously useful data becomes less useful,
+     * but as utilities are not recomputed yet, this is not noticed.
+     *
+     * We trigger deletion by inserting more data. The utilities are recomputed.
+     * We notice useless data is useless and delete it.
+     *
+     * In the simulation, nodes don't drastically change the location within a second,
+     * which is why we don't end up with useless data in the database in the simulation.
+     */
+    @Test
+    public void testDeletionTriggersUtilityComputationAtCorrectTimes(){
+        /* Advance time. */
+        SimClock.getInstance().advance(CURR_TIME);
+
+        /* Create data at current location and place. */
+        DisasterData dataAtCurrLoc = new DisasterData(DisasterData.DataType.MAP, 0, CURR_TIME, CURR_LOCATION);
+        this.database.add(dataAtCurrLoc);
+        /* Insert it into the database. Should be very useful */
+        List<DisasterData> allMapData = this.database.getMapData();
+        TestCase.assertEquals("Expected data to be in the DB for now.", 1, allMapData.size());
+
+        /* Advance clock a little but not enough that utilities should be recomputed */
+        SimClock.getInstance().advance(HALF_A_SECOND);
+        /* Change location. */
+        this.owner.setLocation(ORIGIN);
+
+        /* Now data at the origin should be inserted as very useful */
+        DisasterData dataAtOrigin = new DisasterData(DisasterData.DataType.MAP, DB_SIZE-1, CURR_TIME, ORIGIN);
+        this.database.add(dataAtOrigin);
+        allMapData = this.database.getMapData();
+        TestCase.assertEquals("Expected all data to be in the DB for now.", TWO_ITEMS, allMapData.size());
+
+        /* Advance clock again so that utilities should be recomputed */
+        SimClock.getInstance().advance(HALF_A_SECOND);
+
+        /* Insert less useful data to trigger deletion */
+        DisasterData lessUsefulData = new DisasterData(DisasterData.DataType.MAP, 0, 0, CURR_LOCATION);
+        this.database.add(lessUsefulData);
+
+        /* Now the deletion should have taken place*/
+        allMapData = this.database.getMapData();
+        TestCase.assertEquals("Useless data should be deleted now", 1, allMapData.size());
+    }
+
 
     /**
      * Gets all data that is stored in the database.

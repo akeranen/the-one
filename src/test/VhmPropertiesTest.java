@@ -33,7 +33,7 @@ public class VhmPropertiesTest {
 
     @Test
     public void testPropertiesUseGivenSettings(){
-        checkPropertiesUseDefaultValues(noDefaultProp);
+        checkPropertiesUseGivenSettings(noDefaultProp);
     }
 
     static void checkPropertiesUseDefaultValues(VhmProperties properties){

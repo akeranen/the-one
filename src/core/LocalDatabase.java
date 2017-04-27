@@ -20,6 +20,8 @@ public class LocalDatabase {
     private static final int CUBIC = 3;
     private static final int METERS_IN_KILOMETER = 1000;
     private static final int SECONDS_IN_HOUR = 3600;
+    /* Interval until utilities are recomputed in seconds */
+    private static final int UTILITY_COMPUTATION_INTERVAL = 1;
 
     /* Parameters for utility function. */
     private static final double DEFAULT_BASE = 2;
@@ -36,7 +38,7 @@ public class LocalDatabase {
     /** The database's owner. */
     private DTNHost owner;
 
-    /** All stored data with its cached utility*/
+    /** All stored data with its cached utility (cache for performance reasons) */
     private HashMap<DisasterData, Double> data = new HashMap<>();
 
     /** Last sim time we recomputed the utilities */
@@ -81,7 +83,7 @@ public class LocalDatabase {
             Map.Entry<DisasterData, Double> dataWithUtility = (Map.Entry)dataIterator.next();
             if (dataWithUtility.getValue()<=deletionThreshold){
                 this.usedSize -= dataWithUtility.getKey().getSize();
-                data.remove(dataWithUtility.getKey());
+                dataIterator.remove();
             }
         }
     }
@@ -126,8 +128,10 @@ public class LocalDatabase {
      * @return All map data.
      */
     public List<DisasterData> getMapData() {
-        List<DisasterData> mapData = new ArrayList<>();
 
+        recomputeUtilitiesIfNecessary();
+
+        List<DisasterData> mapData = new ArrayList<>();
         for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
             if (dataWithUtility.getKey().getType() == DisasterData.DataType.MAP){
                 mapData.add(dataWithUtility.getKey());
@@ -145,11 +149,17 @@ public class LocalDatabase {
         return this.totalSize;
     }
 
+    /**
+     * Recomputes the utilities every second in sim time.
+     * The reason the utilities are cached and not computed every time is performance.
+     * A host may meet multiple neighbors it may send data within short time.
+     * Neither the time nor the location of the host could have changed much,
+     * so utilities can be reused.
+     */
     private void recomputeUtilitiesIfNecessary(){
-        final int recomputeEverySeconds = 1;
         double currentTime = SimClock.getTime();
 
-        if ((currentTime-utilitesLastComputed)>recomputeEverySeconds){
+        if ((currentTime-utilitesLastComputed)> UTILITY_COMPUTATION_INTERVAL){
 
             Coord currentLocation = this.owner.getLocation();
             for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){

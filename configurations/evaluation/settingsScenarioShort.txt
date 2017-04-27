@@ -1,4 +1,4 @@
-## Scenarios with duration of three days and with few / many events
+## Scenarios with duration of 6 hours and with few / many events
 ## Scenario used for the evaluation of the different routing protocols
 ## Scenario settings
 # 21600s = 6h

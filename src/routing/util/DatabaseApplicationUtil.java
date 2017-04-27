@@ -18,6 +18,10 @@ import java.util.List;
  * Created by Britta Heymann on 19.04.2017.
  */
 public final class DatabaseApplicationUtil {
+    /**
+     * Private default constructor throwing an {@link IllegalAccessError} if called.
+     * Reason: This is a utility class with static methods only that should never be initialized.
+     */
     private DatabaseApplicationUtil() {
         throw new IllegalAccessError("Utility class.");
     }

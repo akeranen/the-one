@@ -47,8 +47,8 @@ public class DatabaseApplicationTest {
     private static final int TIME_IN_DISTANT_FUTURE = 10_000;
 
     /* Number of data items used in several tests. */
-    private static final int NUM_DATA_ITEMS = 3;
     private static final int TWO_DATA_ITEMS = 2;
+    private static final int THREE_DATA_ITEMS = 3;
 
     /** Used to check that some database sizes are completely in the interval, not on the border. */
     private static final int DISTANCE_FROM_BORDER = 10;
@@ -169,7 +169,7 @@ public class DatabaseApplicationTest {
     public void testGetDatabaseSizeRange() {
         long[] dbSizeRange = this.app.getDatabaseSizeRange();
         TestCase.assertEquals(
-                "Expected only two values for a range.",
+                "Expected different number of values for a range.",
                 Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE,
                 dbSizeRange.length);
         TestCase.assertEquals("Expected different minimum database size.", SMALLEST_DB_SIZE, dbSizeRange[0]);
@@ -281,11 +281,11 @@ public class DatabaseApplicationTest {
 
         /* Create non-data messages to host. */
         Message oneToOne = new Message(other, this.hostAttachedToApp, "M", 0);
-        Message broadcast = new BroadcastMessage(this.hostAttachedToApp, "M", 0);
+        Message broadcast = new BroadcastMessage(this.hostAttachedToApp, "B", 0);
         Group group = Group.createGroup(0);
         group.addHost(other);
         group.addHost(this.hostAttachedToApp);
-        Message multicast = new MulticastMessage(other, group, "M", 0);
+        Message multicast = new MulticastMessage(other, group, "C", 0);
 
         /* Make sure they are forwarded. */
         TestCase.assertEquals(
@@ -318,7 +318,7 @@ public class DatabaseApplicationTest {
 
         /* Check all data items are returned as messages. */
         List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
-        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, NUM_DATA_ITEMS, messages.size());
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, THREE_DATA_ITEMS, messages.size());
         TestCase.assertTrue(
                 "Expected marker to be in a message.",
                 messages.stream().anyMatch(msg -> msg.getData().equals(marker)));
@@ -375,7 +375,7 @@ public class DatabaseApplicationTest {
     @Test
     public void testCreateDataMessagesMaySendOutEachMap() {
         List<DisasterData> mapData = new ArrayList<>();
-        for (int i = 0; i < NUM_DATA_ITEMS; i++) {
+        for (int i = 0; i < THREE_DATA_ITEMS; i++) {
             DisasterData usefulMap =
                     DatabaseApplicationTest.createUsefulData(DisasterData.DataType.MAP, this.hostAttachedToApp);
             mapData.add(usefulMap);
@@ -462,7 +462,10 @@ public class DatabaseApplicationTest {
             uninitializedApp.getDatabaseSize();
             fail();
         } catch (IllegalStateException e) {
-            TestCase.assertNotNull("Expected the app to not be initialized.", e);
+            TestCase.assertEquals(
+                    "Expected different exception.",
+                    "Cannot get database size before application was initialized!",
+                    e.getMessage());
         }
     }
 

@@ -804,12 +804,12 @@ public class Settings {
      * @throws SettingsError if the double value was not equal to any long value
      */
     private static long convertToLong(double doubleValue, String name) {
-        long number = (long)doubleValue;
+        long longValue = (long)doubleValue;
 
-        if (number != doubleValue) {
+        if (longValue != doubleValue) {
             throw new SettingsError("Expected long value for setting '" + name + "', got '" + doubleValue + "'.");
         }
-        return number;
+        return longValue;
     }
 
 	/**
@@ -837,11 +837,11 @@ public class Settings {
      * @see #convertToLong(double, String)
      */
     private static long[] convertToLongs(double[] doubleValues, String name) {
-        long[] values = new long[doubleValues.length];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = convertToLong(doubleValues[i], name);
+        long[] longValues = new long[doubleValues.length];
+        for (int i = 0; i < longValues.length; i++) {
+            longValues[i] = convertToLong(doubleValues[i], name);
         }
-        return values;
+        return longValues;
     }
 
 	/**

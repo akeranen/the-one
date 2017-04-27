@@ -267,6 +267,8 @@ public class VhmEventTest {
      * object to {@link VhmEvent}'s constructor.
      *
      * @param type the type of the created {@link VhmEvent}
+     * @param xPos x position of the new created event
+     * @param yPos y position of the new created event
      * @return The created {@link JsonObjectBuilder}.
      */
     static JsonObjectBuilder createMinimalVhmEventBuilder(VhmEvent.VhmEventType type, double xPos, double yPos) {
@@ -287,6 +289,9 @@ public class VhmEventTest {
     }
     /**
      * Creates a {@link JsonObjectBuilder} for building a location.
+     *
+     * @param xPos x position of the generated location
+     * @param yPos y position of the generated location
      * @return The created {@link JsonObjectBuilder}.
      */
     static JsonObjectBuilder createLocationBuilder(double xPos, double yPos) {

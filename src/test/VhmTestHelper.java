@@ -87,8 +87,7 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Creates settings for the {@link VoluntaryHelperMovement} setting only the necessary parameters.
-     * All other parameters will be set to the default values specified in the {@link VoluntaryHelperMovement} class.
+     * Creates settings for the {@link VoluntaryHelperMovement} defining only the necessary parameters.
      *
      * @param testSettings The test settings that should be extended
      * @return A {@link TestSettings} instance including all necessary parameters
@@ -139,6 +138,7 @@ public final class VhmTestHelper {
      * Creates a instance of the {@link VoluntaryHelperMovement} using the minimal settings to use as much default
      * parameters as possible.
      *
+     * @param settings settings to use as basis to create the model
      * @param host the host this movement model is used in
      * @return the {@link VoluntaryHelperMovement} instance
      */

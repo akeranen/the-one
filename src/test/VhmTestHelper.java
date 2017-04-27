@@ -27,6 +27,14 @@ public final class VhmTestHelper {
     public static final Coord LOCATION_INSIDE_EVENT_RANGE = new Coord(4000,2100);
     public static final Coord LOCATION_INSIDE_SAFE_RANGE = new Coord(4000,2300);
     public static final Coord LOCATION_INSIDE_MAX_RANGE = new Coord(4000,2500);
+
+    /**
+     * Coordinate for a second event with different location
+     */
+    public static final Coord SECOND_DISASTER_LOCATION = new Coord(0,0);
+
+    public static final Coord HOSPITAL_LOCATION = new Coord(6000,3000);
+
     /**
      * Used intensity weight for testing the help function
      */
@@ -56,6 +64,10 @@ public final class VhmTestHelper {
 
     private static final int MAX_COORD_Y = 8000;
 
+    public static final VhmEvent disasterDiffLocation = new VhmEvent("testDisaster2",
+            VhmEventTest.createJsonForCompletelySpecifiedEvent(VhmEvent.VhmEventType.DISASTER,
+                    SECOND_DISASTER_LOCATION.getX(),SECOND_DISASTER_LOCATION.getY()));
+
     public static final VhmEvent disaster = new VhmEvent("testDisaster",
             VhmEventTest.createJsonForCompletelySpecifiedEvent());
     /**
@@ -64,7 +76,8 @@ public final class VhmTestHelper {
     private static final VhmEvent stateChangeDisaster = new VhmEvent("stateChangeDisaster",
             VhmEventTest.createJsonForCompletelySpecifiedEvent());
     public static final VhmEvent hospital = new VhmEvent("testHospital",
-            VhmEventTest.createMinimalVhmEventBuilder(VhmEvent.VhmEventType.HOSPITAL).build());
+            VhmEventTest.createMinimalVhmEventBuilder(VhmEvent.VhmEventType.HOSPITAL,
+                    HOSPITAL_LOCATION.getX(),HOSPITAL_LOCATION.getY()).build());
 
     private static final String WRONG_MOVEMENT_MODE = "Wrong movement mode is set";
     private static final String WRONG_MOVEMENT_MODEL = "Wrong movement model is selected";
@@ -77,6 +90,7 @@ public final class VhmTestHelper {
      * Creates settings for the {@link VoluntaryHelperMovement} setting only the necessary parameters.
      * All other parameters will be set to the default values specified in the {@link VoluntaryHelperMovement} class.
      *
+     * @param testSettings The test settings that should be extended
      * @return A {@link TestSettings} instance including all necessary parameters
      */
     static TestSettings createMinimalSettingsForVoluntaryHelperMovement(TestSettings testSettings){
@@ -110,7 +124,7 @@ public final class VhmTestHelper {
      *
      * @return a {@link TestSettings} instance inculding entries for every parameter of the movement model
      */
-    private static TestSettings createSettingsWithoutDefaultValues(){
+    static TestSettings createSettingsWithoutDefaultValues(){
         TestSettings settings = createMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
         addHelpAndWaitTimesToSettings(settings);
         settings.putSetting(movement.VhmProperties.HOSPITAL_WAIT_PROBABILITY_SETTING,

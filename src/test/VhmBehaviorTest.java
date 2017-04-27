@@ -5,6 +5,7 @@ import core.DTNHost;
 import core.SimClock;
 import input.VhmEvent;
 import movement.CarMovement;
+import movement.PanicMovement;
 import movement.ShortestPathMapBasedMovement;
 import movement.VoluntaryHelperMovement;
 import org.junit.Test;
@@ -104,7 +105,7 @@ public class VhmBehaviorTest {
         host.setLocation(VhmTestHelper.LOCATION_INSIDE_MAX_RANGE);
         vhm.vhmEventStarted(VhmTestHelper.disaster);
         VhmTestHelper.testMoveToState(vhm);
-        //create new path back to the disaster
+        //create new path to the disaster
         vhm.getPath();
         assertEquals("Node should move to the chosen disaster",
                 vhm.getMap().getClosestNodeByCoord(VhmTestHelper.disaster.getLocation()).getLocation(),
@@ -340,7 +341,7 @@ public class VhmBehaviorTest {
 
     @Test
     public void testAllStatesSwitchToPanicIfInEventRangeExceptInjured(){
-        host.setLocation(VhmTestHelper.LOCATION_INSIDE_EVENT_RANGE);
+        host.setLocation(VhmTestHelper.SECOND_DISASTER_LOCATION);
         vhm.getProperties().setInjuryProbability(0);
         VhmTestHelper.setToHospitalWaitMode(vhm);
         checkIfModeSwitchesToPanic();
@@ -354,10 +355,13 @@ public class VhmBehaviorTest {
         checkIfModeSwitchesToPanic();
         VhmTestHelper.setToPanicMode(vhm);
         checkIfModeSwitchesToPanic();
+        assertEquals("Node should move away from the newly started disaster",
+                VhmTestHelper.disasterDiffLocation.getLocation(),
+                ((PanicMovement)vhm.getCurrentMovementModel()).getEventLocation());
     }
 
     private void checkIfModeSwitchesToPanic(){
-        vhm.vhmEventStarted(VhmTestHelper.disaster);
+        vhm.vhmEventStarted(VhmTestHelper.disasterDiffLocation);
         VhmTestHelper.testPanicState(vhm);
     }
 

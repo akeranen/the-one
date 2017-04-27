@@ -80,7 +80,7 @@ public class VhmEventTest {
     @Test(expected = NullPointerException.class)
     public void testConstructorThrowsForMissingEventType() {
         JsonObject eventWithoutType = Json.createObjectBuilder()
-                .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder())
+                .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder(X_COORDINATE,Y_COORDINATE))
                 .add(VhmEvent.EVENT_RANGE, EVENT_RANGE)
                 .build();
         new VhmEvent(EVENT_NAME, eventWithoutType);
@@ -119,7 +119,7 @@ public class VhmEventTest {
     public void testConstructorThrowsForMissingEventRange() {
         JsonObject eventWithoutEventRange = Json.createObjectBuilder()
                 .add(VhmEvent.EVENT_TYPE, VhmEvent.VhmEventType.DISASTER.toString())
-                .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder())
+                .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder(X_COORDINATE,Y_COORDINATE))
                 .build();
         new VhmEvent(EVENT_NAME, eventWithoutEventRange);
     }
@@ -237,6 +237,24 @@ public class VhmEventTest {
     }
 
     /**
+     * Creates a {@link JsonObject} that completely specifies a {@link VhmEvent} s. t. no default values will be used.
+     *
+     * @param type type of the new created event
+     * @param xPos x position of the new created event
+     * @param yPos y position of the new created event
+     * @return The created {@link JsonObject}.
+     */
+    static JsonObject createJsonForCompletelySpecifiedEvent(VhmEvent.VhmEventType type, double xPos, double yPos) {
+        return VhmEventTest.createMinimalVhmEventBuilder(type, xPos, yPos)
+                .add(VhmEvent.START_TIME, START_TIME)
+                .add(VhmEvent.END_TIME, END_TIME)
+                .add(VhmEvent.SAFE_RANGE, SAFE_RANGE)
+                .add(VhmEvent.MAX_RANGE, MAX_RANGE)
+                .add(VhmEvent.EVENT_INTENSITY, INTENSITY)
+                .build();
+    }
+
+    /**
      * Creates a {@link VhmEvent} that uses default values at all possible places.
      * @return The created {@link VhmEvent}.
      */
@@ -251,10 +269,10 @@ public class VhmEventTest {
      * @param type the type of the created {@link VhmEvent}
      * @return The created {@link JsonObjectBuilder}.
      */
-    static JsonObjectBuilder createMinimalVhmEventBuilder(VhmEvent.VhmEventType type) {
+    static JsonObjectBuilder createMinimalVhmEventBuilder(VhmEvent.VhmEventType type, double xPos, double yPos) {
         return Json.createObjectBuilder()
                 .add(VhmEvent.EVENT_TYPE, type.toString())
-                .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder())
+                .add(VhmEvent.EVENT_LOCATION, VhmEventTest.createLocationBuilder(xPos,yPos))
                 .add(VhmEvent.EVENT_RANGE, EVENT_RANGE);
     }
 
@@ -265,15 +283,15 @@ public class VhmEventTest {
      * @return The created {@link JsonObjectBuilder}.
      */
     private static JsonObjectBuilder createMinimalVhmEventBuilder() {
-        return createMinimalVhmEventBuilder(VhmEvent.VhmEventType.DISASTER);
+        return createMinimalVhmEventBuilder(VhmEvent.VhmEventType.DISASTER, X_COORDINATE,Y_COORDINATE);
     }
     /**
      * Creates a {@link JsonObjectBuilder} for building a location.
      * @return The created {@link JsonObjectBuilder}.
      */
-    static JsonObjectBuilder createLocationBuilder() {
+    static JsonObjectBuilder createLocationBuilder(double xPos, double yPos) {
         return Json.createObjectBuilder()
-                .add(VhmEvent.EVENT_LOCATION_X, X_COORDINATE)
-                .add(VhmEvent.EVENT_LOCATION_Y, Y_COORDINATE);
+                .add(VhmEvent.EVENT_LOCATION_X, xPos)
+                .add(VhmEvent.EVENT_LOCATION_Y, yPos);
     }
 }

@@ -77,13 +77,17 @@ public abstract class AbstractMovementModelTest {
         for (int i=1; i<TEST_RUNS; i++){
             Path p = model.getPath();
             List<Coord> coords = p.getCoords();
-            Coord nextWaypoint = coords.get(1);
-            assertNotNull("Path did not contain a next waypoint", nextWaypoint);
-            //Bounds in test Settings are 1000x1000
-            assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX()>=0);
-            assertTrue(MESSAGE_Y_BELOW_ZERO,nextWaypoint.getY()>=0);
-            assertTrue(MESSAGE_X_ABOVE_LIMIT, nextWaypoint.getX()<=MAX_COORD);
-            assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY()<=MAX_COORD);
+            //check if a next waypoint exists, it may be, that path to the current position is generated
+            //and only includes one waypoint
+            if (coords.size() > 1) {
+                Coord nextWaypoint = coords.get(1);
+                assertNotNull("Path did not contain a next waypoint", nextWaypoint);
+                //Bounds in test Settings are 10000x8000
+                assertTrue(MESSAGE_X_BELOW_ZERO, nextWaypoint.getX() >= 0);
+                assertTrue(MESSAGE_Y_BELOW_ZERO, nextWaypoint.getY() >= 0);
+                assertTrue(MESSAGE_X_ABOVE_LIMIT, nextWaypoint.getX() <= model.getMaxX());
+                assertTrue(MESSAGE_Y_ABOVE_LIMIT, nextWaypoint.getY() <= model.getMaxY());
+            }
         }
     }
 }

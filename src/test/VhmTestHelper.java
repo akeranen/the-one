@@ -87,12 +87,12 @@ public final class VhmTestHelper {
     }
 
     /**
-     * Creates settings for the {@link VoluntaryHelperMovement} defining only the necessary parameters.
+     * Add settings for the {@link VoluntaryHelperMovement} defining only the necessary parameters.
      *
      * @param testSettings The test settings that should be extended
      * @return A {@link TestSettings} instance including all necessary parameters
      */
-    static TestSettings createMinimalSettingsForVoluntaryHelperMovement(TestSettings testSettings){
+    static TestSettings addMinimalSettingsForVoluntaryHelperMovement(TestSettings testSettings){
         testSettings.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
         testSettings.putSetting(MovementModel.WORLD_SIZE,MAX_COORD_X+", "+MAX_COORD_Y);
         testSettings.restoreNameSpace();
@@ -124,7 +124,7 @@ public final class VhmTestHelper {
      * @return a {@link TestSettings} instance inculding entries for every parameter of the movement model
      */
     static TestSettings createSettingsWithoutDefaultValues(){
-        TestSettings settings = createMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
+        TestSettings settings = addMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
         addHelpAndWaitTimesToSettings(settings);
         settings.putSetting(movement.VhmProperties.HOSPITAL_WAIT_PROBABILITY_SETTING,
                 Double.toString(WAIT_PROBABILITY));
@@ -157,7 +157,7 @@ public final class VhmTestHelper {
      * @return the {@link VoluntaryHelperMovement} instance
      */
     static VoluntaryHelperMovement createVhmWithHelpAndWaitTimes(DTNHost host){
-        TestSettings testSettings = createMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
+        TestSettings testSettings = addMinimalSettingsForVoluntaryHelperMovement(new TestSettings());
         addHelpAndWaitTimesToSettings(testSettings);
         VoluntaryHelperMovement model = new VoluntaryHelperMovement(testSettings);
         model.setHost(host);

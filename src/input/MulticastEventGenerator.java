@@ -169,7 +169,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      * Draws a random group address from the configured address range
      * @return A random group address
      */
-    protected int drawGroupAddress() {
+    private int drawGroupAddress() {
         if (groupAddressRange[0] == groupAddressRange[1]) {
             return groupAddressRange[0];
         }

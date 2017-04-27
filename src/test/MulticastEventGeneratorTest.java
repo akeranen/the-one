@@ -113,19 +113,27 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
      */
     @Test
     public void testTwoGeneratorsWorkWithTheSameNumberOfGroups(){
-        AbstractMessageEventGenerator generator1 = new MulticastEventGenerator(this.settings);
-        int noOfGroupsFrom1 = Group.getGroups().length;
-        AbstractMessageEventGenerator generator2 = new MulticastEventGenerator(this.settings);
-        int notOfGroupsFrom2 = Group.getGroups().length;
-        assertEquals("Second generator should not change number of groups",
-                noOfGroupsFrom1, notOfGroupsFrom2);
+        // Since the drawing the number of groups is random, check multiple times
+        // whether using a second generator changes anything
+        for (int i = 0; i< NR_TRIALS_IN_TEST; i++) {
+            // The first part does not test whether generators work with the same number
+            // This can only show whether a generator changes the number of groups
+            AbstractMessageEventGenerator generator1 = new MulticastEventGenerator(this.settings);
+            int noOfGroupsFrom1 = Group.getGroups().length;
+            AbstractMessageEventGenerator generator2 = new MulticastEventGenerator(this.settings);
+            int notOfGroupsFrom2 = Group.getGroups().length;
+            assertEquals("Second generator should not change number of groups",
+                    noOfGroupsFrom1, notOfGroupsFrom2);
 
-        //nextEvent retrieves random groups, so calling it checks whether this works
-        final int largeNrTrials=100;
-        for(int i = 0; i < largeNrTrials; i++) {
-            generator1.nextEvent();
-            generator2.nextEvent();
+            //Second part: nextEvent retrieves random groups
+            //If the generators work with a different number of groups it shows here, since nextEvent will draw
+            // non-existent groups
+            for(int j = 0; j < NR_TRIALS_IN_TEST; j++) {
+                generator1.nextEvent();
+                generator2.nextEvent();
+            }
         }
+
 
     }
 

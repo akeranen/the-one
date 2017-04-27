@@ -53,7 +53,35 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      *            Settings for this generator.
      */
     public MulticastEventGenerator(Settings s) {
+
         super(s, true);
+
+        // Check if groups are existing yet
+        if (Group.getGroups().length == 0) {
+            createNewGroups(s);
+        } else {
+            //Get information about existing groups
+            this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
+            this.groupAddressRange[0] = 1;
+            this.groupAddressRange[1] = Group.getGroups().length;
+        }
+
+        if (s.contains(GROUP_SIZE_RANGE_S)) {
+            this.groupSizeRange = s.getCsvInts(GROUP_SIZE_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+        }
+        if (groupSizeRange[1] > hostRange[1] - hostRange[0]) {
+            throw new SimError(
+                    "Biggest possible group size is greater than the number of hosts specified in host range.");
+        }
+
+    }
+
+    /**
+     * If no groups exist yet, decide how many there are and create as many
+     * These groups are empty afterwards with no members and sizes
+     */
+    private void createNewGroups(Settings s) {
+        //Decide how many group there are
         int[] groupCountRange = DEFAULT_GROUP_COUNT;
         if (s.contains(GROUP_COUNT_RANGE_S)) {
             groupCountRange = s.getCsvInts(GROUP_COUNT_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
@@ -62,20 +90,12 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         this.groupAddressRange = new int[Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE];
         this.groupAddressRange[0] = 1;
         this.groupAddressRange[1] = groupCount;
-        if (s.contains(GROUP_SIZE_RANGE_S)) {
-            this.groupSizeRange = s.getCsvInts(GROUP_SIZE_RANGE_S, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
+
+        //Create the groups
+        for (int i = 1; i <= groupCount; i++) {
+            Group.createGroup(i);
         }
-        if (groupSizeRange[1] > hostRange[1] - hostRange[0]) {
-            throw new SimError(
-                    "Biggest possible group size is greater than the number of hosts specified in host range.");
-        }
-        // Create groups if no groups are existing yet
-        if (Group.getGroups().length == 0) {
-            for (int i = 1; i <= groupCount; i++) {
-                Group.createGroup(i);
-            }
-            nodesAreAssignedToGroups = false;
-        }
+        setNodesAsUnassigned();
     }
 
     /**
@@ -109,6 +129,14 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
     }
 
     /**
+     * variable used to create groups only the first time
+     * {@link MulticastEventGenerator#nextEvent()} is called.
+     */
+    private static synchronized void setNodesAsUnassigned() {
+        nodesAreAssignedToGroups = false;
+    }
+
+    /**
      * Returns the next multicast creation event.
      * 
      * @see EventQueue#nextEvent()
@@ -125,7 +153,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
 
         /* Draw additional message properties and create message. */
         double interval = this.drawNextEventTimeDiff();
-        int group = this.drawHostAddress(this.groupAddressRange);
+        int group = this.drawGroupAddress();
         int priority = this.drawPriority();
         Integer[] groupMembers = Group.getGroup(group).getMembers();
         int sender = groupMembers[rng.nextInt(groupMembers.length)];
@@ -135,5 +163,16 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
         /* Update next event time before returning. */
         this.advanceToNextEvent(interval);
         return messageCreateEvent;
+    }
+
+    /**
+     * Draws a random group address from the configured address range
+     * @return A random group address
+     */
+    private int drawGroupAddress() {
+        if (groupAddressRange[0] == groupAddressRange[1]) {
+            return groupAddressRange[0];
+        }
+        return groupAddressRange[0] + rng.nextInt(groupAddressRange[1] - groupAddressRange[0] + 1);
     }
 }

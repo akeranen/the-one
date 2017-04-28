@@ -4,7 +4,6 @@ import core.DTNHost;
 import core.DisasterData;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,7 +12,7 @@ import java.util.List;
  * Created by Britta Heymann on 05.04.2017.
  */
 public final class DisasterDataNotifier {
-    private static List<DisasterDataCreationListener> listeners = Collections.synchronizedList(new ArrayList<>());
+    private static List<DisasterDataCreationListener> listeners = new ArrayList<>();
 
     private DisasterDataNotifier() {
         throw new IllegalAccessError("Utility class");

@@ -15,7 +15,6 @@ import routing.MessageRouter;
 import util.Tuple;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -77,7 +76,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     private LocalDatabase database;
 
     /** Stash for created data if attached host is not known yet. */
-    private List<Tuple<DTNHost, DisasterData>> stashedCreationData = Collections.synchronizedList(new ArrayList<>());
+    private List<Tuple<DTNHost, DisasterData>> stashedCreationData = new ArrayList<>();
 
     /** The last time when a map data item was sent to neighbors. */
     private double lastMapSendingTime;

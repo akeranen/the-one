@@ -150,7 +150,8 @@ public class LocalDatabase {
     }
 
     /**
-     * Recomputes the utilities every second in sim time.
+     * Recomputes the utilities if they are needed and at most every {@link LocalDatabase#UTILITY_COMPUTATION_INTERVAL}
+     * seconds in sim time.
      * The reason the utilities are cached and not computed every time is performance.
      * A host may meet multiple neighbors it may send data within short time.
      * Neither the time nor the location of the host could have changed much,

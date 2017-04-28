@@ -7,7 +7,7 @@ package core;
  */
 public class DisasterData {
     /**
-     * Types of data used in //TODO: Link to application class.
+     * Types of data used in {@link applications.DatabaseApplication}.
      */
     public enum DataType {
         /**
@@ -81,5 +81,15 @@ public class DisasterData {
      */
     public Coord getLocation() {
         return this.location;
+    }
+
+    /**
+     * Returns a string representation of the object.
+     * 
+     * @return a string representation of the object.
+     */
+    @Override
+    public String toString() {
+        return String.format("%s@%.2f@%s", this.type, this.creation, this.location);
     }
 }

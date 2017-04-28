@@ -227,7 +227,8 @@ public class MessageTransferAcceptPolicy {
             case BROADCAST:
                 checkRecipients = true;
                 break;
-            case ONE_TO_ONE:
+			case ONE_TO_ONE:
+			case DATA:
                 checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
                 break;
             default:

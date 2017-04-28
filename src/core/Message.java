@@ -79,7 +79,11 @@ public class Message implements Comparable<Message> {
         /**
          * Message which should be sent to a specific group of nodes
          */
-        MULTICAST
+        MULTICAST,
+        /**
+         * Message wrapping a data item.
+         */
+        DATA
     }
 
     /**

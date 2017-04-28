@@ -71,6 +71,11 @@ public class LocalDatabaseTest {
         SimClock.reset();
     }
 
+    @Test
+    public void testGetTotalSize() {
+        TestCase.assertEquals("Expected different database size.", DB_SIZE, this.database.getTotalSize());
+    }
+
     /**
      * Tests that storing data that is larger than the database's size is not possible.
      */

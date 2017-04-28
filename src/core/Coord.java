@@ -80,12 +80,10 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	}
 
 	/**
-	 * Returns a text representation of the coordinate (rounded to 2 decimals)
+	 * Returns a text representation of the coordinate
 	 * @return a text representation of the coordinate
 	 */
-	public String toString() {
-		return String.format("(%.2f,%.2f)",x,y);
-	}
+	public String toString() { return "("+x+","+y+")"; }
 
 	/**
 	 * Returns a clone of this coordinate

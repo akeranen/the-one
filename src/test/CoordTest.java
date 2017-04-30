@@ -17,12 +17,17 @@ public class CoordTest extends TestCase {
 		Coord c5 = new Coord(-2,-3);
 		Coord c6 = new Coord(-2,-3);
 
+		//hash must be reflexive and consistent
+		assertTrue(c1.hashCode() == c1.hashCode());
+		//hash must be symmetric
 		assertTrue(c1.hashCode() == c2.hashCode());
+		assertTrue(c2.hashCode() == c1.hashCode());
 		assertTrue(c1.hashCode() != c3.hashCode());
+		assertTrue(c3.hashCode() != c1.hashCode());
 		assertTrue(c3.hashCode() != c4.hashCode());
 		assertTrue(c5.hashCode() == c6.hashCode());
 		assertTrue(c3.hashCode() != c5.hashCode());
-
+		//Cached hash must be recomputed after translation
 		c5.translate(1, 1);
 		assertTrue(c5.hashCode() != c6.hashCode());
 

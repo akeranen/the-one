@@ -11,6 +11,7 @@ package core;
 public class Coord implements Cloneable, Comparable<Coord> {
 	private double x;
 	private double y;
+	private int cachedHashCode=0;
 
 	/**
 	 * Constructor.
@@ -29,6 +30,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public void setLocation(double x, double y) {
 		this.x = x;
 		this.y = y;
+		cachedHashCode=0;
 	}
 
 	/**
@@ -39,6 +41,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public void setLocation(Coord c) {
 		this.x = c.x;
 		this.y = c.y;
+		cachedHashCode=0;
 	}
 
 	/**
@@ -49,6 +52,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public void translate(double dx, double dy) {
 		this.x += dx;
 		this.y += dy;
+		cachedHashCode=0;
 	}
 
 	/**
@@ -124,7 +128,10 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 * (actually a hash of the String made of the coordinates)
 	 */
 	public int hashCode() {
-		return (x+","+y).hashCode();
+		if (cachedHashCode==0){
+			cachedHashCode = (x+","+y).hashCode();;
+		}
+		return cachedHashCode;
 	}
 
 	/**

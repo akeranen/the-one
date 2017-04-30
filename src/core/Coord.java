@@ -11,7 +11,7 @@ package core;
 public class Coord implements Cloneable, Comparable<Coord> {
 	private double x;
 	private double y;
-	private int cachedHashCode=0;
+	private int cachedHashCode;
 
 	/**
 	 * Constructor.
@@ -83,6 +83,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 		return this.y;
 	}
 
+	@Override
 	/**
 	 * Returns a text representation of the coordinate
 	 * @return a text representation of the coordinate
@@ -129,7 +130,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 */
 	public int hashCode() {
 		if (cachedHashCode==0){
-			cachedHashCode = (x+","+y).hashCode();;
+			cachedHashCode = (x+","+y).hashCode();
 		}
 		return cachedHashCode;
 	}

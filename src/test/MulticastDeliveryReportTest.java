@@ -1,7 +1,10 @@
 package test;
 
 import core.BroadcastMessage;
+import core.Coord;
 import core.DTNHost;
+import core.DataMessage;
+import core.DisasterData;
 import core.Group;
 import core.Message;
 import core.MessageListener;
@@ -34,6 +37,8 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
 
     private static final double HALF_GROUP_RATIO = 0.5;
     private static final double ALL_GROUP_RATIO = 1.0;
+
+    private static final Coord DATA_LOCATION = new Coord(0,0);
 
     private static final String TEST_MESSAGE_ID = "M1";
 
@@ -296,6 +301,21 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
         h1.createNewMessage(new BroadcastMessage(h1,TEST_MESSAGE_ID,0));
 
         transferMessage(TEST_MESSAGE_ID,h1,h1);
+        testReportIgnoresMessage();
+    }
+
+    @Test
+    public void testReportIgnoresDataMessages() throws IOException {
+        // Skip warm up time.
+        this.clock.setTime(AFTER_WARM_UP_TIME);
+
+        // Create data message.
+        DTNHost h1 = utils.createHost();
+        DTNHost h2 = utils.createHost();
+        DisasterData data = new DisasterData(DisasterData.DataType.RESOURCE, 0, AFTER_WARM_UP_TIME, DATA_LOCATION);
+
+        h1.createNewMessage(new DataMessage(h1, h2, TEST_MESSAGE_ID, data, 1,1));
+
         testReportIgnoresMessage();
     }
 

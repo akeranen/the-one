@@ -20,7 +20,6 @@ public abstract class AbstractMessageEventGeneratorTest {
     protected static final int NR_TRIALS_IN_TEST = 10;
 
     protected TestSettings settings;
-    protected AbstractMessageEventGenerator generator;
 
     @Before
     public void init() {
@@ -44,12 +43,12 @@ public abstract class AbstractMessageEventGeneratorTest {
     /**
      * Gets a generator of the class to generate message events with.
      */
-    protected abstract void createGenerator();
+    protected abstract AbstractMessageEventGenerator createGenerator();
     
     @Test
     public void testDoubleTimeEventDiff(){
         for(int i = 0; i < NR_TRIALS_IN_TEST; i++){
-            createGenerator();
+            AbstractMessageEventGenerator generator = this.createGenerator();
             double time = generator.drawNextEventTimeDiff();
             assertTrue("The next event should occur after at most one second.",
                     time <= 1);

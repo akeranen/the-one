@@ -54,6 +54,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
      * @param where DTN host where the Message is located
      * @param dropped
      */
+    @Override
     public void messageDeleted(Message m, DTNHost where, boolean dropped) {
         // Method is not used, but must be implemented due to the class hierarchy
     }
@@ -64,6 +65,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
      * @param from sender of the message
      * @param to receiver of the message
      */
+    @Override
     public void messageTransferAborted(Message m, DTNHost from, DTNHost to) {
         // Method is not used, but must be implemented due to the class hierarchy
     }
@@ -74,6 +76,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
      * @param to receiver of the message
      * @param finalTarget if the target is thee intended target of the message and if it receives it for the first time
      */
+    @Override
     public void messageTransferred(Message m, DTNHost from, DTNHost to, boolean finalTarget) {
         if (isWarmupID(m.getId())) {
             return;
@@ -88,6 +91,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
      * This method is invoked when a new message is created
      * @param m Message that was recently created
      */
+    @Override
     public void newMessage(Message m) {
         if (isWarmup()) {
             addWarmupID(m.getId());
@@ -105,6 +109,7 @@ public final class DeliveryProbabilityReport  extends Report implements MessageL
      * @param from sender of the message
      * @param to receiver of the message
      */
+    @Override
     public void messageTransferStarted(Message m, DTNHost from, DTNHost to) {
         // Method is not used, but must be implemented due to the class hierarchy
     }

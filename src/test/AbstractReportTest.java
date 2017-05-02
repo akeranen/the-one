@@ -1,5 +1,6 @@
 package test;
 
+import core.SimClock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +61,13 @@ public abstract class AbstractReportTest {
      * @return The report class to test.
      */
     protected abstract Class getReportClass();
+
+    /**
+     * Sets the simulator time to one second after warm up.
+     */
+    protected void skipWarmUpTime() {
+        SimClock.getInstance().setTime(WARM_UP_TIME + 1.0);
+    }
 
     /**
      * Create a buffered reader that assumes the output file was written using UTF8 encoding.

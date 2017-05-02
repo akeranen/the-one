@@ -1,7 +1,10 @@
 package test;
 
 import core.BroadcastMessage;
+import core.Coord;
 import core.DTNHost;
+import core.DataMessage;
+import core.DisasterData;
 import core.Group;
 import core.Message;
 import core.MessageListener;
@@ -30,6 +33,8 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
     private static final int DELIVERY_TIME = CREATION_TIME + 56;
 
     private static final String TEST_MESSAGE_ID = "M1";
+
+    private static final Coord DATA_LOCATION = new Coord(0,0);
 
     private static final String EXPECTED_FIRST_LINE = "Type Prio Delay";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
@@ -108,16 +113,21 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
         // Skip warm up time.
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
-        // Create and deliver messages of all types.
+        //Create group for multicast message
         Group group = Group.createGroup(1);
         group.addHost(this.sender);
         group.addHost(this.receiver);
+        //Create data for data message
+        DisasterData data = new DisasterData(DisasterData.DataType.SKILL, 0, AFTER_WARM_UP_TIME, DATA_LOCATION);
+        // Create and deliver messages of all types.
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", 0));
         this.sender.createNewMessage(new BroadcastMessage(this.sender, "M2", 0));
         this.sender.createNewMessage(new MulticastMessage(this.sender, group, "M3", 0));
+        this.sender.createNewMessage(new DataMessage(this.sender, this.receiver, "M4", data, 1, 1));
         ImmediateMessageDelayReportTest.transferMessage("M1", this.sender, this.receiver);
         ImmediateMessageDelayReportTest.transferMessage("M2", this.sender, this.receiver);
         ImmediateMessageDelayReportTest.transferMessage("M3", this.sender, this.receiver);
+        ImmediateMessageDelayReportTest.transferMessage("M4", this.sender, this.receiver);
 
         // Complete report.
         this.report.done();
@@ -136,6 +146,10 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
             Assert.assertEquals(
                     UNEXPECTED_MESSAGE_TYPE,
                     Message.MessageType.MULTICAST.toString(),
+                    ImmediateMessageDelayReportTest.getTypeFromLine(reader.readLine()));
+            Assert.assertEquals(
+                    UNEXPECTED_MESSAGE_TYPE,
+                    Message.MessageType.DATA.toString(),
                     ImmediateMessageDelayReportTest.getTypeFromLine(reader.readLine()));
         }
     }

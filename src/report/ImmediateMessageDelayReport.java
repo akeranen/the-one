@@ -14,6 +14,7 @@ import core.MessageListener;
  * OneToOne 10 2
  * OneToOne 10 40
  * Multicast 10 4
+ * Data 11 1
  * ...
  *
  * If you are fine with a less immediate and more storage intensive approach, and don't care about message types or

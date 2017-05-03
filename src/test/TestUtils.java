@@ -145,6 +145,16 @@ public class TestUtils {
 		return this.createHost(new Coord(0,0));
 	}
 
+	/**
+	 * Creates a host to location (0,0) with stationary movement model
+	 * and the defined name.
+	 * @param name The name for the host
+	 * @return The new host
+	 */
+	public DTNHost createHost(String name) {
+		return this.createHost(new Coord(0,0), name);
+	}
+
 	public List<DTNHost> getAllHosts() {
 		return this.allHosts;
 	}

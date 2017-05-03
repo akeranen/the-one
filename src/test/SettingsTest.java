@@ -9,11 +9,9 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 import core.SettingsError;
-import org.junit.Test;
-
 import junit.framework.TestCase;
 import core.Settings;
-import core.SettingsError;
+import org.junit.Test;
 
 /**
  * Tests Settings class' different setting getting methods
@@ -83,8 +81,8 @@ public class SettingsTest extends TestCase {
 	public void testAssertValidRange(){
 	    s.assertValidRange(VALID_RANGE, TST);
 	}
-
-	@Test
+	
+	@Test 
     public void testAssertValidRangeWithWrongOrdering(){
         try{
             s.assertValidRange(INVALID_RANGE, TST);
@@ -97,7 +95,7 @@ public class SettingsTest extends TestCase {
                     se.getMessage());
         }
     }
-
+	
 	@Test
     public void testAssertValidRangeWithWrongRange(){
         try{

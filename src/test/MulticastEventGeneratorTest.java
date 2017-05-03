@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Contains tests for the MulticastEventGenerator class
@@ -95,17 +96,45 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     public void testPriorities(){
         AbstractMessageEventGenerator generator = new MulticastEventGenerator(this.settings);
         MulticastCreateEvent event;
+        final int maxPrio=10;
+        final int minPrio=1;
         for(int i = 0; i < AbstractMessageEventGeneratorTest.NR_TRIALS_IN_TEST; i++) {
             event = (MulticastCreateEvent) generator.nextEvent();
-            assertTrue(event.getPriority() <= 10);
-            assertTrue(event.getPriority() >= 1);
+            assertTrue(event.getPriority() <= maxPrio);
+            assertTrue(event.getPriority() >= minPrio);
         }
     }
-    
+
+    /**
+     * If multiple MulticastEventGenerators exist, only one should create the groups (in the constructor)
+     * and only one should fill them (in createGroups).
+     * If the EventGenerators disagree on the number of groups, problematic behavior like messages to empty groups
+     * might occur.
+     */
     @Test
-    public void testDoubleTimeEventDiff(){
-        generator = new MulticastEventGenerator(this.settings);
-        super.testDoubleTimeEventDiff();
+    public void testTwoGeneratorsWorkWithTheSameNumberOfGroups(){
+        // Since the drawing the number of groups is random, check multiple times
+        // whether using a second generator changes anything
+        for (int i = 0; i< NR_TRIALS_IN_TEST; i++) {
+            // The first part does not test whether generators work with the same number
+            // This can only show whether a generator changes the number of groups
+            AbstractMessageEventGenerator generator1 = new MulticastEventGenerator(this.settings);
+            int noOfGroupsFrom1 = Group.getGroups().length;
+            AbstractMessageEventGenerator generator2 = new MulticastEventGenerator(this.settings);
+            int notOfGroupsFrom2 = Group.getGroups().length;
+            assertEquals("Second generator should not change number of groups",
+                    noOfGroupsFrom1, notOfGroupsFrom2);
+
+            //Second part: nextEvent retrieves random groups
+            //If the generators work with a different number of groups it shows here, since nextEvent will draw
+            // non-existent groups
+            for(int j = 0; j < NR_TRIALS_IN_TEST; j++) {
+                generator1.nextEvent();
+                generator2.nextEvent();
+            }
+        }
+
+
     }
 
     /**
@@ -120,7 +149,7 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
      * Gets a generator of the class to generate message events with.
      */
     @Override
-    protected void createGenerator(){
-        this.generator = new MulticastEventGenerator(this.settings);
+    protected AbstractMessageEventGenerator createGenerator(){
+        return new MulticastEventGenerator(this.settings);
     }
 }

@@ -1,12 +1,31 @@
 package test;
 
 import applications.DatabaseApplication;
+import core.Application;
+import core.BroadcastMessage;
+import core.Coord;
+import core.DTNHost;
+import core.DataMessage;
+import core.DisasterData;
+import core.Group;
+import core.Message;
+import core.MulticastMessage;
+import core.Settings;
 import core.SettingsError;
+import core.SimClock;
+import input.DisasterDataNotifier;
 import junit.framework.TestCase;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static junit.framework.TestCase.fail;
 
 /**
  * Contains tests for the {@link applications.DatabaseApplication} class.
@@ -15,23 +34,63 @@ import java.util.ArrayList;
  */
 public class DatabaseApplicationTest {
     private static final int NUM_TESTS = 100;
+
+    /* Properties of the application. */
     private static final long BIGGEST_DB_SIZE = 3_000_000_000L;
     private static final long SMALLEST_DB_SIZE = 2_000_000_000L;
+    private static final double MIN_UTILITY = 0.5;
+    private static final double MAP_SENDING_INTERVAL = 43.2;
+    private static final int SEED = 0;
+
+    /** Small time difference used for tests about map sending. */
+    private static final double SMALL_TIME_DIFF = 0.1;
+    private static final int TIME_IN_DISTANT_FUTURE = 10_000;
+
+    /* Number of data items used in several tests. */
+    private static final int TWO_DATA_ITEMS = 2;
+    private static final int THREE_DATA_ITEMS = 3;
+
     /** Used to check that some database sizes are completely in the interval, not on the border. */
     private static final int DISTANCE_FROM_BORDER = 10;
 
+    private static final String UNEXPECTED_NUMBER_DATA_MESSAGES = "Expected different number of data messages.";
+    private static final String EXPECTED_INITIALIZED_APPLICATION = "Application should be set up now.";
+
     private TestSettings settings = new TestSettings();
     private TestUtils utils;
+    private DatabaseApplication app;
+    private DTNHost hostAttachedToApp;
+
+    private SimClock clock = SimClock.getInstance();
+
+    public DatabaseApplicationTest() {
+        // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
+        // This is dealt with by the setUp method.
+    }
 
     @Before
     public void setUp() {
-        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.0");
-        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
+        /* Add settings for database application */
+        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
+        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
         this.settings.putSetting(
                 DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
-        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "0");
+        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
 
+        /* Create test utils. */
         this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.settings);
+
+        /* Create and initialize database application. */
+        DatabaseApplication prototype = new DatabaseApplication(this.settings);
+        this.app = new DatabaseApplication(prototype);
+        this.hostAttachedToApp = this.utils.createHost();
+        this.app.update(this.hostAttachedToApp);
+    }
+
+    @After
+    public void cleanUp() {
+        SimClock.reset();
+        Group.clearGroups();
     }
 
     @Test(expected = SettingsError.class)
@@ -65,13 +124,13 @@ public class DatabaseApplicationTest {
 
         // ...and also check for all databases whether they lie in the range.
         for (int i = 0; i < NUM_TESTS; i++) {
-            DatabaseApplication app = new DatabaseApplication(this.settings);
-            app.update(this.utils.createHost());
-            TestCase.assertTrue("Database is too large.", app.getDatabaseSize() <= BIGGEST_DB_SIZE);
-            TestCase.assertTrue("Database is too small.", app.getDatabaseSize() >= SMALLEST_DB_SIZE);
+            DatabaseApplication dbApp = new DatabaseApplication(this.settings);
+            dbApp.update(this.utils.createHost());
+            TestCase.assertTrue("Database is too large.", dbApp.getDatabaseSize() <= BIGGEST_DB_SIZE);
+            TestCase.assertTrue("Database is too small.", dbApp.getDatabaseSize() >= SMALLEST_DB_SIZE);
 
-            if (app.getDatabaseSize() > SMALLEST_DB_SIZE + DISTANCE_FROM_BORDER
-                    && app.getDatabaseSize() < BIGGEST_DB_SIZE - DISTANCE_FROM_BORDER) {
+            if (dbApp.getDatabaseSize() > SMALLEST_DB_SIZE + DISTANCE_FROM_BORDER
+                    && dbApp.getDatabaseSize() < BIGGEST_DB_SIZE - DISTANCE_FROM_BORDER) {
                 foundNonExtremeDatabase = true;
             }
         }
@@ -79,75 +138,365 @@ public class DatabaseApplicationTest {
         TestCase.assertTrue("No database had a size between range borders.", foundNonExtremeDatabase);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void testGetDatabaseSizeThrowsIfNotInitialized() {
+        DatabaseApplication uninitializedApp = new DatabaseApplication(this.settings);
+        uninitializedApp.getDatabaseSize();
+    }
+
+    @Test
     public void testGetAppId() {
-
+        TestCase.assertEquals("Unexpected App ID.", DatabaseApplication.APP_ID, this.app.getAppID());
     }
 
+    @Test
+    public void testGetUtilityThreshold() {
+        TestCase.assertEquals("Expected different utility threshold.", MIN_UTILITY, this.app.getUtilityThreshold());
+    }
+
+    @Test
+    public void testGetSeed() {
+        TestCase.assertEquals("Expected different seed.", SEED, this.app.getSeed());
+    }
+
+    @Test
+    public void testGetMapSendingInterval() {
+        TestCase.assertEquals(
+                "Expected different map sending interval.", MAP_SENDING_INTERVAL, this.app.getMapSendingInterval());
+    }
+
+    @Test
+    public void testGetDatabaseSizeRange() {
+        long[] dbSizeRange = this.app.getDatabaseSizeRange();
+        TestCase.assertEquals(
+                "Expected different number of values for a range.",
+                Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE,
+                dbSizeRange.length);
+        TestCase.assertEquals("Expected different minimum database size.", SMALLEST_DB_SIZE, dbSizeRange[0]);
+        TestCase.assertEquals("Expected different maximum database size.", BIGGEST_DB_SIZE, dbSizeRange[1]);
+    }
+
+    @Test
     public void testCopyConstructorRegistersToDisasterDataNotifier() {
+        /* Use copy constructor. */
+        DatabaseApplication copy = new DatabaseApplication(this.app);
 
+        /* Initialize the copied application. */
+        DTNHost host = this.utils.createHost();
+        copy.update(host);
+
+        /* Use notifier. */
+        DisasterData usefulData =
+                new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), host.getLocation());
+        DisasterDataNotifier.dataCreated(host, usefulData);
+
+        /* Check data was added. */
+        List<DataMessage> interestingData = copy.createDataMessages(host);
+        TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
+        TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData());
     }
 
+    @Test
     public void testCopyConstructorCopiesAllProperties() {
-
+        DatabaseApplication copy = new DatabaseApplication(this.app);
+        DatabaseApplicationTest.checkPropertiesAreEqual(this.app, copy);
     }
 
-    public void testReplicateCopiesAllProperties() {
-
+    @Test
+    public void testReplicate() {
+        Application replication = this.app.replicate();
+        TestCase.assertTrue("Wrong application type.", replication instanceof DatabaseApplication);
+        DatabaseApplicationTest.checkPropertiesAreEqual(this.app, (DatabaseApplication)replication);
     }
 
-    public void testHostIsInitializedAfterFirstUpdate() {
-
+    @Test
+    public void testApplicationIsInitializedAfterFirstUpdate() {
+        DatabaseApplication uninitializedApp = new DatabaseApplication(this.settings);
+        DatabaseApplicationTest.checkAppIsNotInitialized(uninitializedApp);
+        uninitializedApp.update(this.utils.createHost());
+        TestCase.assertNotNull(EXPECTED_INITIALIZED_APPLICATION, uninitializedApp.getDatabaseSize());
     }
 
+    @Test
+    public void testApplicationIsInitializedAfterFirstHandleMessage() {
+        DatabaseApplication uninitializedApp = new DatabaseApplication(this.settings);
+        DatabaseApplicationTest.checkAppIsNotInitialized(uninitializedApp);
+        uninitializedApp.handle(new BroadcastMessage(this.utils.createHost(), "M", 0), this.utils.createHost());
+        TestCase.assertNotNull(EXPECTED_INITIALIZED_APPLICATION, uninitializedApp.getDatabaseSize());
+    }
+
+    @Test
+    public void testApplicationIsInitializedAfterFirstCreateDataMessages() {
+        DatabaseApplication uninitializedApp = new DatabaseApplication(this.settings);
+        DatabaseApplicationTest.checkAppIsNotInitialized(uninitializedApp);
+        uninitializedApp.createDataMessages(this.utils.createHost());
+        TestCase.assertNotNull(EXPECTED_INITIALIZED_APPLICATION, uninitializedApp.getDatabaseSize());
+    }
+
+    @Test
     public void testHandleMessageStoresNewDisasterData() {
+        /* Send data message to app. */
+        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
+                DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DataMessage dataMessage = new DataMessage(
+                this.utils.createHost(), this.hostAttachedToApp, "data", usefulData, 0, 0);
+        this.app.handle(dataMessage, this.hostAttachedToApp);
+
+        /* Check data was added. */
+        List<DataMessage> interestingData = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
+        TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData());
 
     }
 
+    @Test
     public void testHandleMessageIgnoresDataMessagesToOtherRecipients() {
+        /* Send data message through app. */
+        DisasterData usefulData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DataMessage dataMessage =
+                new DataMessage(this.utils.createHost(), this.utils.createHost(), "data", usefulData, 0, 0);
+        this.app.handle(dataMessage, this.hostAttachedToApp);
 
+        /* Check no data was added. */
+        List<DataMessage> interestingData = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertEquals("Expected no data item.", 0, interestingData.size());
     }
 
+    @Test
     public void testHandleMessageDropsDataMessage() {
-
+        /* Send data message to app. */
+        DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
+                DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DataMessage dataMessage =
+                new DataMessage(this.utils.createHost(), this.hostAttachedToApp, "data", usefulData, 0, 0);
+        TestCase.assertNull(
+                "Data message should have been dropped.", this.app.handle(dataMessage, this.hostAttachedToApp));
     }
 
+    @Test
     public void testHandleMessageForwardsOtherMessageTypes() {
+        /* Create sender. */
+        DTNHost other = this.utils.createHost();
 
+        /* Create non-data messages to host. */
+        Message oneToOne = new Message(other, this.hostAttachedToApp, "M", 0);
+        Message broadcast = new BroadcastMessage(this.hostAttachedToApp, "B", 0);
+        Group group = Group.createGroup(0);
+        group.addHost(other);
+        group.addHost(this.hostAttachedToApp);
+        Message multicast = new MulticastMessage(other, group, "C", 0);
+
+        /* Make sure they are forwarded. */
+        TestCase.assertEquals(
+                "1-to-1 message should have been forwarded.",
+                oneToOne,
+                this.app.handle(oneToOne, this.hostAttachedToApp));
+        TestCase.assertEquals(
+                "Broadcast message should have been forwarded.",
+                broadcast,
+                this.app.handle(broadcast, this.hostAttachedToApp));
+        TestCase.assertEquals(
+                "Multicast message should have been forwarded.",
+                multicast,
+                this.app.handle(multicast, this.hostAttachedToApp));
     }
 
+    @Test
     public void testCreateDataMessagesCreatesCorrectMessageForEachInterestingDataItem() {
+        /* Create data. */
+        Coord currLocation = this.hostAttachedToApp.getLocation();
+        double currTime = SimClock.getTime();
+        DisasterData marker = new DisasterData(DisasterData.DataType.MARKER, 0, currTime, currLocation);
+        DisasterData resource = new DisasterData(DisasterData.DataType.RESOURCE, 0, currTime, currLocation);
+        DisasterData skill = new DisasterData(DisasterData.DataType.SKILL, 0, currTime, currLocation);
 
+        /* Add to database. */
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, marker);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, resource);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, skill);
+
+        /* Check all data items are returned as messages. */
+        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, THREE_DATA_ITEMS, messages.size());
+        TestCase.assertTrue(
+                "Expected marker to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(marker)));
+        TestCase.assertTrue(
+                "Expected resource to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(resource)));
+        TestCase.assertTrue(
+                "Expected skill to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(skill)));
     }
 
+    @Test
     public void testCreateDataMessagesOnlySendsOutInterestingData() {
+        this.clock.setTime(TIME_IN_DISTANT_FUTURE);
+        DisasterData usefulData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterData uselessData = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, new Coord(0, 0));
 
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, uselessData);
+
+        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
+        TestCase.assertTrue(
+                "Expected useful data to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(usefulData)));
+        TestCase.assertFalse(
+                "Did not expect useless data to be in a message..",
+                messages.stream().anyMatch(msg -> msg.getData().equals(uselessData)));
     }
 
+    @Test
     public void testCreateDataMessagesSendsMapOutAfterMinInterval() {
+        this.clock.setTime(MAP_SENDING_INTERVAL - SMALL_TIME_DIFF);
 
+        /* Insert map data into database. */
+        DisasterData mapData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.MAP, this.hostAttachedToApp);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, mapData);
+
+        /* Test map data is not returned shortly before interval... */
+        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
+
+        /* ... but is returned after it completed. */
+        this.clock.setTime(MAP_SENDING_INTERVAL);
+        messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
+        TestCase.assertTrue(
+                "Expected map to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(mapData)));
     }
 
-    public void testCreateDataMessagesDoesNotSendMapShortlyBeforeIntervalEnd() {
-
-    }
-
+    @Test
     public void testCreateDataMessagesMaySendOutEachMap() {
+        List<DisasterData> mapData = new ArrayList<>();
+        for (int i = 0; i < THREE_DATA_ITEMS; i++) {
+            DisasterData usefulMap =
+                    DatabaseApplicationTest.createUsefulData(DisasterData.DataType.MAP, this.hostAttachedToApp);
+            mapData.add(usefulMap);
+            DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulMap);
+        }
 
+        Set<DisasterData> mapsInMessages = new HashSet<>();
+        for (int i = 0; i < NUM_TESTS; i++) {
+            this.clock.advance(MAP_SENDING_INTERVAL + SMALL_TIME_DIFF);
+            List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+            TestCase.assertEquals("Only one map should have been sent out.", 1, messages.size());
+            mapsInMessages.add(messages.get(0).getData());
+        }
+
+        TestCase.assertEquals("Not all maps have been returned.", mapData.size(), mapsInMessages.size());
     }
 
+    @Test
     public void testSameSeedAndSameHostLeadsToSameDatabaseSize() {
-
+        DatabaseApplication app1 = new DatabaseApplication(this.settings);
+        DatabaseApplication app2 = new DatabaseApplication(this.settings);
+        app1.update(this.hostAttachedToApp);
+        app2.update(this.hostAttachedToApp);
+        TestCase.assertEquals(
+                "Expected same database size for same random seeds.",
+                app1.getDatabaseSize(),
+                app2.getDatabaseSize());
     }
 
+    @Test
     public void testDisasterDataCreatedAddsOwnDataToDatabase() {
-
+        DisasterData data =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, data);
+        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertEquals("Data was not added to database.", 1, messages.size());
+        TestCase.assertTrue(
+                "Expected created data to be in database.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(data)));
     }
 
+    @Test
     public void testDisasterDataCreatedDoesNotAddForeignDataToDatabase() {
-
+        DisasterData data =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterDataNotifier.dataCreated(this.utils.createHost(), data);
+        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
     }
 
+    @Test
     public void testDataCreatedBeforeInitializationIsAddedToDatabaseOnInitialization() {
+        /* Create uninitialized app. Use copy constructor to register as listener. */
+        DatabaseApplication uninitializedApp = new DatabaseApplication(new DatabaseApplication(this.settings));
+        DatabaseApplicationTest.checkAppIsNotInitialized(uninitializedApp);
+        DTNHost host = this.utils.createHost();
 
+        /* Notify about created data. */
+        DisasterData data1 = DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, host);
+        DisasterData data2 = DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, host);
+        DisasterDataNotifier.dataCreated(host, data1);
+        DisasterDataNotifier.dataCreated(host, data2);
+
+        /* Call create database messages and thereby initialize the application. */
+        List<DataMessage> messages = uninitializedApp.createDataMessages(host);
+
+        /* Check data was added. */
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_ITEMS, messages.size());
+        TestCase.assertTrue(
+                "Expected data to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(data1)));
+        TestCase.assertTrue(
+                "Expected data to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().equals(data2)));
+    }
+
+    /**
+     * Checks that the given app has not been initialized, i.e. is not connected to a {@link core.LocalDatabase} yet.
+     *
+     * @param uninitializedApp The app to check.
+     */
+    private static void checkAppIsNotInitialized(DatabaseApplication uninitializedApp) {
+        try {
+            uninitializedApp.getDatabaseSize();
+            fail();
+        } catch (IllegalStateException e) {
+            TestCase.assertEquals(
+                    "Expected different exception.",
+                    "Cannot get database size before application was initialized!",
+                    e.getMessage());
+        }
+    }
+
+    /**
+     * Checks that all properties that have originally be read from settings are equal for the given
+     * {@link DatabaseApplication}s.
+     *
+     * @param original The original application (expected values).
+     * @param copy The copy (checked values).
+     */
+    private static void checkPropertiesAreEqual(DatabaseApplication original, DatabaseApplication copy) {
+        TestCase.assertEquals(
+                "Expected different utility threshold.", original.getUtilityThreshold(), copy.getUtilityThreshold());
+        TestCase.assertEquals(
+                "Expected different map sending interval.",
+                original.getMapSendingInterval(),
+                copy.getMapSendingInterval());
+        TestCase.assertEquals("Expected different seed.", original.getSeed(), copy.getSeed());
+        TestCase.assertTrue(
+                "Expected different database size range.",
+                Arrays.equals(original.getDatabaseSizeRange(), copy.getDatabaseSizeRange()));
+    }
+
+    /**
+     * Creates a {@link DisasterData} object which is very useful wrt to current time and host position.
+     *
+     * @param type The type of {@link DisasterData} to create.
+     * @param host The host which decides the data's position.
+     * @return The created data.
+     */
+    private static DisasterData createUsefulData(DisasterData.DataType type, DTNHost host) {
+        return new DisasterData(type, 0, SimClock.getTime(), host.getLocation());
     }
 }

@@ -42,7 +42,7 @@ public class DatabaseApplicationUtilTest {
         this.addDatabaseApplication();
         DTNHost host = this.utils.createHost();
         TestCase.assertFalse(
-                "Database exists, but hasNoMessagesToSend returned true.",
+                "Database exists, but checking for messages to send was aborted.",
                 DatabaseApplicationUtil.hasNoMessagesToSend(host.getRouter()));
     }
 
@@ -51,7 +51,7 @@ public class DatabaseApplicationUtilTest {
         DTNHost host = this.utils.createHost();
         host.createNewMessage(new BroadcastMessage(host, "M1", 0));
         TestCase.assertFalse(
-                "Messages exist, but hasNoMessagesToSend returned true.",
+                "Messages exist, but checking for messages to send was aborted.",
                 DatabaseApplicationUtil.hasNoMessagesToSend(host.getRouter()));
     }
 
@@ -59,7 +59,7 @@ public class DatabaseApplicationUtilTest {
     public void testHasNoMessagesToSendReturnsTrueForEmptyMessageCollectionAndNoDatabaseApplication() {
         DTNHost host = this.utils.createHost();
         TestCase.assertTrue(
-                "Neither database nor messages exist, but hasNoMessagesToSend returned false.",
+                "Neither database nor messages exist, but continued checking for messages to send anyway.",
                 DatabaseApplicationUtil.hasNoMessagesToSend(host.getRouter()));
     }
 

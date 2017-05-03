@@ -78,7 +78,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     private LocalDatabase database;
 
     /** Stash for created data if attached host is not known yet. */
-    private List<Tuple<DTNHost, DisasterData>> stashedCreationData = Collections.synchronizedList(new ArrayList<>());
+    private List<Tuple<DTNHost, DisasterData>> stashedCreationData = new ArrayList<>();
 
     /** The last time when a map data item was sent to neighbors. */
     private double lastMapSendingTime;
@@ -320,4 +320,19 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         return new DatabaseApplication(this);
     }
 
+    public double getUtilityThreshold() {
+        return utilityThreshold;
+    }
+
+    public long[] getDatabaseSizeRange() {
+        return databaseSizeRange.clone();
+    }
+
+    public int getSeed() {
+        return seed;
+    }
+
+    public double getMapSendingInterval() {
+        return mapSendingInterval;
+    }
 }

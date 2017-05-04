@@ -3,7 +3,6 @@ package input;
 import core.VhmListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,7 +15,7 @@ public final class VhmEventNotifier {
     /**
      * List of VhmListeners
      */
-    private static List<VhmListener> listeners = Collections.synchronizedList(new ArrayList<VhmListener>());
+    private static List<VhmListener> listeners = new ArrayList<>();
 
     /** Private constructor to hide the implicit public one. */
     private VhmEventNotifier() {

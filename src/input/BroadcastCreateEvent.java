@@ -21,11 +21,23 @@ public class BroadcastCreateEvent extends MessageEvent {
      * @param responseSize Size of the requested response message or 0 if
      * no response is requested
      * @param time Time, when the message is created
+     * @param prio Priority of this message
      */
-    public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time) {
-        super(from, -1, id, time);
+    public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time, int prio) {
+        super(from, -1, id, time, prio);
         this.size = size;
         this.responseSize = responseSize;
+    }
+    
+    /**
+     * Creates a broadcast creation event.
+     * Using the same parameters as the previous constructor, but the priority.
+     * Used for MulticastCreateEvents without explicit priority. Therefore, gets
+     * the INVALID_PRIORITY.
+     * Calls the previous constructor.
+     */
+    public BroadcastCreateEvent(int from, String id, int size, int responseSize, double time){
+        this(from, id, size, responseSize, time, INVALID_PRIORITY);
     }
 
     /**
@@ -34,7 +46,7 @@ public class BroadcastCreateEvent extends MessageEvent {
     @Override
     public void processEvent(World world) {
         DTNHost from = world.getNodeByAddress(this.fromAddr);
-        BroadcastMessage messageToCreate = new BroadcastMessage(from, this.id, this.size);
+        BroadcastMessage messageToCreate = new BroadcastMessage(from, this.id, this.size, this.priority);
         messageToCreate.setResponseSize(this.responseSize);
         from.createNewMessage(messageToCreate);
     }

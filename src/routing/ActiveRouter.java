@@ -106,11 +106,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		DTNHost other = con.getOtherNode(getHost());
-		/* do a copy to avoid concurrent modification exceptions
-		 * (startTransfer may remove messages) */
-		ArrayList<Message> temp =
-			new ArrayList<Message>(this.getMessageCollection());
-		for (Message m : temp) {
+		for (Message m : this.getMessageCollection()) {
 			if (m.isFinalRecipient(other)) {
 				if (startTransfer(m, con) == RCV_OK) {
 					return true;

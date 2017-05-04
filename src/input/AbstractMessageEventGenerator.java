@@ -157,7 +157,7 @@ public abstract class AbstractMessageEventGenerator implements EventQueue {
     protected int drawMessageSize() {
         int sizeDiff = 0;
         if (sizeRange[0] != sizeRange[1]) {
-            sizeDiff = rng.nextInt(sizeRange[1] - sizeRange[0]);
+            sizeDiff = rng.nextInt(sizeRange[1] - sizeRange[0] + 1);
         }
         return sizeRange[0] + sizeDiff;
     }

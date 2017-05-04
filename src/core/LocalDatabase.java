@@ -3,10 +3,12 @@ package core;
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Local database which stores {@link DisasterData} along with
@@ -94,8 +96,7 @@ public class LocalDatabase {
      * @return A threshold between 0 and 1 that is 0 for empty memory and 1 for full memory.
      */
     private double computeDeletionThreshold() {
-        double usedMemoryPercentage = (double)this.usedSize / this.totalSize;
-        return Math.pow(usedMemoryPercentage, CUBIC);
+        return Math.pow(getUsedMemoryPercentage(), CUBIC);
     }
 
     /**
@@ -221,4 +222,48 @@ public class LocalDatabase {
         /* Compute utility. */
         return alpha * Math.pow(DEFAULT_BASE, -(distance/SLOWER_DECREASE_DIVISOR)) + (1-alpha) * Math.pow(gamma,-age);
     }
+
+    /**
+     * Computes the average data utility for the DataSyncReport
+     * @return average utility accross data itmes
+     */
+    public DoubleSummaryStatistics getDataUtilityStatistics(){
+        recomputeUtilitiesIfNecessary();
+        return data.values().stream().collect(Collectors.summarizingDouble(Double::doubleValue));
+    }
+
+    /**
+     * Computes the average data utility for the DataSyncReport
+     * @return average utility across data items
+     */
+    public DoubleSummaryStatistics getDataAgeStatistics(){
+        double currentTime = SimClock.getTime();
+        List<Double> ages = new ArrayList<>();
+        for (DisasterData dataItem : data.keySet()){
+            ages.add(currentTime-dataItem.getCreation());
+        }
+        return ages.stream().mapToDouble(Double::doubleValue).summaryStatistics();
+    }
+
+    /**
+     * Computes the average data utility for the DataSyncReport
+     * @return average utility accross data items
+     */
+    public DoubleSummaryStatistics getDataDistanceStatistics(){
+        Coord currentLocation = this.owner.getLocation();
+        List<Double> distances = new ArrayList<>();
+        for (DisasterData dataItem : data.keySet()){
+            distances.add(dataItem.getLocation().distance(currentLocation));
+        }
+        return distances.stream().mapToDouble(Double::doubleValue).summaryStatistics();
+    }
+
+    /**
+     * Percentage of memory that is used by data
+     * @return percentage of available memory which is used
+     */
+    public double getUsedMemoryPercentage(){
+        return (double)this.usedSize / this.totalSize;
+    }
+
 }

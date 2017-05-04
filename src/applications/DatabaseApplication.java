@@ -16,7 +16,7 @@ import routing.MessageRouter;
 import util.Tuple;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Random;
 
@@ -335,4 +335,38 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     public double getMapSendingInterval() {
         return mapSendingInterval;
     }
+
+    /**
+     * Computes the statistics about the data utility across all DisasterData items
+     * @return statistics about the data utility across all DisasterData items
+     */
+    public DoubleSummaryStatistics getDataUtilityStatistics(){
+        return database.getDataUtilityStatistics();
+    }
+
+    /**
+     * Computes the statistics about the data age across all DisasterData items
+     * @return statistics about the data age across all DisasterData items
+     */
+    public DoubleSummaryStatistics getDataAgeStatistics(){
+        return database.getDataAgeStatistics();
+    }
+
+    /**
+     * Computes the utility about the data age across all DisasterData items
+     * @return statistics about the data distance across all DisasterData items
+     */
+    public DoubleSummaryStatistics getDataDistanceStatistics(){
+        return database.getDataDistanceStatistics();
+    }
+
+    /**
+     * Percentage of memory that is used by data
+     * @return percentage of available memory which is used
+     */
+    public double getUsedMemoryPercentage(){
+        return database.getUsedMemoryPercentage();
+    }
+
+
 }

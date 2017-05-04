@@ -63,8 +63,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      */
     private static final int DATA_MESSAGE_PRIORITY = 0;
 
-    private static final double LIKELIHOOD_OF_SENDING_MAP_DATA=0.05;
-
     /* Some properties that are the same across all application instances. */
     private double utilityThreshold;
     private long[] databaseSizeRange;
@@ -200,7 +198,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     }
 
     /**
-     * Creates database synchronization messages containing data that might be interesting to neighbors.
+     * Creates database synchronization messages
      *
      * @param databaseOwner The DTNHost this instance of the application is attached to.
      * @return The created messages. They don't have a receiver yet, so {@link Message#getTo()} will return null.
@@ -210,8 +208,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         if (!this.isInitialized()) {
             this.initialize(databaseOwner);
         }
-        //Use a pseudo random number generator to only send map data with a certain probability
-        Random pseudoRandom = new Random(this.seed ^ (SEED_VARIETY_FACTOR * this.host.getAddress()));
 
         // Find all data which could be interesting for neighbors.
         List<Tuple<DisasterData, Double>> interestingData =
@@ -233,14 +229,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         DTNHost unknownReceiver = null;
         for (Tuple<DisasterData, Double> dataWithUtility : interestingData) {
             DisasterData data = dataWithUtility.getKey();
-            //Do not create DataMessages for all map data
-            //As any node has a local map, a lot of traffic would just be for maps
-            //Just send map data in 5% of all cases
-            if (data.getType()== DisasterData.DataType.MAP &&
-                    pseudoRandom.nextDouble()>LIKELIHOOD_OF_SENDING_MAP_DATA){
-                //This is not sent, do nothing for this dataItem and continue with the next candidate
-                continue;
-            }
             double utilityValue = dataWithUtility.getValue();
             DataMessage message = new DataMessage(
                     this.host, unknownReceiver, data.toString(), data, utilityValue, DATA_MESSAGE_PRIORITY);

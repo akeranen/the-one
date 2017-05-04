@@ -79,11 +79,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     /**
      * List of disasters
      */
-    private List<VhmEvent> disasters = Collections.synchronizedList(new ArrayList<VhmEvent>());
+    private List<VhmEvent> disasters = new ArrayList<VhmEvent>();
     /**
      * List of hospitals
      */
-    private List<VhmEvent> hospitals = Collections.synchronizedList(new ArrayList<VhmEvent>());
+    private List<VhmEvent> hospitals = new ArrayList<VhmEvent>();
 
     /**
      * Class containing all parameters of the {@link VoluntaryHelperMovement}.

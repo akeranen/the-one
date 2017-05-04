@@ -3,8 +3,12 @@ package test;
 import core.BroadcastMessage;
 import core.ConnectionListener;
 import core.DTNHost;
+import core.DataMessage;
+import core.DisasterData;
+import core.Group;
 import core.Message;
 import core.MessageListener;
+import core.MulticastMessage;
 import core.NetworkInterface;
 import core.SimClock;
 import org.junit.After;
@@ -34,6 +38,8 @@ public class TrafficReportTest extends AbstractReportTest {
     // Message sizes used in tests.
     private static final int BROADCAST_SIZE = 200;
     private static final int ONE_TO_ONE_SIZE = 100;
+    private static final int DATA_SIZE=300;
+    private static final int MULTICAST_SIZE= 100;
 
     private static final String EXPECTED_FIRST_LINE = "Traffic by message type:";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
@@ -145,12 +151,16 @@ public class TrafficReportTest extends AbstractReportTest {
                     "Multicast traffic should have been printed.",
                     String.format(TRAFFIC_LINE_FORMAT, Message.MessageType.MULTICAST, 0.0, 0),
                     reader.readLine());
-            // TODO: Add further types once we have them
+            Assert.assertEquals("Data synchronization traffic should be printed.",
+                    String.format(TRAFFIC_LINE_FORMAT, Message.MessageType.DATA, 0.0, 0),
+                    reader.readLine());
         }
     }
 
     @Test
     public void testReportPrintsCorrectValuesForTransferredMessages() throws IOException {
+        final int noOfMessages=5;
+
         this.clock.setTime(AFTER_WARM_UP_TIME);
 
         // Create broadcasts and 1-to-1 message.
@@ -158,20 +168,34 @@ public class TrafficReportTest extends AbstractReportTest {
         this.sender.createNewMessage(new BroadcastMessage(this.sender, "M2", BROADCAST_SIZE));
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M3", ONE_TO_ONE_SIZE));
 
+        // Create multicast message
+        // Sender and receiver have to be in a common group in order to send multicast messages
+        Group group = Group.getOrCreateGroup(1);
+        group.addHost(sender);
+        group.addHost(receiver);
+        this.sender.createNewMessage(new MulticastMessage(this.sender, group, "M4", MULTICAST_SIZE ));
+
+        //Create data and data message
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER,
+                DATA_SIZE, AFTER_WARM_UP_TIME, sender.getLocation());
+        this.sender.createNewMessage(new DataMessage(this.sender, this.receiver, "M5", data, DATA_SIZE, 1));
+
         // Transfer messages.
-        this.sender.sendMessage("M1", this.receiver);
-        this.sender.sendMessage("M2", this.receiver);
-        this.sender.sendMessage("M3", this.receiver);
-        this.receiver.messageTransferred("M1", this.sender);
-        this.receiver.messageTransferred("M2", this.sender);
-        this.receiver.messageTransferred("M3", this.sender);
+        for (int msg=1; msg<=noOfMessages; msg++){
+            this.sender.sendMessage("M"+msg, this.receiver);
+            this.receiver.messageTransferred("M"+msg, this.sender);
+        }
 
         // Compute expected percentages and totals.
         int expectedBytesBroadcast = BROADCAST_SIZE + BROADCAST_SIZE;
         int expectedBytesOneToOne = ONE_TO_ONE_SIZE;
-        int total = expectedBytesBroadcast + expectedBytesOneToOne;
+        int expectedBytesData = DATA_SIZE;
+        int expectedBytesMulticast = MULTICAST_SIZE;
+        int total = expectedBytesBroadcast + expectedBytesOneToOne + expectedBytesData + expectedBytesMulticast;
         double expectedPercentageBroadcast = (double)expectedBytesBroadcast / total * PERCENTAGE_SCALING_FACTOR;
         double expectedPercentageOneToOne = (double)expectedBytesOneToOne / total * PERCENTAGE_SCALING_FACTOR;
+        double expectedPercentageData = (double)expectedBytesData/total * PERCENTAGE_SCALING_FACTOR;
+        double expectedPercentageMulticast = (double)expectedBytesMulticast/total * PERCENTAGE_SCALING_FACTOR;
 
         // Complete report.
         this.report.done();
@@ -194,6 +218,22 @@ public class TrafficReportTest extends AbstractReportTest {
                             Message.MessageType.BROADCAST,
                             expectedPercentageBroadcast,
                             expectedBytesBroadcast),
+                    reader.readLine());
+            Assert.assertEquals(
+                    "Unexpected values for multicasts.",
+                    String.format(
+                            TRAFFIC_LINE_FORMAT,
+                            Message.MessageType.MULTICAST,
+                            expectedPercentageMulticast,
+                            expectedBytesMulticast),
+                    reader.readLine());
+            Assert.assertEquals(
+                    "Unexpected values for data messages.",
+                    String.format(
+                            TRAFFIC_LINE_FORMAT,
+                            Message.MessageType.DATA,
+                            expectedPercentageData,
+                            expectedBytesData),
                     reader.readLine());
         }
     }

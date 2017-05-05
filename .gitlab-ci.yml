@@ -28,6 +28,8 @@ sonarqube:
     GIT_STRATEGY: clone
   script:
     - ./gradlew clean test jacoco sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.projectVersion=$CI_BUILD_REF
+  tags:
+    - shared
 
 sonarqube_manual:
   stage: analyze
@@ -38,7 +40,9 @@ sonarqube_manual:
     GIT_STRATEGY: clone
   script:
     - ./gradlew clean test jacoco sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator
-  
+  tags:
+    - shared
+
 sonarqube_preview:
   stage: analyze
   variables:
@@ -46,7 +50,8 @@ sonarqube_preview:
   script:
     - ./gradlew sonarqube -Dsonar.analysis.mode=preview -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.issuesReport.console.enable=true -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref=$CI_BUILD_REF_NAME -x test
   allow_failure: true
-
+  tags:
+    - shared
 
 build:
   stage: build
@@ -71,6 +76,8 @@ build:
     - HISTORY.txt
     
   allow_failure: false
+  tags:
+    - shared
 
 # Use the generated build output to run the tests.
 test:
@@ -81,6 +88,8 @@ test:
     when: always
     paths:
     - build/reports/
+  tags:
+    - shared
 
 perl_test:
   stage: test
@@ -88,3 +97,5 @@ perl_test:
   before_script:
     - cpan IPC::System::Simple
   script: prove -v toolkit/tests
+  tags:
+    - shared

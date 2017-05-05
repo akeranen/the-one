@@ -8,4 +8,4 @@
 #CCS -m abe
 #CCS --output=out.txt
 #CCS --stderr=err.txt
-./one.sh -b 1 configurations/SettingsScenarioShort.txt
+./one.sh -b 1 configurations/evaluation/SettingsScenarioShort.txt

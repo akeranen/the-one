@@ -516,39 +516,22 @@ public abstract class MessageRouter {
 
 	/**
 	 * Sorts/shuffles the given list according to the current sending queue
-	 * mode. The list can contain either Message or Tuple<Message, Connection>
-	 * objects. Other objects cause error.
+	 * mode.
 	 * @param list The list to sort or shuffle
 	 * @return The sorted/shuffled list
 	 */
-	@SuppressWarnings(value = "unchecked") /* ugly way to make this generic */
-	protected List sortByQueueMode(List list) {
+
+	protected List<Message> sortListByQueueMode(List<Message> list) {
 		switch (sendQueueMode) {
 		case Q_MODE_RANDOM:
 			Collections.shuffle(list, new Random(SimClock.getIntTime()));
 			break;
 		case Q_MODE_FIFO:
 			Collections.sort(list,
-					new Comparator() {
+					new Comparator<Message>() {
 				/** Compares two tuples by their messages' receiving time */
-				public int compare(Object o1, Object o2) {
-					double diff;
-					Message m1, m2;
-
-					if (o1 instanceof Tuple) {
-						m1 = ((Tuple<Message, Connection>)o1).getKey();
-						m2 = ((Tuple<Message, Connection>)o2).getKey();
-					}
-					else if (o1 instanceof Message) {
-						m1 = (Message)o1;
-						m2 = (Message)o2;
-					}
-					else {
-						throw new SimError("Invalid type of objects in " +
-								"the list");
-					}
-
-					diff = m1.getReceiveTime() - m2.getReceiveTime();
+				public int compare(Message m1, Message m2) {
+					double diff= m1.getReceiveTime() - m2.getReceiveTime();
 					if (diff == 0) {
 						return 0;
 					}
@@ -563,6 +546,39 @@ public abstract class MessageRouter {
 
 		return list;
 	}
+
+	/**
+	 * Sorts/shuffles the given list according to the current sending queue
+	 * mode.
+	 * @param list The list to sort or shuffle
+	 * @return The sorted/shuffled list
+	 */
+	protected List<Tuple<Message, Connection>> sortTupleListByQueueMode(List<Tuple<Message, Connection>> list) {
+		switch (sendQueueMode) {
+			case Q_MODE_RANDOM:
+				Collections.shuffle(list, new Random(SimClock.getIntTime()));
+				break;
+			case Q_MODE_FIFO:
+				Collections.sort(list,
+						new Comparator<Tuple<Message, Connection>>() {
+							/** Compares two tuples by their messages' receiving time */
+							public int compare(Tuple<Message, Connection> t1, Tuple<Message, Connection> t2) {
+								double diff = t1.getKey().getReceiveTime() - t2.getKey().getReceiveTime();
+								if (diff == 0) {
+									return 0;
+								}
+								return (diff < 0 ? -1 : 1);
+							}
+						});
+				break;
+		/* add more queue modes here */
+			default:
+				throw new SimError("Unknown queue mode " + sendQueueMode);
+		}
+
+		return list;
+	}
+
 
 	/**
 	 * Gives the order of the two given messages as defined by the current

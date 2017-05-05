@@ -58,6 +58,9 @@ public abstract class MessageRouter {
 	/** Setting string for FIFO queue mode */
 	public static final String STR_Q_MODE_FIFO = "FIFO";
 
+	/** Error message when encountering an unkown queue mode */
+	public static final String UNKOWN_QUEUE_MODE = "Unknown queue mode ";
+
 	/* Return values when asking to start a transmission:
 	 * RCV_OK (0) means that the host accepts the message and transfer started,
 	 * values < 0 mean that the  receiving host will not accept this
@@ -541,7 +544,7 @@ public abstract class MessageRouter {
 			break;
 		/* add more queue modes here */
 		default:
-			throw new SimError("Unknown queue mode " + sendQueueMode);
+			throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
 
 		return list;
@@ -573,7 +576,7 @@ public abstract class MessageRouter {
 				break;
 		/* add more queue modes here */
 			default:
-				throw new SimError("Unknown queue mode " + sendQueueMode);
+				throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
 
 		return list;
@@ -605,7 +608,7 @@ public abstract class MessageRouter {
 			return (diff < 0 ? -1 : 1);
 		/* add more queue modes here */
 		default:
-			throw new SimError("Unknown queue mode " + sendQueueMode);
+			throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
 	}
 

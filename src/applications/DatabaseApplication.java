@@ -200,7 +200,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     }
 
     /**
-     * Creates database synchronization messages containing data that might be interesting to neighbors.
+     * Creates database synchronization messages
      *
      * @param databaseOwner The DTNHost this instance of the application is attached to.
      * @return The created messages. They don't have a receiver yet, so {@link Message#getTo()} will return null.

@@ -44,7 +44,7 @@ public class LocalDatabase {
     private HashMap<DisasterData, Double> data = new HashMap<>();
 
     /** Last sim time we recomputed the utilities */
-    private double utilitesLastComputed;
+    private double utilitiesLastComputed;
 
     /**
      * Initializes a new instance of the {@link LocalDatabase} class.
@@ -80,9 +80,9 @@ public class LocalDatabase {
 
         recomputeUtilitiesIfNecessary();
 
-        Iterator dataIterator = data.entrySet().iterator();
+        Iterator<Map.Entry<DisasterData, Double>> dataIterator = data.entrySet().iterator();
         while (dataIterator.hasNext()){
-            Map.Entry<DisasterData, Double> dataWithUtility = (Map.Entry)dataIterator.next();
+            Map.Entry<DisasterData, Double> dataWithUtility = dataIterator.next();
             if (dataWithUtility.getValue()<=deletionThreshold){
                 this.usedSize -= dataWithUtility.getKey().getSize();
                 dataIterator.remove();
@@ -161,14 +161,14 @@ public class LocalDatabase {
     private void recomputeUtilitiesIfNecessary(){
         double currentTime = SimClock.getTime();
 
-        if ((currentTime-utilitesLastComputed)>= UTILITY_COMPUTATION_INTERVAL){
+        if ((currentTime- utilitiesLastComputed)>= UTILITY_COMPUTATION_INTERVAL){
 
             Coord currentLocation = this.owner.getLocation();
             for (Map.Entry<DisasterData, Double> dataWithUtility: data.entrySet()){
                 double utility = computeUtility(dataWithUtility.getKey(), currentLocation, currentTime);
                 data.put(dataWithUtility.getKey(), utility);
             }
-            utilitesLastComputed=currentTime;
+            utilitiesLastComputed =currentTime;
         }
     }
 

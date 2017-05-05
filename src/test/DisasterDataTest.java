@@ -25,6 +25,7 @@ public class DisasterDataTest {
     private DisasterData data;
 
     public DisasterDataTest() {
+        java.util.Locale.setDefault(java.util.Locale.US);
         this.data = new DisasterData(TYPE, SIZE, CREATION, LOCATION);
         java.util.Locale.setDefault(Locale.US);
     }

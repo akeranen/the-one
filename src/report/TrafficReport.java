@@ -19,8 +19,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * ONE_TO_ONE:  10.00% (8000 Bytes)
  * BROADCASTS:  25.00% (20000 Bytes)
  * MULTICASTS:  50.00% (40000 Bytes)
- * DATABASE_SYNC:  10.00% (8000 Bytes)
- * QUERIES:   5.00% (4000 Bytes)
+ * DATA:        10.00% (8000 Bytes)
+ * QUERIES:     5.00% (4000 Bytes)
  *
  * All messages created after the warm up period will be counted. Both aborted and successful relays go into the
  * statistic.

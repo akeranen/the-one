@@ -394,7 +394,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         boolean helping = false;
 
         //shuffle the list of disasters
-        Collections.shuffle(disasters);
+        Collections.shuffle(disasters, rng);
 
         //check for each one, if the host should help there
         for(VhmEvent d : disasters) {

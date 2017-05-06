@@ -37,11 +37,12 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
     private static final Coord DATA_LOCATION= new Coord(0,0);
 
     private static final String TEST_MESSAGE_ID = "M1";
+    private static final int TEST_MESSAGE_PRIORITY = 4;
 
     private static final String EXPECTED_FIRST_LINE = "Time # Prio";
     private static final String UNEXPECTED_FIRST_LINE = "First line was not as expected.";
 
-    private static final String FORMAT_OF_M1_REPORT_LINE = "%d M1 1";
+    private static final String FORMAT_OF_M1_REPORT_LINE = "%d M1 %d";
     private static final String UNEXPECTED_CREATION_LINE = "Line for message creation was not as expected.";
     private static final String UNEXPECTED_FIRST_DELIVERY_LINE = "Line for first delivery should have been different.";
 
@@ -98,7 +99,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
-        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0));
+        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0, TEST_MESSAGE_PRIORITY));
 
         this.report.done();
         // Check output.
@@ -106,7 +107,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
             Assert.assertEquals(
                     "Report about creation should have been different.",
-                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
         }
     }
@@ -116,7 +117,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
-        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0));
+        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0, TEST_MESSAGE_PRIORITY));
 
         // Go to delivery times and transfer the message at them.
         this.clock.setTime(FIRST_DELIVERY_TIME);
@@ -130,15 +131,15 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         try(BufferedReader reader = this.createBufferedReader()) {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
             Assert.assertEquals(UNEXPECTED_CREATION_LINE,
-                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
-                    String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
             Assert.assertEquals(
                     "Report about second delivery should have been different.",
-                    String.format(FORMAT_OF_M1_REPORT_LINE, SECOND_DELIVERY_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, SECOND_DELIVERY_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
         }
     }
@@ -165,7 +166,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
 
         // Create 1-to-1 message.
         DTNHost h1 = utils.createHost();
-        h1.createNewMessage(new Message(h1, h1, TEST_MESSAGE_ID, 0));
+        h1.createNewMessage(new Message(h1, h1, TEST_MESSAGE_ID, 0, TEST_MESSAGE_PRIORITY));
 
         testReportIgnoresMessage();
     }
@@ -179,7 +180,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         DTNHost h1 = utils.createHost();
         Group g = Group.createGroup(0);
         g.addHost(h1);
-        h1.createNewMessage(new MulticastMessage(h1,g,TEST_MESSAGE_ID,0));
+        h1.createNewMessage(new MulticastMessage(h1,g,TEST_MESSAGE_ID,0, TEST_MESSAGE_PRIORITY));
 
         testReportIgnoresMessage();
     }
@@ -194,7 +195,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         DTNHost h2 = utils.createHost();
         DisasterData data = new DisasterData(DisasterData.DataType.RESOURCE, 0, AFTER_WARM_UP_TIME, DATA_LOCATION);
 
-        h1.createNewMessage(new DataMessage(h1, h2, TEST_MESSAGE_ID, data, 1,1));
+        h1.createNewMessage(new DataMessage(h1, h2, TEST_MESSAGE_ID, data, 1, TEST_MESSAGE_PRIORITY));
 
         testReportIgnoresMessage();
     }
@@ -231,7 +232,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Create broadcast at time before warm up has finished.
         this.clock.setTime(0);
         DTNHost h1 = utils.createHost();
-        h1.createNewMessage(new BroadcastMessage(h1, TEST_MESSAGE_ID, 0));
+        h1.createNewMessage(new BroadcastMessage(h1, TEST_MESSAGE_ID, 0, TEST_MESSAGE_PRIORITY));
 
         // Leave warm up time and transfer the message.
         this.clock.setTime(AFTER_WARM_UP_TIME);
@@ -244,7 +245,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_MESSAGE_LINE,
-                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME),
+                    String.format(FORMAT_OF_SIM_TIME_LINE, AFTER_WARM_UP_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
         }
     }
@@ -258,7 +259,7 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         // Go to creation time and create broadcast message.
         this.clock.setTime(CREATION_TIME);
         DTNHost sender = utils.createHost();
-        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0));
+        sender.createNewMessage(new BroadcastMessage(sender, TEST_MESSAGE_ID, 0, TEST_MESSAGE_PRIORITY));
 
         // Go to delivery times and transfer the message at them.
         DTNHost recipient = utils.createHost();
@@ -274,11 +275,11 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_CREATION_LINE,
-                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, CREATION_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_FIRST_DELIVERY_LINE,
-                    String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME),
+                    String.format(FORMAT_OF_M1_REPORT_LINE, FIRST_DELIVERY_TIME, TEST_MESSAGE_PRIORITY),
                     reader.readLine());
             Assert.assertEquals(
                     UNEXPECTED_MESSAGE_LINE,

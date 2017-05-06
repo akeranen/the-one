@@ -9,6 +9,15 @@ public class DataMessage extends Message {
     private DisasterData data;
     private double utility;
 
+    /**
+     * Initializes a new instance of the {@link DataMessage} class.
+     * @param from The message's sender.
+     * @param to The message receiver.
+     * @param id The message's ID.
+     * @param data The {@link DisasterData} this message is wrapping.
+     * @param utility Utility of the {@link DisasterData} when this message was created.
+     * @param priority Priority of the message.
+     */
     public DataMessage(DTNHost from, DTNHost to, String id, DisasterData data, double utility, int priority) {
         super(from, to, id, data.getSize(), priority);
         this.utility = utility;
@@ -26,6 +35,10 @@ public class DataMessage extends Message {
         return m;
     }
 
+    /**
+     * Gets the data this message is wrapping.
+     * @return The wrapped {@link DisasterData}.
+     */
     public DisasterData getData() {
         return data;
     }

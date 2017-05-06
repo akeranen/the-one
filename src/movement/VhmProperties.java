@@ -81,8 +81,10 @@ public class VhmProperties {
      */
     private double intensityWeight;
 
-
-
+    /**
+     * Initializes a new instance of the {@link VhmProperties} class using the given settings.
+     * @param settings Settings determining parameters for the voluntary helper movement.
+     */
     public VhmProperties(Settings settings){
         //get all of the settings from the settings file, reverting to defaults, if setting absent in the file
         isLocalHelper = settings.getBoolean(VhmProperties.IS_LOCAL_HELPER_SETTING, false);
@@ -93,6 +95,10 @@ public class VhmProperties {
         intensityWeight = settings.getDouble(INTENSITY_WEIGHT_SETTING, DEFAULT_INTENSITY_WEIGHT);
     }
 
+    /**
+     * Copy constructor for {@link VhmProperties}.
+     * @param prototype The {@link VhmProperties} instance to copy from.
+     */
     public VhmProperties(VhmProperties prototype){
         isLocalHelper = prototype.isLocalHelper;
         helpTime = prototype.helpTime;

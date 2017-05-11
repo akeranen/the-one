@@ -1,4 +1,4 @@
-set targetdir=target
+set targetdir=target\production\Simulator
 
 IF NOT EXIST "%targetdir%" mkdir %targetdir%
 

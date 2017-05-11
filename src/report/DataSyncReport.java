@@ -14,12 +14,12 @@ import java.util.List;
 /**
  * Reports statistics on database synchronization.
  *
- * In preset interval, it is checked how full the
+ * In preset intervals, it is checked how full the
  * databases are and how distant/old/useful data items are.
  *
  * Format is as follows (without line breaks for reports for each sim_time):
  *
- * Message stats for scenario dataSyncReport
+ * Data sync stats for scenario  dataSyncReport
  *
  * sim_time: 600.2000, avg_used_mem: 0.1448%, max_used_mem: 0.9012354941187346%,
  * med_avg_data_util: 0.7751, avg_data_util: 0.6233,
@@ -35,10 +35,9 @@ import java.util.List;
  * avg_data_util: The average across all hosts of the average utility of an item in a hosts database
  * med_avg_data_age: The median across all hosts of the average age of an item in a hosts database (in seconds)
  * avg_data_age: The average across all hosts of the average age of an item in a hosts database (in seconds)
- * med_max_data_age: The median across all hosts of the maximum age of an item in a hosts database (in seconds)
- * med_avg_data_dist: The median across all hosts of the average distance of an item in a hosts database
- * avg_data_dist: The average across all hosts of the average distance of an item in a hosts database
- * med_max_data_dist: The median across all hosts of the maximum age of an item in a hosts database (in seconds)
+ * med_avg_data_dist: The median across all hosts of the average distance of an item in a hosts database (in meters)
+ * avg_data_dist: The average across all hosts of the average distance of an item in a hosts database (in meters)
+ * med_max_data_dist: The median across all hosts of the maximum distance of an item in a hosts database (in meters)
  *
  * Created by Melanie Bruns on 23.04.17.
  */

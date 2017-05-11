@@ -2,8 +2,6 @@ package report;
 
 import applications.DatabaseApplication;
 import core.DTNHost;
-import core.SimClock;
-import core.UpdateListener;
 import routing.util.DatabaseApplicationUtil;
 
 import java.util.ArrayList;
@@ -23,7 +21,7 @@ import java.util.List;
  *
  * sim_time: 600.2000, avg_used_mem: 0.1448%, max_used_mem: 0.9012354941187346%,
  * med_avg_data_util: 0.7751, avg_data_util: 0.6233,
- * med_avg_data_age: 457.1799, avg_data_age: 374.9272, med_max_data_age: 600.2000,
+ * med_avg_data_age: 457.1799, avg_data_age: 374.9272,
  * med_avg_data_dist: 1915.9023, avg_data_dist: 1644.6884, med_max_data_dist: 600.2000
  * sim_time: 720.2000, ...
  *
@@ -41,18 +39,7 @@ import java.util.List;
  *
  * Created by Melanie Bruns on 23.04.17.
  */
-public class DataSyncReport extends Report implements UpdateListener{
-
-    /* Only do snapshots every x seconds, number can be specified here */
-    private static final int DATA_COLLECTION_INTERVAL =120;
-
-    /* The last point in time we gathered data */
-    private double lastDataCollection;
-
-
-    public DataSyncReport() {
-        //Empty constructor for SonarQube
-    }
+public class DataSyncReport extends SamplingReport{
 
     @Override
     protected void init(){
@@ -61,11 +48,7 @@ public class DataSyncReport extends Report implements UpdateListener{
     }
 
     @Override
-    public void updated(List<DTNHost> hosts) {
-        if (SimClock.getTime()- lastDataCollection <= DATA_COLLECTION_INTERVAL){
-            return;
-        }
-        lastDataCollection = SimClock.getTime();
+    protected void sample(List<DTNHost> hosts) {
         List<Double> averageDataAges = new ArrayList<>();
         List<Double> averageDataDistance = new ArrayList<>();
         List<Double> averageDataUtility = new ArrayList<>();
@@ -91,7 +74,7 @@ public class DataSyncReport extends Report implements UpdateListener{
             averageDataDistance.add(distanceStats.getAverage());
             averageDataUtility.add(utilityStats.getAverage());
             highestAges.add(ageStats.getMax());
-            highestDistance.add(ageStats.getMax());
+            highestDistance.add(distanceStats.getMax());
         }
         //Write out statistics gathered over all hosts with database
         write("sim_time: " + format(getSimTime()) +", "+
@@ -101,11 +84,9 @@ public class DataSyncReport extends Report implements UpdateListener{
                 "avg_data_util: " + getAverage(averageDataUtility) + ", "+
                 "med_avg_data_age: "+ getMedian(averageDataAges) + ", "+
                 "avg_data_age: "+ getAverage(averageDataAges) + ", " +
-                "med_max_data_age: " + getMedian(highestAges) + ", " +
                 "med_avg_data_dist: " + getMedian(averageDataDistance)+ ", "+
                 "avg_data_dist: " + getAverage(averageDataDistance)+ ", "+
                 "med_max_data_dist: " + getMedian(highestDistance)
-
         );
     }
 

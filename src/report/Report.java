@@ -398,12 +398,20 @@ public abstract class Report {
 		return values.get(values.size()/2);
 	}
 
+	/**
+	 * Returns the maximum of the values in the list
+	 * as a formatted string with the given numerical precision.
+	 * Return "NaN" for empty lists.
+	 *
+	 * @param values the list to search the maximum in
+	 * @return a formatted string of the maximum in the list
+	 */
 	public String getMaximum(List<Double> values){
         if (values.isEmpty()){
             return NAN;
 		}
-		double max = Collections.max(values);
-		return format(max);
+        double max = Collections.max(values);
+	    return format(max);
 	}
 
 	/**

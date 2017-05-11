@@ -2,11 +2,14 @@ package report;
 
 import applications.DatabaseApplication;
 import core.DTNHost;
+import core.DisasterData;
 import routing.util.DatabaseApplicationUtil;
 
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Reports statistics on database synchronization.
@@ -41,6 +44,13 @@ import java.util.List;
  * Created by Melanie Bruns on 23.04.17.
  */
 public class DataSyncReport extends SamplingReport{
+    private List<Double> averageDataAges = new ArrayList<>();
+    private List<Double> averageDataDistance = new ArrayList<>();
+    private List<Double> averageDataUtility = new ArrayList<>();
+    private List<Double> usedDataBasePercentage = new ArrayList<>();
+    private List<Double> highestAges = new ArrayList<>();
+    private List<Double> highestDistance = new ArrayList<>();
+    private Map<DisasterData.DataType, List<Double>> ratioByType = new EnumMap<>(DisasterData.DataType.class);
 
     private static final int RATIO_TO_PERCENT =100;
 
@@ -52,13 +62,7 @@ public class DataSyncReport extends SamplingReport{
 
     @Override
     protected void sample(List<DTNHost> hosts) {
-        List<Double> averageDataAges = new ArrayList<>();
-        List<Double> averageDataDistance = new ArrayList<>();
-        List<Double> averageDataUtility = new ArrayList<>();
-        List<Double> usedDataBasePercentage = new ArrayList<>();
-        List<Double> highestAges = new ArrayList<>();
-        List<Double> highestDistance = new ArrayList<>();
-
+        emptyLists();
         for (DTNHost host : hosts){
             //for every host check whether they have a database application
             DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(host.getRouter());
@@ -78,6 +82,11 @@ public class DataSyncReport extends SamplingReport{
             averageDataUtility.add(utilityStats.getAverage());
             highestAges.add(ageStats.getMax());
             highestDistance.add(distanceStats.getMax());
+            Map<DisasterData.DataType, Double> ratios = app.getRatioOfItemsPerDataType();
+            for (DisasterData.DataType type : DisasterData.DataType.values()){
+                List<Double> doubles = ratioByType.get(type);
+                doubles.add(ratios.get(type)* RATIO_TO_PERCENT);
+            }
         }
         //Write out statistics gathered over all hosts with database
         write("sim_time: " + format(getSimTime()) +", "+
@@ -92,6 +101,24 @@ public class DataSyncReport extends SamplingReport{
                 "avg_data_dist: " + getAverage(averageDataDistance)+ ", "+
                 "med_max_data_dist: " + getMedian(highestDistance)
         );
+        write("avg_ratio_map: " + getAverage(ratioByType.get(DisasterData.DataType.MAP)) + "%, " +
+                 "avg_ratio_marker: " + getAverage(ratioByType.get(DisasterData.DataType.MARKER)) + "%, " +
+                 "avg_ratio_skill: " + getAverage(ratioByType.get(DisasterData.DataType.SKILL)) + "%, " +
+                 "avg_ratio_res: " + getAverage(ratioByType.get(DisasterData.DataType.RESOURCE)) + "%\n "
+        );
+    }
+
+    private void emptyLists(){
+        averageDataAges.clear();
+        averageDataDistance.clear();
+        averageDataUtility.clear();
+        usedDataBasePercentage.clear();
+        highestAges.clear();
+        highestDistance.clear();
+        ratioByType.clear();
+        for (DisasterData.DataType type : DisasterData.DataType.values()){
+            ratioByType.put(type, new ArrayList<Double>());
+        }
     }
 
 }

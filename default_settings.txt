@@ -202,6 +202,7 @@ Report.report3 = BroadcastDeliveryReport
 Report.report4 = MulticastMessageDeliveryReport
 Report.report5 = TrafficReport
 Report.report6 = DataSyncReport
+DataSyncReport.precision=2
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

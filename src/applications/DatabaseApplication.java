@@ -18,6 +18,7 @@ import util.Tuple;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -370,5 +371,13 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         return database.getUsedMemoryPercentage();
     }
 
+    /**
+     * Returns the ratio of {@link DisasterData} items in the database per
+     * {@link DisasterData.DataType} to the total number of items.
+     * @return A hashmap containing a ratio between 0 and 1 for each {@link DisasterData.DataType}
+     */
+    public Map getRatioOfItemsPerDataType(){
+        return database.getRatioOfItemsPerDataType();
+    }
 
 }

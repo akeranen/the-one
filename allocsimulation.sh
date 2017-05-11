@@ -6,5 +6,4 @@
 #CCS -m abe
 #CCS --output=out.txt
 #CCS --stderr=err.txt
-rm reports/* out.txt err.txt
 ./one.sh -b 1 configurations/evaluation/settingsScenarioShort.txt

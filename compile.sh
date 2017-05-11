@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/sh
 targetdir=target/production/Simulator
 
 if [ ! -d "$targetdir" ]; then mkdir -p $targetdir; fi

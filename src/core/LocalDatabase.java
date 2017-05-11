@@ -224,8 +224,8 @@ public class LocalDatabase {
     }
 
     /**
-     * Computes the average data utility for the DataSyncReport
-     * @return average utility accross data itmes
+     * Computes statistics about the utility of all {@link DisasterData} items in this database
+     * @return statistics about the utility across all {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataUtilityStatistics(){
         recomputeUtilitiesIfNecessary();
@@ -233,8 +233,8 @@ public class LocalDatabase {
     }
 
     /**
-     * Computes the average data utility for the DataSyncReport
-     * @return average utility across data items
+     * Computes statistics about the age of all {@link DisasterData} items in this database
+     * @return statistics about the age across all {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataAgeStatistics(){
         double currentTime = SimClock.getTime();
@@ -246,8 +246,8 @@ public class LocalDatabase {
     }
 
     /**
-     * Computes the average data utility for the DataSyncReport
-     * @return average utility accross data items
+     * Computes statistics about the distance of {@link DisasterData} items in this database to the host
+     * @return statistics about the distance across all {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataDistanceStatistics(){
         Coord currentLocation = this.owner.getLocation();
@@ -259,8 +259,8 @@ public class LocalDatabase {
     }
 
     /**
-     * Percentage of memory that is used by data
-     * @return percentage of available memory which is used
+     * Percentage of memory for {@link DisasterData} which is used as a value between 0 and 1
+     * @return percentage of available memory for {@link DisasterData} which is used as a value between 0 and 1
      */
     public double getUsedMemoryPercentage(){
         return (double)this.usedSize / this.totalSize;

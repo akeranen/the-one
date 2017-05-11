@@ -4,6 +4,7 @@ import util.Tuple;
 
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -264,6 +265,31 @@ public class LocalDatabase {
      */
     public double getUsedMemoryPercentage(){
         return (double)this.usedSize / this.totalSize;
+    }
+
+    /**
+     * Returns the ratio of {@link DisasterData} items in the database per
+     * {@link DisasterData.DataType} to the total number of items.
+     * @return A hashmap containing a ratio between 0 and 1 for each {@link DisasterData.DataType}
+     */
+    public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
+        //Count the number of items per DataType
+        EnumMap<DisasterData.DataType, Integer> noPerType = new EnumMap<>(DisasterData.DataType.class);
+        noPerType.put(DisasterData.DataType.MAP, 0);
+        noPerType.put(DisasterData.DataType.MARKER, 0);
+        noPerType.put(DisasterData.DataType.SKILL, 0);
+        noPerType.put(DisasterData.DataType.RESOURCE, 0);
+        for (DisasterData dataItem : data.keySet()){
+            noPerType.put(dataItem.getType(), noPerType.get(dataItem.getType())+1);
+        }
+
+        //Calculate the ratio by dividing by the total number of items
+        double totalNoOfItems = noPerType.values().stream().mapToInt(Integer::intValue).sum();
+        EnumMap<DisasterData.DataType, Double> ratioPerType = new EnumMap<>(DisasterData.DataType.class);
+        for (Map.Entry<DisasterData.DataType, Integer> typeWithNumber: noPerType.entrySet()){
+            ratioPerType.put(typeWithNumber.getKey(), typeWithNumber.getValue()/totalNoOfItems);
+        }
+        return ratioPerType;
     }
 
 }

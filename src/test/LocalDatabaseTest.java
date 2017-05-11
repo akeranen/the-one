@@ -439,7 +439,7 @@ public class LocalDatabaseTest {
         TestCase.assertTrue("Utility for close, recent data items should be high.",
                 database.getDataUtilityStatistics().getAverage() > HIGH_UTILITY);
         //Add a second item that has positive age and distance. All statistics should be about
-        //The existing two items
+        //The existing two items, except age which should only be about maps
         DisasterData mapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
                 0, ORIGIN);
         this.database.add(mapItem);
@@ -450,15 +450,15 @@ public class LocalDatabaseTest {
                 CURR_LOCATION.distance(ORIGIN),
                 database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_AVG_AGE,
-                CURR_TIME*HALF_THE_DATA, database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
+                0, database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_MAX_AGE,
-                CURR_TIME, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
+                0, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertTrue("Maximal utility should be high.",
                 database.getDataUtilityStatistics().getMax() > HIGH_UTILITY);
         TestCase.assertTrue("The average and max utility should not be equal for two differently useful data items.",
                 database.getDataUtilityStatistics().getAverage() < database.getDataUtilityStatistics().getMax());
         //Add a third data item. As it is big and very useful, it will lead to the removal of the other map data
-        //So all statistics refer to bigMapDataItem and skillItem
+        //So all statistics refer to bigMapDataItem and skillItem. Again age statistics exclude map data.
         DisasterData bigMapDataItem = new DisasterData(DisasterData.DataType.MAP, BIG_ITEM_SIZE,
                 CURR_TIME-TIME_ENOUGH_TO_RECOMPUTE, CLOSE_TO_CURR_LOCATION);
         this.database.add(bigMapDataItem);
@@ -469,10 +469,10 @@ public class LocalDatabaseTest {
                 CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION),
                 database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals("The average data age was not computed correctly.",
-                TIME_ENOUGH_TO_RECOMPUTE*HALF_THE_DATA, database.getDataAgeStatistics().getAverage(),
+                0, database.getDataAgeStatistics().getAverage(),
                 DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals("The maximum data age was not computed correctly.",
-                TIME_ENOUGH_TO_RECOMPUTE, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
+                0, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertTrue("Maximal utility should be high.",
                 database.getDataUtilityStatistics().getMax() > HIGH_UTILITY);
         TestCase.assertTrue("Average utility should be high.",

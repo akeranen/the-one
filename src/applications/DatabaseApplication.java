@@ -345,8 +345,9 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     }
 
     /**
-     * Computes the statistics about the data age across all {@link DisasterData} items
-     * @return statistics about the data age across all {@link DisasterData} items
+     * Computes the statistics about the data age across all {@link DisasterData} items,
+     * which are not of type map
+     * @return statistics about the data age across all non-map {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataAgeStatistics(){
         return database.getDataAgeStatistics();

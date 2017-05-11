@@ -235,12 +235,16 @@ public class LocalDatabase {
 
     /**
      * Computes statistics about the age of all {@link DisasterData} items in this database
-     * @return statistics about the age across all {@link DisasterData} items
+     * which are not of {@link DisasterData.DataType} MAP
+     * @return statistics about the age across all non-map {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataAgeStatistics(){
         double currentTime = SimClock.getTime();
         List<Double> ages = new ArrayList<>();
         for (DisasterData dataItem : data.keySet()){
+            if (dataItem.getType()==DisasterData.DataType.MAP){
+                continue;
+            }
             ages.add(currentTime-dataItem.getCreation());
         }
         return ages.stream().mapToDouble(Double::doubleValue).summaryStatistics();

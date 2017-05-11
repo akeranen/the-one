@@ -398,6 +398,14 @@ public abstract class Report {
 		return values.get(values.size()/2);
 	}
 
+	public String getMaximum(List<Double> values){
+        if (values.isEmpty()){
+            return NAN;
+		}
+		double max = Collections.max(values);
+		return format(max);
+	}
+
 	/**
 	 * Returns the variance of the values in the List.
 	 *

@@ -337,32 +337,33 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     }
 
     /**
-     * Computes the statistics about the data utility across all DisasterData items
-     * @return statistics about the data utility across all DisasterData items
+     * Computes the statistics about the data utility across all {@link DisasterData} items
+     * @return statistics about the data utility across all {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataUtilityStatistics(){
         return database.getDataUtilityStatistics();
     }
 
     /**
-     * Computes the statistics about the data age across all DisasterData items
-     * @return statistics about the data age across all DisasterData items
+     * Computes the statistics about the data age across all {@link DisasterData} items
+     * @return statistics about the data age across all {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataAgeStatistics(){
         return database.getDataAgeStatistics();
     }
 
     /**
-     * Computes the utility about the data age across all DisasterData items
-     * @return statistics about the data distance across all DisasterData items
+     * Computes the statistics about the distance of the data to the host which owns the
+     * the {@link DatabaseApplication} across all {@link DisasterData} items
+     * @return statistics about the data distance across all {@link DisasterData} items
      */
     public DoubleSummaryStatistics getDataDistanceStatistics(){
         return database.getDataDistanceStatistics();
     }
 
     /**
-     * Percentage of memory that is used by data
-     * @return percentage of available memory which is used
+     * Percentage of memory available for {@link DisasterData} which is used as a value between 0 and 1
+     * @return percentage of available memory for {@link DisasterData} which is used as a value between 0 and 1
      */
     public double getUsedMemoryPercentage(){
         return database.getUsedMemoryPercentage();

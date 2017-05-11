@@ -128,6 +128,7 @@ public class MessageStatsReport extends Report implements MessageListener {
 		int numberOfRecipients;
 		switch (m.getType()) {
             case ONE_TO_ONE:
+			case DATA:
                 numberOfRecipients = 1;
                 break;
             case BROADCAST:

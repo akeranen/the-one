@@ -275,16 +275,15 @@ public class LocalDatabase {
     public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
         //Count the number of items per DataType
         EnumMap<DisasterData.DataType, Integer> noPerType = new EnumMap<>(DisasterData.DataType.class);
-        noPerType.put(DisasterData.DataType.MAP, 0);
-        noPerType.put(DisasterData.DataType.MARKER, 0);
-        noPerType.put(DisasterData.DataType.SKILL, 0);
-        noPerType.put(DisasterData.DataType.RESOURCE, 0);
+        for (DisasterData.DataType type : DisasterData.DataType.values()){
+            noPerType.put(type, 0);
+        }
         for (DisasterData dataItem : data.keySet()){
             noPerType.put(dataItem.getType(), noPerType.get(dataItem.getType())+1);
         }
 
         //Calculate the ratio by dividing by the total number of items
-        double totalNoOfItems = noPerType.values().stream().mapToInt(Integer::intValue).sum();
+        double totalNoOfItems = data.size();
         EnumMap<DisasterData.DataType, Double> ratioPerType = new EnumMap<>(DisasterData.DataType.class);
         for (Map.Entry<DisasterData.DataType, Integer> typeWithNumber: noPerType.entrySet()){
             ratioPerType.put(typeWithNumber.getKey(), typeWithNumber.getValue()/totalNoOfItems);

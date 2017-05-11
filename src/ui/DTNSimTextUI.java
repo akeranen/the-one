@@ -59,8 +59,8 @@ public class DTNSimTextUI extends DTNSimUI {
 		if (forced || (diff > UI_UP_INTERVAL)) {
 			// simulated seconds/second calc
 			double ssps = ((SimClock.getTime() - lastUpdate)*1000) / diff;
-			print(String.format("%.1f %d: %.2f 1/s", dur,
-					SimClock.getIntTime(),ssps));
+			//make sure the output is in a format that is easier to use in a csv file
+			print(dur + " " + SimClock.getIntTime() + " " + ssps);
 
 			this.lastUpdateRt = System.currentTimeMillis();
 			this.lastUpdate = SimClock.getTime();

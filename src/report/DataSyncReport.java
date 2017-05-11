@@ -41,6 +41,8 @@ import java.util.List;
  */
 public class DataSyncReport extends SamplingReport{
 
+    private static final int RATIO_TO_PERCENT =100;
+
     @Override
     protected void init(){
         super.init();
@@ -68,7 +70,7 @@ public class DataSyncReport extends SamplingReport{
             DoubleSummaryStatistics distanceStats = app.getDataDistanceStatistics();
             DoubleSummaryStatistics utilityStats = app.getDataUtilityStatistics();
             //Get used percentage of database, i.e., how much memory is used
-            usedDataBasePercentage.add(app.getUsedMemoryPercentage());
+            usedDataBasePercentage.add(app.getUsedMemoryPercentage()* RATIO_TO_PERCENT);
             //Extract info we'd like to use for report
             averageDataAges.add(ageStats.getAverage());
             averageDataDistance.add(distanceStats.getAverage());

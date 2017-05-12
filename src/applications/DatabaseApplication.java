@@ -376,7 +376,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * {@link DisasterData.DataType} to the total number of items.
      * @return A hashmap containing a ratio between 0 and 1 for each {@link DisasterData.DataType}
      */
-    public Map getRatioOfItemsPerDataType(){
+    public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
         return database.getRatioOfItemsPerDataType();
     }
 

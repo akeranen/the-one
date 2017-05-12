@@ -23,12 +23,13 @@ import java.util.Map;
 public class LocalDatabaseTest {
     private static final int DB_SIZE = 100;
 
-    /* Used location for all DB operations. */
+    /* Used locations for all DB operations. */
     private static final Coord CURR_LOCATION = new Coord(300, 400);
+    private static final Coord CLOSE_TO_CURR_LOCATION = new Coord(400, 400);
+    private static final Coord ORIGIN = new Coord(0,0);
+
     /* The current time. */
     private static final double CURR_TIME = 1800;
-
-    private static final Coord CLOSE_TO_CURR_LOCATION = new Coord(400, 400);
 
     /* Time interval that is small enough s.t. utilities should not be recomputed */
     private static final double HALF_OF_COMPUTATION_INTERVAL = 0.5;
@@ -36,18 +37,14 @@ public class LocalDatabaseTest {
     /* Time interval long enough so that utility computation is triggered */
     private static final double TIME_ENOUGH_TO_RECOMPUTE = 10;
 
-    private static final Coord ORIGIN = new Coord(0,0);
-
     /* Some utility values used in tests. */
     private static final double IMPOSSIBLE_HIGH_UTILITY = 1.1;
+    private static final double HIGH_UTILITY=0.8;
+
     /* Rounded down utility values for different data types with data created at time 0 at origin. */
     private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.91;
     private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.77;
     private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
-
-    private static final double HIGH_UTILITY=0.8;
-
-    private static final double HALF_THE_DATA=0.5;
 
     private static final String UNEXPECTED_UTILITY = "Expected different utility.";
     private static final String WRONG_USED_MEM_PERCENTAGE="The percentage of used memory was not computed correctly.";
@@ -56,12 +53,16 @@ public class LocalDatabaseTest {
     private static final String WRONG_AVG_AGE ="The average data age was not computed correctly." ;
     private static final String WRONG_MAX_AGE ="The maximum data age was not computed correctly." ;
 
+    /* Margin of error used for floating point comparisons */
     private static final double DOUBLE_COMPARISON_EXACTNESS = 0.01;
 
     /* Numbers from 1 to 3 data items that are expected to be returned in certain tests. */
     private static final int SINGLE_ITEM = 1;
     private static final int TWO_ITEMS = 2;
     private static final int ALL_ITEMS = 3;
+
+    /* Factor if something is computed for half of the data items */
+    private static final double HALF_THE_DATA=0.5;
 
     /* Sizes for data items */
     private static final int SMALL_ITEM_SIZE=20;
@@ -439,7 +440,7 @@ public class LocalDatabaseTest {
         TestCase.assertTrue("Utility for close, recent data items should be high.",
                 database.getDataUtilityStatistics().getAverage() > HIGH_UTILITY);
         //Add a second item that has positive age and distance. All statistics should be about
-        //The existing two items, except age which should only be about maps
+        //The existing two items, except age statistics which should not include map data
         DisasterData mapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
                 0, ORIGIN);
         this.database.add(mapItem);
@@ -465,13 +466,13 @@ public class LocalDatabaseTest {
         TestCase.assertEquals(WRONG_AVG_DISTANCE,
                 CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION)*HALF_THE_DATA,
                 database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("The maximum data distance was not computed correctly.",
+        TestCase.assertEquals(WRONG_MAX_DISTANCE,
                 CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION),
                 database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("The average data age was not computed correctly.",
+        TestCase.assertEquals(WRONG_AVG_AGE,
                 0, database.getDataAgeStatistics().getAverage(),
                 DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("The maximum data age was not computed correctly.",
+        TestCase.assertEquals(WRONG_MAX_AGE,
                 0, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertTrue("Maximal utility should be high.",
                 database.getDataUtilityStatistics().getMax() > HIGH_UTILITY);

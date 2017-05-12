@@ -86,7 +86,7 @@ public final class DatabaseApplicationUtil {
      * @param router The router to check for a {@link DatabaseApplication}.
      * @return The found {@link DatabaseApplication} or null if there is none.
      */
-    public static DatabaseApplication findDatabaseApplication(MessageRouter router) {
+    private static DatabaseApplication findDatabaseApplication(MessageRouter router) {
         for (Application application : router.getApplications(DatabaseApplication.APP_ID)) {
             if (application instanceof DatabaseApplication) {
                 return (DatabaseApplication)application;

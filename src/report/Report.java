@@ -409,10 +409,10 @@ public abstract class Report {
 	public String getMaximum(List<Double> values){
         if (values.isEmpty()){
             return NAN;
-		}
+        }
         double max = Collections.max(values);
-	    return format(max);
-	}
+        return format(max);
+    }
 
 	/**
 	 * Returns the variance of the values in the List.

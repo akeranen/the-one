@@ -71,6 +71,7 @@ public class LocalDatabaseTest {
     /* Factor if something is computed for a fraction of the data items */
     private static final double HALF_THE_DATA=0.5;
     private static final double A_THIRD_OF_DATA=0.333;
+    private static final double A_FOURTH_OF_DATA = 0.25;
 
     /* Sizes for data items */
     private static final int SMALL_ITEM_SIZE=20;
@@ -640,6 +641,24 @@ public class LocalDatabaseTest {
                 HALF_THE_DATA, ratioPerType.get(DisasterData.DataType.SKILL), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals("No resources should be in the database.",
                 0, ratioPerType.get(DisasterData.DataType.RESOURCE), DOUBLE_COMPARISON_EXACTNESS);
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void testRatioOfDataItemsCanIncludeAllDataTypes(){
+        for (DisasterData.DataType type : DisasterData.DataType.values()){
+            DisasterData dataItem = new DisasterData(type, SMALL_ITEM_SIZE, CURR_TIME, CURR_LOCATION);
+            database.add(dataItem);
+        }
+        Map<DisasterData.DataType, Double> ratioPerType = database.getRatioOfItemsPerDataType();
+
+        for (DisasterData.DataType type : DisasterData.DataType.values()){
+            TestCase.assertEquals("There should be exactly one item of each DataType.", A_FOURTH_OF_DATA,
+                    ratioPerType.get(type));
+        }
+
     }
 
     /**

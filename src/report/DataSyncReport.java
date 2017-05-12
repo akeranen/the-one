@@ -16,7 +16,10 @@ import java.util.Map;
  *
  * In preset intervals, it is checked how full the
  * databases are and how distant/old/useful data items are.
+ * It is also checked which ratio of the data items is of
+ * each data type (concerning the number of items, not their size).
  * Age is only checked for non-map data as map data does not age in current scenarios.
+ *
  *
  * Format is as follows (without line breaks for reports for each sim_time):
  *
@@ -30,16 +33,16 @@ import java.util.Map;
  *
  * Explanation for used metrics:
  * sim_time: The simulation time in seconds at which the statistics are computed
- * avg_used_mem: The percentage of available memory for data hosts use on average
+ * avg_used_mem: The percentage of available memory for data hosts used on average
  * max_used_mem: The highest percentage of used memory across all hosts
- * med_avg_data_util: The median across all hosts of the average utility of an item in a hosts database
- * avg_data_util: The average across all hosts of the average utility of an item in a hosts database
- * med_avg_data_age: The median across all hosts of the average age of a non-data item in a hosts database (in seconds)
- * avg_data_age: The average across all hosts of the average age of a non-data item in a hosts database (in seconds)
- * med_max_data_age: The median across all hosts of the maximum age of a non-data item in a hosts database (in seconds)
- * med_avg_data_dist: The median across all hosts of the average distance of an item in a hosts database (in meters)
- * avg_data_dist: The average across all hosts of the average distance of an item in a hosts database (in meters)
- * med_max_data_dist: The median across all hosts of the maximum distance of an item in a hosts database (in meters)
+ * med_avg_data_util: The median across all hosts of the average utility of an item in a host's database
+ * avg_data_util: The average across all hosts of the average utility of an item in a host's database
+ * med_avg_data_age: The median across all hosts of the avg age of a non-map data item in a host's database (in seconds)
+ * avg_data_age: The average across all hosts of the avg age of a non-map data item in a host's database (in seconds)
+ * med_max_data_age: The median across all hosts of the max age of a non-map data item in a host's database (in seconds)
+ * med_avg_data_dist: The median across all hosts of the average distance of an item in a host's database (in meters)
+ * avg_data_dist: The average across all hosts of the average distance of an item in a host's database (in meters)
+ * med_max_data_dist: The median across all hosts of the maximum distance of an item in a host's database (in meters)
  *
  * Created by Melanie Bruns on 23.04.17.
  */
@@ -58,11 +61,14 @@ public class DataSyncReport extends SamplingReport{
     protected void init(){
         super.init();
         write("Data sync stats for scenario " + getScenarioName() + "\n");
+        for (DisasterData.DataType type : DisasterData.DataType.values()){
+            ratioByType.put(type, new ArrayList<>());
+        }
     }
 
     @Override
     protected void sample(List<DTNHost> hosts) {
-        emptyLists();
+        clearLists();
         for (DTNHost host : hosts){
             //for every host check whether they have a database application
             DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(host.getRouter());
@@ -108,16 +114,15 @@ public class DataSyncReport extends SamplingReport{
         );
     }
 
-    private void emptyLists(){
+    private void clearLists(){
         averageDataAges.clear();
         averageDataDistance.clear();
         averageDataUtility.clear();
         usedDataBasePercentage.clear();
         highestAges.clear();
         highestDistance.clear();
-        ratioByType.clear();
         for (DisasterData.DataType type : DisasterData.DataType.values()){
-            ratioByType.put(type, new ArrayList<Double>());
+            ratioByType.get(type).clear();
         }
     }
 

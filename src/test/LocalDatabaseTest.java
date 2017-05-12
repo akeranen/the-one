@@ -12,6 +12,7 @@ import org.junit.Test;
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ public class LocalDatabaseTest {
 
     /* The current time. */
     private static final double CURR_TIME = 1800;
+    private static final double FIVE_MINS_AGO=1500;
 
     /* Time interval that is small enough s.t. utilities should not be recomputed */
     private static final double HALF_OF_COMPUTATION_INTERVAL = 0.5;
@@ -416,6 +418,48 @@ public class LocalDatabaseTest {
 
     /**
      * Tests whether the statistics about {@link DisasterData} are computed correctly.
+     * The statistics are about the distance of the data items to the host location.
+     */
+    @Test
+    public void testGetDataDistanceStatistics(){
+        //Test statistics for empty database
+        DoubleSummaryStatistics statistics = database.getDataDistanceStatistics();
+        TestCase.assertTrue("The statistics should be empty, but not null.", statistics != null);
+        TestCase.assertTrue("There should be no values in the statistics.", statistics.getCount()==0);
+        //Add a single item that was created at the current time and location
+        //It should be very useful. All statistics should just be about this item.
+        DisasterData skillItem = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE,
+                CURR_TIME, CURR_LOCATION);
+        this.database.add(skillItem);
+        TestCase.assertEquals(WRONG_AVG_DISTANCE,
+                0, database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
+        TestCase.assertEquals(WRONG_MAX_DISTANCE,
+                0, database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
+        //Add a second item that has positive age and distance. All statistics should be about the existing two items
+        DisasterData mapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
+                0, ORIGIN);
+        this.database.add(mapItem);
+        TestCase.assertEquals(WRONG_AVG_DISTANCE,
+                CURR_LOCATION.distance(ORIGIN)*HALF_THE_DATA,
+                database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
+        TestCase.assertEquals(WRONG_MAX_DISTANCE,
+                CURR_LOCATION.distance(ORIGIN),
+                database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
+        //Add a third data item. As it is big and very useful, it will lead to the removal of the other map data
+        //So all statistics refer to bigMapDataItem and skillItem.
+        DisasterData bigMapDataItem = new DisasterData(DisasterData.DataType.MAP, BIG_ITEM_SIZE,
+                CURR_TIME-TIME_ENOUGH_TO_RECOMPUTE, CLOSE_TO_CURR_LOCATION);
+        this.database.add(bigMapDataItem);
+        TestCase.assertEquals(WRONG_AVG_DISTANCE,
+                CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION)*HALF_THE_DATA,
+                database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
+        TestCase.assertEquals(WRONG_MAX_DISTANCE,
+                CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION),
+                database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
+    }
+
+    /**
+     * Tests whether the statistics about {@link DisasterData} are computed correctly.
      * The statistics are about the distance of the data items to the host location,
      * the age of the data items and the utility of the data items.
      */
@@ -426,10 +470,6 @@ public class LocalDatabaseTest {
         DisasterData skillItem = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE,
                 CURR_TIME, CURR_LOCATION);
         this.database.add(skillItem);
-        TestCase.assertEquals(WRONG_AVG_DISTANCE,
-                0, database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_DISTANCE,
-                0, database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_AVG_AGE,
                 0, database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_MAX_AGE,
@@ -444,12 +484,6 @@ public class LocalDatabaseTest {
         DisasterData mapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
                 0, ORIGIN);
         this.database.add(mapItem);
-        TestCase.assertEquals(WRONG_AVG_DISTANCE,
-                CURR_LOCATION.distance(ORIGIN)*HALF_THE_DATA,
-                database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_DISTANCE,
-                CURR_LOCATION.distance(ORIGIN),
-                database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_AVG_AGE,
                 0, database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_MAX_AGE,
@@ -461,14 +495,8 @@ public class LocalDatabaseTest {
         //Add a third data item. As it is big and very useful, it will lead to the removal of the other map data
         //So all statistics refer to bigMapDataItem and skillItem. Again age statistics exclude map data.
         DisasterData bigMapDataItem = new DisasterData(DisasterData.DataType.MAP, BIG_ITEM_SIZE,
-                CURR_TIME-TIME_ENOUGH_TO_RECOMPUTE, CLOSE_TO_CURR_LOCATION);
+                FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
         this.database.add(bigMapDataItem);
-        TestCase.assertEquals(WRONG_AVG_DISTANCE,
-                CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION)*HALF_THE_DATA,
-                database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_DISTANCE,
-                CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION),
-                database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
         TestCase.assertEquals(WRONG_AVG_AGE,
                 0, database.getDataAgeStatistics().getAverage(),
                 DOUBLE_COMPARISON_EXACTNESS);

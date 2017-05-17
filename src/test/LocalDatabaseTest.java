@@ -455,7 +455,7 @@ public class LocalDatabaseTest {
         //Add a third data item. As it is big and very useful, it will lead to the removal of the other map data
         //So all statistics refer to bigMapDataItem and skillItem.
         DisasterData bigMapDataItem = new DisasterData(DisasterData.DataType.MAP, BIG_ITEM_SIZE,
-                CURR_TIME-TIME_ENOUGH_TO_RECOMPUTE, CLOSE_TO_CURR_LOCATION);
+                FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
         this.database.add(bigMapDataItem);
         TestCase.assertEquals(WRONG_AVG_DISTANCE,
                 CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION)*HALF_THE_DATA,

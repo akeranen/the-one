@@ -58,8 +58,6 @@ public class LocalDatabaseTest {
     private static final String STATISTICS_SHOULD_NOT_BE_NULL = "The statistics should be empty, but not null.";
     private static final String STATISTICS_SHOULD_BE_EMPTY = "There should be no values in the statistics.";
 
-
-
     /* Margin of error used for floating point comparisons */
     private static final double DOUBLE_COMPARISON_EXACTNESS = 0.01;
 
@@ -68,7 +66,7 @@ public class LocalDatabaseTest {
     private static final int TWO_ITEMS = 2;
     private static final int ALL_ITEMS = 3;
 
-    /* Factor if something is computed for a fraction of the data items */
+    /* Factors if something is computed for a fraction of the data items */
     private static final double HALF_THE_DATA=0.5;
     private static final double A_THIRD_OF_DATA=0.333;
     private static final double A_FOURTH_OF_DATA = 0.25;

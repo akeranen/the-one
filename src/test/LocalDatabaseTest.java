@@ -505,13 +505,15 @@ public class LocalDatabaseTest {
      * age statistics. Map data would not be deleted when it gets old, hence it will likely
      * get older and older during the simulation and would throw off our results if we included it.
      */
+    @Test
     public void testGetDataAgeStatisticsIgnoresMapData(){
         DisasterData mapDataItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
                 FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
         this.database.add(mapDataItem);
-        DoubleSummaryStatistics statistics = database.getDataDistanceStatistics();
+        DoubleSummaryStatistics statistics = database.getDataAgeStatistics();
         TestCase.assertTrue("Map data should be ignored by age statistics.", statistics.getCount()==0);
     }
+
     /**
      * Tests whether the utility statistics about {@link DisasterData} are computed correctly.
      * The statistics are about the utility of the data items, which is computed from the

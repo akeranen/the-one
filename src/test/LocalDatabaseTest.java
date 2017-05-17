@@ -515,9 +515,9 @@ public class LocalDatabaseTest {
         TestCase.assertTrue("Map data should be ignored by age statistics.", statistics.getCount()==0);
     }
     /**
-     * Tests whether the statistics about {@link DisasterData} are computed correctly.
-     * The statistics are about the distance of the data items to the host location,
-     * the age of the data items and the utility of the data items.
+     * Tests whether the utility statistics about {@link DisasterData} are computed correctly.
+     * The statistics are about the utility of the data items, which is computed from the
+     * distance of the data items to the host location and the age of the data items.
      */
     @Test
     public void testGetDataUtilityStatistics(){

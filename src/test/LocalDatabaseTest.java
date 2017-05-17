@@ -644,7 +644,8 @@ public class LocalDatabaseTest {
     }
 
     /**
-     *
+     * Tests whether statistics about what fraction of all {@link DisasterData} items in a host's database
+     * is of a certain {@link DisasterData.DataType} are computed correctly.
      */
     @Test
     public void testRatioOfDataItemsCanIncludeAllDataTypes(){

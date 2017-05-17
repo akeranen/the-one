@@ -21,7 +21,7 @@ import java.util.Map;
  * Age is only checked for non-map data as map data does not age in current scenarios.
  *
  *
- * Format is as follows (without line breaks for reports for each sim_time):
+ * Format is as follows (excluding some line breaks):
  *
  * Data sync stats for scenario  dataSyncReport
  *
@@ -29,6 +29,7 @@ import java.util.Map;
  * med_avg_data_util: 0.7751, avg_data_util: 0.6233,
  * med_avg_data_age: 457.1799, avg_data_age: 374.9272, med_max_data_age: 600.2000,
  * med_avg_data_dist: 1915.9023, avg_data_dist: 1644.6884, med_max_data_dist: 600.2000
+ * avg_ratio_map: 13.70%, avg_ratio_marker: 3.80%, avg_ratio_skill: 4.97%, avg_ratio_res: 4.03%
  * sim_time: 720.2000, ...
  *
  * Explanation for used metrics:
@@ -43,6 +44,10 @@ import java.util.Map;
  * med_avg_data_dist: The median across all hosts of the average distance of an item in a host's database (in meters)
  * avg_data_dist: The average across all hosts of the average distance of an item in a host's database (in meters)
  * med_max_data_dist: The median across all hosts of the maximum distance of an item in a host's database (in meters)
+ * avg_ratio_map: The average across all hosts of what fraction of all items in a host's database is of type map
+ * avg_ratio_marker: The average across all hosts of what fraction of all items in a host's database is of type marker
+ * avg_ratio_skill: The average across all hosts of what fraction of all items in a host's database is of type map
+ * avg_ratio_res: The average across all hosts of what fraction of all items in a host's database is of type resource
  *
  * Created by Melanie Bruns on 23.04.17.
  */

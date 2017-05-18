@@ -62,10 +62,8 @@ public class DataSyncReport extends SamplingReport{
 
     private static final int RATIO_TO_PERCENT =100;
 
-    @Override
-    protected void init(){
-        super.init();
-        write("Data sync stats for scenario " + getScenarioName() + "\n");
+    public DataSyncReport(){
+        writeHeader();
         for (DisasterData.DataType type : DisasterData.DataType.values()){
             ratioByType.put(type, new ArrayList<>());
         }
@@ -132,6 +130,10 @@ public class DataSyncReport extends SamplingReport{
         for (DisasterData.DataType type : DisasterData.DataType.values()){
             ratioByType.get(type).clear();
         }
+    }
+
+    private void writeHeader(){
+        write("Data sync stats for scenario " + getScenarioName() + "\n");
     }
 
 }

@@ -49,6 +49,9 @@ public class EncounterValueManager {
      */
     public EncounterValueManager(Settings settings) {
         this.windowLength = settings.getDouble(WINDOW_LENGTH_S);
+        if (this.windowLength <= 0) {
+            throw new SettingsError("Window length must be positive!");
+        }
         this.agingFactor = settings.getDouble(AGING_FACTOR);
         if (this.agingFactor < 0 || this.agingFactor > 1) {
             throw new SettingsError("Aging factor has to be between 0 and 1!");

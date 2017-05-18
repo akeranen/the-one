@@ -101,6 +101,9 @@ public class DataSyncReportTest extends AbstractReportTest{
         this.report = new DataSyncReport();
     }
 
+    /**
+     * Adds all necessary settings the database application needs to function
+     */
     private void addDatabaseApplicationSettings() {
         this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
         this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
@@ -110,7 +113,7 @@ public class DataSyncReportTest extends AbstractReportTest{
     }
 
     /**
-     * Tests that during the warm up time there is no output if
+     * Tests that during the warm up time there is no output even if
      * there is data
      *
      * @throws IOException if temporary file could not be read
@@ -118,7 +121,6 @@ public class DataSyncReportTest extends AbstractReportTest{
     @Test
     @Override
     public void testReportCorrectlyHandlesWarmUpTime() throws IOException {
-
         sendDataMessageToHostWithApp();
 
         //Finish report and check whether there is nothing but the comment
@@ -131,7 +133,6 @@ public class DataSyncReportTest extends AbstractReportTest{
                     "Data sync stats for scenario TEST-Scenario", line);
             line = reader.readLine();
             assertTrue("There should not be anything but a comment", line.isEmpty());
-
         }
     }
 

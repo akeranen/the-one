@@ -73,6 +73,9 @@ public class DataSyncReport extends SamplingReport{
 
     @Override
     protected void sample(List<DTNHost> hosts) {
+        if (isWarmup()){
+            return;
+        }
         clearLists();
         for (DTNHost host : hosts){
             //for every host check whether they have a database application

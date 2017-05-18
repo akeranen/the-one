@@ -77,9 +77,7 @@ public final class BroadcastDeliveryReport extends Report implements MessageList
      * @param m Message to write the line about.
      */
     private void writeMessageLine(Message m) {
-        // TODO: Get correct priority here as soon as message priorities are implemented.
-        int priority = 1;
-        this.write(String.format("%d %s %d", (int)this.getSimTime(), m.getId(), priority));
+        this.write(String.format("%d %s %d", (int)this.getSimTime(), m.getId(), m.getPriority()));
     }
 
     /**

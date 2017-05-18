@@ -32,6 +32,9 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
     private static final int CREATION_TIME = AFTER_WARM_UP_TIME + 34;
     private static final int DELIVERY_TIME = CREATION_TIME + 56;
 
+    // A priority used in a test.
+    private static final int PRIORITY = 7;
+
     private static final String TEST_MESSAGE_ID = "M1";
 
     private static final Coord DATA_LOCATION = new Coord(0,0);
@@ -177,6 +180,28 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
         }
     }
 
+    @Test
+    public void testReportPrintsCorrectPriority() throws IOException {
+        // Skip warm up time.
+        this.clock.setTime(AFTER_WARM_UP_TIME);
+
+        // Create and deliver a message of a certain priority.
+        this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", 0, PRIORITY));
+        ImmediateMessageDelayReportTest.transferMessage("M1", this.sender, this.receiver);
+
+        // Complete report.
+        this.report.done();
+
+        // Check output for priority.
+        try(BufferedReader reader = this.createBufferedReader()) {
+            Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
+            Assert.assertEquals(
+                    "Unexpected message priority.",
+                    Integer.toString(PRIORITY),
+                    ImmediateMessageDelayReportTest.getPriorityFromLine(reader.readLine()));
+        }
+    }
+
     /**
      * Checks that messages created in warm up interval won't go into the statistic, even if they are delivered at
      * later times.
@@ -225,7 +250,8 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
         try(BufferedReader reader = this.createBufferedReader()) {
             Assert.assertEquals(UNEXPECTED_FIRST_LINE, EXPECTED_FIRST_LINE, reader.readLine());
             Assert.assertEquals("Unexpected message line.",
-                    String.format("%s 1 %d", Message.MessageType.BROADCAST, DELIVERY_TIME - CREATION_TIME),
+                    String.format("%s %d %d",
+                            Message.MessageType.BROADCAST, Message.INVALID_PRIORITY, DELIVERY_TIME - CREATION_TIME),
                     reader.readLine());
             Assert.assertEquals(UNEXPECTED_LINE, null, reader.readLine());
         }
@@ -236,6 +262,13 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
      */
     private static String getTypeFromLine(String line) {
         return line.split(" ")[0];
+    }
+
+    /**
+     * Extracts the message prioirty from a line in "type priority delay" format.
+     */
+    private static String getPriorityFromLine(String line) {
+        return line.split(" ")[1];
     }
 
     /**

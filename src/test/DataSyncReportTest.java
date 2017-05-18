@@ -12,9 +12,12 @@ import report.DataSyncReport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 
@@ -25,12 +28,22 @@ import static org.junit.Assert.*;
  * @author melanie
  */
 public class DataSyncReportTest extends AbstractReportTest{
+
     /* Properties of the database application. */
     private static final long BIGGEST_DB_SIZE = 3_000_000_000L;
     private static final long SMALLEST_DB_SIZE = 2_000_000_000L;
     private static final double MIN_UTILITY = 0.5;
     private static final double MAP_SENDING_INTERVAL = 43.2;
     private static final int SEED = 0;
+
+    /* String arrays containing all the expected metrics and ratios to check whether everything necessary is contained*/
+    private static final String[] EXPECTED_METRICS = new String[]{"avg_used_mem", "max_used_mem", "med_avg_data_util",
+            "avg_data_util", "med_avg_data_age", "avg_data_age", "med_max_data_age", "med_avg_data_dist",
+            "avg_data_dist", "med_max_data_dist"};
+    private static final String[] EXPECTED_RATIOS= new String[]{"avg_ratio_map", "avg_ratio_marker",
+            "avg_ratio_skill", "avg_ratio_res"};
+
+    private static final int TIME_FOR_A_REPORT = 61;
 
     private static final int SMALL_ITEM_SIZE = 20;
 
@@ -42,8 +55,13 @@ public class DataSyncReportTest extends AbstractReportTest{
     private DatabaseApplication app;
     private DTNHost hostAttachedToApp;
 
+    /* We will need to manually trigger the updates for UpdateListeners. The method receives a list of all hosts
+    so we store it a list of them.
+    */
+    private List<DTNHost> allHosts = new ArrayList<>();
+
     public DataSyncReportTest() {
-        // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
+        // Empty constructor for "Classes and enums with private members should have a constructor" (S1258).
         // This is dealt with by the setUp method.
     }
 
@@ -63,39 +81,45 @@ public class DataSyncReportTest extends AbstractReportTest{
         // Set locale for periods instead of commas in doubles.
         java.util.Locale.setDefault(java.util.Locale.US);
 
-        /* Add settings for database application */
+        /* Create and initialize database application. */
+        addDatabaseApplicationSettings();
+        this.app = new DatabaseApplication(this.settings);
+
+        //Create Test Utils for host creation
+        this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), settings);
+
+        this.hostAttachedToApp = this.utils.createHost("hostWithDB1");
+        this.app.update(this.hostAttachedToApp);
+        hostAttachedToApp.getRouter().addApplication(app);
+        allHosts.add(hostAttachedToApp);
+
+        // Create report
+        this.report = new DataSyncReport();
+    }
+
+    private void addDatabaseApplicationSettings() {
         this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
         this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
         this.settings.putSetting(
                 DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
         this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
-
-        //Create Test Utils for host creation
-        this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), settings);
-
-        /* Create and initialize database application. */
-        this.app = new DatabaseApplication(this.settings);
-        this.hostAttachedToApp = this.utils.createHost();
-        this.app.update(this.hostAttachedToApp);
-
-        // Create report and set it as an update listener.
-        this.report = new DataSyncReport();
-        SimScenario.getInstance().addUpdateListener(this.report);
     }
 
+    /**
+     * Tests that during the warm up time there is no output if
+     * there is data
+     *
+     * @throws IOException if temporary file could not be read
+     */
     @Test
     @Override
     public void testReportCorrectlyHandlesWarmUpTime() throws IOException {
-        //Send data to host with the app during warm up time
-        DTNHost sendingHost = utils.createHost(ORIGIN);
-        DisasterData data = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE, 0, ORIGIN);
-        DataMessage msg = new DataMessage(sendingHost, hostAttachedToApp, "d1", data, 1, 1);
-        sendingHost.createNewMessage(msg);
-        sendingHost.sendMessage("d1", hostAttachedToApp);
-        hostAttachedToApp.messageTransferred("d1", sendingHost);
-        app.update(hostAttachedToApp);
+
+        sendDataMessageToHostWithApp();
 
         //Finish report and check whether there is nothing but the comment
+        SimClock.getInstance().setTime(TIME_FOR_A_REPORT);
+        report.updated(allHosts);
         this.report.done();
         try (BufferedReader reader = this.createBufferedReader()) {
             String line = reader.readLine();
@@ -108,20 +132,40 @@ public class DataSyncReportTest extends AbstractReportTest{
     }
 
     /**
-     * Tests that message events creating and delivery are counted correctly.
+     * Tests that the report includes all relevant statistics and the sim time
      *
      * @throws IOException If the temporary file cannot be opened, read or closed.
      */
     @Test
-    public void testDoneCorrectlyCountsMessageEvents() throws IOException {
+    public void testIncludesAllNecessaryStatistics() throws IOException {
         this.skipWarmUpTime();
+        sendDataMessageToHostWithApp();
 
-        //TODO
+        //One host should have one data item now, another none
+        SimClock.getInstance().setTime(TIME_FOR_A_REPORT);
+        report.updated(allHosts);
         this.report.done();
 
         try (BufferedReader reader = this.createBufferedReader()) {
+            String line = reader.readLine();
             assertEquals("First comment line is not as expected.",
-                    "Data sync stats for scenario TEST-Scenario", reader.readLine());
+                    "Data sync stats for scenario TEST-Scenario", line);
+            line = reader.readLine();
+            line = reader.readLine();
+            assertTrue("There should some statistics now", !line.isEmpty());
+            //Check whether the sim time was printed
+            assertTrue(line.contains("sim_time"));
+            //Check whether all metrics are in the first line
+            for (String metric : EXPECTED_METRICS){
+                assertTrue("Metrics should include " + metric + ".",
+                        line.contains(metric));
+            }
+            //Check whether all ratios are contained in the second line
+            line = reader.readLine();
+            for (String ratio : EXPECTED_RATIOS){
+                assertTrue("Metrics should include " + ratio + ".",
+                        line.contains(ratio));
+            }
         }
     }
 
@@ -135,14 +179,25 @@ public class DataSyncReportTest extends AbstractReportTest{
         return DataSyncReport.class;
     }
 
-    @After
+
     /**
      * SimScenario was called by DataSyncReport and therefore initiated with this specific test's settings.
      * Cleanup to make further tests with other settings possible.
      */
+    @After
     public void cleanUp() {
         SimScenario.reset();
         SimClock.reset();
     }
 
+    private void sendDataMessageToHostWithApp(){
+        DTNHost sendingHost = utils.createHost(ORIGIN,"hostWithoutDB");
+        allHosts.add(sendingHost);
+        DisasterData data = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE, 0, ORIGIN);
+        DataMessage msg = new DataMessage(sendingHost, hostAttachedToApp, "d1", data, 1, 1);
+        sendingHost.createNewMessage(msg);
+        sendingHost.sendMessage("d1", hostAttachedToApp);
+        hostAttachedToApp.messageTransferred("d1", sendingHost);
+        app.handle(msg, hostAttachedToApp);
+    }
 }

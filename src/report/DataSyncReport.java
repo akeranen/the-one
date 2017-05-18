@@ -46,7 +46,7 @@ import java.util.Map;
  * med_max_data_dist: The median across all hosts of the maximum distance of an item in a host's database (in meters)
  * avg_ratio_map: The average across all hosts of what fraction of all items in a host's database is of type map
  * avg_ratio_marker: The average across all hosts of what fraction of all items in a host's database is of type marker
- * avg_ratio_skill: The average across all hosts of what fraction of all items in a host's database is of type map
+ * avg_ratio_skill: The average across all hosts of what fraction of all items in a host's database is of type skill
  * avg_ratio_res: The average across all hosts of what fraction of all items in a host's database is of type resource
  *
  * Created by Melanie Bruns on 23.04.17.

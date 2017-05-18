@@ -158,7 +158,7 @@ public class DataSyncReportTest extends AbstractReportTest{
             line = reader.readLine();
             assertTrue("There should some statistics now", !line.isEmpty());
             //Check whether the sim time was printed
-            assertTrue(line.contains("sim_time"));
+            assertTrue("The simulation time should be included.", line.contains("sim_time"));
             //Check whether all metrics are in the first line
             for (String metric : EXPECTED_METRICS){
                 assertTrue("Metrics should include " + metric + ".",

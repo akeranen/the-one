@@ -70,6 +70,7 @@ public class SimMap implements Serializable {
                 nodesMap.put(node.getLocation(), node); // re-hash
             }
         }
+        needsRehash = false; //since it has been re-hashed before
 
         return nodesMap.get(c);
     }

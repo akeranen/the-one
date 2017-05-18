@@ -44,11 +44,18 @@ public class DataSyncReportTest extends AbstractReportTest{
     private static final String[] EXPECTED_RATIOS= new String[]{"avg_ratio_map", "avg_ratio_marker",
             "avg_ratio_skill", "avg_ratio_res"};
 
+    private static final String EXPECTED_FIRST_LINE="Data sync stats for scenario TEST-Scenario";
+    private static final String COMMENT_LINE_WRONG="Comment line is not as expected.";
+
+    private static final double TIME_COMPARISON_EXACTNESS = 0.1;
+
+    /* Time values used to check whether reports should be printed */
     private static final double REPORT_INTERVAL = 30;
+    private static final double HALF_THE_REPORT_INTERVAL= REPORT_INTERVAL/2;
     private static final int TIME_FOR_A_REPORT = 31;
 
+    /* Properties for DisasterData and DataMessages */
     private static final int SMALL_ITEM_SIZE = 20;
-
     private static final Coord ORIGIN = new Coord(0,0);
 
     private DataSyncReport report;
@@ -129,10 +136,10 @@ public class DataSyncReportTest extends AbstractReportTest{
         this.report.done();
         try (BufferedReader reader = this.createBufferedReader()) {
             String line = reader.readLine();
-            assertEquals("First comment line is not as expected.",
-                    "Data sync stats for scenario TEST-Scenario", line);
+            assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
             line = reader.readLine();
-            assertTrue("There should not be anything but a comment", line.isEmpty());
+            line = reader.readLine();
+            assertTrue("There should not be anything but a comment", line==null);
         }
     }
 
@@ -152,8 +159,7 @@ public class DataSyncReportTest extends AbstractReportTest{
 
         try (BufferedReader reader = this.createBufferedReader()) {
             String line = reader.readLine();
-            assertEquals("First comment line is not as expected.",
-                    "Data sync stats for scenario TEST-Scenario", line);
+            assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
             line = reader.readLine();
             line = reader.readLine();
             assertTrue("There should some statistics now", !line.isEmpty());
@@ -172,6 +178,47 @@ public class DataSyncReportTest extends AbstractReportTest{
             }
         }
     }
+
+    @Test
+    public void testReportPrintsInCorrectIntervals() throws IOException {
+        this.skipWarmUpTime();
+        sendDataMessageToHostWithApp();
+
+        //We should write the statistics for the current time
+        report.updated(allHosts);
+
+        //Not time to output statistics yet
+        SimClock.getInstance().advance(HALF_THE_REPORT_INTERVAL);
+        report.updated(allHosts);
+
+        //Time to output statistics again
+        SimClock.getInstance().advance(HALF_THE_REPORT_INTERVAL);
+        report.updated(allHosts);
+
+        this.report.done();
+
+        try (BufferedReader reader = this.createBufferedReader()) {
+            String line = reader.readLine();
+            assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
+            line = reader.readLine();
+            line = reader.readLine();
+            assertEquals("The first output should be at sim_time", WARM_UP_TIME+1,
+                    getSimTimeValueFrom(line), TIME_COMPARISON_EXACTNESS);
+            //The second line still belongs to the same time
+            line = reader.readLine();
+            line = reader.readLine();
+            line = reader.readLine();
+            assertEquals("The second output should be at sim_time", WARM_UP_TIME+REPORT_INTERVAL+1,
+                    getSimTimeValueFrom(line), TIME_COMPARISON_EXACTNESS);
+            //The line still belongs to the same time
+            line = reader.readLine();
+            line = reader.readLine();
+            line = reader.readLine();
+            assertTrue("There should only be two outputs", line==null);
+
+        }
+    }
+
 
     /**
      * Gets the report class to test.
@@ -203,5 +250,17 @@ public class DataSyncReportTest extends AbstractReportTest{
         sendingHost.sendMessage("d1", hostAttachedToApp);
         hostAttachedToApp.messageTransferred("d1", sendingHost);
         app.handle(msg, hostAttachedToApp);
+    }
+
+    private static double getSimTimeValueFrom(String line) {
+        //If we do not have sime time, return a value that we never expect
+        if (!line.contains("sim_time")){
+            return -1;
+        }
+        final int extraChars=2;
+        int firstIndex = line.indexOf(':')+extraChars;
+        int lastIndex = line.indexOf(',');
+        String numberString = line.substring(firstIndex,lastIndex);
+        return Double.parseDouble(numberString);
     }
 }

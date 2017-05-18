@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import report.SamplingReport;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +44,8 @@ public class DataSyncReportTest extends AbstractReportTest{
     private static final String[] EXPECTED_RATIOS= new String[]{"avg_ratio_map", "avg_ratio_marker",
             "avg_ratio_skill", "avg_ratio_res"};
 
-    private static final int TIME_FOR_A_REPORT = 61;
+    private static final double REPORT_INTERVAL = 30;
+    private static final int TIME_FOR_A_REPORT = 31;
 
     private static final int SMALL_ITEM_SIZE = 20;
 
@@ -77,6 +79,8 @@ public class DataSyncReportTest extends AbstractReportTest{
         // Make SimScenario usage possible.
         SimScenario.reset();
         TestSettings.addSettingsToEnableSimScenario(settings);
+        this.settings.putSetting(getReportClass().getSimpleName() + "." + SamplingReport.SAMPLE_INTERVAL_SETTING,
+                Double.toString(REPORT_INTERVAL));
 
         // Set locale for periods instead of commas in doubles.
         java.util.Locale.setDefault(java.util.Locale.US);
@@ -88,7 +92,7 @@ public class DataSyncReportTest extends AbstractReportTest{
         //Create Test Utils for host creation
         this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), settings);
 
-        this.hostAttachedToApp = this.utils.createHost("hostWithDB1");
+        this.hostAttachedToApp = this.utils.createHost("hostWithDB");
         this.app.update(this.hostAttachedToApp);
         hostAttachedToApp.getRouter().addApplication(app);
         allHosts.add(hostAttachedToApp);
@@ -142,7 +146,6 @@ public class DataSyncReportTest extends AbstractReportTest{
         sendDataMessageToHostWithApp();
 
         //One host should have one data item now, another none
-        SimClock.getInstance().setTime(TIME_FOR_A_REPORT);
         report.updated(allHosts);
         this.report.done();
 

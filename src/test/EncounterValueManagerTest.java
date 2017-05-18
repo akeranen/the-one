@@ -1,8 +1,6 @@
 package test;
 
 import core.SettingsError;
-import core.SimClock;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import routing.util.EncounterValueManager;
@@ -12,21 +10,15 @@ import routing.util.EncounterValueManager;
  *
  * Created by Britta Heymann on 18.05.2017.
  */
-public class EncounterValueManagerTest {
-    /** The window length used for the tested {@link EncounterValueManager}. */
-    private static final double WINDOW_LENGTH = 21.3;
+public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTest {
     /** The weight the current window counter gets when updating the encounter value. */
     private static final double NEW_DATA_WEIGHT = 0.3;
 
     /* Some values needed for tests. */
     private static final double WEIGHT_GREATER_ONE = 1.1;
-    private static final double SHORT_TIME_SPAN = 0.1;
     private static final int TWO_ENCOUNTERS = 2;
     private static final double SOME_ENCOUNTER_VALUE = 0.2;
     private static final double EQUAL_SOCIAL_LEVEL = 0.5;
-
-    /** Acceptable delta on assertEquals comparisons. */
-    private static final double DOUBLE_COMPARISON_DELTA = 0.00001;
 
     private static final String EXPECTED_DIFFERENT_VALUE = "Unexpected encounter value.";
     private static final String EXPECTED_DIFFERENT_RATIO = "Unexpected encounter value ratio.";
@@ -35,13 +27,7 @@ public class EncounterValueManagerTest {
     private EncounterValueManager evManager =
             EncounterValueManagerTest.createEncounterValueManager(NEW_DATA_WEIGHT, WINDOW_LENGTH);
 
-    private SimClock clock = SimClock.getInstance();
-
-    @After
-    public void reset() {
-        this.clock.setTime(0);
-    }
-
+    @Override
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForWindowLengthZero() {
         EncounterValueManagerTest.createEncounterValueManager(NEW_DATA_WEIGHT, 0);
@@ -57,11 +43,16 @@ public class EncounterValueManagerTest {
         EncounterValueManagerTest.createEncounterValueManager(WEIGHT_GREATER_ONE, WINDOW_LENGTH);
     }
 
+    /**
+     * Checks that {@link EncounterValueManager#getEncounterValue()} returns 0 if it was never updated.
+     */
+    @Override
     @Test
-    public void testNeverUpdatedEncounterValueIsZero() {
+    public void testNeverUpdatedRatingMechanismIsCorrect() {
         Assert.assertEquals(EXPECTED_DIFFERENT_VALUE, 0, this.evManager.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
     }
 
+    @Override
     @Test
     public void testUpdateHappensAfterTimeWindowCompletes() {
         // Remember original encounter value.
@@ -89,8 +80,12 @@ public class EncounterValueManagerTest {
                 originalEncounterValue, encounterValueAtTimeWindowEnd, DOUBLE_COMPARISON_DELTA);
     }
 
+    /**
+     * Checks that the encounter value is updated correctly.
+     */
+    @Override
     @Test
-    public void testEncounterValueIsUpdatedCorrectly() {
+    public void testRatingMechanismIsUpdatedCorrectly() {
         // Add encounter.
         this.evManager.addEncounter();
 
@@ -153,8 +148,9 @@ public class EncounterValueManagerTest {
      * Makes sure not only the first encounter value update after the first time window works, but also later ones
      * (i. e. current window counter is set back).
      */
+    @Override
     @Test
-    public void testConsecutiveEncounterValueUpdatesWork() {
+    public void testConsecutiveUpdatesWork() {
         this.evManager.addEncounter();
         this.clock.setTime(WINDOW_LENGTH);
         this.evManager.update();

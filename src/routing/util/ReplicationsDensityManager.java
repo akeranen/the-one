@@ -1,13 +1,13 @@
 package routing.util;
 
+import core.DTNHost;
 import core.Message;
 import core.Settings;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * Manages a host's replications densities. Replications density is a rating mechanism to measure the rate of hosts
@@ -21,12 +21,29 @@ import java.util.stream.Collectors;
  */
 public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism {
     /**
+     * The default replications density value if nothing is known about a message because we haven't observed it
+     * long enough.
+     */
+    private static final double UNKNOWN_REPLICATIONS_DENSITY = 0.5;
+
+    /**
      * Replications densities mapped to message IDs.
      */
     private Map<String, Double> replicationsDensities = new HashMap<>();
 
-    private Map<String, Integer> encounteredMessagesInTimeWindow = new HashMap<>();
-    private int encountersInTimeWindow;
+    /**
+     * Remembers which message IDs have been stored by which hosts we encountered in the time window.
+     *
+     * It is not sufficient to just count the number of times we have seen the message here, because we might meet some
+     * hosts multiple times and don't want to count the messages they carry more than once. We are also not able to just
+     * look at messages of hosts we haven't met before in the time window, because a host's messages may change between
+     * meetings and we might therefore miss messages if we do so.
+     */
+    private Map<String, Set<DTNHost>> encounteredMessagesInTimeWindow = new HashMap<>();
+    /**
+     * Remembers all hosts we have encountered in the time window.
+     */
+    private Set<DTNHost> uniqueEncountersInTimeWindow = new HashSet<>();
 
     /**
      * Initializes a new instance of the {@link ReplicationsDensityManager} class.
@@ -45,21 +62,20 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
 
     /**
      * Adds a new encounter that will be considered when computing the replications densities.
-     * @param knownMessages The messages known to the encountered node.
+     * @param host The encountered host.
      */
-    public void addEncounter(Collection<Message> knownMessages) {
-        // Update total encounter number.
-        this.encountersInTimeWindow++;
+    public void addEncounter(DTNHost host) {
+        // Update unique encounters.
+        this.uniqueEncountersInTimeWindow.add(host);
 
-        // For each known message ID we care about, update the message encounter number.
-        List<String> knownMessageIds =
-                knownMessages.stream().map(Message::getId).distinct().collect(Collectors.toList());
-        for (String msgId : knownMessageIds) {
-            // Don't add values for messages the host will never request the replications density for because it does
-            // not have it in buffer.
-            if (this.replicationsDensities.containsKey(msgId)) {
-                int currEncounterNumber = this.encounteredMessagesInTimeWindow.getOrDefault(msgId, 0);
-                this.encounteredMessagesInTimeWindow.put(msgId, currEncounterNumber + 1);
+        // For each known message ID we care about, update the encountered messages.
+        for (Message msg : host.getMessageCollection()) {
+            // Don't add messages for message IDs the host will never request the replications density for because it
+            // does not have it in buffer.
+            if (this.replicationsDensities.containsKey(msg.getId())) {
+                this.encounteredMessagesInTimeWindow.putIfAbsent(msg.getId(), new HashSet<>());
+                Set<DTNHost> hostsWithMessages = this.encounteredMessagesInTimeWindow.get(msg.getId());
+                hostsWithMessages.add(host);
             }
         }
     }
@@ -83,21 +99,25 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
      */
     @Override
     protected void updateRatingMechanism() {
-        // Update all replications densities:
+        // Keep old values if node was isolated.
+        if (uniqueEncountersInTimeWindow.isEmpty()) {
+            return;
+        }
+
+        // Else, update all replications densities:
+        int numberUniqueEncounters = this.uniqueEncountersInTimeWindow.size();
         for (String msgId : this.replicationsDensities.keySet()) {
-            double newReplicationsDensity = 0;
-            // If some hosts were met:
-            if (this.encountersInTimeWindow != 0) {
-                // Set replications density for a message to the rate of hosts met with that message.
-                newReplicationsDensity =
-                        (double) this.encounteredMessagesInTimeWindow.get(msgId) / this.encountersInTimeWindow;
-            }
+            // Set replications density for a message to the rate of hosts met with that message.
+            double newReplicationsDensity =
+                (double) this.encounteredMessagesInTimeWindow.get(msgId).size() / numberUniqueEncounters;
             this.replicationsDensities.put(msgId, newReplicationsDensity);
         }
 
         // Clear time window variables.
-        this.encountersInTimeWindow = 0;
-        this.encounteredMessagesInTimeWindow.clear();
+        this.uniqueEncountersInTimeWindow.clear();
+        for (Map.Entry<String, Set<DTNHost>> entry : this.encounteredMessagesInTimeWindow.entrySet()) {
+            entry.getValue().clear();
+        }
     }
 
     /**
@@ -107,7 +127,7 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
      * @param messageId Message ID to add.
      */
     public void addMessage(String messageId) {
-        this.replicationsDensities.putIfAbsent(messageId, 0D);
+        this.replicationsDensities.putIfAbsent(messageId, UNKNOWN_REPLICATIONS_DENSITY);
     }
 
     /**

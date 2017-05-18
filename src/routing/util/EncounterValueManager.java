@@ -92,4 +92,11 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
         }
         return otherEncounterValue / (this.encounterValue + otherEncounterValue);
     }
+
+    /**
+     * Returns the aging factor, i.e. the weight new data gets on updates.
+     */
+    public double getAgingFactor() {
+        return this.agingFactor;
+    }
 }

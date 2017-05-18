@@ -2,6 +2,7 @@ package test;
 
 import core.SimClock;
 import org.junit.After;
+import routing.util.AbstractIntervalRatingMechanism;
 
 /**
  * Base test class of tests testing classes extending {@link routing.util.AbstractIntervalRatingMechanism}.
@@ -29,6 +30,16 @@ public abstract class AbstractIntervalRatingMechanismTest {
      * provided.
      */
     public abstract void testConstructorThrowsForWindowLengthZero();
+
+    /**
+     * Tests that the copy constructor copies everything important over.
+     */
+    public abstract void testCopyConstructor();
+
+    /**
+     * Checks that {@link AbstractIntervalRatingMechanism#getWindowLength()} returns the correct value.
+     */
+    public abstract void testGetWindowLength();
 
     /**
      * Tests that the value returned if the rating mechanism has never been updated is correct.

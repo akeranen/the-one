@@ -44,6 +44,39 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
     }
 
     /**
+     * Tests that the copy constructor copies everything important over.
+     */
+    @Override
+    @Test
+    public void testCopyConstructor() {
+        EncounterValueManager copy = new EncounterValueManager(this.evManager);
+        Assert.assertEquals(
+                "Window length was not copied.",
+                this.evManager.getWindowLength(), copy.getWindowLength(), DOUBLE_COMPARISON_DELTA);
+        Assert.assertEquals(
+                "Aging factor was not copied.",
+                this.evManager.getAgingFactor(), copy.getAgingFactor(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
+     * Checks that {@link EncounterValueManager#getWindowLength()} returns the correct value.
+     */
+    @Override
+    @Test
+    public void testGetWindowLength() {
+        Assert.assertEquals(
+                "Expected different window length.",
+                WINDOW_LENGTH, this.evManager.getWindowLength(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    @Test
+    public void testGetAgingFactor() {
+        Assert.assertEquals(
+                "Expected different aging factor.",
+                NEW_DATA_WEIGHT, this.evManager.getAgingFactor(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
      * Checks that {@link EncounterValueManager#getEncounterValue()} returns 0 if it was never updated.
      */
     @Override

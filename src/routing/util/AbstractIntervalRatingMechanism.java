@@ -48,6 +48,14 @@ public abstract class AbstractIntervalRatingMechanism {
     }
 
     /**
+     * Returns the window length.
+     * @return The window length.
+     */
+    public double getWindowLength() {
+        return this.windowLength;
+    }
+
+    /**
      * Updates the rating mechanism after a time window has ended.
      */
     protected abstract void updateRatingMechanism();

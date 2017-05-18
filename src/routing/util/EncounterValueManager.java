@@ -2,7 +2,6 @@ package routing.util;
 
 import core.Settings;
 import core.SettingsError;
-import core.SimClock;
 
 /**
  * Manages a node's encounter value, a rating mechanism to measure a host's popularity.
@@ -12,14 +11,7 @@ import core.SimClock;
  *
  * Created by Britta Heymann on 14.05.2017.
  */
-public class EncounterValueManager {
-    /**
-     * Length of a time window in seconds -setting id ({@value}).
-     * How many seconds a time window lasts. After each time window, the encounter value gets updated using the most
-     * recent data.
-     */
-    public static final String WINDOW_LENGTH_S = "windowLength";
-
+public class EncounterValueManager extends AbstractIntervalRatingMechanism {
     /**
      * Importance of recent encounters relative to previous encounters -setting id ({@value}).
      * A value between 0 and 1.
@@ -36,36 +28,29 @@ public class EncounterValueManager {
      */
     private static final double NO_ENCOUNTERS = 0.000001;
 
-    private double windowLength;
     private double agingFactor;
 
     private double encounterValue;
     private int currentWindowCounter;
-    private double nextWindowEnd;
 
     /**
      * Initializes a new instance of the {@link EncounterValueManager} class.
      * @param settings Settings to use.
      */
     public EncounterValueManager(Settings settings) {
-        this.windowLength = settings.getDouble(WINDOW_LENGTH_S);
-        if (this.windowLength <= 0) {
-            throw new SettingsError("Window length must be positive!");
-        }
+        super(settings);
         this.agingFactor = settings.getDouble(AGING_FACTOR);
         if (this.agingFactor < 0 || this.agingFactor > 1) {
             throw new SettingsError("Aging factor has to be between 0 and 1!");
         }
-        this.nextWindowEnd = windowLength;
     }
 
     /**
      * Copy constructor. All constants are copied over, but the encounter ratios are not.
      */
     public EncounterValueManager(EncounterValueManager manager) {
-        this.windowLength = manager.windowLength;
+        super(manager);
         this.agingFactor = manager.agingFactor;
-        this.nextWindowEnd = manager.nextWindowEnd;
     }
 
     /**
@@ -85,15 +70,12 @@ public class EncounterValueManager {
 
     /**
      * Updates the encounter value if a time window has ended.
-     * Call this method in each simulation step.
      */
-    public void update() {
-        while (SimClock.getTime() >= this.nextWindowEnd) {
-            this.encounterValue =
-                    this.agingFactor * this.currentWindowCounter + (1 - this.agingFactor) * this.encounterValue;
-            this.currentWindowCounter = 0;
-            this.nextWindowEnd += this.windowLength;
-        }
+    @Override
+    protected void updateRatingMechanism() {
+        this.encounterValue =
+                this.agingFactor * this.currentWindowCounter + (1 - this.agingFactor) * this.encounterValue;
+        this.currentWindowCounter = 0;
     }
 
     /**

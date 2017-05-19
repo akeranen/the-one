@@ -251,10 +251,11 @@ public class DataSyncReportTest extends AbstractReportTest{
         if (!line.contains("sim_time")){
             return -1;
         }
-        final int extraChars=2;
-        int firstIndex = line.indexOf(':')+extraChars;
-        int lastIndex = line.indexOf(',');
-        String numberString = line.substring(firstIndex,lastIndex);
+        int firstIndex = line.indexOf("sim_time: ")+"sim_time: ".length();
+        String numberString = line.substring(firstIndex);
+        int lastIndex = numberString.indexOf(',');
+        numberString = numberString.substring(0,lastIndex);
+
         return Double.parseDouble(numberString);
     }
 }

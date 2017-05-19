@@ -75,7 +75,13 @@ public class DeliveryPredictabilityStorage {
         this.beta = s.getDouble(BETA_S);
         assertValueBetweenZeroAndOne(this.beta, BETA_S);
         this.secondsInTimeUnit = s.getDouble(TIME_UNIT_S);
-        s.ensurePositiveValue(this.secondsInTimeUnit, TIME_UNIT_S);
+        if (this.secondsInTimeUnit <= 0) {
+            throw new SettingsError("Setting " + TIME_UNIT_S + " should be positive, but is " + this.secondsInTimeUnit);
+        }
+
+        if (attachedHost == null) {
+            throw new IllegalArgumentException("Host should not be null!");
+        }
         this.ownAddress = attachedHost.getAddress();
     }
 
@@ -103,21 +109,36 @@ public class DeliveryPredictabilityStorage {
     }
 
     /**
-     * Executes the updates that have to be done by a host directly on connection to another host.
-     * @param other The host we connected to.
+     * Updates the delivery predictabilities for two hosts meeting each other.
+     * Warning: Only call this for one of the hosts per meeting!
+     * @param storage1 Delivery predictability storage of the first host.
+     * @param storage2 Delivery predictability storage of the second host.
      */
-    public void updateOnConnection(DTNHost other) {
-        this.decayDeliveryPredictabilities();
-        this.updateDirectDeliveryPredictabilityTo(other);
-        this.lastUpdate = SimClock.getTime();
+    public static void updatePredictabilitiesForBothHosts(
+            DeliveryPredictabilityStorage storage1, DeliveryPredictabilityStorage storage2) {
+        // Update internal delivery predictabilites before information exchange.
+        storage1.updateOnConnection(storage2.getAttachedHostAddress());
+        storage2.updateOnConnection(storage1.getAttachedHostAddress());
+
+        // Exchange information.
+        // Make sure to copy the delivery predictabilites which are used to update the second host s.t. it is not
+        // dependent the first host's update.
+        Map<Integer, Double> currentPredictabilities1 = new HashMap<>(storage1.deliveryPredictabilites);
+        Map<Integer, Double> currentPredictabilities2 = storage2.deliveryPredictabilites;
+
+        // Use it to update transitive delivery predictabilities.
+        storage1.updateTransitiveDeliveryPredictabilities(storage2.getAttachedHostAddress(), currentPredictabilities2);
+        storage2.updateTransitiveDeliveryPredictabilities(storage1.getAttachedHostAddress(), currentPredictabilities1);
     }
 
     /**
-     * Executes the updates that hosts do after exchanging information.
-     * @param otherStorage The delivery predictabilities of the host we connected to.
+     * Executes the updates that have to be done by a host directly on connection to another host.
+     * @param othersAddress Address of the host we connected to.
      */
-    public void updateAfterInformationExchange(DeliveryPredictabilityStorage otherStorage) {
-        this.updateTransitiveDeliveryPredictabilities(otherStorage);
+    private void updateOnConnection(int othersAddress) {
+        this.decayDeliveryPredictabilities();
+        this.updateDirectDeliveryPredictabilityTo(othersAddress);
+        this.lastUpdate = SimClock.getTime();
     }
 
     /**
@@ -133,20 +154,23 @@ public class DeliveryPredictabilityStorage {
 
     /**
      * Updates delivery predictability for a host.
-     * @param host The host we just met.
+     * @param hostAddress Address of the host we just met.
      */
-    private void updateDirectDeliveryPredictabilityTo(DTNHost host) {
-        double oldValue = this.getDeliveryPredictability(host);
-        this.deliveryPredictabilites.put(host.getAddress(), oldValue + (1 - oldValue) * this.summand);
+    private void updateDirectDeliveryPredictabilityTo(int hostAddress) {
+        double oldValue = this.getDeliveryPredictability(hostAddress);
+        this.deliveryPredictabilites.put(hostAddress, oldValue + (1 - oldValue) * this.summand);
     }
 
     /**
      * Updates transitive (A->B->C) delivery predictabilities.
-     * @param otherStorage The delivery predictability storage of the B host who we just met.
+     * @param othersAddress Address of the host B we just met.
+     * @param otherDeliveryPredictabilities The delivery predictability storage of the B host who we just met.
      */
-    private void updateTransitiveDeliveryPredictabilities(DeliveryPredictabilityStorage otherStorage) {
+    private void updateTransitiveDeliveryPredictabilities(
+            int othersAddress, Map<Integer, Double> otherDeliveryPredictabilities) {
         // Change probabilities for all host the other knows...
-        for (int knownAddress : otherStorage.getKnownAddresses()) {
+        for (Map.Entry<Integer, Double> addressToDeliveryPredictability : otherDeliveryPredictabilities.entrySet()) {
+            int knownAddress = addressToDeliveryPredictability.getKey();
             if (knownAddress == this.ownAddress) {
                 // ...safe for yourself.
                 continue;
@@ -154,8 +178,8 @@ public class DeliveryPredictabilityStorage {
 
             // Change them using the transitive delivery predictability equation:
             double oldValue = this.getDeliveryPredictability(knownAddress);
-            double predictabilityToNeighbor = this.getDeliveryPredictability(otherStorage.getAttachedHostAddress());
-            double neighborsValue = otherStorage.getDeliveryPredictability(knownAddress);
+            double predictabilityToNeighbor = this.getDeliveryPredictability(othersAddress);
+            double neighborsValue = addressToDeliveryPredictability.getValue();
             this.deliveryPredictabilites.put(
                     knownAddress, oldValue + (1 - oldValue) * predictabilityToNeighbor * neighborsValue * this.beta);
         }
@@ -185,7 +209,7 @@ public class DeliveryPredictabilityStorage {
      * predictability to any of the recipients.
      * @throws IllegalArgumentException if a message not of type one-to-one or multicast is provided.
      */
-    public double getDeliveryPredictablity(Message message) {
+    public double getDeliveryPredictability(Message message) {
         switch (message.getType()) {
             case ONE_TO_ONE:
                 return this.getDeliveryPredictability(message.getTo());

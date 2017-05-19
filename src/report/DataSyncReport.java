@@ -82,42 +82,30 @@ public class DataSyncReport extends SamplingReport{
             if (app == null){
                 continue;
             }
+            //Get used percentage of database, i.e., how much memory is used
+            usedDataBasePercentage.add(app.getUsedMemoryPercentage()* RATIO_TO_PERCENT);
             //We get statistics about age, distance and utility for all data the host has
             DoubleSummaryStatistics ageStats = app.getDataAgeStatistics();
             DoubleSummaryStatistics distanceStats = app.getDataDistanceStatistics();
             DoubleSummaryStatistics utilityStats = app.getDataUtilityStatistics();
-            //Get used percentage of database, i.e., how much memory is used
-            usedDataBasePercentage.add(app.getUsedMemoryPercentage()* RATIO_TO_PERCENT);
-            //Extract info we'd like to use for report
-            averageDataAges.add(ageStats.getAverage());
-            averageDataDistance.add(distanceStats.getAverage());
-            averageDataUtility.add(utilityStats.getAverage());
-            highestAges.add(ageStats.getMax());
-            highestDistance.add(distanceStats.getMax());
-            Map<DisasterData.DataType, Double> ratios = app.getRatioOfItemsPerDataType();
-            for (DisasterData.DataType type : DisasterData.DataType.values()){
-                List<Double> doubles = ratioByType.get(type);
-                doubles.add(ratios.get(type)* RATIO_TO_PERCENT);
+            //Only add statistics if there are any data items
+            if (distanceStats.getCount()>0){
+                //Even if we have data, we might only have map data, so no age stats
+                if (ageStats.getCount()>0){
+                    averageDataAges.add(ageStats.getAverage());
+                    highestAges.add(ageStats.getMax());
+                }
+                averageDataDistance.add(distanceStats.getAverage());
+                averageDataUtility.add(utilityStats.getAverage());
+                highestDistance.add(distanceStats.getMax());
+                Map<DisasterData.DataType, Double> ratios = app.getRatioOfItemsPerDataType();
+                for (DisasterData.DataType type : DisasterData.DataType.values()){
+                    List<Double> doubles = ratioByType.get(type);
+                    doubles.add(ratios.get(type)* RATIO_TO_PERCENT);
+                }
             }
         }
-        //Write out statistics gathered over all hosts with database
-        write("sim_time: " + format(getSimTime()) +", "+
-                "avg_used_mem: " + getAverage(usedDataBasePercentage) +"%, "+
-                "max_used_mem: " + getMaximum(usedDataBasePercentage) +"%, "+
-                "med_avg_data_util: " + getMedian(averageDataUtility)+ ", "+
-                "avg_data_util: " + getAverage(averageDataUtility) + ", "+
-                "med_avg_data_age: "+ getMedian(averageDataAges) + ", "+
-                "avg_data_age: "+ getAverage(averageDataAges) + ", " +
-                "med_max_data_age: " + getMedian(highestAges) + ", " +
-                "med_avg_data_dist: " + getMedian(averageDataDistance)+ ", "+
-                "avg_data_dist: " + getAverage(averageDataDistance)+ ", "+
-                "med_max_data_dist: " + getMedian(highestDistance)
-        );
-        write("avg_ratio_map: " + getAverage(ratioByType.get(DisasterData.DataType.MAP)) + "%, " +
-                 "avg_ratio_marker: " + getAverage(ratioByType.get(DisasterData.DataType.MARKER)) + "%, " +
-                 "avg_ratio_skill: " + getAverage(ratioByType.get(DisasterData.DataType.SKILL)) + "%, " +
-                 "avg_ratio_res: " + getAverage(ratioByType.get(DisasterData.DataType.RESOURCE)) + "%\n"
-        );
+        writeSample();
     }
 
     private void clearLists(){
@@ -134,6 +122,27 @@ public class DataSyncReport extends SamplingReport{
 
     private void writeHeader(){
         write("Data sync stats for scenario " + getScenarioName());
+    }
+
+    private void writeSample(){
+        //Write out statistics gathered over all hosts with database
+        write("sim_time: " + format(getSimTime()) +", "+
+                "avg_used_mem: " + getAverage(usedDataBasePercentage) +"%, "+
+                "max_used_mem: " + getMaximum(usedDataBasePercentage) +"%, "+
+                "med_avg_data_util: " + getMedian(averageDataUtility)+ ", "+
+                "avg_data_util: " + getAverage(averageDataUtility) + ", "+
+                "med_avg_data_age: "+ getMedian(averageDataAges) + ", "+
+                "avg_data_age: "+ getAverage(averageDataAges) + ", " +
+                "med_max_data_age: " + getMedian(highestAges) + ", " +
+                "med_avg_data_dist: " + getMedian(averageDataDistance)+ ", "+
+                "avg_data_dist: " + getAverage(averageDataDistance)+ ", "+
+                "med_max_data_dist: " + getMedian(highestDistance)
+        );
+        write("avg_ratio_map: " + getAverage(ratioByType.get(DisasterData.DataType.MAP)) + "%, " +
+                "avg_ratio_marker: " + getAverage(ratioByType.get(DisasterData.DataType.MARKER)) + "%, " +
+                "avg_ratio_skill: " + getAverage(ratioByType.get(DisasterData.DataType.SKILL)) + "%, " +
+                "avg_ratio_res: " + getAverage(ratioByType.get(DisasterData.DataType.RESOURCE)) + "%\n"
+        );
     }
 
 }

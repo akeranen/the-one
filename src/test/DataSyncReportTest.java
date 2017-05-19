@@ -135,7 +135,7 @@ public class DataSyncReportTest extends AbstractReportTest{
             String line = reader.readLine();
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
             line = reader.readLine();
-            assertTrue("There should not be anything but a comment", line==null);
+            assertNull("There should not be anything but a comment", line);
         }
     }
 
@@ -157,7 +157,7 @@ public class DataSyncReportTest extends AbstractReportTest{
             String line = reader.readLine();
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
             line = reader.readLine();
-            assertTrue("There should some statistics now", !line.isEmpty());
+            assertFalse("There should some statistics now", line.isEmpty());
             //Check whether the sim time was printed
             assertTrue("The simulation time should be included.", line.contains("sim_time"));
             //Check whether all metrics are in the first line

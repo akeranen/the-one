@@ -13,6 +13,11 @@ import core.SettingsError;
  */
 public class EncounterValueManager extends AbstractIntervalRatingMechanism {
     /**
+     * Name space for all encounter value settings.
+     */
+    public static final String ENCOUNTER_VALUE_NS = "EncounterValue";
+
+    /**
      * Importance of recent encounters relative to previous encounters -setting id ({@value}).
      * A value between 0 and 1.
      * The weight the newly computed encounters per time window rate gets when the old rate is updated.
@@ -35,10 +40,11 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
 
     /**
      * Initializes a new instance of the {@link EncounterValueManager} class.
-     * @param settings Settings to use.
      */
-    public EncounterValueManager(Settings settings) {
-        super(settings);
+    public EncounterValueManager() {
+        super();
+
+        Settings settings = new Settings(ENCOUNTER_VALUE_NS);
         this.agingFactor = settings.getDouble(AGING_FACTOR);
         if (this.agingFactor < 0 || this.agingFactor > 1) {
             throw new SettingsError("Aging factor has to be between 0 and 1!");
@@ -51,6 +57,15 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
     public EncounterValueManager(EncounterValueManager manager) {
         super(manager);
         this.agingFactor = manager.agingFactor;
+    }
+
+    /**
+     * Returns the namespace for all settings about this rating mechanism.
+     * @return The namespace.
+     */
+    @Override
+    protected String getNamespace() {
+        return ENCOUNTER_VALUE_NS;
     }
 
     /**

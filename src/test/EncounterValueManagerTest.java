@@ -201,9 +201,9 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
     }
 
     private static EncounterValueManager createEncounterValueManager(double newDataWeight, double windowLength) {
-        TestSettings settings = new TestSettings();
+        TestSettings settings = new TestSettings(EncounterValueManager.ENCOUNTER_VALUE_NS);
         settings.putSetting(EncounterValueManager.AGING_FACTOR, Double.toString(newDataWeight));
         settings.putSetting(EncounterValueManager.WINDOW_LENGTH_S, Double.toString(windowLength));
-        return new EncounterValueManager(settings);
+        return new EncounterValueManager();
     }
 }

@@ -28,8 +28,8 @@ import static org.junit.Assert.*;
 public class DataSyncReportTest extends AbstractReportTest{
 
     /* Properties of the database application. */
-    private static final long BIGGEST_DB_SIZE = 3_000_000_000L;
-    private static final long SMALLEST_DB_SIZE = 2_000_000_000L;
+    private static final long BIGGEST_DB_SIZE = 300L;
+    private static final long SMALLEST_DB_SIZE = 200L;
     private static final double MIN_UTILITY = 0.5;
     private static final double MAP_SENDING_INTERVAL = 43.2;
     private static final int SEED = 0;
@@ -41,7 +41,26 @@ public class DataSyncReportTest extends AbstractReportTest{
     private static final String[] EXPECTED_RATIOS= new String[]{"avg_ratio_map", "avg_ratio_marker",
             "avg_ratio_skill", "avg_ratio_res"};
 
+    /* Expected lines */
     private static final String EXPECTED_FIRST_LINE="Data sync stats for scenario TEST-Scenario";
+    private static final String[] EXPECTED_OUTPUTS= new String []{
+            "sim_time: 51.0, avg_used_mem: 0.0%, max_used_mem: 0.0%, med_avg_data_util: NaN, avg_data_util: NaN, " +
+                    "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: NaN, " +
+                    "avg_data_dist: NaN, med_max_data_dist: NaN",
+            "avg_ratio_map: NaN%, avg_ratio_marker: NaN%, avg_ratio_skill: NaN%, avg_ratio_res: NaN%",
+            "sim_time: 81.0, avg_used_mem: 3.6%, max_used_mem: 7.1%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+                    "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: 0.0, " +
+                    "avg_data_dist: 0.0, med_max_data_dist: 0.0",
+            "avg_ratio_map: 100.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 0.0%, avg_ratio_res: 0.0%",
+            "sim_time: 111.0, avg_used_mem: 8.2%, max_used_mem: 9.3%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+                    "med_avg_data_age: 61.0, avg_data_age: 61.0, med_max_data_age: 61.0, med_avg_data_dist: 0.0, " +
+                    "avg_data_dist: 0.0, med_max_data_dist: 0.0",
+            "avg_ratio_map: 50.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%",
+            "sim_time: 141.0, avg_used_mem: 23.4%, max_used_mem: 32.6%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+                    "med_avg_data_age: 91.0, avg_data_age: 68.3, med_max_data_age: 91.0, med_avg_data_dist: 282.8, " +
+                    "avg_data_dist: 141.4, med_max_data_dist: 565.7",
+            "avg_ratio_map: 25.0%, avg_ratio_marker: 25.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%"
+    };
 
     /* Error messages for failing tests */
     private static final String COMMENT_LINE_WRONG="Comment line is not as expected.";
@@ -218,7 +237,7 @@ public class DataSyncReportTest extends AbstractReportTest{
             line = reader.readLine();
             assertTrue(EMPTY_LINE_EXPECTED, line.isEmpty());
             line = reader.readLine();
-            assertTrue("There should only be two outputs", line==null);
+            assertNull("There should only be two outputs", line);
         }
     }
 
@@ -228,7 +247,18 @@ public class DataSyncReportTest extends AbstractReportTest{
         this.report.done();
         try (BufferedReader reader = this.createBufferedReader()) {
             String line = reader.readLine();
+            final int textLinesPerSimTime = 2;
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
+            for (int output=0; output < EXPECTED_OUTPUTS.length; output=output+textLinesPerSimTime){
+                line = reader.readLine();
+                assertEquals("Metrics were not as expected.", EXPECTED_OUTPUTS[output], line);
+                line = reader.readLine();
+                assertEquals("Type ratios were not as expected.", EXPECTED_OUTPUTS[output+1], line);
+                line = reader.readLine();
+                assertTrue(EMPTY_LINE_EXPECTED, line.isEmpty());
+            }
+            line = reader.readLine();
+            assertNull("There should only be four outputs", line);
         }
     }
 

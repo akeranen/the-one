@@ -48,15 +48,15 @@ public class DataSyncReportTest extends AbstractReportTest{
                     "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: NaN, " +
                     "avg_data_dist: NaN, med_max_data_dist: NaN",
             "avg_ratio_map: NaN%, avg_ratio_marker: NaN%, avg_ratio_skill: NaN%, avg_ratio_res: NaN%",
-            "sim_time: 81.0, avg_used_mem: 3.6%, max_used_mem: 7.1%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+            "sim_time: 81.0, avg_used_mem: 3.9%, max_used_mem: 7.7%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
                     "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: 0.0, " +
                     "avg_data_dist: 0.0, med_max_data_dist: 0.0",
             "avg_ratio_map: 100.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 0.0%, avg_ratio_res: 0.0%",
-            "sim_time: 111.0, avg_used_mem: 8.2%, max_used_mem: 9.3%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+            "sim_time: 111.0, avg_used_mem: 7.3%, max_used_mem: 7.7%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
                     "med_avg_data_age: 61.0, avg_data_age: 61.0, med_max_data_age: 61.0, med_avg_data_dist: 0.0, " +
                     "avg_data_dist: 0.0, med_max_data_dist: 0.0",
             "avg_ratio_map: 50.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%",
-            "sim_time: 141.0, avg_used_mem: 23.4%, max_used_mem: 32.6%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+            "sim_time: 141.0, avg_used_mem: 19.7%, max_used_mem: 23.9%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
                     "med_avg_data_age: 91.0, avg_data_age: 68.3, med_max_data_age: 91.0, med_avg_data_dist: 282.8, " +
                     "avg_data_dist: 141.4, med_max_data_dist: 565.7",
             "avg_ratio_map: 25.0%, avg_ratio_marker: 25.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%"
@@ -272,16 +272,6 @@ public class DataSyncReportTest extends AbstractReportTest{
         return DataSyncReport.class;
     }
 
-    /**
-     * SimScenario was called by DataSyncReport and therefore initiated with this specific test's settings.
-     * Cleanup to make further tests with other settings possible.
-     */
-    @After
-    public void cleanUp() {
-        SimScenario.reset();
-        SimClock.reset();
-    }
-
     private void sendDataMessageToHostWithApp(){
         DTNHost sendingHost = utils.createHost(ORIGIN,"hostWithoutDB");
         allHosts.add(sendingHost);
@@ -365,5 +355,15 @@ public class DataSyncReportTest extends AbstractReportTest{
 
         //Fourth report output when each host has two database items
         report.updated(allHosts);
+    }
+
+    /**
+     * SimScenario was called by DataSyncReport and therefore initiated with this specific test's settings.
+     * Cleanup to make further tests with other settings possible.
+     */
+    @After
+    public void cleanUp() {
+        SimScenario.reset();
+        SimClock.reset();
     }
 }

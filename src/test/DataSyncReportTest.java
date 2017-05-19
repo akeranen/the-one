@@ -135,7 +135,6 @@ public class DataSyncReportTest extends AbstractReportTest{
             String line = reader.readLine();
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
             line = reader.readLine();
-            line = reader.readLine();
             assertTrue("There should not be anything but a comment", line==null);
         }
     }
@@ -157,7 +156,6 @@ public class DataSyncReportTest extends AbstractReportTest{
         try (BufferedReader reader = this.createBufferedReader()) {
             String line = reader.readLine();
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
-            line = reader.readLine();
             line = reader.readLine();
             assertTrue("There should some statistics now", !line.isEmpty());
             //Check whether the sim time was printed
@@ -197,7 +195,6 @@ public class DataSyncReportTest extends AbstractReportTest{
         try (BufferedReader reader = this.createBufferedReader()) {
             String line = reader.readLine();
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
-            line = reader.readLine();
             line = reader.readLine();
             assertEquals("The first output should be at sim_time", WARM_UP_TIME+1,
                     getSimTimeValueFrom(line), TIME_COMPARISON_EXACTNESS);

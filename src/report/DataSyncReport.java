@@ -133,7 +133,7 @@ public class DataSyncReport extends SamplingReport{
     }
 
     private void writeHeader(){
-        write("Data sync stats for scenario " + getScenarioName() + "\n");
+        write("Data sync stats for scenario " + getScenarioName());
     }
 
 }

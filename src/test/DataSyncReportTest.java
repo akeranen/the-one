@@ -42,10 +42,13 @@ public class DataSyncReportTest extends AbstractReportTest{
             "avg_ratio_skill", "avg_ratio_res"};
 
     private static final String EXPECTED_FIRST_LINE="Data sync stats for scenario TEST-Scenario";
+
+    /* Error messages for failing tests */
     private static final String COMMENT_LINE_WRONG="Comment line is not as expected.";
     private static final String EMPTY_LINE_EXPECTED="There should be an empty line between outputs";
 
     private static final double TIME_COMPARISON_EXACTNESS = 0.1;
+    private static final int DECIMAL_PLACES=1;
 
     /* Time values used to check whether reports should be printed */
     private static final double REPORT_INTERVAL = 30;
@@ -54,7 +57,9 @@ public class DataSyncReportTest extends AbstractReportTest{
 
     /* Properties for DisasterData and DataMessages */
     private static final int SMALL_ITEM_SIZE = 20;
+    private static final int BIG_ITEM_SIZE=50;
     private static final Coord ORIGIN = new Coord(0,0);
+    private static final Coord DISTANT_COORD = new Coord(400, 400);
 
     private DataSyncReport report;
     private TestUtils utils;
@@ -86,6 +91,8 @@ public class DataSyncReportTest extends AbstractReportTest{
         TestSettings.addSettingsToEnableSimScenario(settings);
         this.settings.putSetting(getReportClass().getSimpleName() + "." + SamplingReport.SAMPLE_INTERVAL_SETTING,
                 Double.toString(REPORT_INTERVAL));
+        this.settings.putSetting(getReportClass().getSimpleName() + "." + SamplingReport.PRECISION_SETTING,
+                Integer.toString(DECIMAL_PLACES));
 
         // Set locale for periods instead of commas in doubles.
         java.util.Locale.setDefault(java.util.Locale.US);
@@ -215,6 +222,16 @@ public class DataSyncReportTest extends AbstractReportTest{
         }
     }
 
+    @Test
+    public void testCorrectReportForSmallScenario() throws IOException {
+        playScenario();
+        this.report.done();
+        try (BufferedReader reader = this.createBufferedReader()) {
+            String line = reader.readLine();
+            assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
+        }
+    }
+
     /**
      * Gets the report class to test.
      *
@@ -240,9 +257,6 @@ public class DataSyncReportTest extends AbstractReportTest{
         allHosts.add(sendingHost);
         DisasterData data = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE, 0, ORIGIN);
         DataMessage msg = new DataMessage(sendingHost, hostAttachedToApp, "d1", data, 1, 1);
-        sendingHost.createNewMessage(msg);
-        sendingHost.sendMessage("d1", hostAttachedToApp);
-        hostAttachedToApp.messageTransferred("d1", sendingHost);
         app.handle(msg, hostAttachedToApp);
     }
 
@@ -257,5 +271,69 @@ public class DataSyncReportTest extends AbstractReportTest{
         numberString = numberString.substring(0,lastIndex);
 
         return Double.parseDouble(numberString);
+    }
+
+    /**
+     * Simulates creation of data and exchange of data for two hosts.
+     *
+     * time   | hostAttachedtoApp       | secondHost            |
+     * -------|-------------------------|-----------------------|
+     *  51    |0 items                  | 0 items               |
+     * -------|-------------------------|-----------------------|
+     *  81    |1 item                   | 0 items               |
+     *        |MAP, 20, 0, (0,0)        |                       |
+     * -------|-------------------------|-----------------------|
+     * 111    |1 item                   | 1 item                |
+     *        |MAP, 20, 0, (0,0)        |SKILL, 20, 50, (0,0)   |
+     * -------|-------------------------|-----------------------|
+     * 141    |2 items                  | 2 items               |
+     *        |MAP, 20, 0, (0,0)        |SKILL, 20, 50, (0,0)   |
+     *        |SKILL, 20, 50, (0,0)     |MARKER,50,141,(400,400)|
+     * -------|-------------------------|-----------------------|
+     */
+    private void playScenario(){
+        skipWarmUpTime();
+
+        //Create a second host with a database
+        DTNHost secondHost = utils.createHost(ORIGIN,"secondHost");
+        allHosts.add(secondHost);
+        DatabaseApplication secondApp = new DatabaseApplication(app);
+        secondApp.update(secondHost);
+        secondHost.getRouter().addApplication(secondApp);
+
+        //First report output while no host has any data
+        report.updated(allHosts);
+
+        //Send message with map data to hostAttachedToApp
+        SimClock.getInstance().advance(REPORT_INTERVAL);
+        DisasterData mapData = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE, 0, ORIGIN);
+        DataMessage msg1 = new DataMessage(secondHost, hostAttachedToApp, "d1", mapData, 1, 1);
+        app.handle(msg1, hostAttachedToApp);
+
+        //Second report output while one host has one data item
+        report.updated(allHosts);
+
+        //Send message with skill data to second host, this data was created later
+        SimClock.getInstance().advance(REPORT_INTERVAL);
+        DisasterData skillData = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE, WARM_UP_TIME, ORIGIN);
+        DataMessage msg2 = new DataMessage(hostAttachedToApp, secondHost, "d2", skillData, 1, 1);
+        secondApp.handle(msg2, secondHost);
+
+        //Third report output when each host has a different data item
+        report.updated(allHosts);
+
+        //Send a marker Data item that is recent, but further away to the second host
+        SimClock.getInstance().advance(REPORT_INTERVAL);
+        DisasterData markerData = new DisasterData(DisasterData.DataType.MARKER, BIG_ITEM_SIZE,
+                SimClock.getIntTime(), DISTANT_COORD);
+        DataMessage msg3 = new DataMessage(hostAttachedToApp, secondHost,  "d3", markerData, 1, 1);
+        secondApp.handle(msg3, secondHost);
+
+        //Send skill data from second host to first host
+        DataMessage msg4 = new DataMessage(secondHost, hostAttachedToApp, "d4", skillData, 1, 1);
+        app.handle(msg4, hostAttachedToApp);
+
+        //Fourth report output when each host has two database items
+        report.updated(allHosts);
     }
 }

@@ -43,6 +43,7 @@ public class DataSyncReportTest extends AbstractReportTest{
 
     private static final String EXPECTED_FIRST_LINE="Data sync stats for scenario TEST-Scenario";
     private static final String COMMENT_LINE_WRONG="Comment line is not as expected.";
+    private static final String EMPTY_LINE_EXPECTED="There should be an empty line between outputs";
 
     private static final double TIME_COMPARISON_EXACTNESS = 0.1;
 
@@ -196,20 +197,21 @@ public class DataSyncReportTest extends AbstractReportTest{
             String line = reader.readLine();
             assertEquals(COMMENT_LINE_WRONG, EXPECTED_FIRST_LINE, line);
             line = reader.readLine();
-            assertEquals("The first output should be at sim_time", WARM_UP_TIME+1,
+            assertEquals("The first output should be after the warm up time.", WARM_UP_TIME+1,
                     getSimTimeValueFrom(line), TIME_COMPARISON_EXACTNESS);
-            //The second line still belongs to the same time
             line = reader.readLine();
+            assertTrue("This line should include ratios for the first output.", line.contains(EXPECTED_RATIOS[0]));
             line = reader.readLine();
+            assertTrue(EMPTY_LINE_EXPECTED, line.isEmpty());
             line = reader.readLine();
-            assertEquals("The second output should be at sim_time", WARM_UP_TIME+REPORT_INTERVAL+1,
-                    getSimTimeValueFrom(line), TIME_COMPARISON_EXACTNESS);
-            //The line still belongs to the same time
+            assertEquals("The second output should at one samplingInterval after the first",
+                    WARM_UP_TIME+REPORT_INTERVAL+1, getSimTimeValueFrom(line), TIME_COMPARISON_EXACTNESS);
             line = reader.readLine();
+            assertTrue("This line should include ratios for the second output.", line.contains(EXPECTED_RATIOS[0]));
             line = reader.readLine();
+            assertTrue(EMPTY_LINE_EXPECTED, line.isEmpty());
             line = reader.readLine();
             assertTrue("There should only be two outputs", line==null);
-
         }
     }
 

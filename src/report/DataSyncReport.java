@@ -116,7 +116,7 @@ public class DataSyncReport extends SamplingReport{
         write("avg_ratio_map: " + getAverage(ratioByType.get(DisasterData.DataType.MAP)) + "%, " +
                  "avg_ratio_marker: " + getAverage(ratioByType.get(DisasterData.DataType.MARKER)) + "%, " +
                  "avg_ratio_skill: " + getAverage(ratioByType.get(DisasterData.DataType.SKILL)) + "%, " +
-                 "avg_ratio_res: " + getAverage(ratioByType.get(DisasterData.DataType.RESOURCE)) + "%\n "
+                 "avg_ratio_res: " + getAverage(ratioByType.get(DisasterData.DataType.RESOURCE)) + "%\n"
         );
     }
 

@@ -107,7 +107,6 @@ public class DataSyncReportTest extends AbstractReportTest{
 
         // Make SimScenario usage possible.
         SimScenario.reset();
-        TestSettings.addSettingsToEnableSimScenario(settings);
         this.settings.putSetting(getReportClass().getSimpleName() + "." + SamplingReport.SAMPLE_INTERVAL_SETTING,
                 Double.toString(REPORT_INTERVAL));
         this.settings.putSetting(getReportClass().getSimpleName() + "." + SamplingReport.PRECISION_SETTING,

@@ -12,9 +12,7 @@ import org.junit.Test;
 import util.Tuple;
 
 import java.util.ArrayList;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Contains tests for the {@link core.LocalDatabase} class.
@@ -26,13 +24,10 @@ public class LocalDatabaseTest {
 
     /* Used locations for all DB operations. */
     private static final Coord CURR_LOCATION = new Coord(300, 400);
-    private static final Coord CLOSE_TO_CURR_LOCATION = new Coord(400, 400);
     private static final Coord ORIGIN = new Coord(0,0);
 
     /* The current time. */
     private static final double CURR_TIME = 1800;
-    private static final double FIVE_MINS_AGO=1500;
-    private static final double HALF_AN_HOUR_LATER =3600;
 
     /* Time interval that is small enough s.t. utilities should not be recomputed */
     private static final double HALF_OF_COMPUTATION_INTERVAL = 0.5;
@@ -42,7 +37,6 @@ public class LocalDatabaseTest {
 
     /* Some utility values used in tests. */
     private static final double IMPOSSIBLE_HIGH_UTILITY = 1.1;
-    private static final double HIGH_UTILITY=0.8;
 
     /* Rounded down utility values for different data types with data created at time 0 at origin. */
     private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.91;
@@ -50,13 +44,6 @@ public class LocalDatabaseTest {
     private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
 
     private static final String UNEXPECTED_UTILITY = "Expected different utility.";
-    private static final String WRONG_USED_MEM_PERCENTAGE="The percentage of used memory was not computed correctly.";
-    private static final String WRONG_AVG_DISTANCE="The average data distance was not computed correctly.";
-    private static final String WRONG_MAX_DISTANCE ="The maximum data distance was not computed correctly." ;
-    private static final String WRONG_AVG_AGE ="The average data age was not computed correctly." ;
-    private static final String WRONG_MAX_AGE ="The maximum data age was not computed correctly." ;
-    private static final String STATISTICS_SHOULD_NOT_BE_NULL = "The statistics should be empty, but not null.";
-    private static final String STATISTICS_SHOULD_BE_EMPTY = "There should be no values in the statistics.";
 
     /* Margin of error used for floating point comparisons */
     private static final double DOUBLE_COMPARISON_EXACTNESS = 0.01;
@@ -65,15 +52,6 @@ public class LocalDatabaseTest {
     private static final int SINGLE_ITEM = 1;
     private static final int TWO_ITEMS = 2;
     private static final int ALL_ITEMS = 3;
-
-    /* Factors if something is computed for a fraction of the data items */
-    private static final double HALF_THE_DATA=0.5;
-    private static final double A_THIRD_OF_DATA=0.333;
-    private static final double A_FOURTH_OF_DATA = 0.25;
-
-    /* Sizes for data items */
-    private static final int SMALL_ITEM_SIZE=20;
-    private static final int BIG_ITEM_SIZE=55;
 
     /* The database used in tests. */
     private LocalDatabase database;
@@ -419,247 +397,6 @@ public class LocalDatabaseTest {
         allMapData = this.database.getMapData();
         TestCase.assertEquals("Useless data should be deleted now", 1, allMapData.size());
         TestCase.assertEquals("The wrong data remained in the database", allMapData.get(0), dataAtOrigin);
-    }
-
-    /**
-     * Tests whether the statistics about {@link DisasterData} are computed correctly.
-     * The statistics are about the distance of the data item's location to the host location.
-     */
-    @Test
-    public void testGetDataDistanceStatistics(){
-        //Test statistics for empty database
-        DoubleSummaryStatistics statistics = database.getDataDistanceStatistics();
-        TestCase.assertTrue(STATISTICS_SHOULD_NOT_BE_NULL, statistics != null);
-        TestCase.assertTrue(STATISTICS_SHOULD_BE_EMPTY, statistics.getCount()==0);
-        //Add a single item that was created at the current time and location
-        //It should be very useful. All statistics should just be about this item.
-        DisasterData skillItem = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(skillItem);
-        TestCase.assertEquals(WRONG_AVG_DISTANCE,
-                0, database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_DISTANCE,
-                0, database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-        //Add a second item that has positive age and distance. All statistics should be about the existing two items
-        DisasterData mapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
-                0, ORIGIN);
-        this.database.add(mapItem);
-        TestCase.assertEquals(WRONG_AVG_DISTANCE,
-                CURR_LOCATION.distance(ORIGIN)*HALF_THE_DATA,
-                database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_DISTANCE,
-                CURR_LOCATION.distance(ORIGIN),
-                database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-        //Add a third data item. As it is big and very useful, it will lead to the removal of the other map data
-        //So all statistics refer to bigMapDataItem and skillItem.
-        DisasterData bigMapDataItem = new DisasterData(DisasterData.DataType.MAP, BIG_ITEM_SIZE,
-                FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
-        this.database.add(bigMapDataItem);
-        TestCase.assertEquals(WRONG_AVG_DISTANCE,
-                CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION)*HALF_THE_DATA,
-                database.getDataDistanceStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_DISTANCE,
-                CLOSE_TO_CURR_LOCATION.distance(CURR_LOCATION),
-                database.getDataDistanceStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-    }
-
-    /**
-     * Tests whether the statistics about {@link DisasterData} are computed correctly.
-     * The statistics are about the age of the data items, i.e., the current time minus their creation time.
-     */
-    public void testGetDataAgeStatistics(){
-        //Test statistics for empty database
-        DoubleSummaryStatistics statistics = database.getDataAgeStatistics();
-        TestCase.assertTrue(STATISTICS_SHOULD_NOT_BE_NULL, statistics != null);
-        TestCase.assertTrue(STATISTICS_SHOULD_BE_EMPTY, statistics.getCount()==0);
-        //Add a single item that was created at the current time and location
-        //It should be very useful. All statistics should just be about this item.
-        DisasterData skillItem = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(skillItem);
-        TestCase.assertEquals(WRONG_AVG_AGE,
-                0, database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_AGE,
-                0, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-        //Add a second item that has positive age and distance. All statistics should be about the existing two items
-        DisasterData resourceItem = new DisasterData(DisasterData.DataType.RESOURCE, SMALL_ITEM_SIZE,
-                0, ORIGIN);
-        this.database.add(resourceItem);
-        TestCase.assertEquals(WRONG_AVG_AGE, CURR_TIME * HALF_THE_DATA,
-                database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_AGE, CURR_TIME,
-                database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-        //Add a third data item with moderate age
-        DisasterData markerItem = new DisasterData(DisasterData.DataType.MARKER, SMALL_ITEM_SIZE,
-                FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
-        this.database.add(markerItem);
-        TestCase.assertEquals(WRONG_AVG_AGE, A_THIRD_OF_DATA*CURR_TIME+A_THIRD_OF_DATA*(CURR_TIME-FIVE_MINS_AGO),
-                database.getDataAgeStatistics().getAverage(), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals(WRONG_MAX_AGE,
-                CURR_TIME, database.getDataAgeStatistics().getMax(), DOUBLE_COMPARISON_EXACTNESS);
-    }
-
-    /**
-     * Tests whether age statistics do not take map data items into account.
-     * As the utility function for map data does not include age, we exclude map data from
-     * age statistics. Map data would not be deleted when it gets old, hence it will likely
-     * get older and older during the simulation and would throw off our results if we included it.
-     */
-    @Test
-    public void testGetDataAgeStatisticsIgnoresMapData(){
-        DisasterData mapDataItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
-                FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
-        this.database.add(mapDataItem);
-        DoubleSummaryStatistics statistics = database.getDataAgeStatistics();
-        TestCase.assertTrue("Map data should be ignored by age statistics.", statistics.getCount()==0);
-    }
-
-    /**
-     * Tests whether the utility statistics about {@link DisasterData} are computed correctly.
-     * The statistics are about the utility of the data items, which is computed from the
-     * distance of the data items to the host location and the age of the data items.
-     */
-    @Test
-    public void testGetDataUtilityStatistics(){
-        //Test statistics for empty database
-        DoubleSummaryStatistics statistics = database.getDataUtilityStatistics();
-        TestCase.assertTrue(STATISTICS_SHOULD_NOT_BE_NULL, statistics != null);
-        TestCase.assertTrue(STATISTICS_SHOULD_BE_EMPTY, statistics.getCount()==0);
-        //Add a single item that was created at the current time and location
-        //It should be very useful. All statistics should just be about this item.
-        DisasterData skillItem = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(skillItem);
-        TestCase.assertEquals("The average and max utility should be equal for a single data item",
-                database.getDataUtilityStatistics().getAverage(), database.getDataUtilityStatistics().getMax(),
-                DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertTrue("Utility for close, recent data items should be high.",
-                database.getDataUtilityStatistics().getAverage() > HIGH_UTILITY);
-        //Add a second item that has positive age and distance. All statistics should be about the existing two items
-        DisasterData mapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
-                0, ORIGIN);
-        this.database.add(mapItem);
-        TestCase.assertTrue("Maximal utility should be high.",
-                database.getDataUtilityStatistics().getMax() > HIGH_UTILITY);
-        TestCase.assertTrue("The average and max utility should not be equal for two differently useful data items.",
-                database.getDataUtilityStatistics().getAverage() < database.getDataUtilityStatistics().getMax());
-        //Add a third data item. As it is big and very useful, it will lead to the removal of the other map data
-        //So all statistics refer to bigMapDataItem and skillItem.
-        DisasterData bigMarkerItem = new DisasterData(DisasterData.DataType.MARKER, BIG_ITEM_SIZE,
-                FIVE_MINS_AGO, CLOSE_TO_CURR_LOCATION);
-        this.database.add(bigMarkerItem);
-        double maxUtility =database.getDataUtilityStatistics().getMax();
-        TestCase.assertTrue("Maximal utility should be high.", maxUtility > HIGH_UTILITY);
-        double avgUtility = database.getDataUtilityStatistics().getAverage();
-        TestCase.assertTrue("Average utility should be high.", avgUtility > HIGH_UTILITY);
-        TestCase.assertTrue("The average and max utility should not be equal for two differently useful data items.",
-                avgUtility < maxUtility);
-        //If time passes the utilities should be recomputed when accessing the statistics, even if nothing was added
-        //to the database.
-        SimClock.getInstance().setTime(HALF_AN_HOUR_LATER);
-        double maxUtilityLater = database.getDataUtilityStatistics().getMax();
-        double avgUtilityLater = database.getDataUtilityStatistics().getAverage();
-        TestCase.assertTrue("Average utility should have decreased.", avgUtilityLater < avgUtility);
-        TestCase.assertTrue("Maximum utility should have decreased.", maxUtilityLater < maxUtility);
-        TestCase.assertTrue("Average and max utility should still be different.", avgUtilityLater < maxUtilityLater);
-
-    }
-
-    /**
-     * Tests whether the used memory percentage is computed correctly. The used memory
-     * percentage is needed for deletion from the database and for reports.
-     */
-    @Test
-    public void testGetUsedMemoryPercentage(){
-        DisasterData usefulItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(usefulItem);
-        TestCase.assertEquals(WRONG_USED_MEM_PERCENTAGE,
-                usefulItem.getSize()/(double)DB_SIZE,
-                database.getUsedMemoryPercentage(),
-                DOUBLE_COMPARISON_EXACTNESS);
-        DisasterData uselessItem = new DisasterData(DisasterData.DataType.MARKER, SMALL_ITEM_SIZE, 0, ORIGIN);
-        this.database.add(uselessItem);
-        TestCase.assertEquals(WRONG_USED_MEM_PERCENTAGE,
-                (usefulItem.getSize()+uselessItem.getSize())/(double)DB_SIZE,
-                database.getUsedMemoryPercentage(),
-                DOUBLE_COMPARISON_EXACTNESS);
-        DisasterData bigUsefulItem = new DisasterData(DisasterData.DataType.MARKER, BIG_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(bigUsefulItem);
-        //After adding a big useful item, the item with the lower utility should be deleted
-        TestCase.assertEquals(WRONG_USED_MEM_PERCENTAGE,
-                (usefulItem.getSize()+bigUsefulItem.getSize())/(double)DB_SIZE,
-                database.getUsedMemoryPercentage(),
-                DOUBLE_COMPARISON_EXACTNESS);
-    }
-
-    /**
-     * Tests whether the ratio of items of a certain {@link DisasterData.DataType} type is
-     * computed correctly.
-     */
-    @Test
-    public void testGetRatioOfDataItemsPerType(){
-        //Add a single item, so we just have skill data
-        DisasterData oneSkillItem = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(oneSkillItem);
-        Map<DisasterData.DataType, Double> ratioPerType = database.getRatioOfItemsPerDataType();
-        TestCase.assertEquals("All data should be skill data.",
-                1, ratioPerType.get(DisasterData.DataType.SKILL), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No markers should be in the database.",
-                0, ratioPerType.get(DisasterData.DataType.MARKER), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No maps should be in the database.",
-                0, ratioPerType.get(DisasterData.DataType.MAP), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No resources should be in the database.",
-                0, ratioPerType.get(DisasterData.DataType.RESOURCE), DOUBLE_COMPARISON_EXACTNESS);
-        //Add a second data item, which is map data. It is not large enough for anything to
-        //get deleted. This item is not that useful
-        DisasterData oneMapItem = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE,
-                0, ORIGIN);
-        this.database.add(oneMapItem);
-        ratioPerType = database.getRatioOfItemsPerDataType();
-        TestCase.assertEquals("Half the data should be map data.",
-                HALF_THE_DATA, ratioPerType.get(DisasterData.DataType.MAP), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No markers should be in the database",
-                0, ratioPerType.get(DisasterData.DataType.MARKER), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("Half the data should be skill data.",
-                HALF_THE_DATA, ratioPerType.get(DisasterData.DataType.SKILL), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No resources should be in the database",
-                0, ratioPerType.get(DisasterData.DataType.RESOURCE), DOUBLE_COMPARISON_EXACTNESS);
-        //Add a third item, which is also Map data and very useful. The smaller, less useful
-        //map data item will be deleted, so we are again left with one skill data and one map data item
-        DisasterData bigMapDataItem = new DisasterData(DisasterData.DataType.MAP, BIG_ITEM_SIZE,
-                CURR_TIME, CURR_LOCATION);
-        this.database.add(bigMapDataItem);
-        ratioPerType = database.getRatioOfItemsPerDataType();
-        TestCase.assertEquals("Half the data should be map data.",
-                HALF_THE_DATA, ratioPerType.get(DisasterData.DataType.MAP), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No markers should be in the database.",
-                0, ratioPerType.get(DisasterData.DataType.MARKER), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("Half the data should be skill data.",
-                HALF_THE_DATA, ratioPerType.get(DisasterData.DataType.SKILL), DOUBLE_COMPARISON_EXACTNESS);
-        TestCase.assertEquals("No resources should be in the database.",
-                0, ratioPerType.get(DisasterData.DataType.RESOURCE), DOUBLE_COMPARISON_EXACTNESS);
-    }
-
-    /**
-     * Tests whether statistics about what fraction of all {@link DisasterData} items in a host's database
-     * is of a certain {@link DisasterData.DataType} are computed correctly.
-     */
-    @Test
-    public void testRatioOfDataItemsCanIncludeAllDataTypes(){
-        for (DisasterData.DataType type : DisasterData.DataType.values()){
-            DisasterData dataItem = new DisasterData(type, SMALL_ITEM_SIZE, CURR_TIME, CURR_LOCATION);
-            database.add(dataItem);
-        }
-        Map<DisasterData.DataType, Double> ratioPerType = database.getRatioOfItemsPerDataType();
-
-        for (DisasterData.DataType type : DisasterData.DataType.values()){
-            TestCase.assertEquals("There should be exactly one item of each DataType.", A_FOURTH_OF_DATA,
-                    ratioPerType.get(type));
-        }
-
     }
 
     /**

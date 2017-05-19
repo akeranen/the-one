@@ -24,7 +24,6 @@ import java.util.Map;
  * Format is as follows (excluding some line breaks):
  *
  * Data sync stats for scenario  dataSyncReport
- *
  * sim_time: 600.2000, avg_used_mem: 0.1448%, max_used_mem: 0.9012354941187346%,
  * med_avg_data_util: 0.7751, avg_data_util: 0.6233,
  * med_avg_data_age: 457.1799, avg_data_age: 374.9272, med_max_data_age: 600.2000,

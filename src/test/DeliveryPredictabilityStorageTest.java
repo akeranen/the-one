@@ -92,8 +92,8 @@ public class DeliveryPredictabilityStorageTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorThrowsForMissingHost() {
-        createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, null);
+    public void testSetAttachedHostThrowsForMissingHost() {
+        this.dpStorage.setAttachedHost(null);
     }
 
     @Test
@@ -133,8 +133,7 @@ public class DeliveryPredictabilityStorageTest {
 
     @Test
     public void testCopyConstructor() {
-        DTNHost host = this.testUtils.createHost();
-        DeliveryPredictabilityStorage copy = new DeliveryPredictabilityStorage(this.dpStorage, host);
+        DeliveryPredictabilityStorage copy = new DeliveryPredictabilityStorage(this.dpStorage);
         Assert.assertEquals(
                 "Expected different beta.", this.dpStorage.getBeta(), copy.getBeta(), DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
@@ -144,7 +143,6 @@ public class DeliveryPredictabilityStorageTest {
         Assert.assertEquals(
                 "Expected different number of seconds in time unit.",
                 this.dpStorage.getSecondsInTimeUnit(), copy.getSecondsInTimeUnit(), DOUBLE_COMPARISON_DELTA);
-        Assert.assertEquals("Expected different host address.", host.getAddress(), copy.getAttachedHostAddress());
     }
 
     /**
@@ -354,6 +352,8 @@ public class DeliveryPredictabilityStorageTest {
         settings.putSetting(DeliveryPredictabilityStorage.SUMMAND_S, Double.toString(summand));
         settings.putSetting(DeliveryPredictabilityStorage.TIME_UNIT_S, Double.toString(secondsInTimeUnit));
 
-        return new DeliveryPredictabilityStorage(settings, host);
+        DeliveryPredictabilityStorage storage = new DeliveryPredictabilityStorage(settings);
+        storage.setAttachedHost(host);
+        return storage;
     }
 }

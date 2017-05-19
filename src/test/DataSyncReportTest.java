@@ -8,6 +8,7 @@ import core.DisasterData;
 import core.SimClock;
 import core.SimScenario;
 import report.DataSyncReport;
+import report.SamplingReport;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,11 +18,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import report.SamplingReport;
-
 import static org.junit.Assert.*;
-
-
 
 /**
  * Contains tests for the {@link report.DataSyncReport} class
@@ -219,7 +216,6 @@ public class DataSyncReportTest extends AbstractReportTest{
         }
     }
 
-
     /**
      * Gets the report class to test.
      *
@@ -229,7 +225,6 @@ public class DataSyncReportTest extends AbstractReportTest{
     protected Class getReportClass() {
         return DataSyncReport.class;
     }
-
 
     /**
      * SimScenario was called by DataSyncReport and therefore initiated with this specific test's settings.

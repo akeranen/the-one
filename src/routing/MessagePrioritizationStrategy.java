@@ -15,9 +15,9 @@ import java.util.List;
 @FunctionalInterface
 public interface MessagePrioritizationStrategy {
     /**
-     * Sorts the provided connection - message tuples according to strategy.
-     * @param messages The connection - message tuples to sort.
+     * Sorts the provided message - connection tuples according to strategy.
+     * @param messages The message - connection tuples to sort.
      * @return The provided messages in sorted order, most important messages first.
      */
-    List<Tuple<Connection, Message>> sortMessages(Collection<Tuple<Connection, Message>> messages);
+    List<Tuple<Message, Connection>> sortMessages(Collection<Tuple<Message, Connection>> messages);
 }

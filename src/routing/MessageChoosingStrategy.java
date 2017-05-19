@@ -20,6 +20,6 @@ public interface MessageChoosingStrategy {
      * @param connections All connections the host has.
      * @return Which messages should be send to which neighbors.
      */
-    Collection<Tuple<Connection, Message>> findOtherMessages(
+    Collection<Tuple<Message, Connection>> findOtherMessages(
             Collection<Message> messages, List<Connection> connections);
 }

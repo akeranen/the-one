@@ -5,6 +5,8 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
+import routing.prioritizers.PrioritySorter;
+import routing.prioritizers.PriorityTupleSorter;
 import routing.util.DatabaseApplicationUtil;
 import routing.util.DeliveryPredictabilityStorage;
 import routing.util.EncounterValueManager;
@@ -48,7 +50,9 @@ public class DisasterRouter extends ActiveRouter {
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(s);
 
         // Initialize message choosers and orderers.
-        // TODO: create messagePrioritizer, messageChooser, directMessageComparator and directMessageTupleComparator
+        this.directMessageComparator = new PrioritySorter();
+        this.directMessageTupleComparator = new PriorityTupleSorter();
+        // TODO: create messagePrioritizer, messageChooser
     }
 
     /**
@@ -63,8 +67,9 @@ public class DisasterRouter extends ActiveRouter {
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(router.deliveryPredictabilityStorage);
 
         // Copy message choosers and orderers.
-        // TODO: copy messagePrioritizer (using new managers), messageChooser, directMessageComparator,
-        // directMessageTupleComparator
+        this.directMessageComparator = router.directMessageComparator;
+        this.directMessageTupleComparator = router.directMessageTupleComparator;
+        // TODO: copy messagePrioritizer (using new managers), messageChooser
     }
 
     /**

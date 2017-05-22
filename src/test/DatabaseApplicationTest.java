@@ -126,6 +126,7 @@ public class DatabaseApplicationTest {
     public void cleanUp() {
         SimClock.reset();
         Group.clearGroups();
+        DTNHost.reset();
     }
 
     @Test(expected = SettingsError.class)

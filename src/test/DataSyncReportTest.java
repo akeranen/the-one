@@ -364,5 +364,6 @@ public class DataSyncReportTest extends AbstractReportTest{
     public void cleanUp() {
         SimScenario.reset();
         SimClock.reset();
+        DTNHost.reset();
     }
 }

@@ -51,7 +51,7 @@ public class DatabaseStatisticsTest {
 
     /* Factors if something is computed for a fraction of the data items */
     private static final double HALF_THE_DATA=0.5;
-    private static final double A_THIRD_OF_DATA=0.333;
+    private static final double A_THIRD_OF_DATA=0.33333;
     private static final double A_FOURTH_OF_DATA = 0.25;
 
     /* Margin of error used for floating point comparisons */

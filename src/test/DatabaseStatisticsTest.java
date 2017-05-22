@@ -26,8 +26,8 @@ public class DatabaseStatisticsTest {
 
 
     /* Properties of the application. */
-    private static final long BIGGEST_DB_SIZE = 300L;
-    private static final long SMALLEST_DB_SIZE = 200L;
+    private static final long BIGGEST_DB_SIZE = 100L;
+    private static final long SMALLEST_DB_SIZE = 100L;
     private static final double MIN_UTILITY = 0.5;
     private static final double MAP_SENDING_INTERVAL = 43.2;
     private static final int SEED = 0;

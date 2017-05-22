@@ -4,6 +4,7 @@ import core.SimScenario;
 import report.DataSyncReport;
 import report.Report;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public class ReportTest {
 
     private static final String WRONG_MAXIMUM = "The maximum was computed or formatted incorrectly.";
 
+    private File outputFile;
     private Report report;
 
     public ReportTest(){
@@ -34,14 +36,23 @@ public class ReportTest {
 
     @Before
     public void setUp() throws IOException {
+        // Set locale for periods instead of commas in doubles.
+        java.util.Locale.setDefault(java.util.Locale.US);
+
+        /* Try functions out on DataSyncReport since Report is abstract */
+        final String reportName = "DataSyncReport";
+
+        /* Add necessary settings for creating a temporary output file */
         TestSettings settings = new TestSettings();
         settings.putSetting(DTNSimUI.NROF_REPORT_S, "1");
         settings.putSetting(Report.REPORTDIR_SETTING, "test");
-        settings.putSetting("Report.report1", "Report");
-        report = new DataSyncReport();
+        settings.putSetting("Report.report1", reportName);
+        this.outputFile = File.createTempFile("reportTest", ".tmp");
+        settings.setNameSpace(reportName);
+        settings.putSetting(Report.OUTPUT_SETTING, outputFile.getAbsolutePath());
+        settings.restoreNameSpace();
 
-        // Set locale for periods instead of commas in doubles.
-        java.util.Locale.setDefault(java.util.Locale.US);
+        report = new DataSyncReport();
     }
 
     @Test
@@ -65,5 +76,6 @@ public class ReportTest {
     @After
     public void cleanUp() {
         SimScenario.reset();
+        outputFile.delete();
     }
 }

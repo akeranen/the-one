@@ -4,7 +4,6 @@ import core.SimScenario;
 import report.DataSyncReport;
 import report.Report;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import org.junit.Test;
 import ui.DTNSimUI;
 
 import static org.junit.Assert.*;
-
 
 /**
  * Includes unit tests for {@link report.Report} class.
@@ -65,6 +63,4 @@ public class ReportTest {
     public void cleanUp() {
         SimScenario.reset();
     }
-
-
 }

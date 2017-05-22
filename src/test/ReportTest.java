@@ -39,6 +39,9 @@ public class ReportTest {
         settings.putSetting(Report.REPORTDIR_SETTING, "test");
         settings.putSetting("Report.report1", "Report");
         report = new DataSyncReport();
+
+        // Set locale for periods instead of commas in doubles.
+        java.util.Locale.setDefault(java.util.Locale.US);
     }
 
     @Test

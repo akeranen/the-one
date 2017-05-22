@@ -88,7 +88,7 @@ public class DataSyncReport extends SamplingReport{
             DoubleSummaryStatistics distanceStats = app.getDataDistanceStatistics();
             DoubleSummaryStatistics utilityStats = app.getDataUtilityStatistics();
             //Only add statistics if there are any data items
-            if (distanceStats.getCount()>0){
+            if (app.getUsedMemoryPercentage()>0){
                 //Even if we have data, we might only have map data, so no age stats
                 if (ageStats.getCount()>0){
                     averageDataAges.add(ageStats.getAverage());

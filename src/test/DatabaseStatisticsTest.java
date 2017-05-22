@@ -245,13 +245,13 @@ public class DatabaseStatisticsTest {
                 DOUBLE_COMPARISON_EXACTNESS);
         giveDataToHost(DisasterData.DataType.MARKER, SMALL_ITEM_SIZE, 0, ORIGIN);
         TestCase.assertEquals(WRONG_USED_MEM_PERCENTAGE,
-                SMALL_ITEM_SIZE+SMALL_ITEM_SIZE/(double)app.getDatabaseSize(),
+                (SMALL_ITEM_SIZE+SMALL_ITEM_SIZE)/(double)app.getDatabaseSize(),
                 app.getUsedMemoryPercentage(),
                 DOUBLE_COMPARISON_EXACTNESS);
         giveDataToHost(DisasterData.DataType.MARKER, BIG_ITEM_SIZE, CURR_TIME, CURR_LOCATION);
         //After adding a big useful item, the item with the lower utility should be deleted
         TestCase.assertEquals(WRONG_USED_MEM_PERCENTAGE,
-                SMALL_ITEM_SIZE+BIG_ITEM_SIZE/(double)app.getDatabaseSize(),
+                (SMALL_ITEM_SIZE+BIG_ITEM_SIZE)/(double)app.getDatabaseSize(),
                 app.getUsedMemoryPercentage(),
                 DOUBLE_COMPARISON_EXACTNESS);
     }

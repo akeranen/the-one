@@ -40,7 +40,7 @@ public final class Group implements Addressable {
             throw new AssertionError("Group address already assigned to another group: " + address);
         }
         this.address = address;
-        members = Collections.synchronizedList(new ArrayList<Integer>());
+        members = new ArrayList<Integer>();
     }
 
     /**

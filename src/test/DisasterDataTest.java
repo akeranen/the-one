@@ -51,6 +51,6 @@ public class DisasterDataTest {
     @Test
     public void testToString() {
         TestCase.assertEquals(
-                "String representation was not as expected.", "RESOURCE@20.40@(2.00,3.00)", this.data.toString());
+                "String representation was not as expected.", "RESOURCE@20.4@(2.0,3.0)", this.data.toString());
     }
 }

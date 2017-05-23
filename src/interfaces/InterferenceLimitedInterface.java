@@ -5,6 +5,7 @@
 package interfaces;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import core.Connection;
 import core.NetworkInterface;
@@ -59,11 +60,12 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	 * @param anotherInterface The host to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning()
+		if (this != anotherInterface
 				&& anotherInterface.getHost().isRadioActive()
+				&& isScanning()
 				&& isWithinRange(anotherInterface)
-				&& !isConnected(anotherInterface)
-				&& (this != anotherInterface)) {
+				&& !isConnected(anotherInterface)) {
+
 			// new contact within range
 
 			Connection con = new VBRConnection(this.host, this,
@@ -83,8 +85,9 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 
 		// First break the old ones
 		optimizer.updateLocation(this);
-		for (int i=0; i<this.connections.size(); ) {
-			Connection con = this.connections.get(i);
+		Iterator<Connection> it = connections.iterator();
+		while (it.hasNext()) {
+			Connection con = it.next();
 			NetworkInterface anotherInterface = con.getOtherInterface(this);
 
 			// all connections should be up at this stage
@@ -92,11 +95,10 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 
 			if (!isWithinRange(anotherInterface)) {
 				disconnect(con,anotherInterface);
-				connections.remove(i);
-			} else {
-				i++;
+				it.remove();
 			}
 		}
+
 		// Then find new possible connections
 		Collection<NetworkInterface> interfaces =
 			optimizer.getNearInterfaces(this);

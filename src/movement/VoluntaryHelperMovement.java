@@ -364,7 +364,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * effectively leading to an immediate change to whatever movement model is set directly after calling this method.
      */
     private void setMovementAsForcefullySwitched() {
-        justChanged = true;
+    	if (host.getPath() != null) {
+    		justChanged = true;
+    	}
         host.interruptMovement();
     }
 

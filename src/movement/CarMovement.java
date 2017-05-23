@@ -48,8 +48,18 @@ public class CarMovement extends MapBasedMovement implements
 	 * @param nodeDestination
 	 */
 	public void setNextRoute(Coord nodeLocation, Coord nodeDestination) {
-		from = nodeLocation.clone();
-		to = nodeDestination.clone();
+		if (nodeLocation != null) {
+		    from = nodeLocation.clone();
+		}
+		else {
+		    from = null;
+		}
+		if (nodeDestination != null) {
+		    to = nodeDestination.clone();
+		}
+		else {
+		    to = null;
+		}
 	}
 
 	@Override

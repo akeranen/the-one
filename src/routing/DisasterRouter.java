@@ -16,7 +16,6 @@ import util.Tuple;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Flexible router that can be used in a disaster scenario.
@@ -219,6 +218,7 @@ public class DisasterRouter extends ActiveRouter {
      * Gets prioritized messages for connected hosts.
      * @return The ordered messages, most important messages first.
      */
+    @Override
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
         List<Tuple<Message, Connection>> messages = this.getMessagesForConnected();
         messages.sort(this.directMessageTupleComparator);
@@ -230,10 +230,9 @@ public class DisasterRouter extends ActiveRouter {
      * @param connected A connected host.
      * @return The ordered messages, most important messages first.
      */
+    @Override
     protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
-        List<Message> messages = this.getMessageCollection().stream()
-                .filter(m -> m.isFinalRecipient(connected))
-                .collect(Collectors.toList());
+        List<Message> messages = super.getSortedMessagesForConnected(connected);
         messages.sort(this.directMessageComparator);
         return messages;
     }

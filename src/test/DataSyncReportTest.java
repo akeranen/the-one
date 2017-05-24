@@ -48,17 +48,17 @@ public class DataSyncReportTest extends AbstractReportTest{
                     "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: NaN, " +
                     "avg_data_dist: NaN, med_max_data_dist: NaN",
             "avg_ratio_map: NaN%, avg_ratio_marker: NaN%, avg_ratio_skill: NaN%, avg_ratio_res: NaN%",
-            "sim_time: 81.0, avg_used_mem: 3.9%, max_used_mem: 7.7%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+            "sim_time: 81.0, avg_used_mem: 3.7%, max_used_mem: 7.3%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
                     "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: 0.0, " +
                     "avg_data_dist: 0.0, med_max_data_dist: 0.0",
             "avg_ratio_map: 100.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 0.0%, avg_ratio_res: 0.0%",
-            "sim_time: 111.0, avg_used_mem: 7.3%, max_used_mem: 7.7%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
-                    "med_avg_data_age: 61.0, avg_data_age: 61.0, med_max_data_age: 61.0, med_avg_data_dist: 0.0, " +
-                    "avg_data_dist: 0.0, med_max_data_dist: 0.0",
+            "sim_time: 111.0, avg_used_mem: 8.1%, max_used_mem: 8.8%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
+                    "med_avg_data_age: 91.0, avg_data_age: 91.0, med_max_data_age: 91.0, med_avg_data_dist: 565.7, " +
+                    "avg_data_dist: 282.8, med_max_data_dist: 565.7",
             "avg_ratio_map: 50.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%",
-            "sim_time: 141.0, avg_used_mem: 19.7%, max_used_mem: 23.9%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
-                    "med_avg_data_age: 91.0, avg_data_age: 68.3, med_max_data_age: 91.0, med_avg_data_dist: 282.8, " +
-                    "avg_data_dist: 141.4, med_max_data_dist: 565.7",
+            "sim_time: 141.0, avg_used_mem: 22.7%, max_used_mem: 30.8%, med_avg_data_util: 1.0, avg_data_util: 0.9, " +
+                    "med_avg_data_age: 121.0, avg_data_age: 90.8, med_max_data_age: 121.0, med_avg_data_dist: 848.5, " +
+                    "avg_data_dist: 565.7, med_max_data_dist: 1131.4",
             "avg_ratio_map: 25.0%, avg_ratio_marker: 25.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%"
     };
 
@@ -73,12 +73,14 @@ public class DataSyncReportTest extends AbstractReportTest{
     private static final double REPORT_INTERVAL = 30;
     private static final double HALF_THE_REPORT_INTERVAL= REPORT_INTERVAL/2;
     private static final int TIME_FOR_A_REPORT = 31;
+    private static final int TIME_CLOSE_TO_SIM_START=20;
 
     /* Properties for DisasterData and DataMessages */
     private static final int SMALL_ITEM_SIZE = 20;
     private static final int BIG_ITEM_SIZE=50;
     private static final Coord ORIGIN = new Coord(0,0);
-    private static final Coord DISTANT_COORD = new Coord(400, 400);
+    private static final Coord CLOSE_COORD = new Coord(400, 400);
+    private static final Coord DISTANT_COORD = new Coord(800, 800);
 
     private DataSyncReport report;
     private TestUtils utils;
@@ -295,20 +297,20 @@ public class DataSyncReportTest extends AbstractReportTest{
     /**
      * Simulates creation of data and exchange of data for two hosts.
      *
-     * time   | hostAttachedtoApp       | secondHost            |
-     * -------|-------------------------|-----------------------|
-     *  51    |0 items                  | 0 items               |
-     * -------|-------------------------|-----------------------|
-     *  81    |1 item                   | 0 items               |
-     *        |MAP, 20, 0, (0,0)        |                       |
-     * -------|-------------------------|-----------------------|
-     * 111    |1 item                   | 1 item                |
-     *        |MAP, 20, 0, (0,0)        |SKILL, 20, 50, (0,0)   |
-     * -------|-------------------------|-----------------------|
-     * 141    |2 items                  | 2 items               |
-     *        |MAP, 20, 0, (0,0)        |SKILL, 20, 50, (0,0)   |
-     *        |SKILL, 20, 50, (0,0)     |MARKER,50,141,(400,400)|
-     * -------|-------------------------|-----------------------|
+     * time   | hostAttachedtoApp       | secondHost                |
+     * -------|-------------------------|---------------------------|
+     *  51    |0 items                  | 0 items                   |
+     * -------|-------------------------|---------------------------|
+     *  81    |1 item                   | 0 items                   |
+     *        |MAP, 20, 0, (0,0)        |                           |
+     * -------|-------------------------|---------------------------|
+     * 111    |1 item                   | 1 item                    |
+     *        |MAP, 20, 0, (0,0)        |SKILL, 20, 20, (400,400)   |
+     * -------|-------------------------|---------------------------|
+     * 141    |2 items                  | 2 items                   |
+     *        |MAP, 20, 0, (0,0)        |SKILL, 20, 20, (400,400)   |
+     *        |SKILL, 20, 20,(400,400)  |MARKER, 50, 141, (800,800) |
+     * -------|-------------------------|---------------------------|
      */
     private void playScenario(){
         skipWarmUpTime();
@@ -334,7 +336,8 @@ public class DataSyncReportTest extends AbstractReportTest{
 
         //Send message with skill data to second host, this data was created later
         SimClock.getInstance().advance(REPORT_INTERVAL);
-        DisasterData skillData = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE, WARM_UP_TIME, ORIGIN);
+        DisasterData skillData = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE, TIME_CLOSE_TO_SIM_START,
+                CLOSE_COORD);
         DataMessage msg2 = new DataMessage(hostAttachedToApp, secondHost, "d2", skillData, 1, 1);
         secondApp.handle(msg2, secondHost);
 

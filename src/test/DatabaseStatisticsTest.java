@@ -24,7 +24,6 @@ import java.util.Map;
  */
 public class DatabaseStatisticsTest {
 
-
     /* Properties of the application. */
     private static final long BIGGEST_DB_SIZE = 100L;
     private static final long SMALLEST_DB_SIZE = 100L;

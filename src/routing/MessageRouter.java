@@ -530,23 +530,12 @@ public abstract class MessageRouter {
 			Collections.shuffle(list, new Random(SimClock.getIntTime()));
 			break;
 		case Q_MODE_FIFO:
-			Collections.sort(list,
-					new Comparator<Message>() {
-				/** Compares two tuples by their messages' receiving time */
-				public int compare(Message m1, Message m2) {
-					double diff= m1.getReceiveTime() - m2.getReceiveTime();
-					if (diff == 0) {
-						return 0;
-					}
-					return (diff < 0 ? -1 : 1);
-				}
-			});
+			list.sort(Comparator.comparing(Message::getReceiveTime));
 			break;
 		/* add more queue modes here */
 		default:
 			throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
-
 		return list;
 	}
 
@@ -562,26 +551,14 @@ public abstract class MessageRouter {
 				Collections.shuffle(list, new Random(SimClock.getIntTime()));
 				break;
 			case Q_MODE_FIFO:
-				Collections.sort(list,
-						new Comparator<Tuple<Message, Connection>>() {
-							/** Compares two tuples by their messages' receiving time */
-							public int compare(Tuple<Message, Connection> t1, Tuple<Message, Connection> t2) {
-								double diff = t1.getKey().getReceiveTime() - t2.getKey().getReceiveTime();
-								if (diff == 0) {
-									return 0;
-								}
-								return (diff < 0 ? -1 : 1);
-							}
-						});
+				list.sort((t1,t2) -> ((Double)t1.getKey().getReceiveTime()).compareTo(t2.getKey().getReceiveTime()));
 				break;
 		/* add more queue modes here */
 			default:
 				throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
-
 		return list;
 	}
-
 
 	/**
 	 * Gives the order of the two given messages as defined by the current
@@ -595,17 +572,9 @@ public abstract class MessageRouter {
 		switch (sendQueueMode) {
 		case Q_MODE_RANDOM:
 			/* return randomly (enough) but consistently -1, 0 or 1 */
-			int hash_diff = m1.hashCode() - m2.hashCode();
-			if (hash_diff == 0) {
-				return 0;
-			}
-			return (hash_diff < 0 ? -1 : 1);
+			return ((Integer)m1.hashCode()).compareTo(m2.hashCode());
 		case Q_MODE_FIFO:
-			double diff = m1.getReceiveTime() - m2.getReceiveTime();
-			if (diff == 0) {
-				return 0;
-			}
-			return (diff < 0 ? -1 : 1);
+			return ((Double)m1.getReceiveTime()).compareTo(m2.getReceiveTime());
 		/* add more queue modes here */
 		default:
 			throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);

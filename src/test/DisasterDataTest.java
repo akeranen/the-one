@@ -5,6 +5,8 @@ import core.Coord;
 import junit.framework.TestCase;
 import org.junit.Test;
 
+import java.util.Locale;
+
 /**
  * Contains tests for the {@link DisasterData} class.
  *
@@ -25,6 +27,7 @@ public class DisasterDataTest {
     public DisasterDataTest() {
         java.util.Locale.setDefault(java.util.Locale.US);
         this.data = new DisasterData(TYPE, SIZE, CREATION, LOCATION);
+        java.util.Locale.setDefault(Locale.US);
     }
 
     @Test

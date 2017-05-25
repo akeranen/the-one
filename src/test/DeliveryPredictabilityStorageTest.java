@@ -331,7 +331,7 @@ public class DeliveryPredictabilityStorageTest {
                 this.dpStorage.getKnownAddresses().contains(this.attachedHost.getAddress()));
     }
 
-    public static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(DTNHost host) {
+    private static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(DTNHost host) {
         return createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, host);
     }
 

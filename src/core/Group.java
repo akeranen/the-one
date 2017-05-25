@@ -3,7 +3,6 @@ package core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +39,7 @@ public final class Group implements Addressable {
             throw new AssertionError("Group address already assigned to another group: " + address);
         }
         this.address = address;
-        members = new ArrayList<Integer>();
+        members = new ArrayList<>();
     }
 
     /**

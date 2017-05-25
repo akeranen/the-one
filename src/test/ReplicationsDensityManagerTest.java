@@ -351,7 +351,7 @@ public class ReplicationsDensityManagerTest extends AbstractIntervalRatingMechan
     /**
      * Creates a new {@link ReplicationsDensityManager} using the specified window length.
      */
-    private static ReplicationsDensityManager createReplicationsDensityManager(double windowLength) {
+    public static ReplicationsDensityManager createReplicationsDensityManager(double windowLength) {
         TestSettings settings = new TestSettings(ReplicationsDensityManager.REPLICATIONS_DENSITY_NS);
         settings.putSetting(ReplicationsDensityManager.WINDOW_LENGTH_S, Double.toString(windowLength));
         return new ReplicationsDensityManager();

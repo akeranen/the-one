@@ -44,6 +44,7 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
         // Set rating mechanism managers.
         this.deliveryPredictabilities = deliveryPredictabilities;
         this.replicationsDensities = replicationsDensities;
+        this.checkRatingMechanismManagersNotNull();
 
         // Set weights.
         this.deliveryPredictabilityWeight = s.getDouble(DELIVERY_PREDICTABILITY_WEIGHT);
@@ -65,8 +66,23 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
             ReplicationsDensityManager replicationsDensities) {
         this.deliveryPredictabilities = deliveryPredictabilities;
         this.replicationsDensities = replicationsDensities;
+        this.checkRatingMechanismManagersNotNull();
+
         this.deliveryPredictabilityWeight = prio.deliveryPredictabilityWeight;
         this.replicationsDensityWeight = prio.replicationsDensityWeight;
+    }
+
+    /**
+     * Checks that neither {@link #deliveryPredictabilities} nor {@link #replicationsDensities} are {@code null} and
+     * throws an {@link IllegalArgumentException} if it is the case.
+     */
+    private void checkRatingMechanismManagersNotNull() {
+        if (this.deliveryPredictabilities == null) {
+            throw new IllegalArgumentException("Delivery predictability storage is null!");
+        }
+        if (this.replicationsDensities == null) {
+            throw new IllegalArgumentException("Replications densitiy manager is null!");
+        }
     }
 
     /**
@@ -106,5 +122,21 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
                         "Priority function only defined for 1-to-1, multicasts and data messages, not for type "
                         + m.getType() + "!");
         }
+    }
+
+    /**
+     * Gets the delivery predictability weight.
+     * @return The delivery predictability weight.
+     */
+    public double getDeliveryPredictabilityWeight() {
+        return deliveryPredictabilityWeight;
+    }
+
+    /**
+     * Gets the replications density weight.
+     * @return The replications density weight.
+     */
+    public double getReplicationsDensityWeight() {
+        return replicationsDensityWeight;
     }
 }

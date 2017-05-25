@@ -26,7 +26,7 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
     /**
      * The maximal possible value when checking if the encounter value is 0.
      */
-    private static final double NO_ENCOUNTERS = 0.000001;
+    private static final double ZERO_ENCOUNTERS = 0.000001;
 
     private double agingFactor;
 
@@ -87,7 +87,7 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
      * @return A ratio between 0 and 1.
      */
     public double computeEncounterValueRatio(double otherEncounterValue) {
-        if (this.encounterValue < NO_ENCOUNTERS && otherEncounterValue < NO_ENCOUNTERS) {
+        if (this.encounterValue < ZERO_ENCOUNTERS && otherEncounterValue < ZERO_ENCOUNTERS) {
             return EQUALLY_SOCIAL;
         }
         return otherEncounterValue / (this.encounterValue + otherEncounterValue);

@@ -70,8 +70,8 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
 
         // For each known message ID we care about, update the encountered messages.
         for (Message msg : host.getMessageCollection()) {
-            // Don't add messages for message IDs the host will never request the replications density for because it
-            // does not have it in buffer.
+            // Hosts only request the replications density for messages it has in its buffer, so we do not need to add
+            // any other messages.
             if (this.replicationsDensities.containsKey(msg.getId())) {
                 this.encounteredMessagesInTimeWindow.putIfAbsent(msg.getId(), new HashSet<>());
                 Set<DTNHost> hostsWithMessages = this.encounteredMessagesInTimeWindow.get(msg.getId());

@@ -1,12 +1,13 @@
 package routing.prioritizers;
 
 import core.Connection;
+import core.DTNHost;
 import core.DataMessage;
 import core.Message;
 import core.Settings;
 import core.SettingsError;
-import routing.util.DeliveryPredictabilityStorage;
-import routing.util.ReplicationsDensityManager;
+import routing.DisasterRouter;
+import routing.MessageRouter;
 import util.Tuple;
 
 import java.util.Comparator;
@@ -28,23 +29,19 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
     private double deliveryPredictabilityWeight;
     private double replicationsDensityWeight;
 
-    private DeliveryPredictabilityStorage deliveryPredictabilities;
-    private ReplicationsDensityManager replicationsDensities;
+    private DTNHost attachedHost;
+    private DisasterRouter attachedRouter;
 
     /**
      * Initializes a new instance of the {@link DisasterPrioritization} class.
      * @param s Settings to use.
-     * @param deliveryPredictabilities Storage of delivery predictabilities.
-     * @param replicationsDensities Storage of replications densities.
+     * @param attachedHost Host prioritizing the messages.
      */
-    public DisasterPrioritization(
-            Settings s,
-            DeliveryPredictabilityStorage deliveryPredictabilities,
-            ReplicationsDensityManager replicationsDensities) {
-        // Set rating mechanism managers.
-        this.deliveryPredictabilities = deliveryPredictabilities;
-        this.replicationsDensities = replicationsDensities;
-        this.checkRatingMechanismManagersNotNull();
+    public DisasterPrioritization(Settings s, DTNHost attachedHost) {
+        // Set attached host.
+        this.attachedHost = attachedHost;
+        this.checkAttachedHostNotNull();
+        this.attachedRouter = DisasterPrioritization.getRouter(this.attachedHost);
 
         // Set weights.
         this.deliveryPredictabilityWeight = s.getDouble(DELIVERY_PREDICTABILITY_WEIGHT);
@@ -57,62 +54,54 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
     /**
      * Copy constructor.
      * @param prio Original {@link DisasterPrioritization} to copy settings from.
-     * @param deliveryPredictabilities Storage of delivery predictabilities.
-     * @param replicationsDensities Storage of replications densities.
+     * @param attachedHost Host prioritizing the messages.
      */
-    public DisasterPrioritization(
-            DisasterPrioritization prio,
-            DeliveryPredictabilityStorage deliveryPredictabilities,
-            ReplicationsDensityManager replicationsDensities) {
-        this.deliveryPredictabilities = deliveryPredictabilities;
-        this.replicationsDensities = replicationsDensities;
-        this.checkRatingMechanismManagersNotNull();
+    public DisasterPrioritization(DisasterPrioritization prio, DTNHost attachedHost) {
+        this.attachedHost = attachedHost;
+        this.checkAttachedHostNotNull();
+        this.attachedRouter = DisasterPrioritization.getRouter(attachedHost);
 
         this.deliveryPredictabilityWeight = prio.deliveryPredictabilityWeight;
         this.replicationsDensityWeight = prio.replicationsDensityWeight;
     }
 
     /**
-     * Checks that neither {@link #deliveryPredictabilities} nor {@link #replicationsDensities} are {@code null} and
-     * throws an {@link IllegalArgumentException} if it is the case.
+     * Checks that {@link #attachedHost} is not {@code null} and throws an {@link IllegalArgumentException} if
+     * it is the case.
      */
-    private void checkRatingMechanismManagersNotNull() {
-        if (this.deliveryPredictabilities == null) {
-            throw new IllegalArgumentException("Delivery predictability storage is null!");
-        }
-        if (this.replicationsDensities == null) {
-            throw new IllegalArgumentException("Replications densitiy manager is null!");
+    private void checkAttachedHostNotNull() {
+        if (this.attachedHost == null) {
+            throw new IllegalArgumentException("Attached host is null!");
         }
     }
 
     /**
-     * Compares two message-connection tuples using {@link #computePriorityFunction(Message)}.
+     * Compares two message-connection tuples using {@link #computePriorityFunction(Tuple)}.
      * @param t1 First tuple to compare.
      * @param t2 Second tuple to compare.
-     * @return the value {@code 0} if
-     *         {@code computePriorityFunction(t1.getKey()) == computePriorityFunction(t2.getKey())};
-     *         a value less than {@code 0} if
-     *         {@code computePriorityFunction(t1.getKey()) > computePriorityFunction(t2.getKey())};
-     *         and a value greater than {@code 0} if
-     *         {@code computePriorityFunction(t1.getKey()) > computePriorityFunction(t2.getKey())}.
+     * @return the value {@code 0} if {@code computePriorityFunction(t1) == computePriorityFunction(t2)};
+     *         a value less than {@code 0} if {@code computePriorityFunction(t1) > computePriorityFunction(t2)};
+     *         and a value greater than {@code 0} if {@code computePriorityFunction(t1) < computePriorityFunction(t2)}.
      */
     @Override
     public int compare(Tuple<Message, Connection> t1, Tuple<Message, Connection> t2) {
-        return (-1) *
-                Double.compare(this.computePriorityFunction(t1.getKey()), this.computePriorityFunction(t2.getKey()));
+        return (-1) * Double.compare(this.computePriorityFunction(t1), this.computePriorityFunction(t2));
     }
 
     /**
-     * Computes the value depending on which messages are prioritized.
-     * @param m The message to compute the value for.
+     * Computes the value used for messages-connection prioritization.
+     * @param t The message-connection tuple to compute the value for.
      * @return The computed value.
      */
-    private double computePriorityFunction(Message m) {
+    private double computePriorityFunction(Tuple<Message, Connection> t) {
+        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(t.getValue().getOtherNode(this.attachedHost));
+        Message m = t.getKey();
+
         switch (m.getType()) {
             case ONE_TO_ONE:
             case MULTICAST:
-                double deliveryPredictability = this.deliveryPredictabilities.getDeliveryPredictability(m);
-                double replicationsDensity = this.replicationsDensities.getReplicationsDensity(m.getId());
+                double deliveryPredictability = neighborRouter.getDeliveryPredictability(m);
+                double replicationsDensity = this.attachedRouter.getReplicationsDensity(m);
                 return this.deliveryPredictabilityWeight * deliveryPredictability
                         + this.replicationsDensityWeight * (1 - replicationsDensity);
             case DATA:
@@ -122,6 +111,15 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
                         "Priority function only defined for 1-to-1, multicasts and data messages, not for type "
                         + m.getType() + "!");
         }
+    }
+
+    private static DisasterRouter getRouter(DTNHost host) {
+        MessageRouter neighborRouter = host.getRouter();
+        if (!(neighborRouter instanceof DisasterRouter)) {
+            throw new IllegalArgumentException(
+                    "Disaster prioritization cannot handle routers of type " + neighborRouter.getClass() + "!");
+        }
+        return (DisasterRouter)neighborRouter;
     }
 
     /**

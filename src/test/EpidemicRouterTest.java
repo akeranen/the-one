@@ -4,6 +4,7 @@
  */
 package test;
 
+import core.SimClock;
 import org.junit.Test;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
@@ -180,6 +181,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(6);
 
 		h1.connect(h2);
+        SimClock.getInstance().advance(1);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType()); // starts h1->h2 MSG_ID1

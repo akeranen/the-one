@@ -4,6 +4,7 @@
  */
 package test;
 
+import core.SimClock;
 import org.junit.Test;
 import routing.MessageRouter;
 import routing.ProphetRouter;
@@ -65,6 +66,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		// now h1-h3-h5 connected and h5 knows h4
 
 		// first h1 should transfer MSG_ID2 to h3 (final recipient)
+        SimClock.getInstance().advance(1);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());

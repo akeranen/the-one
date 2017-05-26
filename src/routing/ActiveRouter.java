@@ -48,6 +48,9 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
+	private double recomputeMessageOrderInterval=0.5;
+	private double lastMessageOrdering = 0;
+    private List<Tuple<Message,Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -471,8 +474,12 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-        Tuple<Message, Connection> tuple =
-			tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
+		if(SimClock.getTime()-lastMessageOrdering >= recomputeMessageOrderInterval){
+            cachedMessagesForConnected = sortTupleListByQueueMode(getMessagesForConnected());
+            lastMessageOrdering = SimClock.getTime();
+        }
+
+		Tuple<Message, Connection> tuple = tryMessagesForConnected(cachedMessagesForConnected);
 
         if (tuple != null) {
 			return tuple.getValue(); // started transfer

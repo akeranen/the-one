@@ -68,7 +68,7 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
      * @param strategy Original {@link DisasterPrioritizationStrategy} to copy settings from.
      * @param attachedRouter Router prioritizing the messages.
      */
-    public DisasterPrioritizationStrategy(DisasterPrioritizationStrategy strategy, MessageRouter attachedRouter) {
+    private DisasterPrioritizationStrategy(DisasterPrioritizationStrategy strategy, MessageRouter attachedRouter) {
         this.headStartThreshold = strategy.headStartThreshold;
 
         DisasterPrioritizationStrategy.checkRouterIsDisasterRouter(attachedRouter);
@@ -81,6 +81,9 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
      * @param router Router to check
      */
     private static void checkRouterIsDisasterRouter(MessageRouter router) {
+        if (router == null) {
+            throw new IllegalArgumentException("Router is null!");
+        }
         if (!(router instanceof DisasterRouter)) {
             throw new IllegalArgumentException(
                     "Disaster prioritization strategy cannot handle routers of type " + router.getClass() + "!");
@@ -155,6 +158,14 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
      */
     private boolean isHeadStartMessage(Message m) {
         return !(m instanceof DataMessage) && (SimClock.getTime() - m.getCreationTime()) <= this.headStartThreshold;
+    }
+
+    /**
+     * Gets the head start theshold.
+     * @return The head start theshold.
+     */
+    public double getHeadStartThreshold() {
+        return this.headStartThreshold;
     }
 
     /**

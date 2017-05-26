@@ -373,7 +373,7 @@ public class DisasterPrioritizationTest {
      * @param to Host to connect to.
      * @return The new connection.
      */
-    private static Connection createConnection(DTNHost from, DTNHost to) {
+    public static Connection createConnection(DTNHost from, DTNHost to) {
         from.forceConnection(to, null, true);
         for (Connection con : from.getConnections()) {
             if (con.getOtherNode(from).equals(to)) {

@@ -9,6 +9,7 @@ import interfaces.ConnectivityOptimizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 
 import routing.util.EnergyModel;
@@ -471,10 +472,10 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	 * @param index The array index of the connection to be removed
 	 * @param anotherInterface The interface of the other host
 	 */
-	private void removeConnectionByIndex(int index,
-			NetworkInterface anotherInterface) {
-		Connection con = this.connections.get(index);
-		DTNHost anotherNode = anotherInterface.getHost();
+	private void removeConnectionByIndex(int index, NetworkInterface anotherInterface) {
+        ListIterator<Connection> iterator= connections.listIterator(index);
+		Connection con = iterator.next();
+        DTNHost anotherNode = anotherInterface.getHost();
 		con.setUpState(false);
 		notifyConnectionListeners(CON_DOWN, anotherNode);
 
@@ -487,7 +488,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		this.host.connectionDown(con);
 		anotherNode.connectionDown(con);
 
-		connections.remove(index);
+        iterator.remove();
 	}
 
 	/**

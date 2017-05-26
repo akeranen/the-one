@@ -71,7 +71,7 @@ public class DisasterPrioritizationTest {
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnMissingWeight() {
-        new DisasterPrioritization(new TestSettings(), this.host);
+        new DisasterPrioritization(new TestSettings(), (DisasterRouter)this.host.getRouter());
     }
 
     @Test(expected = SettingsError.class)
@@ -85,14 +85,10 @@ public class DisasterPrioritizationTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorThrowsOnMissingHost() {
-        DisasterPrioritizationTest.createDisasterPrioritization(DP_WEIGHT, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorThrowsOnHostWithNonDisasterRouter() {
-        this.testUtils.setMessageRouterProto(new PassiveRouter(new TestSettings()));
-        DisasterPrioritizationTest.createDisasterPrioritization(DP_WEIGHT, this.testUtils.createHost());
+    public void testConstructorThrowsOnMissingRouter() {
+        TestSettings settings = new TestSettings();
+        settings.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
+        new DisasterPrioritization(settings, null);
     }
 
     @Test
@@ -110,19 +106,14 @@ public class DisasterPrioritizationTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCopyConstructorThrowsOnMissingHost() {
+    public void testCopyConstructorThrowsOnMissingRouter() {
         new DisasterPrioritization(this.prioritization, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testCopyConstructorThrowsOnHostWithNonDisasterRouter() {
-        this.testUtils.setMessageRouterProto(new PassiveRouter(new TestSettings()));
-        new DisasterPrioritization(this.prioritization, this.testUtils.createHost());
     }
 
     @Test
     public void testCopyConstructorCopiesWeights() {
-        DisasterPrioritization copy = new DisasterPrioritization(this.prioritization, this.host);
+        DisasterPrioritization copy =
+                new DisasterPrioritization(this.prioritization, (DisasterRouter)this.host.getRouter());
         Assert.assertEquals(
                 "Expected different delivery predictability weight.",
                 this.prioritization.getDeliveryPredictabilityWeight(), copy.getDeliveryPredictabilityWeight(),
@@ -131,6 +122,11 @@ public class DisasterPrioritizationTest {
                 "Expected different replications densitiy weight.",
                 this.prioritization.getReplicationsDensityWeight(), copy.getReplicationsDensityWeight(),
                 DOUBLE_COMPARISON_DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetHostThrowsOnMissingHost() {
+        this.prioritization.setAttachedHost(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -352,7 +348,10 @@ public class DisasterPrioritizationTest {
     private static DisasterPrioritization createDisasterPrioritization(double weight, DTNHost attachedHost) {
         TestSettings settings = new TestSettings();
         settings.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(weight));
-        return new DisasterPrioritization(settings, attachedHost);
+
+        DisasterPrioritization prio =  new DisasterPrioritization(settings, (DisasterRouter)attachedHost.getRouter());
+        prio.setAttachedHost(attachedHost);
+        return prio;
     }
 
     /**

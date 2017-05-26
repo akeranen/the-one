@@ -35,43 +35,51 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
     /**
      * Initializes a new instance of the {@link DisasterPrioritization} class.
      * @param s Settings to use.
-     * @param attachedHost Host prioritizing the messages.
      */
-    public DisasterPrioritization(Settings s, DTNHost attachedHost) {
-        // Set attached host.
-        this.attachedHost = attachedHost;
-        this.checkAttachedHostNotNull();
-        this.attachedRouter = DisasterPrioritization.getRouter(this.attachedHost);
-
+    public DisasterPrioritization(Settings s, DisasterRouter attachedRouter) {
         // Set weights.
         this.deliveryPredictabilityWeight = s.getDouble(DELIVERY_PREDICTABILITY_WEIGHT);
         if (this.deliveryPredictabilityWeight < 0 || this.deliveryPredictabilityWeight > 1) {
             throw new SettingsError("Delivery predictability weight has to be between 0 and 1!");
         }
         this.replicationsDensityWeight = 1 - deliveryPredictabilityWeight;
+
+        // Set attached router.
+        DisasterPrioritization.checkRouterIsNotNull(attachedRouter);
+        this.attachedRouter = attachedRouter;
     }
 
     /**
      * Copy constructor.
      * @param prio Original {@link DisasterPrioritization} to copy settings from.
-     * @param attachedHost Host prioritizing the messages.
      */
-    public DisasterPrioritization(DisasterPrioritization prio, DTNHost attachedHost) {
-        this.attachedHost = attachedHost;
-        this.checkAttachedHostNotNull();
-        this.attachedRouter = DisasterPrioritization.getRouter(attachedHost);
-
+    public DisasterPrioritization(DisasterPrioritization prio, DisasterRouter attachedRouter) {
         this.deliveryPredictabilityWeight = prio.deliveryPredictabilityWeight;
         this.replicationsDensityWeight = prio.replicationsDensityWeight;
+        DisasterPrioritization.checkRouterIsNotNull(attachedRouter);
+        this.attachedRouter = attachedRouter;
     }
 
     /**
-     * Checks that {@link #attachedHost} is not {@code null} and throws an {@link IllegalArgumentException} if
-     * it is the case.
+     * Sets the host prioritizing the messages.
+     * @param host Host prioritizing the messages. Should be the one that will get the {@link #attachedRouter} as
+     *             router.
      */
-    private void checkAttachedHostNotNull() {
-        if (this.attachedHost == null) {
-            throw new IllegalArgumentException("Attached host is null!");
+    public void setAttachedHost(DTNHost host) {
+        if (host == null) {
+            throw new IllegalArgumentException("Host is null!");
+        }
+        this.attachedHost = host;
+        // Note: Cannot set router at this place because the host's router is only set afterwards.
+    }
+
+    /**
+     * Checks the provided router is not null and throws an {@link IllegalArgumentException} otherwise.
+     * @param router Router to check.
+     */
+    private static void checkRouterIsNotNull(DisasterRouter router) {
+        if (router == null) {
+            throw new IllegalArgumentException("Attached router is null!");
         }
     }
 

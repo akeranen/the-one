@@ -4,7 +4,7 @@
  */
 package test;
 
-import core.SimClock;
+
 import org.junit.Test;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
@@ -46,6 +46,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.connect(h2);
 		h2.connect(h3);
 
+        clock.advance(1);
 		updateAllNodes();
 		clock.advance(2);
 		updateAllNodes();
@@ -134,6 +135,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		mc.reset();
 
 		h1.connect(h2);
+        clock.advance(1);
 		updateAllNodes(); // h1 should start transfer
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
@@ -181,7 +183,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(6);
 
 		h1.connect(h2);
-        SimClock.getInstance().advance(1);
+        clock.advance(1);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType()); // starts h1->h2 MSG_ID1
@@ -212,6 +214,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(1);
 
 		h1.connect(h2);
+        clock.advance(1);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
@@ -221,6 +224,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertFalse(mc.next());
 
 		h2.setLocation(farAway);
+        clock.advance(1);
 		updateAllNodes(); // disconnect, still transferring
 
 		assertTrue(mc.next());
@@ -240,6 +244,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(1);
 
 		h2.connect(h1);
+        clock.advance(1);
 		updateAllNodes(); // should start transfer
 
 		assertTrue(mc.next());
@@ -267,6 +272,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.createNewMessage(m1);
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
+        clock.advance(1);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
@@ -306,15 +312,18 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.createNewMessage(m1);
 
 		h1.connect(h2);
+        clock.advance(1);
 		updateAllNodes(); // starts transfer h1 -> h2
 		clock.advance(10);
 		mc.reset();	// discard create & start
+        clock.advance(1);
 		updateAllNodes(); // msg delivered h1 -> h2
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
 		assertEquals(h2, mc.getLastTo());
 
 		h1.connect(h3);
+        clock.advance(1);
 		updateAllNodes();	// start transfer h1 -> h3
 		assertTrue(mc.next());
 		clock.advance(10);
@@ -324,6 +333,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(h3, mc.getLastTo());
 
 		h3.connect(h2);
+        clock.advance(1);
 		updateAllNodes(); // should not start a new transfer (h1 -> h2)
 		clock.advance(10);
 		updateAllNodes(); // still shouldn't do anything
@@ -402,6 +412,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(2);
 
 		h3.connect(h1);
+        clock.advance(1);
 		updateAllNodes(); // transfer of MSG_ID1 should start
 
 		assertTrue(mc.next());

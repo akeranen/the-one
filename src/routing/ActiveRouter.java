@@ -50,6 +50,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	private EnergyModel energy;
 	private double recomputeMessageOrderInterval=0.5;
 	private double lastMessageOrdering = 0;
+    private List<Message> cachedMessages = new ArrayList<>();
+    private double lastMessageOrderingForConnected = 0;
     private List<Tuple<Message,Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
@@ -452,12 +454,12 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
+        if(SimClock.getTime()-lastMessageOrdering >= recomputeMessageOrderInterval){
+		    cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
+            lastMessageOrdering = SimClock.getTime();
+        }
 
-		List<Message> messages =
-			new ArrayList<Message>(this.getMessageCollection());
-		this.sortListByQueueMode(messages);
-
-		return tryMessagesToConnections(messages, connections);
+		return tryMessagesToConnections(cachedMessages, connections);
 	}
 
 	/**
@@ -474,9 +476,9 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-		if(SimClock.getTime()-lastMessageOrdering >= recomputeMessageOrderInterval){
+		if(SimClock.getTime()-lastMessageOrderingForConnected >= recomputeMessageOrderInterval){
             cachedMessagesForConnected = sortTupleListByQueueMode(getMessagesForConnected());
-            lastMessageOrdering = SimClock.getTime();
+            lastMessageOrderingForConnected = SimClock.getTime();
         }
 
 		Tuple<Message, Connection> tuple = tryMessagesForConnected(cachedMessagesForConnected);

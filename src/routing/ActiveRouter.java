@@ -52,8 +52,6 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private double lastMessageOrdering;
     private List<Message> cachedMessages = new ArrayList<>();
-    private double lastMessageOrderingForConnected;
-    private List<Tuple<Message,Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -477,12 +475,8 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-		if(SimClock.getTime()-lastMessageOrderingForConnected >= MESSAGE_ORDERING_INTERVAL){
-            cachedMessagesForConnected = sortTupleListByQueueMode(getMessagesForConnected());
-            lastMessageOrderingForConnected = SimClock.getTime();
-        }
-
-		Tuple<Message, Connection> tuple = tryMessagesForConnected(cachedMessagesForConnected);
+		Tuple<Message, Connection> tuple =
+                tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
 
         if (tuple != null) {
 			return tuple.getValue(); // started transfer

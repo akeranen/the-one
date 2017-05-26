@@ -60,11 +60,10 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	 * @param anotherInterface The host to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (this != anotherInterface
-				&& anotherInterface.getHost().isRadioActive()
-				&& isScanning()
-				&& isWithinRange(anotherInterface)
-				&& !isConnected(anotherInterface)) {
+        if (this != anotherInterface
+                && !isConnected(anotherInterface)
+				&& anotherInterface.isActive()
+				&& isWithinRange(anotherInterface)) {
 
 			// new contact within range
 
@@ -99,11 +98,13 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 			}
 		}
 
-		// Then find new possible connections
-		Collection<NetworkInterface> interfaces =
-			optimizer.getNearInterfaces(this);
-		for (NetworkInterface i : interfaces)
-			connect(i);
+		if (isScanning()) {
+            // Then find new possible connections
+            Collection<NetworkInterface> interfaces = optimizer.getNearInterfaces(this);
+            for (NetworkInterface i : interfaces){
+                connect(i);
+            }
+        }
 
 		// Find the current number of transmissions
 		// (to calculate the current transmission speed

@@ -5,6 +5,7 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
+import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DatabaseApplicationUtil;
 import routing.util.DeliveryPredictabilityStorage;
 import routing.util.EncounterValueManager;
@@ -48,7 +49,8 @@ public class DisasterRouter extends ActiveRouter {
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(s);
 
         // Initialize message choosers and orderers.
-        // TODO: create messagePrioritizer, messageChooser, directMessageComparator and directMessageTupleComparator
+        this.messagePrioritizer = new DisasterPrioritizationStrategy(s, this);
+        // TODO: create messageChooser, directMessageComparator and directMessageTupleComparator
     }
 
     /**
@@ -63,8 +65,8 @@ public class DisasterRouter extends ActiveRouter {
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(router.deliveryPredictabilityStorage);
 
         // Copy message choosers and orderers.
-        // TODO: copy messagePrioritizer (using new managers), messageChooser, directMessageComparator,
-        // directMessageTupleComparator
+        this.messagePrioritizer = router.messagePrioritizer.replicate(this);
+        // TODO: messageChooser, directMessageComparator, directMessageTupleComparator
     }
 
     /**
@@ -78,6 +80,7 @@ public class DisasterRouter extends ActiveRouter {
     public void init(DTNHost host, List<MessageListener> mListeners) {
         super.init(host, mListeners);
         this.deliveryPredictabilityStorage.setAttachedHost(host);
+        this.messagePrioritizer.setAttachedHost(host);
     }
 
     /**

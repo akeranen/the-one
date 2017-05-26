@@ -1,6 +1,7 @@
 package routing;
 
 import core.Connection;
+import core.DTNHost;
 import core.Message;
 import util.Tuple;
 
@@ -22,15 +23,16 @@ public interface MessagePrioritizationStrategy {
 
     /**
      * Creates a replicate of this message prioritization strategy. The replicate has the same settings as this message
-     * prioritization strategy but no attached host.
+     * prioritization strategy but is attached to the provided router and has no attached host.
      *
+     * @param attachedRouter Router prioritizing the messages.
      * @return The replicate.
      */
-    MessagePrioritizationStrategy replicate();
+    MessagePrioritizationStrategy replicate(MessageRouter attachedRouter);
 
     /**
-     * Sets the attached router.
-     * @param router Router prioritizing the messages.
+     * Sets the attached host.
+     * @param host host prioritizing the messages.
      */
-    void setAttachedRouter(MessageRouter router);
+    void setAttachedHost(DTNHost host);
 }

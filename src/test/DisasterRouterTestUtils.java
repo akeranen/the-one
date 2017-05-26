@@ -1,5 +1,7 @@
 package test;
 
+import routing.prioritizers.DisasterPrioritization;
+import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
 import routing.util.EncounterValueManager;
 import routing.util.ReplicationsDensityManager;
@@ -23,6 +25,10 @@ public final class DisasterRouterTestUtils {
     /* Constant needed for replications density. */
     public static final double RD_WINDOW_LENGTH = 12.0;
 
+    /* Constants needed for prioritization. */
+    public static final double HEAD_START_THRESHOLD = 30.4;
+    public static final double DP_WEIGHT = 0.8;
+
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
      */
@@ -45,5 +51,8 @@ public final class DisasterRouterTestUtils {
         s.setNameSpace(ReplicationsDensityManager.REPLICATIONS_DENSITY_NS);
         s.putSetting(ReplicationsDensityManager.WINDOW_LENGTH_S, Double.toString(RD_WINDOW_LENGTH));
         s.restoreNameSpace();
+
+        s.putSetting(DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S, Double.toString(HEAD_START_THRESHOLD));
+        s.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
     }
 }

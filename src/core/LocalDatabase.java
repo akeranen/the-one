@@ -3,10 +3,13 @@ package core;
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Local database which stores {@link DisasterData} along with
@@ -94,8 +97,7 @@ public class LocalDatabase {
      * @return A threshold between 0 and 1 that is 0 for empty memory and 1 for full memory.
      */
     private double computeDeletionThreshold() {
-        double usedMemoryPercentage = (double)this.usedSize / this.totalSize;
-        return Math.pow(usedMemoryPercentage, CUBIC);
+        return Math.pow(getUsedMemoryPercentage(), CUBIC);
     }
 
     /**
@@ -221,4 +223,77 @@ public class LocalDatabase {
         /* Compute utility. */
         return alpha * Math.pow(DEFAULT_BASE, -(distance/SLOWER_DECREASE_DIVISOR)) + (1-alpha) * Math.pow(gamma,-age);
     }
+
+    /**
+     * Computes statistics about the utility of all {@link DisasterData} items in this database
+     * @return statistics about the utility across all {@link DisasterData} items
+     */
+    public DoubleSummaryStatistics getDataUtilityStatistics(){
+        recomputeUtilitiesIfNecessary();
+        return data.values().stream().collect(Collectors.summarizingDouble(Double::doubleValue));
+    }
+
+    /**
+     * Computes statistics about the age of all {@link DisasterData} items in this database
+     * which are not of {@link DisasterData.DataType} MAP
+     * @return statistics about the age across all non-map {@link DisasterData} items
+     */
+    public DoubleSummaryStatistics getDataAgeStatistics(){
+        double currentTime = SimClock.getTime();
+        List<Double> ages = new ArrayList<>();
+        for (DisasterData dataItem : data.keySet()){
+            if (dataItem.getType()==DisasterData.DataType.MAP){
+                continue;
+            }
+            ages.add(currentTime-dataItem.getCreation());
+        }
+        return ages.stream().mapToDouble(Double::doubleValue).summaryStatistics();
+    }
+
+    /**
+     * Computes statistics about the distance of {@link DisasterData} items in this database to the host
+     * @return statistics about the distance across all {@link DisasterData} items
+     */
+    public DoubleSummaryStatistics getDataDistanceStatistics(){
+        Coord currentLocation = this.owner.getLocation();
+        List<Double> distances = new ArrayList<>();
+        for (DisasterData dataItem : data.keySet()){
+            distances.add(dataItem.getLocation().distance(currentLocation));
+        }
+        return distances.stream().mapToDouble(Double::doubleValue).summaryStatistics();
+    }
+
+    /**
+     * Percentage of memory for {@link DisasterData} which is used as a value between 0 and 1
+     * @return percentage of available memory for {@link DisasterData} which is used as a value between 0 and 1
+     */
+    public double getUsedMemoryPercentage(){
+        return (double)this.usedSize / this.totalSize;
+    }
+
+    /**
+     * Returns the ratio of {@link DisasterData} items in the database per
+     * {@link DisasterData.DataType} to the total number of items.
+     * @return A hashmap containing a ratio between 0 and 1 for each {@link DisasterData.DataType}
+     */
+    public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
+        EnumMap<DisasterData.DataType, Double> ratioPerType = new EnumMap<>(DisasterData.DataType.class);
+        for (DisasterData.DataType type : DisasterData.DataType.values()){
+            ratioPerType.put(type, 0.0);
+        }
+        int totalNoOfItems = data.size();
+        //If we have no items, we can stop
+        if (totalNoOfItems >0){
+            //Count the number of items per DataType
+            for (DisasterData dataItem : data.keySet()){
+                ratioPerType.put(dataItem.getType(), ratioPerType.get(dataItem.getType())+1);
+            }
+            //Calculate the ratio by dividing by the total number of items
+            for (DisasterData.DataType type : DisasterData.DataType.values()) {
+                ratioPerType.put(type, ratioPerType.get(type) / totalNoOfItems);
+            }
+        }
+        return ratioPerType;
+    }
+
 }

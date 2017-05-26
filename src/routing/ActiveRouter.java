@@ -45,13 +45,14 @@ public abstract class ActiveRouter extends MessageRouter {
 	protected ArrayList<Connection> sendingConnections;
 	/** sim time when the last TTL check was done */
 	private double lastTtlCheck;
+    final private double MESSAGE_ORDERING_INTERVAL=0.5;
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
-	private double recomputeMessageOrderInterval=0.5;
-	private double lastMessageOrdering = 0;
+
+	private double lastMessageOrdering;
     private List<Message> cachedMessages = new ArrayList<>();
-    private double lastMessageOrderingForConnected = 0;
+    private double lastMessageOrderingForConnected;
     private List<Tuple<Message,Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
@@ -454,7 +455,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
-        if(SimClock.getTime()-lastMessageOrdering >= recomputeMessageOrderInterval){
+        if(SimClock.getTime()-lastMessageOrdering >= MESSAGE_ORDERING_INTERVAL){
 		    cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
@@ -476,7 +477,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-		if(SimClock.getTime()-lastMessageOrderingForConnected >= recomputeMessageOrderInterval){
+		if(SimClock.getTime()-lastMessageOrderingForConnected >= MESSAGE_ORDERING_INTERVAL){
             cachedMessagesForConnected = sortTupleListByQueueMode(getMessagesForConnected());
             lastMessageOrderingForConnected = SimClock.getTime();
         }

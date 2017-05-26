@@ -88,7 +88,9 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 * Returns a text representation of the coordinate
 	 * @return a text representation of the coordinate
 	 */
-    public String toString() { return "("+x+","+y+")"; }
+	public String toString() {
+        return "("+x+","+y+")";
+	}
 
 	/**
 	 * Returns a clone of this coordinate

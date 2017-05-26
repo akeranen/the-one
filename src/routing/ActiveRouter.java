@@ -348,13 +348,12 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return a list of message-connections tuples
 	 */
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
-		if (getNrofMessages() == 0 || getConnections().size() == 0) {
+		List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
+		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
 			/* no messages -> empty list */
-			return new ArrayList<Tuple<Message, Connection>>(0);
+			return forTuples;
 		}
 
-		List<Tuple<Message, Connection>> forTuples =
-			new ArrayList<Tuple<Message, Connection>>();
 		for (Message m : getMessageCollection()) {
 			for (Connection con : getConnections()) {
 				DTNHost to = con.getOtherNode(getHost());
@@ -369,7 +368,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	/**
 	 * Tries to send messages for the connections that are mentioned
-	 * in the Tuples in the order they are in the list until one of
+	 * in the tuples in the order they are in the list until one of
 	 * the connections starts transferring or all tuples have been tried.
 	 * @param tuples The tuples to try
 	 * @return The tuple whose connection accepted the message or null if
@@ -377,14 +376,12 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected Tuple<Message, Connection> tryMessagesForConnected(
 			List<Tuple<Message, Connection>> tuples) {
-		if (tuples.size() == 0) {
+		if (tuples.isEmpty()) {
 			return null;
 		}
 
 		for (Tuple<Message, Connection> t : tuples) {
-			Message m = t.getKey();
-			Connection con = t.getValue();
-			if (startTransfer(m, con) == RCV_OK) {
+			if (startTransfer(t.getKey(), t.getValue()) == RCV_OK) {
 				return t;
 			}
 		}
@@ -442,7 +439,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	/**
 	 * Tries to send all messages that this router is carrying to all
 	 * connections this node has. Messages are ordered using the
-	 * {@link MessageRouter#sortByQueueMode(List)}. See
+	 * {@link MessageRouter#sortTupleListByQueueMode(List)}. See
 	 * {@link #tryMessagesToConnections(List, List)} for sending details.
 	 * @return The connections that started a transfer or null if no connection
 	 * accepted a message.
@@ -455,7 +452,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		List<Message> messages =
 			new ArrayList<Message>(this.getMessageCollection());
-		this.sortByQueueMode(messages);
+		this.sortListByQueueMode(messages);
 
 		return tryMessagesToConnections(messages, connections);
 	}
@@ -469,18 +466,16 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * was started
 	 */
 	protected Connection exchangeDeliverableMessages() {
-		List<Connection> connections = getConnections();
-
-		if (connections.size() == 0) {
+        List<Connection> connections = getConnections();
+        if (connections.isEmpty()) {
 			return null;
 		}
 
-		@SuppressWarnings(value = "unchecked")
-		Tuple<Message, Connection> t =
-			tryMessagesForConnected(sortByQueueMode(getMessagesForConnected()));
+        Tuple<Message, Connection> tuple =
+			tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
 
-		if (t != null) {
-			return t.getValue(); // started transfer
+        if (tuple != null) {
+			return tuple.getValue(); // started transfer
 		}
 
 		// didn't start transfer to any node -> ask messages from connected
@@ -527,15 +522,11 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (this.sendingConnections.size() > 0) {
 			return true; // sending something
 		}
-
-		List<Connection> connections = getConnections();
-
-		if (connections.size() == 0) {
+        List<Connection> connections = getConnections();
+        if (connections.isEmpty()) {
 			return false; // not connected
 		}
-
-		for (int i=0, n=connections.size(); i<n; i++) {
-			Connection con = connections.get(i);
+		for (Connection con : connections) {
 			if (!con.isReadyForTransfer()) {
 				return true;	// a connection isn't ready for new transfer
 			}

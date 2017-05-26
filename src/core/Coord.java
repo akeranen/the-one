@@ -113,10 +113,9 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 */
 	public boolean equals(Coord c) {
 		if (c == this) {
-			return true;
-		}
-		else {
-			return (x == c.x && y == c.y); // XXX: == for doubles...
+             return true;
+		} else {
+            return (x == c.x && y == c.y); // XXX: == for doubles...
 		}
 	}
 

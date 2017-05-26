@@ -85,7 +85,7 @@ public class DisasterData {
 
     /**
      * Returns a string representation of the object.
-     * 
+     *
      * @return a string representation of the object.
      */
     @Override

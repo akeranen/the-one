@@ -480,7 +480,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		notifyConnectionListeners(CON_DOWN, anotherNode);
 
 		// tear down bidirectional connection
-		if (!anotherInterface.getConnections().remove(con)) {
+		if (!anotherInterface.removeConnection(con)) {
 			throw new SimError("No connection " + con + " found in " +
 					anotherNode);
 		}
@@ -490,6 +490,25 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 
         iterator.remove();
 	}
+
+    /**
+     * Iterates through the list of connection and removes the first
+     * occurence of conToRemove
+     * @param conToRemove the connection which should be removed
+     * @return true if the connection could be remove (else false)
+     */
+	public boolean removeConnection(Connection conToRemove){
+	    ListIterator<Connection> iterator =connections.listIterator();
+	    while(iterator.hasNext()){
+	        Connection current = iterator.next();
+	        if (current.equals(conToRemove)){
+                iterator.remove();
+                return true;
+            }
+        }
+        //Did not find connection to delete
+        return false;
+    }
 
 	/**
 	 * Returns the DTNHost of this interface

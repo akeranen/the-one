@@ -9,6 +9,7 @@ import interfaces.ConnectivityOptimizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 
 import routing.util.EnergyModel;
@@ -471,15 +472,15 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	 * @param index The array index of the connection to be removed
 	 * @param anotherInterface The interface of the other host
 	 */
-	private void removeConnectionByIndex(int index,
-			NetworkInterface anotherInterface) {
-		Connection con = this.connections.get(index);
-		DTNHost anotherNode = anotherInterface.getHost();
+	private void removeConnectionByIndex(int index, NetworkInterface anotherInterface) {
+        ListIterator<Connection> iterator= connections.listIterator(index);
+		Connection con = iterator.next();
+        DTNHost anotherNode = anotherInterface.getHost();
 		con.setUpState(false);
 		notifyConnectionListeners(CON_DOWN, anotherNode);
 
 		// tear down bidirectional connection
-		if (!anotherInterface.getConnections().remove(con)) {
+		if (!anotherInterface.removeConnection(con)) {
 			throw new SimError("No connection " + con + " found in " +
 					anotherNode);
 		}
@@ -487,8 +488,27 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		this.host.connectionDown(con);
 		anotherNode.connectionDown(con);
 
-		connections.remove(index);
+        iterator.remove();
 	}
+
+    /**
+     * Iterates through the list of connection and removes the first
+     * occurence of conToRemove
+     * @param conToRemove the connection which should be removed
+     * @return true if the connection could be remove (else false)
+     */
+	public boolean removeConnection(Connection conToRemove){
+	    ListIterator<Connection> iterator =connections.listIterator();
+	    while(iterator.hasNext()){
+	        Connection current = iterator.next();
+	        if (current.equals(conToRemove)){
+                iterator.remove();
+                return true;
+            }
+        }
+        //Did not find connection to delete
+        return false;
+    }
 
 	/**
 	 * Returns the DTNHost of this interface

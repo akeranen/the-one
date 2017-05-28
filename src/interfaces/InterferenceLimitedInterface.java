@@ -82,29 +82,11 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 			return; /* nothing to do */
 		}
 
-		// First break the old ones
-		optimizer.updateLocation(this);
-		Iterator<Connection> it = connections.iterator();
-		while (it.hasNext()) {
-			Connection con = it.next();
-			NetworkInterface anotherInterface = con.getOtherInterface(this);
+        optimizer.updateLocation(this);
 
-			// all connections should be up at this stage
-			assert con.isUp() : "Connection " + con + " was down!";
+		breakOldConnections();
 
-			if (!isWithinRange(anotherInterface)) {
-				disconnect(con,anotherInterface);
-				it.remove();
-			}
-		}
-
-		if (isScanning()) {
-            // Then find new possible connections
-            Collection<NetworkInterface> interfaces = optimizer.getNearInterfaces(this);
-            for (NetworkInterface i : interfaces){
-                connect(i);
-            }
-        }
+		findNewConnections();
 
         recalculateTransmissionSpeed();
 		for (Connection con : connections) {
@@ -112,7 +94,33 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 		}
 	}
 
-	private void recalculateTransmissionSpeed(){
+    private void findNewConnections() {
+        if (isScanning()) {
+            // Then find new possible connections
+            Collection<NetworkInterface> interfaces = optimizer.getNearInterfaces(this);
+            for (NetworkInterface i : interfaces){
+                connect(i);
+            }
+        }
+    }
+
+    private void breakOldConnections() {
+        Iterator<Connection> it = connections.iterator();
+        while (it.hasNext()) {
+            Connection con = it.next();
+            NetworkInterface anotherInterface = con.getOtherInterface(this);
+
+            // all connections should be up at this stage
+            assert con.isUp() : "Connection " + con + " was down!";
+
+            if (!isWithinRange(anotherInterface)) {
+                disconnect(con,anotherInterface);
+                it.remove();
+            }
+        }
+    }
+
+    private void recalculateTransmissionSpeed(){
         // Find the current number of transmissions
         // (to calculate the current transmission speed
         numberOfTransmissions = 0;

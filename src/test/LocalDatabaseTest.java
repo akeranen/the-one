@@ -39,9 +39,9 @@ public class LocalDatabaseTest {
     private static final double IMPOSSIBLE_HIGH_UTILITY = 1.1;
 
     /* Rounded down utility values for different data types with data created at time 0 at origin. */
-    private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.91;
-    private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.77;
-    private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
+    private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.92;
+    private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.93;
+    private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.95;
 
     private static final String UNEXPECTED_UTILITY = "Expected different utility.";
 
@@ -242,13 +242,13 @@ public class LocalDatabaseTest {
         /* The different types should have different utility values.
         Test getting data items slightly below these values one after the other. */
         List<Tuple<DisasterData, Double>> highestUtility =
-                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
         TestCase.assertEquals("Expected only one data item to be returned.", SINGLE_ITEM, highestUtility.size());
-        TestCase.assertTrue("Expected the skill as highest utility item.", containsData(highestUtility, skill));
+        TestCase.assertTrue("Expected the resource as highest utility item.", containsData(highestUtility, resource));
         TestCase.assertEquals(
                 UNEXPECTED_UTILITY,
-                APPROXIMATE_ORIGIN_SKILL_UTILITY,
-                getUtility(highestUtility, skill),
+                APPROXIMATE_ORIGIN_RESOURCE_UTILITY,
+                getUtility(highestUtility, resource),
                 DOUBLE_COMPARISON_EXACTNESS);
 
         List<Tuple<DisasterData, Double>> mediumUtility =
@@ -262,12 +262,12 @@ public class LocalDatabaseTest {
                 DOUBLE_COMPARISON_EXACTNESS);
 
         List<Tuple<DisasterData, Double>> lowUtility =
-                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
         TestCase.assertEquals("Expected all data items to be returned.", ALL_ITEMS, lowUtility.size());
         TestCase.assertEquals(
                 UNEXPECTED_UTILITY,
-                APPROXIMATE_ORIGIN_RESOURCE_UTILITY,
-                getUtility(lowUtility, resource),
+                APPROXIMATE_ORIGIN_SKILL_UTILITY,
+                getUtility(lowUtility, skill),
                 DOUBLE_COMPARISON_EXACTNESS);
     }
 

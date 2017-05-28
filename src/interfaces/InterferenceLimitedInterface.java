@@ -106,35 +106,36 @@ public class InterferenceLimitedInterface extends NetworkInterface {
             }
         }
 
-		// Find the current number of transmissions
-		// (to calculate the current transmission speed
-		numberOfTransmissions = 0;
-		int numberOfActive = 1;
-		for (Connection con : this.connections) {
-			if (con.getMessage() != null) {
-				numberOfTransmissions++;
-			}
-			if (((InterferenceLimitedInterface)con.getOtherInterface(this)).
-					isTransferring() == true) {
-				numberOfActive++;
-			}
-		}
-
-		int ntrans = numberOfTransmissions;
-		if ( numberOfTransmissions < 1) ntrans = 1;
-		if ( numberOfActive <2 ) numberOfActive = 2;
-
-		// Based on the equation of Gupta and Kumar - and the transmission speed
-		// is divided equally to all the ongoing transmissions
-		currentTransmitSpeed = (int)Math.floor((double)transmitSpeed /
-				(Math.sqrt((1.0*numberOfActive) *
-						Math.log(1.0*numberOfActive))) /
-							ntrans );
-
-		for (Connection con : getConnections()) {
+        recalculateTransmissionSpeed();
+		for (Connection con : connections) {
 			con.update();
 		}
 	}
+
+	private void recalculateTransmissionSpeed(){
+        // Find the current number of transmissions
+        // (to calculate the current transmission speed
+        numberOfTransmissions = 0;
+        int numberOfActive = 1;
+        for (Connection con : this.connections) {
+            if (con.getMessage() != null) {
+                numberOfTransmissions++;
+            }
+            if (((InterferenceLimitedInterface)con.getOtherInterface(this)).isTransferring()) {
+                numberOfActive++;
+            }
+        }
+
+        int ntrans = numberOfTransmissions;
+        if ( numberOfTransmissions < 1) ntrans = 1;
+        if ( numberOfActive <2 ) numberOfActive = 2;
+
+        // Based on the equation of Gupta and Kumar - and the transmission speed
+        // is divided equally to all the ongoing transmissions
+        currentTransmitSpeed = (int)((double)transmitSpeed /
+                (Math.sqrt((1.0*numberOfActive) *
+                        Math.log(1.0*numberOfActive))) / ntrans );
+    }
 
 	/**
 	 * Creates a connection to another host. This method does not do any checks

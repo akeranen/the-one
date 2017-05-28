@@ -13,7 +13,6 @@ wInterface.type = InterferenceLimitedInterface
 # Transmit speed of 50 Mbps = 6250kBps
 wInterface.transmitSpeed = 6250k
 wInterface.transmitRange = 30
-wInterface.scanInterval = 30
 
 # Common settings for all groups
 Group.movementModel = VoluntaryHelperMovement
@@ -22,6 +21,7 @@ Group.router = EpidemicRouter
 Group.bufferSize = 10M
 Group.nrofInterfaces = 1
 Group.interface1 = wInterface
+Group.net.scanInterval = 30
 # Time the node will help at a disaster site (in seconds)
 Group.helpTime = 1800
 # Probability that a node gets injured if an event happens to close to it [0, 1]

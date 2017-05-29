@@ -122,10 +122,15 @@ public abstract class ActiveRouter extends MessageRouter {
 			return false;
 		}
 
+        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
+            reorderMessagesForConnected();
+            lastMessageOrderingForConnected = SimClock.getTime();
+        }
+
 		DTNHost other = con.getOtherNode(getHost());
-		for (Message m : getMessageCollection()) {
-			if (m.isFinalRecipient(other)) {
-				if (startTransfer(m, con) == RCV_OK) {
+		for (Tuple<Message,Connection> tuple: cachedMessagesForConnected) {
+			if (tuple.getValue().equals(con)) {
+				if (startTransfer(tuple.getKey(), con) == RCV_OK) {
 					return true;
 				}
 			}

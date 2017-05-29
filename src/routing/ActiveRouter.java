@@ -43,7 +43,7 @@ public abstract class ActiveRouter extends MessageRouter {
     /** How often messages will be requested and reordered in seconds */
     protected double messageOrderingInterval;
     /** Default value how often messages should be reordered */
-    protected final double DEFAULT_ORDERING_INTERVAL=0.5;
+    protected static final double DEFAULT_ORDERING_INTERVAL=0.5;
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
@@ -119,7 +119,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	@Override
 	public boolean requestDeliverableMessages(Connection con) {
 		if (isTransferring()) {
-			return false;
+		    return false;
 		}
 
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
@@ -127,12 +127,9 @@ public abstract class ActiveRouter extends MessageRouter {
             lastMessageOrderingForConnected = SimClock.getTime();
         }
 
-		DTNHost other = con.getOtherNode(getHost());
 		for (Tuple<Message,Connection> tuple: cachedMessagesForConnected) {
-			if (tuple.getValue().equals(con)) {
-				if (startTransfer(tuple.getKey(), con) == RCV_OK) {
-					return true;
-				}
+            if (tuple.getValue().equals(con) && startTransfer(tuple.getKey(), con) == RCV_OK) {
+                return true;
 			}
 		}
 		return false;
@@ -270,7 +267,8 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		/* remove oldest messages but not the ones being sent */
 		if (!makeRoomForMessage(m.getSize())) {
-			return DENIED_NO_SPACE; // couldn't fit into buffer -> reject
+            // couldn't fit into buffer -> reject
+			return DENIED_NO_SPACE;
 		}
 
 		return RCV_OK;
@@ -368,7 +366,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
 		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
 			/* no messages -> empty list */
-			return new ArrayList<Tuple<Message, Connection>>();
+			return new ArrayList<>();
 		}
 
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
@@ -385,7 +383,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * This adds the messages in if a new connection has started.
      */
 	private void reorderMessagesForConnected(){
-        List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
+        List<Tuple<Message, Connection>> forTuples = new ArrayList<>();
         for (Message m : getMessageCollection()) {
             for (Connection con : getConnections()) {
                 DTNHost to = con.getOtherNode(getHost());
@@ -470,7 +468,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	/**
 	 * Tries to send all messages that this router is carrying to all
 	 * connections this node has. Messages are ordered using the
-	 * {@link MessageRouter#sortTupleListByQueueMode(List)}. See
+	 * {@link MessageRouter#sortListByQueueMode(List)}. See
 	 * {@link #tryMessagesToConnections(List, List)} for sending details.
 	 * @return The connections that started a transfer or null if no connection
 	 * accepted a message.
@@ -503,7 +501,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
-            cachedMessagesForConnected = sortTupleListByQueueMode(getMessagesForConnected());
+            reorderMessagesForConnected();
             lastMessageOrderingForConnected = SimClock.getTime();
         }
 
@@ -511,7 +509,8 @@ public abstract class ActiveRouter extends MessageRouter {
                 tryMessagesForConnected(cachedMessagesForConnected);
 
         if (tuple != null) {
-			return tuple.getValue(); // started transfer
+            // started transfer
+			return tuple.getValue();
 		}
 
 		// didn't start transfer to any node -> ask messages from connected

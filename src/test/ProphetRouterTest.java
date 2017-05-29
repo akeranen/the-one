@@ -5,6 +5,7 @@
 package test;
 
 import org.junit.Test;
+import routing.ActiveRouter;
 import routing.MessageRouter;
 import routing.ProphetRouter;
 import core.Message;
@@ -15,6 +16,7 @@ import core.Message;
 public class ProphetRouterTest extends AbstractRouterTest {
 
 	private static int SECONDS_IN_TIME_UNIT = 60;
+    private double messageOrderingInterval;
 
 	@Override
 	public void setUp() throws Exception {
@@ -23,6 +25,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		ts.putSetting(ProphetRouter.PROPHET_NS + "." +
 				ProphetRouter.SECONDS_IN_UNIT_S , SECONDS_IN_TIME_UNIT+"");
 		setRouterProto(new ProphetRouter(ts));
+        messageOrderingInterval = ((ActiveRouter)routerProto).getMessageOrderingInterval();
 		super.setUp();
 	}
 
@@ -65,7 +68,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		// now h1-h3-h5 connected and h5 knows h4
 
 		// first h1 should transfer MSG_ID2 to h3 (final recipient)
-        clock.advance(1);
+        clock.advance(messageOrderingInterval);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());

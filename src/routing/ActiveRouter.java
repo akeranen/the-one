@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 
 import routing.util.EnergyModel;
@@ -120,11 +121,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		DTNHost other = con.getOtherNode(getHost());
-		/* do a copy to avoid concurrent modification exceptions
-		 * (startTransfer may remove messages) */
-		ArrayList<Message> temp =
-			new ArrayList<Message>(this.getMessageCollection());
-		for (Message m : temp) {
+		for (Message m : getMessageCollection()) {
 			if (m.isFinalRecipient(other)) {
 				if (startTransfer(m, con) == RCV_OK) {
 					return true;
@@ -588,9 +585,10 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */
-		for (int i=0; i<this.sendingConnections.size(); ) {
+        ListIterator<Connection> it = sendingConnections.listIterator();
+		while (it.hasNext()) {
 			boolean removeCurrent = false;
-			Connection con = sendingConnections.get(i);
+			Connection con = it.next();
 
 			/* finalize ready transfers */
 			if (con.isMessageTransferred()) {
@@ -614,11 +612,11 @@ public abstract class ActiveRouter extends MessageRouter {
 				if (this.getFreeBufferSize() < 0) {
 					this.makeRoomForMessage(0);
 				}
-				sendingConnections.remove(i);
+				it.remove();
 			}
 			else {
 				/* index increase needed only if nothing was removed */
-				i++;
+				break;
 			}
 		}
 

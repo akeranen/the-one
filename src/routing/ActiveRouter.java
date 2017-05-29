@@ -36,6 +36,13 @@ public abstract class ActiveRouter extends MessageRouter {
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
+    /** Time interval how often messages are requested and reordered -setting id ({@value}).
+     * Double value. */
+	public static final String MESSAGE_ORDERING_INTERVAL_S="MessageOrderingInterval";
+    /** How often messages will be requested and reordered in seconds */
+    protected double messageOrderingInterval;
+    /** Default value how often messages should be reordered */
+    protected final double DEFAULT_ORDERING_INTERVAL=0.5;
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
@@ -45,7 +52,6 @@ public abstract class ActiveRouter extends MessageRouter {
 	protected ArrayList<Connection> sendingConnections;
 	/** sim time when the last TTL check was done */
 	private double lastTtlCheck;
-    final private double MESSAGE_ORDERING_INTERVAL=0.5;
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
@@ -65,11 +71,14 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		this.deleteDelivered = s.getBoolean(DELETE_DELIVERED_S, false);
 
+        this.messageOrderingInterval = s.getDouble(MESSAGE_ORDERING_INTERVAL_S, DEFAULT_ORDERING_INTERVAL);
+
 		if (s.contains(EnergyModel.INIT_ENERGY_S)) {
 			this.energy = new EnergyModel(s);
 		} else {
 			this.energy = null; /* no energy model */
 		}
+
 	}
 
 	/**
@@ -81,6 +90,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.deleteDelivered = r.deleteDelivered;
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
+		this.messageOrderingInterval = r.messageOrderingInterval;
 	}
 
 	@Override
@@ -453,7 +463,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
-        if(SimClock.getTime()-lastMessageOrdering >= MESSAGE_ORDERING_INTERVAL){
+        if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval){
 		    cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
@@ -651,5 +661,12 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 		return top;
 	}
+
+    /**
+     * @return In which time interval messages are requested and reordered.
+     */
+	public double getMessageOrderingInterval(){
+	    return this.messageOrderingInterval;
+    }
 
 }

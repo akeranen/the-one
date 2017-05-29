@@ -59,6 +59,8 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private double lastMessageOrdering;
     private List<Message> cachedMessages = new ArrayList<>();
+    private double lastMessageOrderingForConnected;
+    private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -359,23 +361,36 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return a list of message-connections tuples
 	 */
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
-		List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
 		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
 			/* no messages -> empty list */
-			return forTuples;
+			return new ArrayList<Tuple<Message, Connection>>();
 		}
 
-		for (Message m : getMessageCollection()) {
-			for (Connection con : getConnections()) {
-				DTNHost to = con.getOtherNode(getHost());
-				if (m.isFinalRecipient(to)) {
-					forTuples.add(new Tuple<Message, Connection>(m,con));
-				}
-			}
-		}
+        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
+		    reorderMessagesForConnected();
+            lastMessageOrderingForConnected = SimClock.getTime();
+        }
 
-		return forTuples;
+		return cachedMessagesForConnected;
 	}
+
+    /**
+     * Checks for all messages and all connections whether the messages are for destined to any
+     * of the current connections.
+     * This adds the messages in if a new connection has started.
+     */
+	private void reorderMessagesForConnected(){
+        List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
+        for (Message m : getMessageCollection()) {
+            for (Connection con : getConnections()) {
+                DTNHost to = con.getOtherNode(getHost());
+                if (m.isFinalRecipient(to)) {
+                    forTuples.add(new Tuple<Message, Connection>(m,con));
+                }
+            }
+        }
+        cachedMessagesForConnected = sortTupleListByQueueMode(forTuples);
+    }
 
 	/**
 	 * Tries to send messages for the connections that are mentioned
@@ -482,8 +497,13 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
+        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
+            cachedMessagesForConnected = sortTupleListByQueueMode(getMessagesForConnected());
+            lastMessageOrderingForConnected = SimClock.getTime();
+        }
+
 		Tuple<Message, Connection> tuple =
-                tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
+                tryMessagesForConnected(cachedMessagesForConnected);
 
         if (tuple != null) {
 			return tuple.getValue(); // started transfer
@@ -612,6 +632,7 @@ public abstract class ActiveRouter extends MessageRouter {
 				if (this.getFreeBufferSize() < 0) {
 					this.makeRoomForMessage(0);
 				}
+                removeMessagesToConnected(con);
 				it.remove();
 			}
 			else {
@@ -634,7 +655,22 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 	}
 
-	/**
+    /**
+     * Removes all messages that were for the connection from
+     * the cached messages
+     * @param con The connection which was removed
+     */
+    private void removeMessagesToConnected(Connection con) {
+	    ListIterator<Tuple<Message,Connection>> iterator = cachedMessagesForConnected.listIterator();
+	    while (iterator.hasNext()){
+	        Tuple<Message,Connection> msgWithCon = iterator.next();
+	        if (msgWithCon.getValue().equals(con)){
+                iterator.remove();
+            }
+        }
+    }
+
+    /**
 	 * Method is called just before a transfer is aborted at {@link #update()}
 	 * due connection going down. This happens on the sending host.
 	 * Subclasses that are interested of the event may want to override this.

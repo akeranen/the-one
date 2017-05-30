@@ -34,6 +34,9 @@ public class Message implements Comparable<Message> {
 	private double timeCreated;
 	/** Initial TTL of the message */
 	private int initTtl;
+	
+	/** Stores how many times the message was forwarded to other hosts **/
+	private int forwardCount;
 
 	/** if a response to this message is required, this is the size of the
 	 * response message (or 0 if no response is requested) */
@@ -358,6 +361,28 @@ public class Message implements Comparable<Message> {
 	 */
 	public void setAppID(String appID) {
 		this.appID = appID;
+	}
+	
+	/**
+	 * Must be called every time the message is forwarded.
+	 */
+	public void incrementForwardCount() {
+		this.forwardCount++;
+	}
+	
+	/**
+	 * Return how many times the message was forwarded.
+	 */
+	public int getForwardCount() {
+		return this.forwardCount;
+	}
+	
+	/**
+	 * Should be used only by the unit tests to create specific scenarios.
+	 * @param fc New value for forward count.
+	 */
+	public void setForwardCount(int fc) {
+		this.forwardCount = fc;
 	}
 
 }

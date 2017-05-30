@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import buffermanagement.DropPolicy;
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
 import routing.util.RoutingInfo;
@@ -36,6 +37,12 @@ public abstract class ActiveRouter extends MessageRouter {
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
+	
+	/**
+	 * Drop policy -setting id ({@value}). The class name used as the drop
+	 * policy implementation.
+	 */
+	public static final String DROP_POLICY_S = "dropPolicy";
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
@@ -48,6 +55,11 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
+	
+	/**
+	 * The drop policy used by the router.
+	 */
+	private DropPolicy dropPolicy;
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -60,6 +72,15 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.policy = new MessageTransferAcceptPolicy(s);
 
 		this.deleteDelivered = s.getBoolean(DELETE_DELIVERED_S, false);
+		
+		// Create a drop policy object if it is specified in the settings.
+		if (s.contains(DROP_POLICY_S)) {
+			String dropPolicyClass = s.getSetting(DROP_POLICY_S);
+			this.dropPolicy = (DropPolicy) s.createIntializedObject("buffermanagement." + dropPolicyClass);
+		}
+		else {
+			this.dropPolicy = null;
+		}
 
 		if (s.contains(EnergyModel.INIT_ENERGY_S)) {
 			this.energy = new EnergyModel(s);
@@ -77,6 +98,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.deleteDelivered = r.deleteDelivered;
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
+		this.dropPolicy = r.dropPolicy; // The hosts of the same group share a single instance of drop policy
 	}
 
 	@Override
@@ -122,7 +144,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	@Override
 	public boolean createNewMessage(Message m) {
-		makeRoomForNewMessage(m.getSize());
+		makeRoomForNewMessage(m);
 		return super.createNewMessage(m);
 	}
 
@@ -251,7 +273,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		/* remove oldest messages but not the ones being sent */
-		if (!makeRoomForMessage(m.getSize())) {
+		if (!makeRoomForMessage(m)) {
 			return DENIED_NO_SPACE; // couldn't fit into buffer -> reject
 		}
 
@@ -261,11 +283,18 @@ public abstract class ActiveRouter extends MessageRouter {
 	/**
 	 * Removes messages from the buffer (oldest first) until
 	 * there's enough space for the new message.
-	 * @param size Size of the new message
-	 * transferred, the transfer is aborted before message is removed
+	 * @param incomingMessage The message that needs to be stored in the buffer.
 	 * @return True if enough space could be freed, false if not
 	 */
-	protected boolean makeRoomForMessage(int size){
+	protected boolean makeRoomForMessage(Message incomingMessage){
+		
+		// Check if a custom drop policy is specified
+		if (this.dropPolicy != null) {
+			return this.dropPolicy.makeRoomForMessage(this, incomingMessage);
+		}
+		
+		int size = incomingMessage == null ? 0 : incomingMessage.getSize();
+		
 		if (size > this.getBufferSize()) {
 			return false; // message too big for the buffer
 		}
@@ -305,10 +334,10 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * calls {@link #makeRoomForMessage(int)} and ignores the return value.
 	 * Therefore, if the message can't fit into buffer, the buffer is only
 	 * cleared from messages that are not being sent.
-	 * @param size Size of the new message
+	 * @param msg The new message
 	 */
-	protected void makeRoomForNewMessage(int size) {
-		makeRoomForMessage(size);
+	protected void makeRoomForNewMessage(Message msg) {
+		makeRoomForMessage(msg);
 	}
 
 
@@ -607,7 +636,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			if (removeCurrent) {
 				// if the message being sent was holding excess buffer, free it
 				if (this.getFreeBufferSize() < 0) {
-					this.makeRoomForMessage(0);
+					this.makeRoomForMessage(null);
 				}
 				sendingConnections.remove(i);
 			}
@@ -645,7 +674,13 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Subclasses that are interested of the event may want to override this.
 	 * @param con The connection whose transfer was finalized
 	 */
-	protected void transferDone(Connection con) { }
+	protected void transferDone(Connection con) { 
+		// Use the connection copy of the message to retrieve the 
+		// local copy of the message and then increment the forward count
+		Message msg = this.getMessage(con.getMessage().getId());
+		if (msg != null)
+			msg.incrementForwardCount();
+	}
 
 	@Override
 	public RoutingInfo getRoutingInfo() {
@@ -655,6 +690,14 @@ public abstract class ActiveRouter extends MessageRouter {
 					String.format("%.2f", energy.getEnergy())));
 		}
 		return top;
+	}
+	
+	/**
+	 * Used by the unit tests to verify what drop policy is active.
+	 * @return The current drop policy.
+	 */
+	public DropPolicy getDropPolicy() {
+		return this.dropPolicy;
 	}
 
 }

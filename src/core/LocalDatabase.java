@@ -42,7 +42,7 @@ public class LocalDatabase {
 
     /* Parameters for utility function: Aging stops. */
     private static final int HOURS_IN_WEEK = 168;
-    private static final int HOURS_IN_TWO_AND_A_HALF_DAYS = 68;
+    private static final int HOURS_IN_TWO_AND_A_HALF_DAYS = 60;
 
     /** Total size of the database in bytes. */
     private long totalSize;
@@ -241,8 +241,6 @@ public class LocalDatabase {
         /* Compute utility. */
         return Math.pow(beta, -(distance/SLOWER_DECREASE_DIVISOR)) * Math.pow(gamma,-Math.min(maxAging, age));
     }
-
-    // TODO: add test to check when aging stops
 
     /**
      * Computes statistics about the utility of all {@link DisasterData} items in this database

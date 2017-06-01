@@ -56,7 +56,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
-	private double lastMessageOrdering;
+	/** When the messages were last ordered, initially Double.MIN_VALUE if they were never ordered */
+	private double lastMessageOrdering = Double.MIN_VALUE;
     private List<Message> cachedMessages = new ArrayList<>();
 
 	/**

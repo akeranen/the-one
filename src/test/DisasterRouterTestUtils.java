@@ -27,6 +27,7 @@ public final class DisasterRouterTestUtils {
 
     /* Constants needed for prioritization. */
     public static final double HEAD_START_THRESHOLD = 30.4;
+    public static final int PRIORITY_THRESHOLD = 4;
     public static final double DP_WEIGHT = 0.8;
 
     /**
@@ -53,6 +54,7 @@ public final class DisasterRouterTestUtils {
         s.restoreNameSpace();
 
         s.putSetting(DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S, Double.toString(HEAD_START_THRESHOLD));
+        s.putSetting(DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S, Double.toString(PRIORITY_THRESHOLD));
         s.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
     }
 }

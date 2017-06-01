@@ -257,7 +257,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     // TODO: Test that direct messages (multicasts, broadcasts, one-to-ones, but NOT db messages) are sent first, both
     // to and from the neighbor
-    // This can only be tested after trying to send other messages does not throw an exception.
+    // This can only be tested after trying to send other messages does not throw an exception, i.e. message choosing
+    // and prioritization are implemented.
 
     // TODO: Test that no messages are received when already transferring another message.
     // This can only be tested after the message chooser was implemented.
@@ -268,7 +269,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     // to their prioritizers.
 
     // TODO: Test that non-direct messages and DB messages are sorted correctly.
-    // This can only be tested after prioritization was implemented.
+    // This can only be tested after message choosing and prioritization was implemented.
     // Make sure your test is such that it is tested that replicated routers have the correct rating mechanisms linked
     // to their prioritizers.
 }

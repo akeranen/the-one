@@ -30,6 +30,8 @@ import java.util.List;
 public class DisasterPrioritizationStrategyTest {
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double LOW_UTILITY = 0.1;
+    private static final int VERY_HIGH_PRIO = 10;
+    private static final int HIGH_PRIO = 7;
 
     /** The allowed delta when comparing doubles for equality. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
@@ -64,12 +66,31 @@ public class DisasterPrioritizationStrategyTest {
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnMissingHeadStartThreshold() {
-        new DisasterPrioritizationStrategy(new TestSettings(), this.host.getRouter());
+        TestSettings s = new TestSettings();
+        s.putSetting(
+                DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S,
+                Double.toString(DisasterRouterTestUtils.PRIORITY_THRESHOLD));
+        new DisasterPrioritizationStrategy(s, this.host.getRouter());
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnNegativeHeadStartThreshold() {
         this.settings.putSetting(DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S, Integer.toString(-1));
+        new DisasterPrioritizationStrategy(this.settings, this.host.getRouter());
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsOnMissingPriorityThreshold() {
+        TestSettings s = new TestSettings();
+        s.putSetting(
+                DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S,
+                Double.toString(DisasterRouterTestUtils.HEAD_START_THRESHOLD));
+        new DisasterPrioritizationStrategy(s, this.host.getRouter());
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsOnNegativePriorityThreshold() {
+        this.settings.putSetting(DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S, Integer.toString(-1));
         new DisasterPrioritizationStrategy(this.settings, this.host.getRouter());
     }
 
@@ -92,22 +113,33 @@ public class DisasterPrioritizationStrategyTest {
                 DOUBLE_COMPARISON_DELTA);
     }
 
+    @Test
+    public void testGetPriorityThreshold() {
+        Assert.assertEquals(
+                "Expected different threshold.",
+                DisasterRouterTestUtils.PRIORITY_THRESHOLD, this.prioritization.getPriorityThreshold());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testReplicateThrowsOnMissingRouter() {
         this.prioritization.replicate(null);
     }
 
     @Test
-    public void testReplicateCopiesHeadStartThreshold() {
+    public void testReplicate() {
         MessagePrioritizationStrategy copy = this.prioritization.replicate(this.testUtils.createHost().getRouter());
         Assert.assertTrue(
                 "Expected replicated message prioritization strategy to be of different type.",
                 copy instanceof DisasterPrioritizationStrategy);
         Assert.assertEquals(
-                "Expected different threshold.",
+                "Expected different head start threshold.",
                 this.prioritization.getHeadStartThreshold(),
                 ((DisasterPrioritizationStrategy)copy).getHeadStartThreshold(),
                 DOUBLE_COMPARISON_DELTA);
+        Assert.assertEquals(
+                "Expected different priority threshold.",
+                this.prioritization.getPriorityThreshold(),
+                ((DisasterPrioritizationStrategy)copy).getPriorityThreshold());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -282,6 +314,86 @@ public class DisasterPrioritizationStrategyTest {
         this.checkOrder(newMessageToNeighbor, olderMessageToNeighbor);
     }
 
+    @Test
+    public void testImportantMessagesSortedBeforeUnimportantOnes() {
+        // Create neighbor to send messages to and a host that is known by that neighbor.
+        DTNHost neighbor = this.testUtils.createHost();
+        DTNHost knownHost = this.testUtils.createHost();
+        neighbor.forceConnection(knownHost, null, true);
+
+        // Create a message to that known host.
+        Message highDeliveryPredMessage = new Message(this.host, knownHost, "M1", 0);
+        this.host.createNewMessage(highDeliveryPredMessage);
+        Tuple<Message, Connection> highDeliveryPredToNeighbor = this.messageToHost(highDeliveryPredMessage, neighbor);
+
+        // Then create a new important to an unknown host.
+        Message importantMessage = new Message(this.host, this.testUtils.createHost(), "M2", 0, VERY_HIGH_PRIO);
+        this.host.createNewMessage(importantMessage);
+        Tuple<Message, Connection> importantMessageToNeighbor = this.messageToHost(importantMessage, neighbor);
+
+        // Make sure neither of the messages is considered as new anymore.
+        this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
+
+        // Check order.
+        this.checkOrderWithoutHeadStarts(highDeliveryPredToNeighbor, importantMessageToNeighbor);
+        this.checkOrder(importantMessageToNeighbor, highDeliveryPredToNeighbor);
+    }
+
+    @Test
+    public void testImportantMessagesSortedAfterHeadStarts() {
+        // Create neighbor to send messages to and a host that is known by that neighbor.
+        DTNHost neighbor = this.testUtils.createHost();
+        DTNHost knownHost = this.testUtils.createHost();
+        neighbor.forceConnection(knownHost, null, true);
+
+        // Create an important message to that known host.
+        Message importantMessage = new Message(this.host, knownHost, "M1", 0, VERY_HIGH_PRIO);
+        this.host.createNewMessage(importantMessage);
+        Tuple<Message, Connection> importantMessageToNeighbor = this.messageToHost(importantMessage, neighbor);
+
+        // Make sure it is not considered as new anymore.
+        this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
+
+        // Then create a new message to an unknown host.
+        Message newlyCreatedMessage = new Message(this.host, this.testUtils.createHost(), "M2", 0, 0);
+        this.host.createNewMessage(newlyCreatedMessage);
+        Tuple<Message, Connection> newMessageToNeighbor = this.messageToHost(newlyCreatedMessage, neighbor);
+
+        // Check order.
+        this.checkOrderWithoutHeadStarts(importantMessageToNeighbor, newMessageToNeighbor);
+        this.checkOrder(newMessageToNeighbor, importantMessageToNeighbor);
+    }
+
+    /**
+     * Checks that multiple important messages are sorted by priority, higher priority first.
+     */
+    @Test
+    public void testImportantMessagesAreSortedByPriority() {
+        DTNHost neighbor = this.testUtils.createHost();
+        DTNHost knownHost = this.testUtils.createHost();
+
+        // Create two messages.
+        Message vipMessage = new Message(this.host, this.testUtils.createHost(), "M1", 0, VERY_HIGH_PRIO);
+        Tuple<Message, Connection> vipMessageToNeighbor = this.messageToHost(vipMessage, neighbor);
+        this.host.createNewMessage(vipMessage);
+
+        Message importantMessage = new Message(this.host, knownHost, "M2", HIGH_PRIO);
+        Tuple<Message, Connection> importantMessageToNeighbor = this.messageToHost(importantMessage, neighbor);
+        this.host.createNewMessage(importantMessage);
+
+        // Advance time s.t. no message gets a head start because of its age.
+        this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
+
+        // Make sure less important message has a higher delivery predictability.
+        neighbor.forceConnection(knownHost, null, true);
+
+        // It should therefore be sent first if priority is not considered.
+        this.checkOrderWithoutHeadStarts(importantMessageToNeighbor, vipMessageToNeighbor);
+
+        // But if it is, the message with higher priority should be sent first.
+        this.checkOrder(vipMessageToNeighbor, importantMessageToNeighbor);
+    }
+
     /**
      * Checks the order of messages if {@link DisasterPrioritizationStrategy} is used.
      * @param expectedFirstMessage Message expected to be sent first.
@@ -301,7 +413,7 @@ public class DisasterPrioritizationStrategyTest {
     }
 
     /**
-     * Checks the order of the messages if no head starts were considered.
+     * Checks the order of the messages as if no head starts or priorities were considered.
      * @param expectedFirstMessage Message expected to be sent first.
      * @param expectedSecondMessage Message expected to be sent second.
      */

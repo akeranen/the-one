@@ -360,7 +360,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return a sorted list of message-connections tuples
      */
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
-        return this.sortByQueueMode(this.getMessagesForConnected());
+        return this.sortTupleListByQueueMode(this.getMessagesForConnected());
     }
 
 	/**
@@ -492,13 +492,8 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-<<<<<<< HEAD
         Tuple<Message, Connection> tuple =
-			tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
-=======
-		@SuppressWarnings(value = "unchecked")
-		Tuple<Message, Connection> t = tryMessagesForConnected(this.getSortedMessagesForConnected());
->>>>>>> remotes/origin/feature-#305-direct-message-prio
+			tryMessagesForConnected(this.getSortedMessagesForConnected());
 
         if (tuple != null) {
 			return tuple.getValue(); // started transfer

@@ -85,9 +85,11 @@ public class DisasterData {
 
     /**
      * Returns a string representation of the object.
-     * 
+     *
      * @return a string representation of the object.
      */
     @Override
-    public String toString() {return ""+ this.type +"@"+ this.creation + "@" + this.location;}
+    public String toString() {
+        return ""+ this.type +"@"+ this.creation + "@" + this.location;
+    }
 }

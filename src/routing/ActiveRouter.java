@@ -106,7 +106,11 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		DTNHost other = con.getOtherNode(getHost());
-		for (Message m : this.getMessageCollection()) {
+		/* do a copy to avoid concurrent modification exceptions
+		 * (startTransfer may remove messages) */
+		ArrayList<Message> temp =
+			new ArrayList<Message>(this.getMessageCollection());
+		for (Message m : temp) {
 			if (m.isFinalRecipient(other)) {
 				if (startTransfer(m, con) == RCV_OK) {
 					return true;
@@ -462,19 +466,20 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * was started
 	 */
 	protected Connection exchangeDeliverableMessages() {
-		if (getConnections().isEmpty()) {
+        List<Connection> connections = getConnections();
+        if (connections.isEmpty()) {
 			return null;
 		}
 
-		Tuple<Message, Connection> tuple =
+        Tuple<Message, Connection> tuple =
 			tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
 
-		if (tuple != null) {
+        if (tuple != null) {
 			return tuple.getValue(); // started transfer
 		}
 
 		// didn't start transfer to any node -> ask messages from connected
-		for (Connection con : getConnections()) {
+		for (Connection con : connections) {
 			if (con.getOtherNode(getHost()).requestDeliverableMessages(con)) {
 				return con;
 			}
@@ -517,11 +522,11 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (this.sendingConnections.size() > 0) {
 			return true; // sending something
 		}
-
-		if (getConnections().isEmpty()) {
+        List<Connection> connections = getConnections();
+        if (connections.isEmpty()) {
 			return false; // not connected
 		}
-		for (Connection con : getConnections()) {
+		for (Connection con : connections) {
 			if (!con.isReadyForTransfer()) {
 				return true;	// a connection isn't ready for new transfer
 			}

@@ -88,7 +88,9 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 * Returns a text representation of the coordinate
 	 * @return a text representation of the coordinate
 	 */
-	public String toString() { return "("+x+","+y+")"; }
+	public String toString() {
+        return "("+x+","+y+")";
+	}
 
 	/**
 	 * Returns a clone of this coordinate
@@ -111,10 +113,9 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 */
 	public boolean equals(Coord c) {
 		if (c == this) {
-			return true;
-		}
-		else {
-			return (x == c.x && y == c.y); // XXX: == for doubles...
+             return true;
+		} else {
+            return (x == c.x && y == c.y); // XXX: == for doubles...
 		}
 	}
 
@@ -129,10 +130,10 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 * (actually a hash of the String made of the coordinates)
 	 */
 	public int hashCode() {
-		if (cachedHashCode==0){
-			cachedHashCode = (x+","+y).hashCode();
+        if (cachedHashCode==0){
+            cachedHashCode = (x+","+y).hashCode();
 		}
-		return cachedHashCode;
+        return cachedHashCode;
 	}
 
 	/**

@@ -20,8 +20,10 @@ public abstract class AbstractIntervalRatingMechanism {
     private double windowLength;
     private double nextWindowEnd;
 
-    protected AbstractIntervalRatingMechanism(Settings s) {
-        this.windowLength = s.getDouble(WINDOW_LENGTH_S);
+    protected AbstractIntervalRatingMechanism() {
+        Settings settings = new Settings(this.getNamespace());
+
+        this.windowLength = settings.getDouble(WINDOW_LENGTH_S);
         if (this.windowLength <= 0) {
             throw new SettingsError("Window length must be positive!");
         }
@@ -35,6 +37,12 @@ public abstract class AbstractIntervalRatingMechanism {
         this.windowLength = ratingMechanism.windowLength;
         this.nextWindowEnd = ratingMechanism.nextWindowEnd;
     }
+
+    /**
+     * Returns the namespace for all settings about this rating mechanism.
+     * @return The namespace.
+     */
+    protected abstract String getNamespace();
 
     /**
      * Updates the rating mechanism if a time window has ended.

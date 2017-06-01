@@ -42,7 +42,7 @@ public abstract class ActiveRouter extends MessageRouter {
     /** How often messages will be requested and reordered in seconds */
     protected double messageOrderingInterval;
     /** Default value how often messages should be reordered */
-    protected final double DEFAULT_ORDERING_INTERVAL=0.5;
+    protected static final double DEFAULT_ORDERING_INTERVAL=0.0;
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";

@@ -667,7 +667,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return In which time interval messages are requested and reordered.
      */
 	public double getMessageOrderingInterval(){
-	    return this.messageOrderingInterval;
+        return this.messageOrderingInterval;
     }
 
 }

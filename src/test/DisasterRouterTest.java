@@ -1,6 +1,9 @@
 package test;
 
 import core.BroadcastMessage;
+import core.Coord;
+import core.DataMessage;
+import core.DisasterData;
 import core.Group;
 import core.Message;
 import org.junit.Assert;
@@ -19,6 +22,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     /* Some priority values needed for tests. */
     private static final int PRIORITY = 5;
+    private static final int VERY_HIGH_PRIORITY = 10;
     private static final int HIGH_PRIORITY = 6;
     private static final int LOW_PRIORITY = 4;
 
@@ -27,6 +31,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     private static final String EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY =
             "Expected different delivery predictability.";
+    private static final String EXPECTED_DIFFERENT_MESSAGE = "Expected different message.";
 
     /* The delta allowed on double comparisons. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
@@ -285,7 +290,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
             do {
                 this.mc.next();
             } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
-            Assert.assertEquals("Expected different message.", expectedMessage.getId(), mc.getLastMsg().getId());
+            Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
         }
     }
 
@@ -323,10 +328,66 @@ public class DisasterRouterTest extends AbstractRouterTest {
             while (!this.mc.TYPE_START.equals(this.mc.getLastType())) {
                 this.mc.next();
             }
-            Assert.assertEquals("Expected different message.", expectedMessage.getId(), mc.getLastMsg().getId());
+            Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
 
             // Don't send it again even if transfer was not completed.
             h2.deleteMessage(mc.getLastMsg().getId(), true);
+        }
+    }
+
+    /**
+     * Tests that messages are sorted by delivery, replications density and utility (data messages). In addition,
+     * messages with high priority should be send first, sorted by priority, and very new text messages should be sent
+     * before high priority text messages.
+     */
+    public void testNonDirectMessageSorting() {
+        // Create messages to sort.
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
+        Message vipDataMessages = new DataMessage(h1, h3, "D1", data, 0, VERY_HIGH_PRIORITY);
+        Message usefulDataMessages = new DataMessage(h1, h3, "D2", data, 1, 0);
+        Message highDeliveryPredictabilityMessage = new Message(h1, h4, "M1", 0, 0);
+        Message lowReplicationsDensityMessage = new Message(h1, h3, "M2", 0, 0);
+        Message highReplicationsDensityMessage = new Message(h1, h3, "M3", 0, 0);
+        Message vipMessage = new Message(h1, h3, "M6", 0, HIGH_PRIORITY);
+        this.clock.setTime(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
+        Message newMessage = new Message(h1, h3, "M4", 0, 0);
+        this.clock.advance(SHORT_TIME_SPAN);
+        Message newestMessage = new Message(h1, h3, "M5", 0, 0);
+
+        // Make h1 know all of them.
+        Message[] allMessages = {
+                vipDataMessages, usefulDataMessages, highDeliveryPredictabilityMessage, lowReplicationsDensityMessage,
+                highReplicationsDensityMessage, newMessage, newestMessage, vipMessage
+        };
+        for (Message m : allMessages) {
+            h1.createNewMessage(m);
+        }
+
+        // Increase delivery predictability for one of them.
+        h2.connect(h4);
+        disconnect(h4);
+
+        // Increase replications density for one of them.
+        h5.createNewMessage(highReplicationsDensityMessage);
+        h1.connect(h5);
+        disconnect(h5);
+        this.updateAllNodes();
+
+        // Connect h1 to h2.
+        h1.connect(h2);
+
+        // Check order of messages.
+        Message[] expectedOrder = {
+                vipDataMessages, newestMessage, newMessage, vipMessage, usefulDataMessages,
+                highDeliveryPredictabilityMessage, lowReplicationsDensityMessage, highReplicationsDensityMessage
+        };
+        this.mc.reset();
+        for (Message expectedMessage : expectedOrder) {
+            h1.update(true);
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
         }
     }
 
@@ -337,9 +398,4 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     // TODO: Test that no messages are received when already transferring another message.
     // This can only be tested after the message chooser was implemented.
-
-    // TODO: Test that non-direct messages and DB messages are sorted correctly.
-    // This can only be tested after message choosing and prioritization was implemented.
-    // Make sure your test is such that it is tested that replicated routers have the correct rating mechanisms linked
-    // to their prioritizers.
 }

@@ -99,7 +99,7 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
      *
      * @return The next address.
      */
-    private synchronized static int getNextAddress() {
+    private static int getNextAddress() {
         return nextAddress++;
     }
 

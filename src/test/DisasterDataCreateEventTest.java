@@ -108,7 +108,7 @@ public class DisasterDataCreateEventTest {
         java.util.Locale.setDefault(java.util.Locale.US);
         TestCase.assertEquals(
                 "ToString returned unexpected string.",
-                "DATA @20.40 RESOURCE size:350 offset:(2.00,3.00) CREATE by host 0",
+                "DATA @20.40 RESOURCE size:350 offset:(2.0,3.0) CREATE by host 0",
                 this.event.toString());
     }
 }

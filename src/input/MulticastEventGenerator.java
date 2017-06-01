@@ -124,7 +124,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      * variable used to create groups only the first time
      * {@link MulticastEventGenerator#nextEvent()} is called.
      */
-    private static synchronized void setNodesAsAssigned() {
+    private static void setNodesAsAssigned() {
         nodesAreAssignedToGroups = true;
     }
 
@@ -132,7 +132,7 @@ public class MulticastEventGenerator extends AbstractMessageEventGenerator {
      * variable used to create groups only the first time
      * {@link MulticastEventGenerator#nextEvent()} is called.
      */
-    private static synchronized void setNodesAsUnassigned() {
+    private static void setNodesAsUnassigned() {
         nodesAreAssignedToGroups = false;
     }
 

@@ -494,7 +494,7 @@ public abstract class ActiveRouter extends MessageRouter {
                 tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
 
         if (tuple != null) {
-			return tuple.getValue(); // started transfer
+            return tuple.getValue(); // started transfer
 		}
 
 		// didn't start transfer to any node -> ask messages from connected

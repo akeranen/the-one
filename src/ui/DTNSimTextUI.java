@@ -10,6 +10,12 @@ import core.SimClock;
  * Simple text-based user interface.
  */
 public class DTNSimTextUI extends DTNSimUI {
+	/** runtime object, used to gather information on memory usage **/
+	private Runtime runtime = Runtime.getRuntime();
+	// as the runtime returns memory information in bytes,
+	// we need to divide by 1024*1024 = 1048576 to receive megabytes
+	/** constant for the conversion from bytes to megabytes **/
+	private final int BYTES_PER_MEGABYTE = 1048576;
 	private long lastUpdateRt;	// real time of last ui update
 	private long startTime; // simulation start time
 	/** How often the UI view is updated (milliseconds) */
@@ -59,8 +65,14 @@ public class DTNSimTextUI extends DTNSimUI {
 		if (forced || (diff > UI_UP_INTERVAL)) {
 			// simulated seconds/second calc
 			double ssps = ((SimClock.getTime() - lastUpdate)*1000) / diff;
-			//make sure the output is in a format that is easier to use in a csv file
-			print(dur + " " + SimClock.getIntTime() + " " + ssps);
+			// print out debug data in a format thta is usable in a csv file
+			// columns: elapsed real seconds, simulated seconds, current simulation rate,
+			// used memory, free memory, allocated memory, maximum allocatable memory
+			print(dur + " " + SimClock.getTime() + " " + ssps + " "
+					+ (runtime.totalMemory() - runtime.freeMemory()) / BYTES_PER_MEGABYTE + " "
+					+ runtime.freeMemory() / BYTES_PER_MEGABYTE + " "
+					+ runtime.totalMemory() / BYTES_PER_MEGABYTE + " "
+					+ runtime.maxMemory() / BYTES_PER_MEGABYTE);
 
 			this.lastUpdateRt = System.currentTimeMillis();
 			this.lastUpdate = SimClock.getTime();

@@ -1,12 +1,16 @@
 package test;
 
+import applications.DatabaseApplication;
 import core.BroadcastMessage;
 import core.Coord;
 import core.DataMessage;
 import core.DisasterData;
 import core.Group;
 import core.Message;
+import core.MulticastMessage;
+import core.SimClock;
 import org.junit.Assert;
+import org.junit.Test;
 import routing.DisasterRouter;
 
 /**
@@ -266,6 +270,81 @@ public class DisasterRouterTest extends AbstractRouterTest {
         }
     }
 
+    public void testNoMessagesAreReceivedWhenAlreadyTransferring() {
+        // Let h2 be transferring.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.updateAllNodes();
+
+        // Check the transfer started.
+        this.mc.next();
+        this.checkTransferStart(h2, h3, m1.getId());
+
+        // Let h1 try to send a message to h2 now.
+        Message m2 = new Message(h1, h2, "M2", 0);
+        h1.createNewMessage(m2);
+        h1.connect(h2);
+        this.updateAllNodes();
+
+        // Check that the new message was not sent.
+        while(this.mc.next()) {
+            Assert.assertNotEquals("Did not expect another transfer.", mc.TYPE_START, this.mc.getLastType());
+        }
+    }
+
+    /**
+     * Tests that direct messages of all types but data message are sent first, both to and from the neighbor.
+     */
+    public void testDirectMessagesAreSentFirst() {
+        // Create groups for multicasts.
+        Group directGroup = Group.createGroup(0);
+        directGroup.addHost(h1);
+        directGroup.addHost(h2);
+        Group indirectGroup = Group.createGroup(1);
+        indirectGroup.addHost(h1);
+        indirectGroup.addHost(h3);
+
+        // Create other messages to sort.
+        Message directMulticast = new MulticastMessage(h1, directGroup, "m1", 0, 1);
+        Message indirectMulticast = new MulticastMessage(h1, indirectGroup, "m2", 0, HIGH_PRIORITY);
+        Message broadcast = new BroadcastMessage(h2, "B1", 0);
+        Message directMessage = new Message(h1, h2, "M1", 0, 0);
+        Message indirectMessage = new Message(h1, h3, "M2", 0, VERY_HIGH_PRIORITY);
+        h1.createNewMessage(directMulticast);
+        h1.createNewMessage(indirectMulticast);
+        h2.createNewMessage(broadcast);
+        h1.createNewMessage(directMessage);
+        h1.createNewMessage(indirectMessage);
+
+        // Advance time to prevent head starts.
+        this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
+
+        // Add high utility data for data message.
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        DatabaseApplication app = new DatabaseApplication(ts);
+        h1.getRouter().addApplication(app);
+        app.update(h1);
+        app.disasterDataCreated(h1, data);
+
+        // Connect hosts.
+        h1.connect(h2);
+
+        // Make sure messages are sent in correct order.
+        String[] expectedIdOrder = {
+                directMulticast.getId(), directMessage.getId(), broadcast.getId(), indirectMessage.getId(),
+                indirectMulticast.getId(), data.toString()
+        };
+        this.mc.reset();
+        for (String expectedId : expectedIdOrder) {
+            this.updateAllNodes();
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedId, mc.getLastMsg().getId());
+        }
+    }
+
     /**
      * Tests that direct messages are sorted in correct order when we send them out.
      */
@@ -390,12 +469,4 @@ public class DisasterRouterTest extends AbstractRouterTest {
             Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
         }
     }
-
-    // TODO: Test that direct messages (multicasts, broadcasts, one-to-ones, but NOT db messages) are sent first, both
-    // to and from the neighbor
-    // This can only be tested after trying to send other messages does not throw an exception, i.e. message choosing
-    // and prioritization are implemented.
-
-    // TODO: Test that no messages are received when already transferring another message.
-    // This can only be tested after the message chooser was implemented.
 }

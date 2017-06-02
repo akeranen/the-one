@@ -34,8 +34,8 @@ public class DeliveryPredictabilityStorageTest {
     private static final double GREATER_THAN_ONE = 1.1;
 
     /* Times needed for a scenario test. */
-    private static final int FIRST_MEETING_TIME = 4;
-    private static final int SECOND_MEETING_TIME = 6;
+    private static final double FIRST_MEETING_TIME = 4;
+    private static final double SECOND_MEETING_TIME = 6;
 
     /* Acceptable delta for double equality checks. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
@@ -191,7 +191,7 @@ public class DeliveryPredictabilityStorageTest {
                 expectedPredictability, bStorage.getDeliveryPredictability(c), DOUBLE_COMPARISON_DELTA);
 
         // Check their delivery predictabilites to ownHost.
-        double decayedPredictability = SUMMAND * Math.pow(GAMMA, (double)SECOND_MEETING_TIME - FIRST_MEETING_TIME);
+        double decayedPredictability = SUMMAND * Math.pow(GAMMA, SECOND_MEETING_TIME - FIRST_MEETING_TIME);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
                 decayedPredictability, bStorage.getDeliveryPredictability(this.attachedHost), DOUBLE_COMPARISON_DELTA);

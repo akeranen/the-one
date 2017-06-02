@@ -12,6 +12,7 @@ import core.SettingsError;
 import core.SimClock;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import routing.util.DeliveryPredictabilityStorage;
 
@@ -44,11 +45,24 @@ public class DeliveryPredictabilityStorageTest {
     private static final String EXPECTED_EMPTY_STORAGE = "No delivery predictabilities should have been set.";
 
     /* Objects needed for tests. */
-    private TestUtils testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
-    private SimClock clock = SimClock.getInstance();
-    private DTNHost attachedHost = this.testUtils.createHost();
-    private DeliveryPredictabilityStorage dpStorage =
-            createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+    private TestUtils testUtils;
+    private SimClock clock;
+    private DTNHost attachedHost;
+    private DeliveryPredictabilityStorage dpStorage;
+
+    public DeliveryPredictabilityStorageTest() {
+        // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
+        // This is dealt with by the setUp method.
+    }
+
+    @Before
+    public void setUp() {
+        this.testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
+        this.clock = SimClock.getInstance();
+        this.attachedHost = this.testUtils.createHost();
+        this.dpStorage =
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+    }
 
     @After
     public void cleanUp() {

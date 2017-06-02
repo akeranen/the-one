@@ -4,9 +4,7 @@
  */
 package test;
 
-
 import org.junit.Test;
-import routing.ActiveRouter;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;

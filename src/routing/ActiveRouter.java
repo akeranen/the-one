@@ -464,13 +464,17 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
-        if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval){
+        if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval || hasMessagesButNoneCached()){
 		    cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
 
 		return tryMessagesToConnections(cachedMessages, connections);
 	}
+
+	private boolean hasMessagesButNoneCached(){
+        return cachedMessages.isEmpty() && !getMessageCollection().isEmpty();
+    }
 
 	/**
 	 * Exchanges deliverable (to final recipient) messages between this host

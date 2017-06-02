@@ -64,7 +64,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(mc.getLastTo(), h2);
 
 		// should cause relay h2 -> h3
-		clock.advance(messageOrderingInterval);
+		clock.advance(1);
 		updateAllNodes();
 
 		assertTrue(mc.next());
@@ -222,7 +222,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
 		assertFalse(mc.next());
-		clock.advance(messageOrderingInterval);
+		clock.advance(1);
 		updateAllNodes();
 		assertFalse(mc.next());
 
@@ -420,7 +420,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		clock.advance(messageOrderingInterval);
+		clock.advance(1);
 		updateAllNodes(); // should still be transferring
 		assertFalse(mc.next());
 

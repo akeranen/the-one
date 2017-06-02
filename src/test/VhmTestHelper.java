@@ -9,7 +9,6 @@ import movement.LevyWalkMovement;
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.PanicMovement;
-import movement.Path;
 import movement.ShortestPathMapBasedMovement;
 import movement.SwitchableStationaryMovement;
 import movement.VhmProperties;
@@ -226,8 +225,6 @@ public final class VhmTestHelper {
         //reset the host. This calls the startOver method and resets the movement.
         //Because no event is in range, the node will start with random map based movement.
         vhm.setHost(vhm.getHost());
-        //also re-initialize the path
-        setInitialPath(vhm.getHost());
         //Resets the host to its old location
         vhm.getHost().setLocation(oldLocation);
     }
@@ -332,17 +329,6 @@ public final class VhmTestHelper {
         vhm.newOrders();
     }
 
-    /**
-     * Set initial path to simulate random MapBasedMovement in the beginning
-     * @param host Host that gets a path
-     */
-    static void setInitialPath(DTNHost host) {
-        Path p = new Path();
-        p.addWaypoint(new Coord(0,0));
-        p.addWaypoint(new Coord(1,1));
-        host.setPath(p);
-    }
-    
     /**
      * Tests, if the movement mode and current movement model are set correctly to represent the
      * injury state

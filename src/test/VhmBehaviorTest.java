@@ -39,7 +39,6 @@ public class VhmBehaviorTest {
 
     public VhmBehaviorTest(){
         host.setLocation(new Coord(0,0));
-        VhmTestHelper.setInitialPath(host);
         VhmTestHelper.addMinimalSettingsForVoluntaryHelperMovement(testSettings);
         vhm = VhmTestHelper.createMinimalVhm(testSettings,host);
     }
@@ -49,7 +48,6 @@ public class VhmBehaviorTest {
         assertEquals("Host was not set as expected",host,vhm.getHost());
     }
 
-    
     @Test
     public void testInitialMMIsRandomMapBasedIfNoEventIsStartedOrWasNotChosen(){
         assertEquals("Wrong movement mode was chosen",
@@ -365,7 +363,7 @@ public class VhmBehaviorTest {
         VhmTestHelper.setToTransportMode(vhm);
         checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.TRANSPORTING_MODE);
         VhmTestHelper.setToInjuredMode(vhm);
-        checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.INJURED_MODE);       
+        checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode.INJURED_MODE);
     }
 
     private void checkIfDisasterIsIgnoredForMode(VoluntaryHelperMovement.movementMode mode){
@@ -472,7 +470,7 @@ public class VhmBehaviorTest {
         assertEquals("Help probability differs from calculation given in specification",
                 calculatedHelpProb,(double) helpCount / TEST_RUNS,PROB_DELTA);
     }
-    
+
     //TODO: Add tests for dying battery, after feature is implemented
     //TODO: Add tests for node reset, after feature is implemented
 }

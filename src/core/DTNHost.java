@@ -583,11 +583,4 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
         return this.getAddress() - h.getAddress();
     }
 
-    /**
-     * Sets the host's path (only for JUnit testing!!)
-     * @param p Path to be set
-     */
-    public void setPath(Path p) {
-    	path = p;
-    }
 }

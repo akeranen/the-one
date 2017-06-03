@@ -23,15 +23,26 @@ public class LocalDatabase {
     private static final int CUBIC = 3;
     private static final int METERS_IN_KILOMETER = 1000;
     private static final int SECONDS_IN_HOUR = 3600;
+
     /* Interval until utilities are recomputed in seconds */
     private static final int UTILITY_COMPUTATION_INTERVAL = 1;
 
-    /* Parameters for utility function. */
-    private static final double DEFAULT_BASE = 2;
-    private static final double SLOW_AGING_BASE = 1.1;
-    private static final double EQUAL_WEIGHT = 0.5;
-    private static final double SMALLER_WEIGHT = 0.3;
+    /* Parameters for utility function: Distance base. */
+    private static final double DEFAULT_DISTANCE_BASE = 1.2;
+    private static final double MORE_SENSITIVE_DISTANCE_BASE = 1.25;
+    private static final double VERY_SENSITIVE_DISTANCE_BASE = 1.35;
     private static final double SLOWER_DECREASE_DIVISOR = 2;
+
+    /* Parameters for utility function: Aging base. */
+    private static final double DEFAULT_AGING_BASE = 1.025;
+    private static final double ZERO_AGING_BASE = 1;
+    private static final double VERY_SLOW_AGING_BASE = 1.001;
+    private static final double SLOW_AGING_BASE = 1.005;
+
+
+    /* Parameters for utility function: Aging stops. */
+    private static final int HOURS_IN_WEEK = 168;
+    private static final int HOURS_IN_TWO_AND_A_HALF_DAYS = 60;
 
     /** Total size of the database in bytes. */
     private long totalSize;
@@ -182,30 +193,37 @@ public class LocalDatabase {
      * @return The computed utility value, a value between 0 and 1.
      */
     private static double computeUtility(DisasterData dataItem, Coord location, double time) {
-        // Factor how much distance influences the utility in comparison to age.
-        double alpha = EQUAL_WEIGHT;
+        // Factor how sensitive the utility function is to distance. The higher the beta, the more sensitive.
+        double beta = DEFAULT_DISTANCE_BASE;
         // Factor how fast aging occurs, the higher gamma, the faster the aging.
-        double gamma = DEFAULT_BASE;
+        double gamma = DEFAULT_AGING_BASE;
+        // Number of hours after which aging stops.
+        double maxAging = HOURS_IN_WEEK;
 
         /* Adapt alpha and gamma depending on type. */
         switch (dataItem.getType()){
             case MAP:
                 // For maps we just regard the distance, as map data does not become outdated
                 // within the disaster time frame.
-                alpha = 1;
+                gamma = ZERO_AGING_BASE;
+                maxAging = 0;
                 break;
             case MARKER:
-                // For markers, both distance and age are important. -> Default values work fine.
+                // For markers, both distance and age are important.
+                // We assume that markers age for a while, but markers older than 2.5 days are not more or less useful
+                // depending on age only.
+                beta = MORE_SENSITIVE_DISTANCE_BASE;
+                maxAging = HOURS_IN_TWO_AND_A_HALF_DAYS;
                 break;
             case SKILL:
                 // For skills, the aging is slower, as skills will likely not fade
-                // The importance on distance is also lower
-                alpha = SMALLER_WEIGHT;
-                gamma = SLOW_AGING_BASE;
+                // The importance on distance is high because you won't ask people for help that are very far away.
+                beta = VERY_SENSITIVE_DISTANCE_BASE;
+                gamma = VERY_SLOW_AGING_BASE;
                 break;
             case RESOURCE:
-                //For resources the importance of distance is lower
-                alpha = SMALLER_WEIGHT;
+                // Resources also need some time to age, but may age faster than skills.
+                gamma = SLOW_AGING_BASE;
                 break;
             default:
                 throw new UnsupportedOperationException("No implementation for data type " + dataItem.getType() + ".");
@@ -221,7 +239,7 @@ public class LocalDatabase {
         double age = (time - dataItem.getCreation()) / SECONDS_IN_HOUR;
 
         /* Compute utility. */
-        return alpha * Math.pow(DEFAULT_BASE, -(distance/SLOWER_DECREASE_DIVISOR)) + (1-alpha) * Math.pow(gamma,-age);
+        return Math.pow(beta, -(distance/SLOWER_DECREASE_DIVISOR)) * Math.pow(gamma,-Math.min(maxAging, age));
     }
 
     /**

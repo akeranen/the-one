@@ -282,6 +282,10 @@ public class DeliveryPredictabilityStorageTest {
                 DOUBLE_COMPARISON_DELTA);
     }
 
+    /**
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} throws an
+     * {@link IllegalArgumentException} if the given message argument is a {@link DataMessage}.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForDataMessage() {
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
@@ -289,12 +293,20 @@ public class DeliveryPredictabilityStorageTest {
         this.dpStorage.getDeliveryPredictability(dataMessage);
     }
 
+    /**
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} throws an
+     * {@link IllegalArgumentException} if the given message argument is a {@link BroadcastMessage}.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForBroadcastMessage() {
         Message broadcast = new BroadcastMessage(this.testUtils.createHost(), "M1", 0);
         this.dpStorage.getDeliveryPredictability(broadcast);
     }
 
+    /**
+     * Tests that if two hosts meet, the addresses known by the {@link DeliveryPredictabilityStorage} are extended by
+     * each other.
+     */
     @Test
     public void testMetHostsAreAddedToKnownAddresses() {
         DTNHost neighbor = this.testUtils.createHost();
@@ -303,6 +315,9 @@ public class DeliveryPredictabilityStorageTest {
         Assert.assertTrue(
                 "Met hosts should be added to known addresses.",
                 this.dpStorage.getKnownAddresses().contains(neighbor.getAddress()));
+        Assert.assertTrue(
+                "Met hosts should be added to known addresses.",
+                neighborStorage.getKnownAddresses().contains(this.attachedHost.getAddress()));
     }
 
     /**
@@ -347,6 +362,12 @@ public class DeliveryPredictabilityStorageTest {
                 this.dpStorage.getKnownAddresses().contains(this.attachedHost.getAddress()));
     }
 
+    /**
+     * Creates a {@link DeliveryPredictabilityStorage} for the given host using this default values specified by this
+     * test class for all parameters.
+     * @param host The host to be attached to the storage.
+     * @return The created {@link DeliveryPredictabilityStorage}.
+     */
     private static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(DTNHost host) {
         return createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, host);
     }

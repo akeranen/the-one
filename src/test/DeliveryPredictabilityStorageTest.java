@@ -347,12 +347,14 @@ public class DeliveryPredictabilityStorageTest {
     private static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(
             double beta, double gamma, double summand, double secondsInTimeUnit, DTNHost host) {
         TestSettings settings = new TestSettings();
+        settings.setNameSpace(DeliveryPredictabilityStorage.DELIVERY_PREDICTABILITY_STORAGE_NS);
         settings.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(beta));
         settings.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(gamma));
         settings.putSetting(DeliveryPredictabilityStorage.SUMMAND_S, Double.toString(summand));
         settings.putSetting(DeliveryPredictabilityStorage.TIME_UNIT_S, Double.toString(secondsInTimeUnit));
+        settings.restoreNameSpace();
 
-        DeliveryPredictabilityStorage storage = new DeliveryPredictabilityStorage(settings);
+        DeliveryPredictabilityStorage storage = new DeliveryPredictabilityStorage();
         storage.setAttachedHost(host);
         return storage;
     }

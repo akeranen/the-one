@@ -22,6 +22,9 @@ import java.util.Map;
  * Created by Britta Heymann on 18.05.2017.
  */
 public class DeliveryPredictabilityStorage {
+    /** Namespace for all delivery predictability storage settings. */
+    public static final String DELIVERY_PREDICTABILITY_STORAGE_NS = "DeliveryPredictabilityStorage";
+
     /**
      * Constant used as a summand in delivery predictability -setting id ({@value}).
      * Constant in [0, 1]. The constant term used in direct updates, also known as DP_init.
@@ -64,9 +67,10 @@ public class DeliveryPredictabilityStorage {
 
     /**
      * Initializes a new instance of the {@link DeliveryPredictabilityStorage} class.
-     * @param s Settings to use.
      */
-    public DeliveryPredictabilityStorage(Settings s) {
+    public DeliveryPredictabilityStorage() {
+        Settings s = new Settings(DELIVERY_PREDICTABILITY_STORAGE_NS);
+
         this.summand = s.getDouble(SUMMAND_S);
         assertValueBetweenZeroAndOne(this.summand, SUMMAND_S);
         this.gamma = s.getDouble(GAMMA_S);

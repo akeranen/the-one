@@ -48,10 +48,10 @@ public class DisasterRouter extends ActiveRouter {
         // Initialize rating mechanism managers.
         this.encounterValueManager = new EncounterValueManager();
         this.replicationsDensityManager = new ReplicationsDensityManager();
-        this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(s);
+        this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage();
 
         // Initialize message orderers.
-        this.messagePrioritizer = new DisasterPrioritizationStrategy(s, this);
+        this.messagePrioritizer = new DisasterPrioritizationStrategy(this);
         this.directMessageComparator = new PrioritySorter();
         this.directMessageTupleComparator = new PriorityTupleSorter();
     }

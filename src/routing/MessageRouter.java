@@ -548,7 +548,7 @@ public abstract class MessageRouter {
                 list.sort(Comparator.comparing(Message::getReceiveTime));
                 break;
             case Q_MODE_PRIO:
-                list.sort(Comparator.comparing(Message::getPriority));
+                list.sort(Comparator.comparing(Message::getPriority).reversed());
                 break;
 		      /* add more queue modes here */
              default:

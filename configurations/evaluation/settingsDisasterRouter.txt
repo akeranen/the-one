@@ -1,0 +1,35 @@
+# Add this file as argument if you want to use DisasterRouter
+
+Group.router = DisasterRouter
+
+# Parameters for rating mechanisms
+
+DeliveryPredictabilityStorage.dpInit = 0.75
+DeliveryPredictabilityStorage.dpGamma = 0.98
+DeliveryPredictabilityStorage.dpBeta = 0.25
+DeliveryPredictabilityStorage.dpTimeUnit = 30
+
+EncounterValue.agingFactor = 0.85
+EncounterValue.windowLength = 120
+
+ReplicationsDensity.windowLength = 120
+
+# Parameters for message choosing
+# ! TODO: Uncommented this once message choosing is implemented !
+# UtilityMessageChooser.dpWeight = 0.95
+# UtilityMessageChooser.powerWeight = 0.05
+# UtilityMessageChooser.prophetPlusWeight = 0.65
+# UtilityMessageChooser.rdWeight = 0.25
+# UtilityMessageChooser.evWeight = 0.1
+# UtilityMessageChooser.messageUtilityThreshold = 0.45
+# UtilityMessageChooser.powerThreshold = 0.1
+
+# Parameters for prioritization
+DisasterPrioritization.headStartThreshold = 300
+DisasterPrioritization.priorityThreshold = 5
+DisasterPrioritization.dpWeight = 0.4
+
+# Parameters for buffer management
+# ! TODO: Uncomment this once buffer management is implemented !
+# DisasterBufferComparator.hopThreshold = 5
+# DisasterBufferComparator.ageThreshold = 300

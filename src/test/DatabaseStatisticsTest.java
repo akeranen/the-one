@@ -43,7 +43,7 @@ public class DatabaseStatisticsTest {
 
     /* Sizes for data items */
     private static final int SMALL_ITEM_SIZE=20;
-    private static final int BIG_ITEM_SIZE=55;
+    private static final int BIG_ITEM_SIZE=59;
 
     /* Data utility value used in tests */
     private static final double HIGH_UTILITY=0.8;

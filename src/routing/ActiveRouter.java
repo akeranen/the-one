@@ -43,7 +43,7 @@ public abstract class ActiveRouter extends MessageRouter {
     /** How often messages will be requested and reordered in seconds */
     protected double messageOrderingInterval;
     /** Default value how often messages should be reordered */
-    protected static final double DEFAULT_ORDERING_INTERVAL=0.5;
+    protected static final double DEFAULT_ORDERING_INTERVAL=0.0;
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
@@ -57,7 +57,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
-	private double lastMessageOrdering;
+	/** When the messages were last ordered, initially Double.MIN_VALUE if they were never ordered */
+	private double lastMessageOrdering = Double.MIN_VALUE;
     private List<Message> cachedMessages = new ArrayList<>();
     private double lastMessageOrderingForConnected;
     private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
@@ -478,13 +479,17 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
-        if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval){
-		    cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
+        if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval || hasMessagesButNoneCached()){
+            cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
 
 		return tryMessagesToConnections(cachedMessages, connections);
 	}
+
+	private boolean hasMessagesButNoneCached(){
+        return cachedMessages.isEmpty() && !getMessageCollection().isEmpty();
+    }
 
 	/**
 	 * Exchanges deliverable (to final recipient) messages between this host
@@ -704,7 +709,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return In which time interval messages are requested and reordered.
      */
 	public double getMessageOrderingInterval(){
-	    return this.messageOrderingInterval;
+        return this.messageOrderingInterval;
     }
 
 }

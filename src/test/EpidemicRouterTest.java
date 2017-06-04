@@ -4,13 +4,15 @@
  */
 package test;
 
-
 import org.junit.Test;
 import routing.ActiveRouter;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
 import core.Message;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for EpidemicRouter and, due the simple nature of Epidemic router,
@@ -19,14 +21,12 @@ import core.Message;
 public class EpidemicRouterTest extends AbstractRouterTest {
 
 	private static int TTL = 300;
-	private double messageOrderingInterval;
 
 	@Override
 	public void setUp() throws Exception {
 		ts.putSetting(MessageRouter.MSG_TTL_S, ""+TTL);
 		ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
 		setRouterProto(new EpidemicRouter(ts));
-		messageOrderingInterval = ((ActiveRouter)routerProto).getMessageOrderingInterval();
 		super.setUp();
 	}
 
@@ -49,7 +49,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.connect(h2);
 		h2.connect(h3);
 
-        clock.advance(messageOrderingInterval);
 		updateAllNodes();
 		clock.advance(2);
 		updateAllNodes();
@@ -64,7 +63,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(mc.getLastTo(), h2);
 
 		// should cause relay h2 -> h3
-		clock.advance(messageOrderingInterval);
+		clock.advance(1);
 		updateAllNodes();
 
 		assertTrue(mc.next());
@@ -138,7 +137,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		mc.reset();
 
 		h1.connect(h2);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // h1 should start transfer
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
@@ -186,7 +184,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(6);
 
 		h1.connect(h2);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType()); // starts h1->h2 MSG_ID1
@@ -217,17 +214,15 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(1);
 
 		h1.connect(h2);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
 		assertFalse(mc.next());
-		clock.advance(messageOrderingInterval);
+		clock.advance(1);
 		updateAllNodes();
 		assertFalse(mc.next());
 
 		h2.setLocation(farAway);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // disconnect, still transferring
 
 		assertTrue(mc.next());
@@ -247,7 +242,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(1);
 
 		h2.connect(h1);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // should start transfer
 
 		assertTrue(mc.next());
@@ -275,7 +269,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.createNewMessage(m1);
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_CREATE, mc.getLastType());
-        clock.advance(messageOrderingInterval);
 		updateAllNodes();
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
@@ -315,18 +308,15 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		h1.createNewMessage(m1);
 
 		h1.connect(h2);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // starts transfer h1 -> h2
 		clock.advance(10);
 		mc.reset();	// discard create & start
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // msg delivered h1 -> h2
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_RELAY, mc.getLastType());
 		assertEquals(h2, mc.getLastTo());
 
 		h1.connect(h3);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes();	// start transfer h1 -> h3
 		assertTrue(mc.next());
 		clock.advance(10);
@@ -336,7 +326,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(h3, mc.getLastTo());
 
 		h3.connect(h2);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // should not start a new transfer (h1 -> h2)
 		clock.advance(10);
 		updateAllNodes(); // still shouldn't do anything
@@ -415,12 +404,11 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		checkCreates(2);
 
 		h3.connect(h1);
-        clock.advance(messageOrderingInterval);
 		updateAllNodes(); // transfer of MSG_ID1 should start
 
 		assertTrue(mc.next());
 		assertEquals(mc.TYPE_START, mc.getLastType());
-		clock.advance(messageOrderingInterval);
+		clock.advance(1);
 		updateAllNodes(); // should still be transferring
 		assertFalse(mc.next());
 
@@ -649,4 +637,61 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertNotSame(orderedIds, runMessageExchange(true));
 		assertNotSame(orderedIds, runMessageExchange(false));
 	}
+
+	@Test
+    public void testMessageOrderingInterval() throws Exception {
+	    final double messageOrderingInterval=5;
+	    ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(messageOrderingInterval));
+	    ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S, ""+MessageRouter.Q_MODE_PRIO);
+	    this.setUp();
+
+        assertEquals("Message ordering interval was not set correctly.",
+                ((EpidemicRouter)routerProto).getMessageOrderingInterval(), messageOrderingInterval);
+
+        ActiveRouter sendingRouter = (ActiveRouter)h0.getRouter();
+
+        Message m1 = new Message(h0, h1, MSG_ID1, 0, 1);
+        h0.createNewMessage(m1);
+        Message m2 = new Message(h0, h1, MSG_ID2, 0, 1);
+        h0.createNewMessage(m2);
+        Message m3 = new Message(h0, h1, MSG_ID3, 0, 1);
+        h0.createNewMessage(m3);
+        List<String> lowPrioMessages = Arrays.asList(MSG_ID1, MSG_ID2, MSG_ID3);
+
+        //Connect h0 to another host
+        h0.connect(h2);
+
+        //We should order messages for the first time now
+        updateAllNodes();
+
+        //Advance time enough for a message to be sent but not enough to reorder messages
+        clock.advance(1);
+        //Here's a new message with higher prio. It should be first to send after reordering
+        Message m4 = new Message(h0, h1, MSG_ID4, 0, 2);
+        h0.createNewMessage(m4);
+        updateAllNodes();
+        boolean isSendingLowPrioMsg = false;
+        for (String msg : lowPrioMessages){
+            if (sendingRouter.isSending(msg)){
+                isSendingLowPrioMsg = true;
+            }
+        }
+        assertTrue("We should not have reordered the messages yet.", isSendingLowPrioMsg);
+
+        //Advance time enough for another message to be sent but not enough to reorder messages
+        clock.advance(1);
+        updateAllNodes();
+        isSendingLowPrioMsg = false;
+        for (String msg : lowPrioMessages){
+            if (sendingRouter.isSending(msg)){
+                isSendingLowPrioMsg = true;
+            }
+        }
+        assertTrue("We should not have reordered the messages yet.", isSendingLowPrioMsg);
+
+        //Now advance time enough to reorder
+        clock.advance(messageOrderingInterval);
+        updateAllNodes();
+        assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID4));
+    }
 }

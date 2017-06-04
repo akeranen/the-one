@@ -465,7 +465,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
         if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval || hasMessagesButNoneCached()){
-		    cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
+            cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
 

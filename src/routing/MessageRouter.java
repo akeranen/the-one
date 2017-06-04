@@ -131,8 +131,11 @@ public abstract class MessageRouter {
 		if (s.contains(MSG_TTL_S)) {
 			this.msgTtl = s.getInt(MSG_TTL_S);
 		}
+        setSendQueueMode(s);
+	}
 
-		if (s.contains(SEND_QUEUE_MODE_S)) {
+	private void setSendQueueMode(Settings s){
+        if (s.contains(SEND_QUEUE_MODE_S)) {
 
             String mode = s.getSetting(SEND_QUEUE_MODE_S);
             mode = mode.trim().toUpperCase();
@@ -155,9 +158,9 @@ public abstract class MessageRouter {
                             s.getFullPropertyName(SEND_QUEUE_MODE_S));
             }
         } else {
-			sendQueueMode = Q_MODE_RANDOM;
-		}
-	}
+            sendQueueMode = Q_MODE_RANDOM;
+        }
+    }
 
 	/**
 	 * Initializes the router; i.e. sets the host this router is in and

@@ -192,10 +192,7 @@ MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
 MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt
 
 ## Reports - all report names have to be valid report classes
-# TODO: add reports for DB synchronization
-# this can be done as soon as it is implemented and merged to the master
-# don't forget to also update Report.nrofReports!
-Report.nrofReports = 5
+Report.nrofReports = 6
 Report.reportDir = reports/
 # length of the warm up period (simulated seconds)
 Report.warmup = 0
@@ -204,6 +201,8 @@ Report.report2 = DeliveryProbabilityReport
 Report.report3 = BroadcastDeliveryReport
 Report.report4 = MulticastMessageDeliveryReport
 Report.report5 = TrafficReport
+Report.report6 = DataSyncReport
+DataSyncReport.precision=2
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

@@ -44,6 +44,7 @@ public abstract class MessageRouter {
 	 * <UL>
 	 * <LI/> 1 : random (message order is randomized every time; default option)
 	 * <LI/> 2 : FIFO (most recently received messages are sent last)
+     * <LI/> 3 : Prio (highest priority first)
 	 * </UL>
 	 */
 	public static final String SEND_QUEUE_MODE_S = "sendQueue";
@@ -52,11 +53,16 @@ public abstract class MessageRouter {
 	public static final int Q_MODE_RANDOM = 1;
 	/** Setting value for FIFO queue mode */
 	public static final int Q_MODE_FIFO = 2;
+    /** Setting value for priority queue mode */
+    public static final int Q_MODE_PRIO = 3;
+
 
 	/** Setting string for random queue mode */
 	public static final String STR_Q_MODE_RANDOM = "RANDOM";
 	/** Setting string for FIFO queue mode */
 	public static final String STR_Q_MODE_FIFO = "FIFO";
+	/** Setting string for priority queue mode */
+	public static final String STR_Q_MODE_PRIO ="PRIO";
 
 	/** Error message when encountering an unkown queue mode */
 	public static final String UNKOWN_QUEUE_MODE = "Unknown queue mode ";
@@ -128,21 +134,27 @@ public abstract class MessageRouter {
 
 		if (s.contains(SEND_QUEUE_MODE_S)) {
 
-			String mode = s.getSetting(SEND_QUEUE_MODE_S);
+            String mode = s.getSetting(SEND_QUEUE_MODE_S);
+            mode = mode.trim().toUpperCase();
 
-			if (mode.trim().toUpperCase().equals(STR_Q_MODE_FIFO)) {
-				this.sendQueueMode = Q_MODE_FIFO;
-			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_RANDOM)){
-				this.sendQueueMode = Q_MODE_RANDOM;
-			} else {
-				this.sendQueueMode = s.getInt(SEND_QUEUE_MODE_S);
-				if (sendQueueMode < 1 || sendQueueMode > 2) {
-					throw new SettingsError("Invalid value for " +
-							s.getFullPropertyName(SEND_QUEUE_MODE_S));
-				}
-			}
-		}
-		else {
+            switch (mode) {
+                case STR_Q_MODE_RANDOM:
+                case "1":
+                    this.sendQueueMode = Q_MODE_RANDOM;
+                    break;
+                case STR_Q_MODE_FIFO:
+                case "2":
+                    this.sendQueueMode = Q_MODE_FIFO;
+                    break;
+                case STR_Q_MODE_PRIO:
+                case "3":
+                    this.sendQueueMode = Q_MODE_PRIO;
+                    break;
+                default:
+                    throw new SettingsError("Invalid value for " +
+                            s.getFullPropertyName(SEND_QUEUE_MODE_S));
+            }
+        } else {
 			sendQueueMode = Q_MODE_RANDOM;
 		}
 	}
@@ -532,6 +544,9 @@ public abstract class MessageRouter {
 		     case Q_MODE_FIFO:
                 list.sort(Comparator.comparing(Message::getReceiveTime));
                 break;
+            case Q_MODE_PRIO:
+                list.sort(Comparator.comparing(Message::getPriority));
+                break;
 		      /* add more queue modes here */
              default:
                 throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
@@ -552,6 +567,9 @@ public abstract class MessageRouter {
                 break;
 			case Q_MODE_FIFO:
                 list.sort((t1,t2) -> ((Double)t1.getKey().getReceiveTime()).compareTo(t2.getKey().getReceiveTime()));
+                break;
+            case Q_MODE_PRIO:
+                list.sort((t1,t2) -> ((Integer)t2.getKey().getPriority()).compareTo(t1.getKey().getPriority()));
                 break;
             /* add more queue modes here */
 			default:
@@ -575,6 +593,8 @@ public abstract class MessageRouter {
                 return ((Integer)m1.hashCode()).compareTo(m2.hashCode());
             case Q_MODE_FIFO:
                 return ((Double)m1.getReceiveTime()).compareTo(m2.getReceiveTime());
+            case Q_MODE_PRIO:
+                return ((Integer)m2.getPriority()).compareTo(m1.getPriority());
             /* add more queue modes here */
             default:
                 throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);

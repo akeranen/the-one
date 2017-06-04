@@ -344,7 +344,7 @@ public class Message implements Comparable<Message> {
      *            The message where the data is copied
      */
     protected void copyFrom(Message m) {
-        this.path = new ArrayList<DTNHost>(m.path);
+        this.path = new ArrayList<DTNHost>();
         this.timeCreated = m.timeCreated;
         this.responseSize = m.responseSize;
         this.requestMsg = m.requestMsg;

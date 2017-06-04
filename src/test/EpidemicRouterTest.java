@@ -5,6 +5,7 @@
 package test;
 
 import org.junit.Test;
+import routing.ActiveRouter;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
@@ -633,4 +634,15 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertNotSame(orderedIds, runMessageExchange(true));
 		assertNotSame(orderedIds, runMessageExchange(false));
 	}
+
+	@Test
+    public void testMessageOrderingInterval() throws Exception {
+	    final double messageOrderingInterval=5;
+	    ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(messageOrderingInterval));
+	    this.setUp();
+
+        assertEquals("Message ordering interval was not set correctly.",
+                ((EpidemicRouter)routerProto).getMessageOrderingInterval(), messageOrderingInterval);
+
+    }
 }

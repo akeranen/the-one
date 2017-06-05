@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Random;
 
 import routing.util.EnergyModel;
@@ -571,10 +570,9 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */
-        ListIterator<Connection> it = sendingConnections.listIterator();
-		while (it.hasNext()) {
+		for (int i=0; i<this.sendingConnections.size(); ) {
 			boolean removeCurrent = false;
-			Connection con = it.next();
+			Connection con = sendingConnections.get(i);
 
 			/* finalize ready transfers */
 			if (con.isMessageTransferred()) {
@@ -598,11 +596,11 @@ public abstract class ActiveRouter extends MessageRouter {
 				if (this.getFreeBufferSize() < 0) {
 					this.makeRoomForMessage(0);
 				}
-				it.remove();
+				sendingConnections.remove(i);
 			}
 			else {
 				/* index increase needed only if nothing was removed */
-				break;
+				i++;
 			}
 		}
 

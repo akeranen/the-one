@@ -497,11 +497,11 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
      * @param conToRemove the connection which should be removed
      * @return true if the connection could be remove (else false)
      */
-	public boolean removeConnection(Connection conToRemove){
-	    ListIterator<Connection> iterator =connections.listIterator();
-	    while(iterator.hasNext()){
-	        Connection current = iterator.next();
-	        if (current.equals(conToRemove)){
+	private boolean removeConnection(Connection conToRemove){
+        ListIterator<Connection> iterator =connections.listIterator();
+        while(iterator.hasNext()){
+            Connection current = iterator.next();
+            if (current.equals(conToRemove)){
                 iterator.remove();
                 return true;
             }

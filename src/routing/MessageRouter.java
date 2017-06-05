@@ -468,7 +468,7 @@ public abstract class MessageRouter {
 	    Iterator it = messages.entrySet().iterator();
 	    while (it.hasNext()){
             Map.Entry pair = (Map.Entry)it.next();
-	        if (pair.getKey() == id){
+            if (pair.getKey().equals(id)){
                 it.remove();
                 return (Message)pair.getValue();
             }

@@ -62,7 +62,7 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	public void connect(NetworkInterface anotherInterface) {
         if (this != anotherInterface
                 && !isConnected(anotherInterface)
-				&& anotherInterface.getHost().isRadioActive()
+				&& anotherInterface.isActive()
 				&& isWithinRange(anotherInterface)) {
 
 			// new contact within range

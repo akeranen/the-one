@@ -645,9 +645,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 	    ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S, ""+MessageRouter.Q_MODE_PRIO);
 	    this.setUp();
 
-        assertEquals("Message ordering interval was not set correctly.",
-                ((EpidemicRouter)routerProto).getMessageOrderingInterval(), messageOrderingInterval);
-
         ActiveRouter sendingRouter = (ActiveRouter)h0.getRouter();
 
         Message m1 = new Message(h0, h1, MSG_ID1, 0, 1);
@@ -693,5 +690,23 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         clock.advance(messageOrderingInterval);
         updateAllNodes();
         assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID4));
+    }
+
+    @Test
+    public void testGetMessageOrderingInterval() throws Exception {
+        final double messageOrderingInterval=3;
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(messageOrderingInterval));
+        this.setUp();
+
+        assertEquals("Message ordering interval was not set correctly.", messageOrderingInterval,
+                ((EpidemicRouter)routerProto).getMessageOrderingInterval());
+    }
+
+    @Test
+    public void testDefaultMessageOrderingInterval() throws Exception{
+	    ts = new TestSettings();
+	    this.setUp();
+        assertEquals("Default message ordering interval should be 0.0.", 0.0,
+                ((EpidemicRouter)routerProto).getMessageOrderingInterval());
     }
 }

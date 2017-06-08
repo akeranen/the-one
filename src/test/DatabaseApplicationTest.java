@@ -44,7 +44,7 @@ public class DatabaseApplicationTest {
 
     /** Small time difference used for tests about map sending. */
     private static final double SMALL_TIME_DIFF = 0.1;
-    private static final int TIME_IN_DISTANT_FUTURE = 10_000;
+    private static final int TIME_IN_DISTANT_FUTURE = 600_000;
 
     /** Used to check that some database sizes are completely in the interval, not on the border. */
     private static final int DISTANCE_FROM_BORDER = 10;

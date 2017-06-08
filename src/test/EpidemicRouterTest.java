@@ -651,9 +651,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         h0.createNewMessage(m1);
         Message m2 = new Message(h0, h1, MSG_ID2, 0, 1);
         h0.createNewMessage(m2);
-        Message m3 = new Message(h0, h1, MSG_ID3, 0, 1);
-        h0.createNewMessage(m3);
-        List<String> lowPrioMessages = Arrays.asList(MSG_ID1, MSG_ID2, MSG_ID3);
+        List<String> lowPrioMessages = Arrays.asList(MSG_ID1, MSG_ID2);
 
         //Connect h0 to another host
         h0.connect(h2);
@@ -663,22 +661,16 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
         //Advance time enough for a message to be sent but not enough to reorder messages
         clock.advance(1);
+
         //Here's a new message with higher prio. It should be first to send after reordering
-        Message m4 = new Message(h0, h1, MSG_ID4, 0, 2);
-        h0.createNewMessage(m4);
+        Message m3 = new Message(h0, h1, MSG_ID3, 0, 2);
+        h0.createNewMessage(m3);
         updateAllNodes();
-        boolean isSendingLowPrioMsg = false;
-        for (String msg : lowPrioMessages){
-            if (sendingRouter.isSending(msg)){
-                isSendingLowPrioMsg = true;
-            }
-        }
-        assertTrue("We should not have reordered the messages yet.", isSendingLowPrioMsg);
 
         //Advance time enough for another message to be sent but not enough to reorder messages
         clock.advance(1);
         updateAllNodes();
-        isSendingLowPrioMsg = false;
+        boolean isSendingLowPrioMsg = false;
         for (String msg : lowPrioMessages){
             if (sendingRouter.isSending(msg)){
                 isSendingLowPrioMsg = true;
@@ -689,7 +681,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         //Now advance time enough to reorder
         clock.advance(messageOrderingInterval);
         updateAllNodes();
-        assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID4));
+        assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID3));
     }
 
     @Test

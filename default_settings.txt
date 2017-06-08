@@ -18,8 +18,8 @@ wInterface.scanInterval = 30
 # Common settings for all groups
 Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
-# Buffer size of 10 MB
-Group.bufferSize = 10M
+# Buffer size of 30 MB
+Group.bufferSize = 30M
 Group.nrofInterfaces = 1
 Group.interface1 = wInterface
 # Time the node will help at a disaster site (in seconds)
@@ -206,5 +206,5 @@ DataSyncReport.precision=2
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.
-Optimization.cellSizeMult = 5
+Optimization.cellSizeMult = 1
 Optimization.randomizeUpdateOrder = true

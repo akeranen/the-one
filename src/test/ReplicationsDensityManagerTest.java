@@ -240,6 +240,26 @@ public class ReplicationsDensityManagerTest extends AbstractIntervalRatingMechan
     }
 
     @Test
+    public void testNeverEncounteredMessageStaysOnUnknownValue() {
+        // Add new message.
+        this.replicationsDensityManager.addMessage(MESSAGE_ID);
+
+        // Add an encounter, but not meeting this message.
+        this.meetNeighborWithMessage("M2");
+
+        // Update.
+        this.clock.setTime(WINDOW_LENGTH);
+        this.replicationsDensityManager.update();
+
+        // Make sure the replications density stays unknown.
+        Assert.assertEquals(
+                "Replications density should still be unknown.",
+                UNKNOWN_REPLICATIONS_DENSITY,
+                this.replicationsDensityManager.getReplicationsDensity(MESSAGE_ID),
+                DOUBLE_COMPARISON_DELTA);
+    }
+
+    @Test
     public void testReplicationsDensitiesWorkForMultipleMessages() {
         // Prepare a manager knowing two messages.
         String secondMessageId = "M2";

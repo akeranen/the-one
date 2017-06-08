@@ -133,6 +133,28 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
                 expectedEncounterValue, this.evManager.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
     }
 
+    /**
+     * Checks that the encounter value is updated correctly if the host has not met any other node in the last time
+     * window, i.e. it ages.
+     */
+    @Test
+    public void testEncounterValueAgesCorrectlyForIsolatedHost() {
+        // Start with a non-zero encounter value.
+        this.evManager.addEncounter();
+        this.clock.setTime(WINDOW_LENGTH);
+        this.evManager.update();
+
+        // Then, update the encounter value again.
+        this.clock.advance(WINDOW_LENGTH);
+        this.evManager.update();
+
+        // Check the update executed correctly.
+        double expectedEncounterValue = (1 - NEW_DATA_WEIGHT) * NEW_DATA_WEIGHT * 1;
+        Assert.assertEquals(
+                EXPECTED_DIFFERENT_VALUE,
+                expectedEncounterValue, this.evManager.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
+    }
+
     @Test
     public void testEncounterValueRatioIsCorrectForBothEncounterValuesZero() {
         Assert.assertEquals(

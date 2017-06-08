@@ -209,11 +209,11 @@ public class VhmEvent extends ExternalEvent {
      *
      * @return next event id
      */
-    private static synchronized long getNextEventID() {
+    private static long getNextEventID() {
         return nextEventID++;
     }
 
-    public static synchronized void resetVhmEventIdCounter(){
+    public static void resetVhmEventIdCounter(){
         nextEventID = 0;
     }
 

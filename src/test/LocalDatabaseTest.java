@@ -22,10 +22,13 @@ import java.util.List;
 public class LocalDatabaseTest {
     private static final int DB_SIZE = 100;
 
-    /* Used location for all DB operations. */
+    /* Used locations for all DB operations. */
     private static final Coord CURR_LOCATION = new Coord(300, 400);
+    private static final Coord ORIGIN = new Coord(0,0);
+
     /* The current time. */
     private static final double CURR_TIME = 1800;
+    private static final double TWO_WEEKS = 60 * 60 * 24 * 14D;
 
     /* Time interval that is small enough s.t. utilities should not be recomputed */
     private static final double HALF_OF_COMPUTATION_INTERVAL = 0.5;
@@ -33,17 +36,24 @@ public class LocalDatabaseTest {
     /* Time interval long enough so that utility computation is triggered */
     private static final double TIME_ENOUGH_TO_RECOMPUTE = 10;
 
-    private static final Coord ORIGIN = new Coord(0,0);
-
     /* Some utility values used in tests. */
     private static final double IMPOSSIBLE_HIGH_UTILITY = 1.1;
+
     /* Rounded down utility values for different data types with data created at time 0 at origin. */
-    private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.91;
-    private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.77;
-    private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.74;
+    private static final double APPROXIMATE_ORIGIN_SKILL_UTILITY = 0.92;
+    private static final double APPROXIMATE_ORIGIN_MARKER_UTILITY = 0.93;
+    private static final double APPROXIMATE_ORIGIN_RESOURCE_UTILITY = 0.95;
+
+    /* Rounded utility values for different data types with data created at time 0 at origin; utility value after two
+    weeks' time.*/
+    private static final double MAX_AGED_MARKER_UTILITY = 0.23;
+    private static final double MAX_AGED_RESOURCE_UTILITY = 0.43;
+    private static final double MAX_AGED_SKILL_UTILITY = 0.85;
 
     private static final String UNEXPECTED_UTILITY = "Expected different utility.";
-    private static final double UTILITY_EXACTNESS = 0.01;
+
+    /* Margin of error used for floating point comparisons */
+    private static final double DOUBLE_COMPARISON_EXACTNESS = 0.01;
 
     /* Numbers from 1 to 3 data items that are expected to be returned in certain tests. */
     private static final int SINGLE_ITEM = 1;
@@ -239,14 +249,14 @@ public class LocalDatabaseTest {
         /* The different types should have different utility values.
         Test getting data items slightly below these values one after the other. */
         List<Tuple<DisasterData, Double>> highestUtility =
-                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
         TestCase.assertEquals("Expected only one data item to be returned.", SINGLE_ITEM, highestUtility.size());
-        TestCase.assertTrue("Expected the skill as highest utility item.", containsData(highestUtility, skill));
+        TestCase.assertTrue("Expected the resource as highest utility item.", containsData(highestUtility, resource));
         TestCase.assertEquals(
                 UNEXPECTED_UTILITY,
-                APPROXIMATE_ORIGIN_SKILL_UTILITY,
-                getUtility(highestUtility, skill),
-                UTILITY_EXACTNESS);
+                APPROXIMATE_ORIGIN_RESOURCE_UTILITY,
+                getUtility(highestUtility, resource),
+                DOUBLE_COMPARISON_EXACTNESS);
 
         List<Tuple<DisasterData, Double>> mediumUtility =
                 this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_MARKER_UTILITY);
@@ -256,16 +266,16 @@ public class LocalDatabaseTest {
                 UNEXPECTED_UTILITY,
                 APPROXIMATE_ORIGIN_MARKER_UTILITY,
                 getUtility(mediumUtility, marker),
-                UTILITY_EXACTNESS);
+                DOUBLE_COMPARISON_EXACTNESS);
 
         List<Tuple<DisasterData, Double>> lowUtility =
-                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_RESOURCE_UTILITY);
+                this.database.getAllNonMapDataWithMinimumUtility(APPROXIMATE_ORIGIN_SKILL_UTILITY);
         TestCase.assertEquals("Expected all data items to be returned.", ALL_ITEMS, lowUtility.size());
         TestCase.assertEquals(
                 UNEXPECTED_UTILITY,
-                APPROXIMATE_ORIGIN_RESOURCE_UTILITY,
-                getUtility(lowUtility, resource),
-                UTILITY_EXACTNESS);
+                APPROXIMATE_ORIGIN_SKILL_UTILITY,
+                getUtility(lowUtility, skill),
+                DOUBLE_COMPARISON_EXACTNESS);
     }
 
     /**
@@ -285,7 +295,49 @@ public class LocalDatabaseTest {
         double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
         TestCase.assertTrue(
                 "Utility value should decrease with increasing age.",
-                newUtility + UTILITY_EXACTNESS < originalUtility);
+                newUtility + DOUBLE_COMPARISON_EXACTNESS < originalUtility);
+    }
+
+    @Test
+    public void testMarkerUtilityAgingStopsAfterTwoAndAHalfDays() {
+        // Add marker from current location.
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, CURR_LOCATION);
+        this.database.add(data);
+
+        // Pass two weeks.
+        SimClock.getInstance().setTime(TWO_WEEKS);
+
+        // Check aging stopped.
+        double utility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
+        TestCase.assertEquals(UNEXPECTED_UTILITY, MAX_AGED_MARKER_UTILITY, utility, DOUBLE_COMPARISON_EXACTNESS);
+    }
+
+    @Test
+    public void testSkillUtilityAgingStopsAfterAWeek() {
+        // Add skill from current location.
+        DisasterData data = new DisasterData(DisasterData.DataType.SKILL, 0, 0, CURR_LOCATION);
+        this.database.add(data);
+
+        // Pass two weeks.
+        SimClock.getInstance().setTime(TWO_WEEKS);
+
+        // Check aging stopped.
+        double utility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
+        TestCase.assertEquals(UNEXPECTED_UTILITY, MAX_AGED_SKILL_UTILITY, utility, DOUBLE_COMPARISON_EXACTNESS);
+    }
+
+    @Test
+    public void testResourceUtilityAgingStopsAfterAWeek() {
+        // Add resource from current location.
+        DisasterData data = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, CURR_LOCATION);
+        this.database.add(data);
+
+        // Pass two weeks.
+        SimClock.getInstance().setTime(TWO_WEEKS);
+
+        // Check aging stopped.
+        double utility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
+        TestCase.assertEquals(UNEXPECTED_UTILITY, MAX_AGED_RESOURCE_UTILITY, utility, DOUBLE_COMPARISON_EXACTNESS);
     }
 
     /**
@@ -308,7 +360,7 @@ public class LocalDatabaseTest {
         double newUtility = getUtility(this.database.getAllNonMapDataWithMinimumUtility(0), data);
         TestCase.assertTrue(
                 "Utility value should decrease with increasing distance.",
-                newUtility + UTILITY_EXACTNESS < originalUtility);
+                newUtility + DOUBLE_COMPARISON_EXACTNESS < originalUtility);
     }
 
     /**
@@ -365,9 +417,6 @@ public class LocalDatabaseTest {
      */
     @Test
     public void testDeletionTriggersUtilityComputationAtCorrectTimes(){
-        /* Advance time. */
-        SimClock.getInstance().advance(CURR_TIME);
-
         /* Create data at current location and place. */
         DisasterData dataAtCurrLoc = new DisasterData(DisasterData.DataType.MAP, 0, CURR_TIME, CURR_LOCATION);
         this.database.add(dataAtCurrLoc);
@@ -398,7 +447,6 @@ public class LocalDatabaseTest {
         TestCase.assertEquals("Useless data should be deleted now", 1, allMapData.size());
         TestCase.assertEquals("The wrong data remained in the database", allMapData.get(0), dataAtOrigin);
     }
-
 
     /**
      * Gets all data that is stored in the database.

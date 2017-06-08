@@ -12,6 +12,7 @@ import core.SettingsError;
 import core.SimClock;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import routing.util.DeliveryPredictabilityStorage;
 
@@ -34,8 +35,8 @@ public class DeliveryPredictabilityStorageTest {
     private static final double GREATER_THAN_ONE = 1.1;
 
     /* Times needed for a scenario test. */
-    private static final int FIRST_MEETING_TIME = 4;
-    private static final int SECOND_MEETING_TIME = 6;
+    private static final double FIRST_MEETING_TIME = 4;
+    private static final double SECOND_MEETING_TIME = 6;
 
     /* Acceptable delta for double equality checks. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
@@ -44,11 +45,24 @@ public class DeliveryPredictabilityStorageTest {
     private static final String EXPECTED_EMPTY_STORAGE = "No delivery predictabilities should have been set.";
 
     /* Objects needed for tests. */
-    private TestUtils testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
-    private SimClock clock = SimClock.getInstance();
-    private DTNHost attachedHost = this.testUtils.createHost();
-    private DeliveryPredictabilityStorage dpStorage =
-            createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+    private TestUtils testUtils;
+    private SimClock clock;
+    private DTNHost attachedHost;
+    private DeliveryPredictabilityStorage dpStorage;
+
+    public DeliveryPredictabilityStorageTest() {
+        // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
+        // This is dealt with by the setUp method.
+    }
+
+    @Before
+    public void setUp() {
+        this.testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
+        this.clock = SimClock.getInstance();
+        this.attachedHost = this.testUtils.createHost();
+        this.dpStorage =
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+    }
 
     @After
     public void cleanUp() {
@@ -189,7 +203,7 @@ public class DeliveryPredictabilityStorageTest {
                 expectedPredictability, bStorage.getDeliveryPredictability(c), DOUBLE_COMPARISON_DELTA);
 
         // Check their delivery predictabilites to ownHost.
-        double decayedPredictability = SUMMAND * Math.pow(GAMMA, (double)SECOND_MEETING_TIME - FIRST_MEETING_TIME);
+        double decayedPredictability = SUMMAND * Math.pow(GAMMA, SECOND_MEETING_TIME - FIRST_MEETING_TIME);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
                 decayedPredictability, bStorage.getDeliveryPredictability(this.attachedHost), DOUBLE_COMPARISON_DELTA);
@@ -266,6 +280,10 @@ public class DeliveryPredictabilityStorageTest {
                 DOUBLE_COMPARISON_DELTA);
     }
 
+    /**
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} throws an
+     * {@link IllegalArgumentException} if the given message argument is a {@link DataMessage}.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForDataMessage() {
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
@@ -273,12 +291,20 @@ public class DeliveryPredictabilityStorageTest {
         this.dpStorage.getDeliveryPredictability(dataMessage);
     }
 
+    /**
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} throws an
+     * {@link IllegalArgumentException} if the given message argument is a {@link BroadcastMessage}.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForBroadcastMessage() {
         Message broadcast = new BroadcastMessage(this.testUtils.createHost(), "M1", 0);
         this.dpStorage.getDeliveryPredictability(broadcast);
     }
 
+    /**
+     * Tests that if two hosts meet, the addresses known by the {@link DeliveryPredictabilityStorage} are extended by
+     * each other.
+     */
     @Test
     public void testMetHostsAreAddedToKnownAddresses() {
         DTNHost neighbor = this.testUtils.createHost();
@@ -287,6 +313,9 @@ public class DeliveryPredictabilityStorageTest {
         Assert.assertTrue(
                 "Met hosts should be added to known addresses.",
                 this.dpStorage.getKnownAddresses().contains(neighbor.getAddress()));
+        Assert.assertTrue(
+                "Met hosts should be added to known addresses.",
+                neighborStorage.getKnownAddresses().contains(this.attachedHost.getAddress()));
     }
 
     /**
@@ -331,6 +360,12 @@ public class DeliveryPredictabilityStorageTest {
                 this.dpStorage.getKnownAddresses().contains(this.attachedHost.getAddress()));
     }
 
+    /**
+     * Creates a {@link DeliveryPredictabilityStorage} for the given host using this default values specified by this
+     * test class for all parameters.
+     * @param host The host to be attached to the storage.
+     * @return The created {@link DeliveryPredictabilityStorage}.
+     */
     private static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(DTNHost host) {
         return createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, host);
     }

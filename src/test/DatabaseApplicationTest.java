@@ -44,15 +44,16 @@ public class DatabaseApplicationTest {
 
     /** Small time difference used for tests about map sending. */
     private static final double SMALL_TIME_DIFF = 0.1;
-    private static final int TIME_IN_DISTANT_FUTURE = 10_000;
+    private static final int TIME_IN_DISTANT_FUTURE = 600_000;
+
+    /** Used to check that some database sizes are completely in the interval, not on the border. */
+    private static final int DISTANCE_FROM_BORDER = 10;
 
     /* Number of data items used in several tests. */
     private static final int TWO_DATA_ITEMS = 2;
     private static final int THREE_DATA_ITEMS = 3;
 
-    /** Used to check that some database sizes are completely in the interval, not on the border. */
-    private static final int DISTANCE_FROM_BORDER = 10;
-
+    /* Error messages */
     private static final String UNEXPECTED_NUMBER_DATA_MESSAGES = "Expected different number of data messages.";
     private static final String EXPECTED_INITIALIZED_APPLICATION = "Application should be set up now.";
 
@@ -91,6 +92,7 @@ public class DatabaseApplicationTest {
     public void cleanUp() {
         SimClock.reset();
         Group.clearGroups();
+        DTNHost.reset();
     }
 
     @Test(expected = SettingsError.class)

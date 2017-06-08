@@ -12,10 +12,13 @@ import core.SimClock;
 import input.DisasterDataCreationListener;
 import input.DisasterDataNotifier;
 import routing.MessageRouter;
+
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -333,4 +336,48 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     public double getMapSendingInterval() {
         return mapSendingInterval;
     }
+
+    /**
+     * Computes the statistics about the data utility across all {@link DisasterData} items
+     * @return statistics about the data utility across all {@link DisasterData} items
+     */
+    public DoubleSummaryStatistics getDataUtilityStatistics(){
+        return database.getDataUtilityStatistics();
+    }
+
+    /**
+     * Computes the statistics about the data age across all {@link DisasterData} items,
+     * which are not of type map
+     * @return statistics about the data age across all non-map {@link DisasterData} items
+     */
+    public DoubleSummaryStatistics getDataAgeStatistics(){
+        return database.getDataAgeStatistics();
+    }
+
+    /**
+     * Computes the statistics about the distance of the data to the host which owns the
+     * the {@link DatabaseApplication} across all {@link DisasterData} items
+     * @return statistics about the data distance across all {@link DisasterData} items
+     */
+    public DoubleSummaryStatistics getDataDistanceStatistics(){
+        return database.getDataDistanceStatistics();
+    }
+
+    /**
+     * Percentage of memory available for {@link DisasterData} which is used as a value between 0 and 1
+     * @return percentage of available memory for {@link DisasterData} which is used as a value between 0 and 1
+     */
+    public double getUsedMemoryPercentage(){
+        return database.getUsedMemoryPercentage();
+    }
+
+    /**
+     * Returns the ratio of {@link DisasterData} items in the database per
+     * {@link DisasterData.DataType} to the total number of items.
+     * @return A hashmap containing a ratio between 0 and 1 for each {@link DisasterData.DataType}
+     */
+    public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
+        return database.getRatioOfItemsPerDataType();
+    }
+
 }

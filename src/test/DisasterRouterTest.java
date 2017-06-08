@@ -14,6 +14,9 @@ import routing.util.ReplicationsDensityManager;
  *
  * Created by Britta Heymann on 19.05.2017.
  */
+// Suppress warnings about there being no tests in this class: Tests exist; they just don't need a @Test annotation
+// because this class extends TestCase.
+@SuppressWarnings({"squid:S2187"})
 public class DisasterRouterTest extends AbstractRouterTest {
     /* Constants needed for delivery predictabilities. */
     private static final double BETA = 0.25;

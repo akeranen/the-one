@@ -22,6 +22,8 @@ Group.router = EpidemicRouter
 Group.bufferSize = 10M
 Group.nrofInterfaces = 1
 Group.interface1 = wInterface
+#How often nodes in the group will reorder the messages in their buffer
+Group.MessageOrderingInterval=2.0
 # Time the node will help at a disaster site (in seconds)
 Group.helpTime = 1800
 # Probability that a node gets injured if an event happens to close to it [0, 1]

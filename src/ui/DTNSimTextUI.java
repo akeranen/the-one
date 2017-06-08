@@ -11,16 +11,17 @@ import core.SimClock;
  */
 public class DTNSimTextUI extends DTNSimUI {
 	/** runtime object, used to gather information on memory usage **/
-	private Runtime runtime = Runtime.getRuntime();
+    private Runtime runtime = Runtime.getRuntime();
 	// as the runtime returns memory information in bytes,
 	// we need to divide by 1024*1024 = 1048576 to receive megabytes
 	/** constant for the conversion from bytes to megabytes **/
-	private final int BYTES_PER_MEGABYTE = 1048576;
+    private static final int BYTES_PER_MEGABYTE = 1_048_576;
 	private long lastUpdateRt;	// real time of last ui update
 	private long startTime; // simulation start time
 	/** How often the UI view is updated (milliseconds) */
 	public static final long UI_UP_INTERVAL = 60000;
 
+	@Override
 	protected void runSim() {
 		double simTime = SimClock.getTime();
 		double endTime = scen.getEndTime();

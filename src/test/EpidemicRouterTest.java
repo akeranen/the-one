@@ -638,6 +638,16 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertNotSame(orderedIds, runMessageExchange(false));
 	}
 
+    /**
+     * This test checks whether the message ordering interval works.
+     * The router is configured to sent high priority messages first.
+     * The router is given a message with higher priority after the messages had already
+     * been ordered. The message should not be sent before the message ordering interval has passed,
+     * as that would mean the messages got reordered.
+     * Once we reordered the messages, the high priority message should be sent before other messages.
+     *
+     * @throws Exception In case something in the settings does not work
+     */
 	@Test
     public void testMessageOrderingInterval() throws Exception {
 	    final double messageOrderingInterval=5;

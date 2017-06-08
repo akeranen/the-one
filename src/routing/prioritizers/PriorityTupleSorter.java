@@ -4,6 +4,7 @@ import core.Connection;
 import core.Message;
 import util.Tuple;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -11,7 +12,12 @@ import java.util.Comparator;
  *
  * Created by Britta Heymann on 21.05.2017.
  */
-public class PriorityTupleSorter implements Comparator<Tuple<Message, Connection>> {
+public class PriorityTupleSorter implements Comparator<Tuple<Message, Connection>>, Serializable {
+    /**
+     * Version ID needed for (de)serialization.
+     */
+    private static final long serialVersionUID = 1;
+
     private static PrioritySorter messagePrioritySorter = new PrioritySorter();
 
     /**

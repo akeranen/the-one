@@ -2,6 +2,7 @@ package routing.prioritizers;
 
 import core.Message;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -9,7 +10,12 @@ import java.util.Comparator;
  *
  * Created by Britta Heymann on 21.05.2017.
  */
-public class PrioritySorter implements Comparator<Message> {
+public class PrioritySorter implements Comparator<Message>, Serializable {
+    /**
+     * Version ID needed for (de)serialization.
+     */
+    private static final long serialVersionUID = 1;
+    
     /**
      * Compares two {@link Message} objects by their priorities.
      *

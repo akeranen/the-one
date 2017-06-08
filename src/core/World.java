@@ -7,6 +7,9 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
+import routing.*;
+import routing.util.EnergyModel;
+import util.NodeReset;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -183,7 +186,11 @@ public class World {
 				if (this.isCancelled) {
 					break;
 				}
-				hosts.get(i).update(simulateConnections);
+				DTNHost host = hosts.get(i);
+				host.update(simulateConnections);
+				//Node reset
+				tryNodeReset(host);
+					
 			}
 		}
 		else { // update order randomizing is on
@@ -195,7 +202,10 @@ public class World {
 				if (this.isCancelled) {
 					break;
 				}
-				this.updateOrder.get(i).update(simulateConnections);
+				DTNHost host = this.updateOrder.get(i);
+				host.update(simulateConnections);
+				//Node reset
+				tryNodeReset(host);
 			}
 		}
 
@@ -271,5 +281,32 @@ public class World {
 	 */
 	public void scheduleUpdate(double simTime) {
 		scheduledUpdates.addUpdate(simTime);
+	}
+	
+	private void tryNodeReset(DTNHost host) {
+		
+		try {
+			ActiveRouter router = (ActiveRouter)host.getRouter();
+			
+			if (router == null) {
+				// host does not have a router yet
+				return;
+			}
+			
+			EnergyModel energy = router.getEnergy();
+			
+			if (energy == null) {
+				// router does not have an energy model yet
+				return;
+			}
+			
+			if (energy.getEnergy() <= 0.9) {
+				NodeReset.resetNode(host);
+			}
+		}
+		catch (ClassCastException e) {
+			// host does not use an ActiveRouter -> no node reset needed
+			return;
+		}
 	}
 }

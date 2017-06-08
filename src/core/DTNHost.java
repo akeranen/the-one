@@ -582,5 +582,17 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
     public int compareTo(DTNHost h) {
         return this.getAddress() - h.getAddress();
     }
-
+    
+    /**
+     * Tears down all connections to other interfaces
+     * Use for node reset only!
+     */
+    public void disconnectAll() {
+    	for (NetworkInterface ni : net) {
+    		for (Connection c : ni.getConnections()) {
+    			NetworkInterface anotherInterface = c.getOtherInterface(ni);
+    			ni.disconnect(c, anotherInterface);
+    		}
+    	}
+    }
 }

@@ -664,7 +664,8 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         h0.createNewMessage(m3);
 
         //Advance time enough for a message to be sent but not enough to reorder messages
-        clock.advance(1);
+        final double smallTimeDifference = 0.1;
+        clock.advance(messageOrderingInterval - smallTimeDifference);
         updateAllNodes();
         boolean isSendingLowPrioMsg = false;
         for (String msg : lowPrioMessages){
@@ -675,7 +676,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         assertTrue("We should not have reordered the messages yet.", isSendingLowPrioMsg);
 
         //Now advance time enough to reorder
-        clock.advance(messageOrderingInterval);
+        clock.advance(smallTimeDifference);
         updateAllNodes();
         assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID3));
     }

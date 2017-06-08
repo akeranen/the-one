@@ -665,7 +665,6 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         //Here's a new message with higher prio. It should be first to send after reordering
         Message m3 = new Message(h0, h1, MSG_ID3, 0, 2);
         h0.createNewMessage(m3);
-        updateAllNodes();
 
         //Advance time enough for another message to be sent but not enough to reorder messages
         clock.advance(1);

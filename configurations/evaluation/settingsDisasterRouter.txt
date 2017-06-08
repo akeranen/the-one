@@ -27,7 +27,7 @@ ReplicationsDensity.windowLength = 120
 # Parameters for prioritization
 DisasterPrioritization.headStartThreshold = 300
 DisasterPrioritization.priorityThreshold = 5
-DisasterPrioritization.dpWeight = 0.4
+DisasterPrioritization.dpWeight = 0.5
 
 # Parameters for buffer management
 # ! TODO: Uncomment this once buffer management is implemented !

@@ -57,8 +57,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
-	/** When the messages were last ordered, initially Double.MIN_VALUE if they were never ordered */
-	private double lastMessageOrdering = Double.MIN_VALUE;
+	/** When the messages were last ordered, initially Double.NEGATIVE_INFINITY if they were never ordered */
+	private double lastMessageOrdering = Double.NEGATIVE_INFINITY;
     private List<Message> cachedMessages = new ArrayList<>();
     private double lastMessageOrderingForConnected;
     private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
@@ -479,17 +479,13 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
-        if(SimClock.getTime()-lastMessageOrdering >= messageOrderingInterval || hasMessagesButNoneCached()){
+        if((SimClock.getTime()-lastMessageOrdering) >= messageOrderingInterval){
             cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
 
 		return tryMessagesToConnections(cachedMessages, connections);
 	}
-
-	private boolean hasMessagesButNoneCached(){
-        return cachedMessages.isEmpty() && !getMessageCollection().isEmpty();
-    }
 
 	/**
 	 * Exchanges deliverable (to final recipient) messages between this host

@@ -2,7 +2,6 @@ package routing.util;
 
 import core.DTNHost;
 import core.Message;
-import core.Settings;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +19,9 @@ import java.util.Set;
  * Created by Britta Heymann on 18.05.2017.
  */
 public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism {
+    /** Namespace for all replications density settings. */
+    public static final String REPLICATIONS_DENSITY_NS = "ReplicationsDensity";
+
     /**
      * The default replications density value if nothing is known about a message because we haven't observed it
      * long enough.
@@ -47,10 +49,9 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
 
     /**
      * Initializes a new instance of the {@link ReplicationsDensityManager} class.
-     * @param s Settings to use.
      */
-    public ReplicationsDensityManager(Settings s) {
-        super(s);
+    public ReplicationsDensityManager() {
+        super();
     }
 
     /**
@@ -58,6 +59,15 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
      * */
     public ReplicationsDensityManager(ReplicationsDensityManager manager) {
         super(manager);
+    }
+
+    /**
+     * Returns the namespace for all settings about this rating mechanism.
+     * @return The namespace.
+     */
+    @Override
+    protected String getNamespace() {
+        return REPLICATIONS_DENSITY_NS;
     }
 
     /**

@@ -1,7 +1,7 @@
 #!/bin/sh
 #CCS --island OCULUS
 #CCS -N pgandiSim
-#CCS --res=rset=1:ncpus=2:mem=1024g
+#CCS --res=rset=1:ncpus=2:mem=1000g
 #CCS -t 21d
 #CCS -m abe
 #CCS --output=out.txt

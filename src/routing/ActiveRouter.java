@@ -126,6 +126,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		    return false;
 		}
 
+        /** Check if it's time to reorder the messages */
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
             reorderMessagesForConnected();
             lastMessageOrderingForConnected = SimClock.getTime();
@@ -374,6 +375,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return forTuples;
 		}
 
+        /** Check if it's time to reorder the messages */
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
 		    reorderMessagesForConnected();
             lastMessageOrderingForConnected = SimClock.getTime();
@@ -506,6 +508,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
+        /** Check if it's time to reorder the messages */
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
             reorderMessagesForConnected();
             lastMessageOrderingForConnected = SimClock.getTime();

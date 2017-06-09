@@ -27,7 +27,10 @@ public class DTNSimTextUI extends DTNSimUI {
 		double endTime = scen.getEndTime();
 
 		print("Running simulation '" + scen.getName()+"'");
-
+		//description of output format/meaning
+		print("output description:");
+        print("elapsed_real_seconds simulated_seconds current_simulation_rate " +
+              "used_memory free_memory allocated_memory maximum_allocatable_memory");
 		startTime = System.currentTimeMillis();
 		lastUpdateRt = startTime;
 

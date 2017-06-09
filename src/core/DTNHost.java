@@ -185,16 +185,13 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
     }
 
     /**
-     * Returns a list of connections this host has with other hosts
+     * Returns a copy of the list of connections this host has with other hosts
      *
-     * @return a list of connections this host has with other hosts
+     * @return a copy of the list of connections this host has with other hosts
      */
     public List<Connection> getConnections() {
-        if (net.size() == 1){
-            return net.get(0).getConnections();
-        }
+        List<Connection> lc = new ArrayList<Connection>();
 
-        List<Connection> lc = new ArrayList<>();
         for (NetworkInterface i : net) {
             lc.addAll(i.getConnections());
         }

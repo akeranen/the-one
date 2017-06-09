@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Random;
 
 import routing.util.EnergyModel;
@@ -365,9 +364,10 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return a list of message-connections tuples
 	 */
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
+		List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
 		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
 			/* no messages -> empty list */
-			return new ArrayList<>();
+			return forTuples;
 		}
 
         if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
@@ -469,7 +469,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	/**
 	 * Tries to send all messages that this router is carrying to all
 	 * connections this node has. Messages are ordered using the
-	 * {@link MessageRouter#sortListByQueueMode(List)}. See
+	 * {@link MessageRouter#sortTupleListByQueueMode(List)}. See
 	 * {@link #tryMessagesToConnections(List, List)} for sending details.
 	 * @return The connections that started a transfer or null if no connection
 	 * accepted a message.
@@ -610,10 +610,9 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */
-        ListIterator<Connection> it = sendingConnections.listIterator();
-		while (it.hasNext()) {
+		for (int i=0; i<this.sendingConnections.size(); ) {
 			boolean removeCurrent = false;
-			Connection con = it.next();
+			Connection con = sendingConnections.get(i);
 
 			/* finalize ready transfers */
 			if (con.isMessageTransferred()) {
@@ -638,11 +637,11 @@ public abstract class ActiveRouter extends MessageRouter {
 					this.makeRoomForMessage(0);
 				}
                 removeMessagesToConnected(con);
-				it.remove();
+				sendingConnections.remove(i);
 			}
 			else {
 				/* index increase needed only if nothing was removed */
-				break;
+				i++;
 			}
 		}
 

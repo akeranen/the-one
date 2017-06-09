@@ -20,10 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -480,15 +478,8 @@ public abstract class MessageRouter {
 	 * @return The removed message or null if message for the ID wasn't found
 	 */
 	protected Message removeFromMessages(String id) {
-	    Iterator it = messages.entrySet().iterator();
-	    while (it.hasNext()){
-            Map.Entry pair = (Map.Entry)it.next();
-	        if (pair.getKey() == id){
-                it.remove();
-                return (Message)pair.getValue();
-            }
-        }
-		return null;
+		Message m = this.messages.remove(id);
+		return m;
 	}
 
 	/**

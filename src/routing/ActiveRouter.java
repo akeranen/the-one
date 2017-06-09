@@ -7,6 +7,7 @@ package routing;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -56,10 +57,13 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
-	/** When the messages were last ordered, initially Double.NEGATIVE_INFINITY if they were never ordered */
+	/** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
 	private double lastMessageOrdering = Double.NEGATIVE_INFINITY;
+	/** Ordered messages which are not final deliveries */
     private List<Message> cachedMessages = new ArrayList<>();
+    /** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
     private double lastMessageOrderingForConnected;
+    /** Ordered messages which are final deliveries */
     private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
@@ -479,6 +483,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
+		/** Check if it's time to reorder the messages */
         if((SimClock.getTime()-lastMessageOrdering) >= messageOrderingInterval){
             cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
@@ -665,9 +670,10 @@ public abstract class ActiveRouter extends MessageRouter {
      * @param con The connection which was removed
      */
     private void removeMessagesToConnected(Connection con) {
-	    for (Tuple<Message,Connection> msgForCon : cachedMessagesForConnected){
-	        if (msgForCon.getValue().equals(con)){
-                cachedMessages.remove(msgForCon);
+        Iterator<Tuple<Message,Connection>> it = cachedMessagesForConnected.listIterator();
+	    while (it.hasNext()){
+	        if (it.next().getValue().equals(con)){
+                it.remove();
             }
         }
     }
@@ -686,7 +692,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Subclasses that are interested of the event may want to override this.
 	 * @param con The connection whose transfer was finalized
 	 */
-	protected void transferDone(Connection con) { }
+	protected void transferDone(Connection con) {
+    }
 
 	@Override
 	public RoutingInfo getRoutingInfo() {

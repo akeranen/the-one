@@ -717,37 +717,38 @@ public class EpidemicRouterTest extends AbstractRouterTest {
     public void testInitialMessageOrderingIntervalForConnected() throws Exception{
         final double messageOrderingInterval=3;
         ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(messageOrderingInterval));
+        ts.putSetting(MessageRouter.SEND_QUEUE_MODE_S, ""+MessageRouter.Q_MODE_PRIO);
         this.setUp();
 
         ActiveRouter sendingRouter = (ActiveRouter)h0.getRouter();
 
         Message m1 = new Message(h0, h1, MSG_ID1, 0, 1);
         h0.createNewMessage(m1);
-        Message m2 = new Message(h0, h1, MSG_ID2, 0, 1);
-        h0.createNewMessage(m2);
-        List<String> lowPrioMessages = Arrays.asList(MSG_ID1, MSG_ID2);
+        //This message is not for connected, but has a higher priority.
+        //If we have cached messages for connected hosts those should still be sent before this one
+        Message m2NotForConnected = new Message(h0, h2, MSG_ID2, 0, 3);
+        h0.createNewMessage(m2NotForConnected);
 
         //Connect h0 to the host for whom the messages are destined
         h0.connect(h1);
 
         //We should order messages for the first time now
         updateAllNodes();
+        assertTrue("We should be sending the only message for connected first.", sendingRouter.isSending(MSG_ID1));
 
         //Here's a new message with higher prio. It should be first to send after reordering
         Message m3 = new Message(h0, h1, MSG_ID3, 0, 2);
         h0.createNewMessage(m3);
+        Message m4 = new Message(h0, h1, MSG_ID4, 0, 1);
+        h0.createNewMessage(m4);
 
         //Advance time enough for a message to be sent but not enough to reorder messages
         final double smallTimeDifference = 0.1;
         clock.advance(messageOrderingInterval - smallTimeDifference);
         updateAllNodes();
-        boolean isSendingLowPrioMsg = false;
-        for (String msg : lowPrioMessages){
-            if (sendingRouter.isSending(msg)){
-                isSendingLowPrioMsg = true;
-            }
-        }
-        assertTrue("We should not have reordered the messages yet.", isSendingLowPrioMsg);
+
+        assertTrue("We should not have reordered the messages yet, so we should be sending non-direct messages.",
+                sendingRouter.isSending(MSG_ID2));
 
         //Now advance time enough to reorder
         clock.advance(smallTimeDifference);

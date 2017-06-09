@@ -62,7 +62,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	/** Ordered messages which are not final deliveries */
     private List<Message> cachedMessages = new ArrayList<>();
     /** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
-    private double lastMessageOrderingForConnected;
+    private double lastMessageOrderingForConnected = Double.NEGATIVE_INFINITY;
     /** Ordered messages which are final deliveries */
     private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
 

@@ -665,11 +665,9 @@ public abstract class ActiveRouter extends MessageRouter {
      * @param con The connection which was removed
      */
     private void removeMessagesToConnected(Connection con) {
-	    ListIterator<Tuple<Message,Connection>> iterator = cachedMessagesForConnected.listIterator();
-	    while (iterator.hasNext()){
-	        Tuple<Message,Connection> msgWithCon = iterator.next();
-	        if (msgWithCon.getValue().equals(con)){
-                iterator.remove();
+	    for (Tuple<Message,Connection> msgForCon : cachedMessagesForConnected){
+	        if (msgForCon.getValue().equals(con)){
+                cachedMessages.remove(msgForCon);
             }
         }
     }

@@ -708,4 +708,51 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         assertEquals("Default message ordering interval should be 0.0.", 0.0,
                 ((EpidemicRouter)routerProto).getMessageOrderingInterval());
     }
+
+    /**
+     * Similar test like {@link #testMessageOrderingInterval()} just for messages that are final deliveries.
+     * @throws Exception
+     */
+    @Test
+    public void testInitialMessageOrderingIntervalForConnected() throws Exception{
+        final double messageOrderingInterval=3;
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(messageOrderingInterval));
+        this.setUp();
+
+        ActiveRouter sendingRouter = (ActiveRouter)h0.getRouter();
+
+        Message m1 = new Message(h0, h1, MSG_ID1, 0, 1);
+        h0.createNewMessage(m1);
+        Message m2 = new Message(h0, h1, MSG_ID2, 0, 1);
+        h0.createNewMessage(m2);
+        List<String> lowPrioMessages = Arrays.asList(MSG_ID1, MSG_ID2);
+
+        //Connect h0 to the host for whom the messages are destined
+        h0.connect(h1);
+
+        //We should order messages for the first time now
+        updateAllNodes();
+
+        //Here's a new message with higher prio. It should be first to send after reordering
+        Message m3 = new Message(h0, h1, MSG_ID3, 0, 2);
+        h0.createNewMessage(m3);
+
+        //Advance time enough for a message to be sent but not enough to reorder messages
+        final double smallTimeDifference = 0.1;
+        clock.advance(messageOrderingInterval - smallTimeDifference);
+        updateAllNodes();
+        boolean isSendingLowPrioMsg = false;
+        for (String msg : lowPrioMessages){
+            if (sendingRouter.isSending(msg)){
+                isSendingLowPrioMsg = true;
+            }
+        }
+        assertTrue("We should not have reordered the messages yet.", isSendingLowPrioMsg);
+
+        //Now advance time enough to reorder
+        clock.advance(smallTimeDifference);
+        updateAllNodes();
+        assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID3));
+
+    }
 }

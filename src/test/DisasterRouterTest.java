@@ -1,5 +1,6 @@
 package test;
 
+import core.BroadcastMessage;
 import core.Group;
 import core.Message;
 import org.junit.Assert;
@@ -34,6 +35,11 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
+
+    /* Some priority values needed for tests. */
+    private static final int PRIORITY = 5;
+    private static final int HIGH_PRIORITY = 6;
+    private static final int LOW_PRIORITY = 4;
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
@@ -283,17 +289,81 @@ public class DisasterRouterTest extends AbstractRouterTest {
         }
     }
 
+    /**
+     * Tests that direct messages are sorted in correct order when we send them out.
+     */
+    public void testDirectMessagesAreSentSortedByPriority() {
+        // Connect to several hosts.
+        h1.connect(h2);
+        h1.connect(h3);
+
+        // Create direct messages with different priorities to two different neighbors.
+        Message broadcast = new BroadcastMessage(h1, "B1", 0, PRIORITY);
+        Message lowPrio = new Message(h1, h2,"M1", 0, LOW_PRIORITY);
+        Message highPrio = new Message(h1, h3, "M2", 0, HIGH_PRIORITY);
+        h1.createNewMessage(broadcast);
+        h1.createNewMessage(lowPrio);
+        h1.createNewMessage(highPrio);
+
+        // Make sure they are sent in correct order.
+        Message[] expectedOrder = { highPrio, broadcast, broadcast, lowPrio };
+        this.mc.reset();
+        for (Message expectedMessage : expectedOrder) {
+            h1.update(true);
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals("Expected different message.", expectedMessage.getId(), mc.getLastMsg().getId());
+        }
+    }
+
+    /**
+     * Tests that direct messages are received in correct order if neighbor wants to send us some.
+     */
+    public void testDirectMessagesAreReceivedSortedByPriority() {
+        // Connect to a neighbor.
+        h1.connect(h2);
+
+        // Let it create direct messages to attached host.
+        Message broadcast = new BroadcastMessage(h2, "B1", 0, PRIORITY);
+        Message lowPrio = new Message(h2, h1,"M1", 0, LOW_PRIORITY);
+        Message highPrio = new Message(h2, h1, "M2", 0, HIGH_PRIORITY);
+        h2.createNewMessage(broadcast);
+        h2.createNewMessage(lowPrio);
+        h2.createNewMessage(highPrio);
+
+        // Also give a message to h1 so it tries to find messages to receive.
+        h1.createNewMessage(new Message(h1, h3, "M6", 1));
+
+        // Make sure direct messages h2 --> h1 are sent in correct order.
+        Message[] expectedOrder = { highPrio, broadcast, lowPrio };
+        for (Message expectedMessage : expectedOrder) {
+            this.mc.reset();
+
+            // Let H1 update while connected to H2, but not the other way around (else we look at sending direct
+            // messages, not receiving them!).
+            h1.connect(h2);
+            h1.update(true);
+            disconnect(h2);
+            h2.update(true);
+
+            // Find started message and see if it is the correct one.
+            while (!this.mc.TYPE_START.equals(this.mc.getLastType())) {
+                this.mc.next();
+            }
+            Assert.assertEquals("Expected different message.", expectedMessage.getId(), mc.getLastMsg().getId());
+
+            // Don't send it again even if transfer was not completed.
+            h2.deleteMessage(mc.getLastMsg().getId(), true);
+        }
+    }
+
     // TODO: Test that direct messages (multicasts, broadcasts, one-to-ones, but NOT db messages) are sent first, both
     // to and from the neighbor
     // This can only be tested after trying to send other messages does not throw an exception.
 
     // TODO: Test that no messages are received when already transferring another message.
     // This can only be tested after the message chooser was implemented.
-
-    // TODO: Test that direct messages are sent in correct order, both when sending and receiving.
-    // This can only be tested after prioritization for direct messages was implemented.
-    // Make sure your test is such that it is tested that replicated routers have the correct rating mechanisms linked
-    // to their prioritizers.
 
     // TODO: Test that non-direct messages and DB messages are sorted correctly.
     // This can only be tested after prioritization was implemented.

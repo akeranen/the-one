@@ -121,19 +121,31 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		DTNHost other = con.getOtherNode(getHost());
-		/* do a copy to avoid concurrent modification exceptions
-		 * (startTransfer may remove messages) */
-		ArrayList<Message> temp =
-			new ArrayList<Message>(this.getMessageCollection());
-		for (Message m : temp) {
-			if (m.isFinalRecipient(other)) {
-				if (startTransfer(m, con) == RCV_OK) {
-					return true;
-				}
-			}
+        List<Message> deliverableMessages = this.getSortedMessagesForConnected(other);
+        for (Message m : deliverableMessages) {
+            if (startTransfer(m, con) == RCV_OK) {
+                return true;
+            }
 		}
 		return false;
 	}
+
+    /**
+     * Gets all messages in buffer for which the provided host is a final recipient, sorted in the order in which they
+     * should be sent.
+     * @param connected The host to find messages for.
+     * @return The sorted messages.
+     */
+    protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
+        // Default implementation: Just use the sorting implied by the buffer.
+        ArrayList<Message> sortedMessages = new ArrayList<>();
+        for (Message m : this.getMessageCollection()) {
+            if (m.isFinalRecipient(connected)) {
+                sortedMessages.add(m);
+            }
+        }
+        return sortedMessages;
+    }
 
 	@Override
 	public boolean createNewMessage(Message m) {
@@ -357,6 +369,15 @@ public abstract class ActiveRouter extends MessageRouter {
 		return oldest;
 	}
 
+    /**
+     * Returns a list of sorted message-connections tuples of the messages whose
+     * recipient is some host that we're connected to at the moment.
+     * @return a sorted list of message-connections tuples
+     */
+    protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
+        return this.sortTupleListByQueueMode(getMessagesForConnected());
+    }
+
 	/**
 	 * Returns a list of message-connections tuples of the messages whose
 	 * recipient is some host that we're connected to at the moment.
@@ -486,8 +507,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-		Tuple<Message, Connection> tuple =
-                tryMessagesForConnected(sortTupleListByQueueMode(getMessagesForConnected()));
+        Tuple<Message, Connection> tuple = tryMessagesForConnected(this.getSortedMessagesForConnected());
 
         if (tuple != null) {
             return tuple.getValue(); // started transfer

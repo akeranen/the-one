@@ -232,7 +232,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return True if router can start transfer, false if not
 	 */
 	protected boolean canStartTransfer() {
-		if (this.getNrofMessages() == 0) {
+		if (this.hasNothingToSend()) {
 			return false;
 		}
 		if (this.getConnections().size() == 0) {
@@ -482,7 +482,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected Connection tryAllMessagesToAllConnections(){
 		List<Connection> connections = getConnections();
-		if (connections.size() == 0 || this.getNrofMessages() == 0) {
+		if (connections.size() == 0 || this.hasNothingToSend()) {
 			return null;
 		}
         if((SimClock.getTime()-lastMessageOrdering) >= messageOrderingInterval){
@@ -587,6 +587,15 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 		return false;
 	}
+
+	/**
+	 * Checks whether this router has anything to send out.
+	 * @return Whether or not the router has anything to send out.
+	 */
+	protected boolean hasNothingToSend() {
+        return getNrofMessages() == 0;
+	}
+
 
 	/**
 	 * Returns true if the node has energy left (i.e., energy modeling is

@@ -139,8 +139,7 @@ public class DisasterRouter extends ActiveRouter {
         this.replicationsDensityManager.update();
 
         // Don't continue computing if there is no chance any message will be sent.
-        if (this.isTransferring() || this.getConnections().isEmpty() ||
-                DatabaseApplicationUtil.hasNoMessagesToSend(this)) {
+        if (this.isTransferring() || !this.canStartTransfer()) {
             return;
         }
 
@@ -151,6 +150,16 @@ public class DisasterRouter extends ActiveRouter {
 
         // If non are available, try to send other messages.
         this.tryOtherMessages();
+    }
+
+    /**
+     * Checks whether this router has anything to send out.
+     *
+     * @return Whether or not the router has anything to send out.
+     */
+    @Override
+    protected boolean hasNothingToSend() {
+        return DatabaseApplicationUtil.hasNoMessagesToSend(this);
     }
 
     /**

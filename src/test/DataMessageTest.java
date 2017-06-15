@@ -1,6 +1,7 @@
 package test;
 
 import core.Coord;
+import core.DTNHost;
 import core.DataMessage;
 import core.DisasterData;
 import core.Message;
@@ -26,6 +27,8 @@ public class DataMessageTest {
     /** Test message. */
     private DataMessage message;
 
+    private TestUtils utils;
+
     public DataMessageTest() {
         // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
         // This is dealt with by the setUp method.
@@ -33,7 +36,7 @@ public class DataMessageTest {
 
     @Before
     public void setUp() {
-        TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
+        this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
         this.message = new DataMessage(utils.createHost(), utils.createHost(), "D1", this.data, UTILITY, PRIORITY);
     }
 
@@ -78,5 +81,24 @@ public class DataMessageTest {
     public void testReplicateCopiesUtility() {
         Message copy = this.message.replicate();
         TestCase.assertEquals("Utility value should not have changed.", UTILITY, ((DataMessage)copy).getUtility());
+    }
+
+    @Test
+    public void testInstantiateForChangesReceiver() {
+        DTNHost newReceiver = this.utils.createHost();
+        Message instantiation = this.message.instantiateFor(newReceiver);
+        TestCase.assertEquals("New message should go to new receiver.", newReceiver, instantiation.getTo());
+    }
+
+    @Test
+    public void testInstantiateForCopiesData() {
+        DataMessage instantiation = this.message.instantiateFor(this.utils.createHost());
+        TestCase.assertEquals("Instantiation should point to same data.", this.data, instantiation.getData());
+    }
+
+    @Test
+    public void testInstantiateForCopiesUtility() {
+        DataMessage instantiation = this.message.instantiateFor(this.utils.createHost());
+        TestCase.assertEquals("Utility value should not have changed.", UTILITY, instantiation.getUtility());
     }
 }

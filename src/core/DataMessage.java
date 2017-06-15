@@ -23,6 +23,19 @@ public class DataMessage extends Message {
         this.utility = utility;
         this.data = data;
     }
+
+    /**
+     * Instantiates a copy of the message with the provided receiver.
+     *
+     * @param receiver Receiver of the message.
+     * @return The new message.
+     */
+    public DataMessage instantiateFor(DTNHost receiver) {
+        DataMessage m = new DataMessage(this.from, receiver, this.id, this.data, this.utility, this.getPriority());
+        m.copyFrom(this);
+        return m;
+    }
+
     /**
      * Returns a replicate of this message (identical except for the unique id)
      *
@@ -30,9 +43,7 @@ public class DataMessage extends Message {
      */
     @Override
     public Message replicate() {
-        Message m = new DataMessage(this.from, this.getTo(), this.id, this.data, this.utility, this.getPriority());
-        m.copyFrom(this);
-        return m;
+        return this.instantiateFor(this.getTo());
     }
 
     /**

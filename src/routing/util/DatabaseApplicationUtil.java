@@ -64,14 +64,7 @@ public final class DatabaseApplicationUtil {
                 DTNHost receiver = connection.getOtherNode(host);
 
                 // ... copy the message.
-                DataMessage message = new DataMessage(
-                        dataMessage.getFrom(),
-                        receiver,
-                        dataMessage.getId(),
-                        dataMessage.getData(),
-                        dataMessage.getUtility(),
-                        dataMessage.getPriority());
-                message.setAppID(DatabaseApplication.APP_ID);
+                DataMessage message = dataMessage.instantiateFor(receiver);
                 messages.add(new Tuple<>(message, connection));
             }
         }

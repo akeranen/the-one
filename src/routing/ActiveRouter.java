@@ -7,6 +7,7 @@ package routing;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -56,9 +57,14 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
-	/** When the messages were last ordered, initially Double.NEGATIVE_INFINITY if they were never ordered */
+	/** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
 	private double lastMessageOrdering = Double.NEGATIVE_INFINITY;
+	/** Ordered messages which are not final deliveries */
     private List<Message> cachedMessages = new ArrayList<>();
+    /** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
+    private double lastMessageOrderingForConnected = Double.NEGATIVE_INFINITY;
+    /** Ordered messages which are final deliveries */
+    private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in
@@ -117,15 +123,15 @@ public abstract class ActiveRouter extends MessageRouter {
 	@Override
 	public boolean requestDeliverableMessages(Connection con) {
 		if (isTransferring()) {
-			return false;
+		    return false;
 		}
 
-		DTNHost other = con.getOtherNode(getHost());
+        DTNHost other = con.getOtherNode(getHost());
         List<Message> deliverableMessages = this.getSortedMessagesForConnected(other);
         for (Message m : deliverableMessages) {
             if (startTransfer(m, con) == RCV_OK) {
                 return true;
-            }
+			}
 		}
 		return false;
 	}
@@ -279,7 +285,8 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		/* remove oldest messages but not the ones being sent */
 		if (!makeRoomForMessage(m.getSize())) {
-			return DENIED_NO_SPACE; // couldn't fit into buffer -> reject
+            // couldn't fit into buffer -> reject
+			return DENIED_NO_SPACE;
 		}
 
 		return RCV_OK;
@@ -375,7 +382,13 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return a sorted list of message-connections tuples
      */
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
-        return this.sortTupleListByQueueMode(getMessagesForConnected());
+        /** Check if it's time to reorder the messages */
+        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
+            this.cachedMessagesForConnected=this.sortTupleListByQueueMode(getMessagesForConnected());
+            lastMessageOrderingForConnected = SimClock.getTime();
+        }
+
+        return cachedMessagesForConnected;
     }
 
 	/**
@@ -384,21 +397,19 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return a list of message-connections tuples
 	 */
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
-		List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
+		List<Tuple<Message, Connection>> forTuples = new ArrayList<>();
 		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
 			/* no messages -> empty list */
 			return forTuples;
 		}
-
-		for (Message m : getMessageCollection()) {
-			for (Connection con : getConnections()) {
-				DTNHost to = con.getOtherNode(getHost());
-				if (m.isFinalRecipient(to)) {
-					forTuples.add(new Tuple<Message, Connection>(m,con));
-				}
-			}
-		}
-
+        for (Message m : getMessageCollection()) {
+            for (Connection con : getConnections()) {
+                DTNHost to = con.getOtherNode(getHost());
+                if (m.isFinalRecipient(to)) {
+                    forTuples.add(new Tuple<Message, Connection>(m,con));
+                }
+            }
+        }
 		return forTuples;
 	}
 
@@ -485,6 +496,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
+		/** Check if it's time to reorder the messages */
         if((SimClock.getTime()-lastMessageOrdering) >= messageOrderingInterval){
             cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
@@ -507,10 +519,11 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-        Tuple<Message, Connection> tuple = tryMessagesForConnected(this.getSortedMessagesForConnected());
+		Tuple<Message, Connection> tuple = tryMessagesForConnected(getSortedMessagesForConnected());
 
         if (tuple != null) {
-            return tuple.getValue(); // started transfer
+            // started transfer
+			return tuple.getValue();
 		}
 
 		// didn't start transfer to any node -> ask messages from connected
@@ -635,6 +648,7 @@ public abstract class ActiveRouter extends MessageRouter {
 				if (this.getFreeBufferSize() < 0) {
 					this.makeRoomForMessage(0);
 				}
+                removeMessagesToConnected(con);
 				sendingConnections.remove(i);
 			}
 			else {
@@ -657,7 +671,21 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 	}
 
-	/**
+    /**
+     * Removes all messages that were for the connection from
+     * the cached messages
+     * @param con The connection which was removed
+     */
+    private void removeMessagesToConnected(Connection con) {
+        Iterator<Tuple<Message,Connection>> it = cachedMessagesForConnected.listIterator();
+	    while (it.hasNext()){
+	        if (it.next().getValue().equals(con)){
+                it.remove();
+            }
+        }
+    }
+
+    /**
 	 * Method is called just before a transfer is aborted at {@link #update()}
 	 * due connection going down. This happens on the sending host.
 	 * Subclasses that are interested of the event may want to override this.
@@ -671,7 +699,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Subclasses that are interested of the event may want to override this.
 	 * @param con The connection whose transfer was finalized
 	 */
-	protected void transferDone(Connection con) { }
+	protected void transferDone(Connection con) {
+    }
 
 	@Override
 	public RoutingInfo getRoutingInfo() {

@@ -9,7 +9,7 @@
 #CCS --stderr=err.txt
 
 #the simulation task
-./one.sh -b 2 configurations/evaluation/settingsScenarioShort.txt
+./one.sh -b 1 configurations/evaluation/settingsScenarioShort.txt
 #archive the reports and console output. Only executed successfully, if the simulation run completes
 #with enough time left for this to be executed.
 nice -n 15 tar -czf "result$(date '+%d%m%Y_%H%M%S').tar.gz" out.txt err.txt reports

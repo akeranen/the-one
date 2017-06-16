@@ -250,6 +250,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 DOUBLE_COMPARISON_DELTA);
     }
 
+    /**
+     * Checks that a host does not send out new messages when already transferring.
+     */
     public void testNoMessagesAreSentWhenAlreadyTransferring() {
         h1.connect(h2);
 
@@ -271,8 +274,20 @@ public class DisasterRouterTest extends AbstractRouterTest {
         while (this.mc.next()) {
             Assert.assertNotEquals("Did not expect another transfer.", mc.TYPE_START, this.mc.getLastType());
         }
+
+        // Finally, check that the original message will still be transferred.
+        this.clock.advance(1);
+        this.updateAllNodes();
+        this.mc.next();
+        Assert.assertEquals(
+                "Original message should have been processed next.", m1.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals(
+                "Original message should have been transferred.", this.mc.TYPE_RELAY, this.mc.getLastType());
     }
 
+    /**
+     * Checks that a host does not send out new messages to hosts which are already transferring.
+     */
     public void testNoMessagesAreReceivedWhenAlreadyTransferring() {
         // Let h2 be transferring.
         h2.connect(h3);
@@ -294,6 +309,15 @@ public class DisasterRouterTest extends AbstractRouterTest {
         while(this.mc.next()) {
             Assert.assertNotEquals("Did not expect another transfer.", mc.TYPE_START, this.mc.getLastType());
         }
+
+        // Finally, check that the original message will still be transferred.
+        this.clock.advance(1);
+        this.updateAllNodes();
+        this.mc.next();
+        Assert.assertEquals(
+                "Original message should have been processed next.", m1.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals(
+                "Original message should have been transferred.", this.mc.TYPE_RELAY, this.mc.getLastType());
     }
 
     /**
@@ -320,7 +344,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         h1.createNewMessage(directMessage);
         h1.createNewMessage(indirectMessage);
 
-        // Advance time to prevent head starts.
+        // Advance time to prevent that any message gets a head start in sorting due to being new.
         this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
 
         // Add high utility data for data message.
@@ -445,11 +469,11 @@ public class DisasterRouterTest extends AbstractRouterTest {
             h1.createNewMessage(m);
         }
 
-        // Increase delivery predictability for one of them.
+        // Increase delivery predictability for message M1 by letting h2 meet its final recipient, h4.
         h2.connect(h4);
         disconnect(h4);
 
-        // Increase replications density for one of them.
+        // Increase replications density for M3 by giving it to h5, then letting h1 notice that h5 has it.
         h5.createNewMessage(highReplicationsDensityMessage);
         h1.connect(h5);
         disconnect(h5);

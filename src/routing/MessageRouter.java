@@ -105,6 +105,8 @@ public abstract class MessageRouter {
 	private DTNHost host;
 	/** size of the buffer */
 	private long bufferSize;
+    /** Amount of buffer that is occupied by messages */
+    private long occupancy;
 	/** TTL for all messages */
 	protected int msgTtl;
 	/** Queue mode for sending messages */
@@ -293,14 +295,9 @@ public abstract class MessageRouter {
 	 * size isn't defined)
 	 */
 	public long getFreeBufferSize() {
-		long occupancy = 0;
 
 		if (this.getBufferSize() == Integer.MAX_VALUE) {
 			return Integer.MAX_VALUE;
-		}
-
-		for (Message m : getMessageCollection()) {
-			occupancy += m.getSize();
 		}
 
 		return this.getBufferSize() - occupancy;
@@ -457,6 +454,13 @@ public abstract class MessageRouter {
 	 * message, if false, nothing is informed.
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
+	    //Remove previous size of message from the occupancy if we already had the message
+        Message oldMessage = messages.get(m.getId());
+	    if (oldMessage != null){
+	        occupancy -= oldMessage.getSize();
+        }
+        //Add the current size of the message to the occupancy
+        occupancy += m.getSize();
 		this.messages.put(m.getId(), m);
 
 		if (newMessage) {
@@ -479,6 +483,7 @@ public abstract class MessageRouter {
 	 */
 	protected Message removeFromMessages(String id) {
 		Message m = this.messages.remove(id);
+		occupancy-=m.getSize();
 		return m;
 	}
 

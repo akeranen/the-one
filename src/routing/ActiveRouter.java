@@ -126,8 +126,10 @@ public abstract class ActiveRouter extends MessageRouter {
 		    return false;
 		}
 
-		for (Tuple<Message,Connection> tuple: getSortedMessagesForConnected()) {
-            if (tuple.getValue().equals(con) && startTransfer(tuple.getKey(), con) == RCV_OK) {
+        DTNHost other = con.getOtherNode(getHost());
+        List<Message> deliverableMessages = this.getSortedMessagesForConnected(other);
+        for (Message m : deliverableMessages) {
+            if (startTransfer(m, con) == RCV_OK) {
                 return true;
 			}
 		}

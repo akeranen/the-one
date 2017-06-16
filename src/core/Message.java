@@ -213,7 +213,9 @@ public class Message implements Comparable<Message> {
      *            The node to add
      */
     public void addNodeOnPath(DTNHost node) {
-        this.path.add(node);
+        if (storeFullMsgPath){
+            this.path.add(node);
+        }
         this.hopCount++;
     }
 

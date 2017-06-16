@@ -62,6 +62,7 @@ public class MessageChecker implements MessageListener {
 		Addressable recipient;
 		switch (m.getType()) {
 			case ONE_TO_ONE:
+            case DATA:
 				recipient = m.getTo();
 				break;
 			case BROADCAST:
@@ -70,9 +71,6 @@ public class MessageChecker implements MessageListener {
 			case MULTICAST:
 				recipient = ((MulticastMessage)m).getGroup();
 				break;
-            case DATA:
-                recipient = m.getTo();
-                break;
 			default:
 				throw new UnsupportedOperationException("No implementation for message type " + m.getType());
 		}

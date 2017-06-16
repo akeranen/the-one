@@ -1,5 +1,5 @@
 #!/bin/sh
-#parameters for the allocation of the job on occulus
+#parameters for the allocation of the job on OCuLUS
 #CCS --island OCULUS
 #CCS -N pgandiSim
 #CCS --res=rset=1:ncpus=2:mem=128g

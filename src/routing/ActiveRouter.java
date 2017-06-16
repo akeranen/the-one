@@ -507,8 +507,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-        Tuple<Message, Connection> tuple =
-			tryMessagesForConnected(this.getSortedMessagesForConnected());
+        Tuple<Message, Connection> tuple = tryMessagesForConnected(this.getSortedMessagesForConnected());
 
         if (tuple != null) {
             return tuple.getValue(); // started transfer

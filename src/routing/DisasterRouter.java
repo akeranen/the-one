@@ -84,8 +84,8 @@ public class DisasterRouter extends ActiveRouter {
     public void init(DTNHost host, List<MessageListener> mListeners) {
         super.init(host, mListeners);
         this.deliveryPredictabilityStorage.setAttachedHost(host);
-        this.messageChooser = new EpidemicMessageChooser(host);
         this.messagePrioritizer.setAttachedHost(host);
+        this.messageChooser = new EpidemicMessageChooser(host);
     }
 
     /**

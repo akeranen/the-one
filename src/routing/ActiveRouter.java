@@ -126,13 +126,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		    return false;
 		}
 
-        /** Check if it's time to reorder the messages */
-        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
-            reorderMessagesForConnected();
-            lastMessageOrderingForConnected = SimClock.getTime();
-        }
-
-		for (Tuple<Message,Connection> tuple: cachedMessagesForConnected) {
+		for (Tuple<Message,Connection> tuple: getSortedMessagesForConnected()) {
             if (tuple.getValue().equals(con) && startTransfer(tuple.getKey(), con) == RCV_OK) {
                 return true;
 			}
@@ -386,7 +380,13 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return a sorted list of message-connections tuples
      */
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
-        return this.sortTupleListByQueueMode(getMessagesForConnected());
+        /** Check if it's time to reorder the messages */
+        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
+            this.cachedMessagesForConnected=this.sortTupleListByQueueMode(getMessagesForConnected());
+            lastMessageOrderingForConnected = SimClock.getTime();
+        }
+
+        return cachedMessagesForConnected;
     }
 
 	/**
@@ -395,28 +395,11 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return a list of message-connections tuples
 	 */
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
-		List<Tuple<Message, Connection>> forTuples = new ArrayList<Tuple<Message, Connection>>();
+		List<Tuple<Message, Connection>> forTuples = new ArrayList<>();
 		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
 			/* no messages -> empty list */
 			return forTuples;
 		}
-
-        /** Check if it's time to reorder the messages */
-        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
-		    reorderMessagesForConnected();
-            lastMessageOrderingForConnected = SimClock.getTime();
-        }
-
-		return cachedMessagesForConnected;
-	}
-
-    /**
-     * Checks for all messages and all connections whether the messages are for destined to any
-     * of the current connections.
-     * This adds the messages in if a new connection has started.
-     */
-	private void reorderMessagesForConnected(){
-        List<Tuple<Message, Connection>> forTuples = new ArrayList<>();
         for (Message m : getMessageCollection()) {
             for (Connection con : getConnections()) {
                 DTNHost to = con.getOtherNode(getHost());
@@ -425,8 +408,8 @@ public abstract class ActiveRouter extends MessageRouter {
                 }
             }
         }
-        cachedMessagesForConnected = sortTupleListByQueueMode(forTuples);
-    }
+		return forTuples;
+	}
 
 	/**
 	 * Tries to send messages for the connections that are mentioned
@@ -534,14 +517,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			return null;
 		}
 
-        /** Check if it's time to reorder the messages */
-        if(SimClock.getTime()-lastMessageOrderingForConnected >= messageOrderingInterval){
-            reorderMessagesForConnected();
-            lastMessageOrderingForConnected = SimClock.getTime();
-        }
-
-		Tuple<Message, Connection> tuple =
-                tryMessagesForConnected(cachedMessagesForConnected);
+		Tuple<Message, Connection> tuple = tryMessagesForConnected(getSortedMessagesForConnected());
 
         if (tuple != null) {
             // started transfer

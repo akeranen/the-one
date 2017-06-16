@@ -30,8 +30,10 @@ public class Message implements Comparable<Message> {
     protected String id;
     /** Size of the message (bytes) */
     protected int size;
-    /** List of nodes this message has passed */
+    /** List of hosts this message has passed */
     private List<DTNHost> path;
+    /** Amount of hosts this message has passed */
+    private int hopCount;
     /** Next unique identifier to be given */
     private static int nextUniqueId;
     /** Unique ID of this message */
@@ -136,6 +138,7 @@ public class Message implements Comparable<Message> {
         this.id = id;
         this.size = size;
         this.path = new ArrayList<DTNHost>();
+        this.hopCount = 0;
         this.uniqueId = nextUniqueId;
         if (prio >= -1) {
             this.priority = prio;
@@ -210,6 +213,7 @@ public class Message implements Comparable<Message> {
      */
     public void addNodeOnPath(DTNHost node) {
         this.path.add(node);
+        this.hopCount++;
     }
 
     /**
@@ -227,7 +231,8 @@ public class Message implements Comparable<Message> {
      * @return the amount of hops this message has passed
      */
     public int getHopCount() {
-        return this.path.size() - 1;
+        //Return hop count minus the host who created the message
+        return hopCount-1;
     }
 
     /**
@@ -353,11 +358,9 @@ public class Message implements Comparable<Message> {
      *            The message where the data is copied
      */
     protected void copyFrom(Message m) {
+        hopCount = m.path.size();
         if (storeFullMsgPath){
             this.path = new ArrayList<>(m.path);
-        }
-        else{
-            this.path = new ArrayList<>();
         }
 
         this.timeCreated = m.timeCreated;

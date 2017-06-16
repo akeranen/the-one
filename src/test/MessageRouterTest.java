@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 public class MessageRouterTest {
 
     private static final int DEFAULT_MESSAGE_SIZE = 100;
+    private static final int BIG_MESSAGE_SIZE=200;
     private static final int BUFFER_SIZE = 1000;
 
     private TestUtils utils;
@@ -223,6 +224,10 @@ public class MessageRouterTest {
                 checker.getLastFirstDelivery());
     }
 
+    /**
+     * Tests whether the free buffer size is computed correctly after adding and
+     * removing messages
+     */
     @Test
     public void testGetFreeBufferSize(){
         DTNHost host = utils.createHost();
@@ -258,6 +263,42 @@ public class MessageRouterTest {
         assertEquals(
                 "Buffer should contain two messages again.",
                 bufferSize - DEFAULT_MESSAGE_SIZE -DEFAULT_MESSAGE_SIZE,
+                router.getFreeBufferSize());
+    }
+
+    /**
+     * Test whether free buffer size is computed correctly when we add a message again with a different size
+     */
+    @Test
+    public void testFreeBufferSizeRemainsCorrectForChangingMessageSize(){
+        DTNHost host = utils.createHost();
+        MessageRouter router = host.getRouter();
+        long bufferSize = router.getBufferSize();
+        assertEquals(
+                "Initial buffer should be completely free.",
+                bufferSize,
+                router.getFreeBufferSize());
+
+        router.receiveMessage(msg, sender);
+        router.messageTransferred(msg.getId(), sender);
+        assertEquals(
+                "Buffer should be free except for one message.",
+                bufferSize - DEFAULT_MESSAGE_SIZE,
+                router.getFreeBufferSize());
+
+        Message bigMsg = new Message(sender, recipient, "M", BIG_MESSAGE_SIZE);
+        router.receiveMessage(bigMsg, sender);
+        router.messageTransferred(bigMsg.getId(), sender);
+        assertEquals(
+                "Buffer should contain one big messages.",
+                bufferSize - BIG_MESSAGE_SIZE,
+                router.getFreeBufferSize());
+
+        router.receiveMessage(msg, sender);
+        router.messageTransferred(msg.getId(), sender);
+        assertEquals(
+                "Buffer should contain one default-sized message again.",
+                bufferSize - DEFAULT_MESSAGE_SIZE,
                 router.getFreeBufferSize());
     }
 

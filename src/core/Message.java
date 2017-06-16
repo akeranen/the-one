@@ -93,10 +93,6 @@ public class Message implements Comparable<Message> {
         DATA
     }
 
-    public static void init(Settings settings){
-        storeFullMsgPath = settings.getBoolean(MSG_PATH_S, true);
-    }
-
     /**
      * Creates a new Message.
      * 
@@ -157,6 +153,11 @@ public class Message implements Comparable<Message> {
 
         Message.nextUniqueId++;
         addNodeOnPath(from);
+    }
+
+    /** Sets whether we store the full message path or just the hop count from the settings*/
+    public static void setStoreFullMsgPath(Settings settings){
+        storeFullMsgPath = settings.getBoolean(MSG_PATH_S, true);
     }
 
     /**

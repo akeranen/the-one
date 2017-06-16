@@ -98,7 +98,7 @@ public class World {
 		else { // null pointer means "don't randomize"
 			this.updateOrder = null;
 		}
-		Message.init(s);
+		Message.setStoreFullMsgPath(s);
 	}
 
 	/**

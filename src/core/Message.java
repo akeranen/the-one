@@ -22,7 +22,7 @@ public class Message implements Comparable<Message> {
     /** Setting string for how the message path is handled */
     public static final String MSG_PATH_S="storeFullMessagePath";
     /** Setting whether the full message path should be stored (alternative would be just the hop count */
-    public static boolean storeFullMsgPath=true;
+    private static boolean storeFullMsgPath=true;
 
     protected DTNHost from;
     private DTNHost to;

@@ -251,7 +251,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     }
 
     /**
-     * Checks that no message transfers are started when the app is already transferring.
+     * Checks that a host does not send out new messages when already transferring.
      */
     public void testNoMessagesAreSentWhenAlreadyTransferring() {
         h1.connect(h2);
@@ -276,6 +276,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
         }
     }
 
+    /**
+     * Checks that a host does not send out new messages to hosts which are already transferring.
+     */
     public void testNoMessagesAreReceivedWhenAlreadyTransferring() {
         // Let h2 be transferring.
         h2.connect(h3);

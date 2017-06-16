@@ -69,7 +69,7 @@ public class DTNSimTextUI extends DTNSimUI {
 		if (forced || (diff > UI_UP_INTERVAL)) {
 			// simulated seconds/second calc
 			double ssps = ((SimClock.getTime() - lastUpdate)*1000) / diff;
-			// print out debug data in a format thta is usable in a csv file
+			// print out debug data in a format that is usable in a csv file
 			// columns: elapsed real seconds, simulated seconds, current simulation rate,
 			// used memory, free memory, allocated memory, maximum allocatable memory
 			print(dur + " " + SimClock.getTime() + " " + ssps + " "

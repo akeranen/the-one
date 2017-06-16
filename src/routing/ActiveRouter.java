@@ -36,6 +36,13 @@ public abstract class ActiveRouter extends MessageRouter {
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
+    /** Time interval how often messages are requested and reordered -setting id ({@value}).
+     * Double value. */
+	public static final String MESSAGE_ORDERING_INTERVAL_S="MessageOrderingInterval";
+    /** How often messages will be requested and reordered in seconds */
+    protected double messageOrderingInterval;
+    /** Default value how often messages should be reordered */
+    protected static final double DEFAULT_ORDERING_INTERVAL=0.0;
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
@@ -49,6 +56,10 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
+	/** When the messages were last ordered, initially Double.NEGATIVE_INFINITY if they were never ordered */
+	private double lastMessageOrdering = Double.NEGATIVE_INFINITY;
+    private List<Message> cachedMessages = new ArrayList<>();
+
 	/**
 	 * Constructor. Creates a new message router based on the settings in
 	 * the given Settings object.
@@ -61,11 +72,14 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		this.deleteDelivered = s.getBoolean(DELETE_DELIVERED_S, false);
 
+        this.messageOrderingInterval = s.getDouble(MESSAGE_ORDERING_INTERVAL_S, DEFAULT_ORDERING_INTERVAL);
+
 		if (s.contains(EnergyModel.INIT_ENERGY_S)) {
 			this.energy = new EnergyModel(s);
 		} else {
 			this.energy = null; /* no energy model */
 		}
+
 	}
 
 	/**
@@ -77,6 +91,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.deleteDelivered = r.deleteDelivered;
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
+		this.messageOrderingInterval = r.messageOrderingInterval;
 	}
 
 	@Override
@@ -360,7 +375,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return a sorted list of message-connections tuples
      */
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
-        return this.sortTupleListByQueueMode(this.getMessagesForConnected());
+        return this.sortTupleListByQueueMode(getMessagesForConnected());
     }
 
 	/**
@@ -470,12 +485,12 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
 			return null;
 		}
+        if((SimClock.getTime()-lastMessageOrdering) >= messageOrderingInterval){
+            cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
+            lastMessageOrdering = SimClock.getTime();
+        }
 
-		List<Message> messages =
-			new ArrayList<Message>(this.getMessageCollection());
-		this.sortListByQueueMode(messages);
-
-		return tryMessagesToConnections(messages, connections);
+		return tryMessagesToConnections(cachedMessages, connections);
 	}
 
 	/**
@@ -496,7 +511,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			tryMessagesForConnected(this.getSortedMessagesForConnected());
 
         if (tuple != null) {
-			return tuple.getValue(); // started transfer
+            return tuple.getValue(); // started transfer
 		}
 
 		// didn't start transfer to any node -> ask messages from connected
@@ -668,5 +683,12 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 		return top;
 	}
+
+    /**
+     * @return In which time interval messages are requested and reordered.
+     */
+	public double getMessageOrderingInterval(){
+        return this.messageOrderingInterval;
+    }
 
 }

@@ -18,6 +18,9 @@ import java.util.Comparator;
  *
  * Created by Britta Heymann on 24.05.2017.
  */
+// Suppress warning about unserializable comparator because the rule's assumption that the overhead to make it
+// serializable is low does not fit for this one (DTNHost, routers are not serializable!).
+@SuppressWarnings({"squid:S2063"})
 public class DisasterPrioritization implements Comparator<Tuple<Message, Connection>> {
     /**
      * Weight of delivery predictability in message prioritization function -setting id ({@value}).

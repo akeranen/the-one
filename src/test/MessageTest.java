@@ -35,11 +35,11 @@ public class MessageTest extends TestCase {
         this.utils = new TestUtils(new ArrayList<ConnectionListener>(), new ArrayList<MessageListener>(),
                 new TestSettings());
         this.to = this.utils.createHost();
+        this.from = this.utils.createHost();
 
         msg = new Message(from, to, "M", 100);
         msgPrio = new Message(from, to, "N", 100, priority);
         msg.setTtl(10);
-
     }
 
     @Test
@@ -113,5 +113,53 @@ public class MessageTest extends TestCase {
     public void testPriority() {
         assertEquals(msg.getPriority(), Message.INVALID_PRIORITY);
         assertEquals(msgPrio.getPriority(), priority);
+    }
+
+    /**
+     * Tests whether the default value for {@link Message#storeFullMsgPath} is true and
+     * the message path includes nodes
+     */
+    @Test
+    public void testDefaultBehaviorIsStoringFullMessagePath(){
+        Message.setStoreFullMsgPath(new TestSettings());
+        msg = new Message(from, to, "M", 100);
+        from.createNewMessage(msg);
+        assertEquals("We should store the full path of the message.", 1, msg.getHops().size());
+        assertEquals("The message path should include the creator as first node on the path.",
+                msg.getFrom(), msg.getHops().get(0));
+        from.connect(to);
+        from.sendMessage(msg.getId(),to);
+        to.messageTransferred(msg.getId(), from);
+        //Get message copy host "to" received because only that has the longer path
+        for (Message msgTo : to.getRouter().getMessageCollection() ){
+            if (msgTo.getId().equals(msg.getId())){
+                assertEquals("The message path should include creator and receiver.", 2, msg.getHops().size());
+            }
+        }
+    }
+
+    /**
+     * Tests whether the setting {@link Message#storeFullMsgPath} can
+     * be set to false (true is default)
+     */
+    @Test
+    public void testSetStoreFullMsgPath(){
+        TestSettings ts = new TestSettings();
+        ts.setNameSpace(World.OPTIMIZATION_SETTINGS_NS);
+        ts.putSetting(Message.MSG_PATH_S, "false");
+        Message.setStoreFullMsgPath(ts);
+        msg = new Message(from, to, "M", 100);
+        from.createNewMessage(msg);
+        assertTrue("The message path should be empty", msg.getHops().isEmpty());
+    }
+
+    @Test
+    public void testGetHopCountWithMessagePath(){
+
+    }
+
+    @Test
+    public void testGetHopCountWithoutMessagePath(){
+
     }
 }

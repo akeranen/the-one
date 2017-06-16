@@ -448,11 +448,11 @@ public class DisasterRouterTest extends AbstractRouterTest {
             h1.createNewMessage(m);
         }
 
-        // Increase delivery predictability for one of them.
+        // Increase delivery predictability for message M1 by letting h2 meet its final recipient, h4.
         h2.connect(h4);
         disconnect(h4);
 
-        // Increase replications density for one of them.
+        // Increase replications density for M3 by giving it to h5, then letting h1 notice that h5 has it.
         h5.createNewMessage(highReplicationsDensityMessage);
         h1.connect(h5);
         disconnect(h5);

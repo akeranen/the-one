@@ -359,7 +359,7 @@ public class Message implements Comparable<Message> {
      *            The message where the data is copied
      */
     protected void copyFrom(Message m) {
-        hopCount = m.path.size();
+        hopCount = m.hopCount;
         if (storeFullMsgPath){
             this.path = new ArrayList<>(m.path);
         }

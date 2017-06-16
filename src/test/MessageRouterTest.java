@@ -286,7 +286,7 @@ public class MessageRouterTest {
                 bufferSize - DEFAULT_MESSAGE_SIZE,
                 router.getFreeBufferSize());
 
-        Message bigMsg = new Message(sender, recipient, "M", BIG_MESSAGE_SIZE);
+        Message bigMsg = new Message(sender, recipient, msg.getId(), BIG_MESSAGE_SIZE);
         router.receiveMessage(bigMsg, sender);
         router.messageTransferred(bigMsg.getId(), sender);
         assertEquals(

@@ -65,9 +65,8 @@ public class DeliveryPredictabilityStorage {
     /**
      * Initializes a new instance of the {@link DeliveryPredictabilityStorage} class.
      * @param s Settings to use.
-     * @param attachedHost Host attached to this storage.
      */
-    public DeliveryPredictabilityStorage(Settings s, DTNHost attachedHost) {
+    public DeliveryPredictabilityStorage(Settings s) {
         this.summand = s.getDouble(SUMMAND_S);
         assertValueBetweenZeroAndOne(this.summand, SUMMAND_S);
         this.gamma = s.getDouble(GAMMA_S);
@@ -78,23 +77,27 @@ public class DeliveryPredictabilityStorage {
         if (this.secondsInTimeUnit <= 0) {
             throw new SettingsError("Setting " + TIME_UNIT_S + " should be positive, but is " + this.secondsInTimeUnit);
         }
-
-        if (attachedHost == null) {
-            throw new IllegalArgumentException("Host should not be null!");
-        }
-        this.ownAddress = attachedHost.getAddress();
     }
 
     /**
      * Copy constructor.
-     * @param attachedHost Host attached to this storage.
      */
-    public DeliveryPredictabilityStorage(DeliveryPredictabilityStorage storage, DTNHost attachedHost) {
+    public DeliveryPredictabilityStorage(DeliveryPredictabilityStorage storage) {
         this.summand = storage.summand;
         this.gamma = storage.gamma;
         this.beta = storage.beta;
         this.secondsInTimeUnit = storage.secondsInTimeUnit;
-        this.ownAddress = attachedHost.getAddress();
+    }
+
+    /**
+     * Sets the attached host.
+     * @param host Host attached to this storage.
+     */
+    public void setAttachedHost(DTNHost host) {
+        if (host == null) {
+            throw new IllegalArgumentException("Host should not be null!");
+        }
+        this.ownAddress = host.getAddress();
     }
 
     /**

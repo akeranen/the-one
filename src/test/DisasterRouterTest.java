@@ -274,6 +274,15 @@ public class DisasterRouterTest extends AbstractRouterTest {
         while (this.mc.next()) {
             Assert.assertNotEquals("Did not expect another transfer.", mc.TYPE_START, this.mc.getLastType());
         }
+
+        // Finally, check that the original message will still be transferred.
+        this.clock.advance(1);
+        this.updateAllNodes();
+        this.mc.next();
+        Assert.assertEquals(
+                "Original message should have been processed next.", m1.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals(
+                "Original message should have been transferred.", this.mc.TYPE_RELAY, this.mc.getLastType());
     }
 
     /**
@@ -300,6 +309,15 @@ public class DisasterRouterTest extends AbstractRouterTest {
         while(this.mc.next()) {
             Assert.assertNotEquals("Did not expect another transfer.", mc.TYPE_START, this.mc.getLastType());
         }
+
+        // Finally, check that the original message will still be transferred.
+        this.clock.advance(1);
+        this.updateAllNodes();
+        this.mc.next();
+        Assert.assertEquals(
+                "Original message should have been processed next.", m1.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals(
+                "Original message should have been transferred.", this.mc.TYPE_RELAY, this.mc.getLastType());
     }
 
     /**

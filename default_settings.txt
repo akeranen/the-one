@@ -17,8 +17,8 @@ wInterface.transmitRange = 30
 # Common settings for all groups
 Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
-# Buffer size of 30 MB
-Group.bufferSize = 30M
+# Buffer size of 10 MB
+Group.bufferSize = 10M
 Group.nrofInterfaces = 1
 Group.interface1 = wInterface
 Group.net.scanInterval = 30

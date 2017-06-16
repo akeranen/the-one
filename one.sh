@@ -1,2 +1,2 @@
 #!/bin/sh
-java -ms1G -mx1000G -cp target:lib/javax.json-1.0.4.jar:lib/ECLA.jar:lib/DTNConsoleConnection.jar core.DTNSim $*
+java -Xms1G -Xmx1000G -cp target:lib/javax.json-1.0.4.jar:lib/ECLA.jar:lib/DTNConsoleConnection.jar core.DTNSim $*

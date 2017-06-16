@@ -208,5 +208,5 @@ DataSyncReport.precision=2
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.
-Optimization.cellSizeMult = 5
+Optimization.cellSizeMult = 1
 Optimization.randomizeUpdateOrder = true

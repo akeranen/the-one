@@ -1,4 +1,6 @@
 #!/bin/sh
+#add the jdk 1.8 module
+module add jdk/1.8.0_121
 #ensure that all needed scripts are executable
 chmod +x compile.sh allocsimulation.sh one.sh
 #archive reports and console output of a possible previous aborted simulation run

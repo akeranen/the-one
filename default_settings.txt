@@ -208,3 +208,6 @@ DataSyncReport.precision=2
 ## see World class for details.
 Optimization.cellSizeMult = 5
 Optimization.randomizeUpdateOrder = true
+# Define whether you need the full message path or just hop count is sufficient
+# If you do not store the full message path some reports might fail
+Optimization.storeFullMessagePath = false

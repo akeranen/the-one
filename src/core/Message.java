@@ -19,6 +19,11 @@ public class Message implements Comparable<Message> {
     public static final int INFINITE_TTL = -1;
     /** Default value for messages without any priority */
     public static final int INVALID_PRIORITY = -1;
+    /** Setting string for how the message path is handled */
+    public static final String MSG_PATH_S="storeFullMessagePath";
+    /** Setting whether the full message path should be stored (alternative would be just the hop count */
+    public static boolean storeFullMsgPath=true;
+
     protected DTNHost from;
     private DTNHost to;
     /** Identifier of the message */
@@ -84,6 +89,10 @@ public class Message implements Comparable<Message> {
          * Message wrapping a data item.
          */
         DATA
+    }
+
+    public static void init(Settings settings){
+        storeFullMsgPath = settings.getBoolean(MSG_PATH_S, true);
     }
 
     /**
@@ -344,7 +353,13 @@ public class Message implements Comparable<Message> {
      *            The message where the data is copied
      */
     protected void copyFrom(Message m) {
-        this.path = new ArrayList<DTNHost>();
+        if (storeFullMsgPath){
+            this.path = new ArrayList<>(m.path);
+        }
+        else{
+            this.path = new ArrayList<>();
+        }
+
         this.timeCreated = m.timeCreated;
         this.responseSize = m.responseSize;
         this.requestMsg = m.requestMsg;

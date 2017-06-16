@@ -181,6 +181,8 @@ public class World {
 	 * are made in random order.
 	 */
 	private void updateHosts() {
+		double energy = 0;
+		
 		if (this.updateOrder == null) { // randomizing is off
 			for (int i=0, n = hosts.size();i < n; i++) {
 				if (this.isCancelled) {
@@ -190,7 +192,7 @@ public class World {
 				host.update(simulateConnections);
 				//Node reset
 				tryNodeReset(host);
-					
+				energy += ((ActiveRouter)(host.getRouter())).getEnergy().getEnergy();	
 			}
 		}
 		else { // update order randomizing is on
@@ -206,6 +208,7 @@ public class World {
 				host.update(simulateConnections);
 				//Node reset
 				tryNodeReset(host);
+				energy += ((ActiveRouter)(host.getRouter())).getEnergy().getEnergy();	
 			}
 		}
 
@@ -284,29 +287,26 @@ public class World {
 	}
 	
 	private void tryNodeReset(DTNHost host) {
-		
-		try {
-			ActiveRouter router = (ActiveRouter)host.getRouter();
+			MessageRouter router = host.getRouter();
 			
 			if (router == null) {
 				// host does not have a router yet
 				return;
 			}
 			
-			EnergyModel energy = router.getEnergy();
+			if (router.getClass().getSuperclass() != ActiveRouter.class)
+				// host does not use an ActiveRouter -> no node reset needed
+				return;
+			
+			EnergyModel energy = ((ActiveRouter)router).getEnergy();
 			
 			if (energy == null) {
 				// router does not have an energy model yet
 				return;
 			}
 			
-			if (energy.getEnergy() <= 0.9) {
+			if (energy.getEnergy() <= 0) {
 				NodeReset.resetNode(host);
 			}
-		}
-		catch (ClassCastException e) {
-			// host does not use an ActiveRouter -> no node reset needed
-			return;
-		}
 	}
 }

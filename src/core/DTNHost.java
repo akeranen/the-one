@@ -590,9 +590,19 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
     public void disconnectAll() {
     	for (NetworkInterface ni : net) {
     		for (Connection c : ni.getConnections()) {
-    			NetworkInterface anotherInterface = c.getOtherInterface(ni);
-    			ni.disconnect(c, anotherInterface);
+    			if (c.isUp()) {
+    				NetworkInterface anotherInterface = c.getOtherInterface(ni);
+    				ni.disconnect(c, anotherInterface);
+    			}
     		}
     	}
+    }
+    
+    /**
+     * Returns the host's movement model
+     * @return movement model
+     */
+    public MovementModel getMovement() {
+    	return movement;
     }
 }

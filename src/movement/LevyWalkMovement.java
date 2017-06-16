@@ -61,13 +61,14 @@ public class LevyWalkMovement extends MovementModel implements SwitchableMovemen
             double x = lastWaypoint.getX() + distance * Math.cos(angle);
             double y = lastWaypoint.getY() + distance * Math.sin(angle);
 
-            c = new Coord(x,y);
-
             //Is our new point not within the simulation area?
             // Then we need to change the angle again
             if (x < 0 || y < 0 || x > getMaxX() || y > getMaxY()) {
                 continue;
             }
+            
+            c = new Coord(x,y);
+            
             // Is our new point and within our radius? Then we can stop searching and add it.
             if (c.distance(center)<=radius){
                 pointFound = true;

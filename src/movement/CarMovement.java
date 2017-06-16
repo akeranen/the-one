@@ -77,4 +77,12 @@ public class CarMovement extends MapBasedMovement implements
 	public boolean isReady() {
 		return true;
 	}
+	
+	/**
+	 * Sets the last map node after node reset. Use for node reset only !!
+	 * @param n new last map node
+	 */
+	public void setLastMapNode(MapNode n) {
+		lastMapNode = n;
+	}
 }

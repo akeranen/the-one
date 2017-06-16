@@ -208,7 +208,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * @return true if success
      */
     @Override
-    public boolean newOrders() {
+    public boolean newOrders() {   	
         //when the just changed flag is set, the path and destination of the host were just set to null,
         //so getPath and thus newOrders is called,
         //but here a new movement model would possibly be selected, so to prevent that, if justChanged is true,...
@@ -251,7 +251,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * and takes care of all necessary parameter initialization/updates,
      * to make the host of this movement model move towards a disaster.
      */
-    private void chooseMovingToEventMode() {
+    private void chooseMovingToEventMode() {   	
         mode = movementMode.MOVING_TO_EVENT_MODE;
         setCurrentMovementModel(carMM);
         carMM.setNextRoute(carMM.getLastLocation(),
@@ -262,7 +262,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * Sets the random map based movement model as the current movement model
      * and takes care of all necessary parameter initialization/updates.
      */
-    private void chooseRandomMapBasedMode() {
+    public void chooseRandomMapBasedMode() {
         mode = movementMode.RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
@@ -272,7 +272,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * This means checking all disasters, and deciding to help at one of them and moving there or,
      * if for no disaster helping was chosen, starting random map based movement.
      */
-    private void startOver() {
+    public void startOver() {
         //start over at the beginning
         if (chooseNextDisaster()) {
             chooseMovingToEventMode();
@@ -363,7 +363,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * and resets the hosts path and destination, so that it has to get a new one,
      * effectively leading to an immediate change to whatever movement model is set directly after calling this method.
      */
-    private void setMovementAsForcefullySwitched() {
+    public void setMovementAsForcefullySwitched() {
         justChanged = true;
         host.interruptMovement();
     }
@@ -576,5 +576,21 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     public VhmEvent getChosenHospital(){
         return chosenHospital;
+    }
+    
+    /**
+     * Returns the current levyWalk movement model
+     * @return current levyWalk movement model
+     */
+    public LevyWalkMovement getlevyWalkMM() {
+    	return levyWalkMM;
+    }
+    
+    /**
+     * Returns the current car movement model
+     * @return current car movement model
+     */
+    public CarMovement getCarMM() {
+    	return carMM;
     }
 }

@@ -50,6 +50,15 @@ Group.group_size = 3,30
 # Specifies how much energy is used per device discovery response
 #Group.scanResponseEnergy = 0.00001
 
+# Add database application
+dbApp.type = DatabaseApplication
+dbApp.utility_threshold = 0.25
+dbApp.db_size = 50M, 150M
+dbApp.mapSendingInterval = 5400
+dbApp.seed = 0
+Group.nrofApplications = 1
+Group.application1 = dbApp
+
 # group1 (locally helping pedestrians) specific settings
 Group1.groupID = p
 Group1.isLocalHelper = true
@@ -177,14 +186,6 @@ Events9.location_offset = 0,100
 # Creation interval in seconds (one new message every 1 to 3 seconds)
 Events9.interval = 1,3
 
-
-
-# TODO: add more generators for HELLO messages (?), and neighbor queries (?)
-# TODO: don't forget to also update nrofEvents!
-# TODO: add settings for the DatabaseApplication when it is merged
-# these tasks can be done at the earliest when they are implemented and merged into the master
-
-
 ## Movement model settings
 # World's size for Movement Models without implicit size (width, height; meters)
 MovementModel.worldSize = 25000,25000
@@ -208,5 +209,5 @@ DataSyncReport.precision=2
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.
-Optimization.cellSizeMult = 5
+Optimization.cellSizeMult = 1
 Optimization.randomizeUpdateOrder = true

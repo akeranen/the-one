@@ -270,7 +270,8 @@ public class EpidemicRouterTest extends AbstractRouterTest {
     }
 
     /**
-     * Checks that there is a (pseudo)random component in how data messages are ordered in the sending queue.
+     * Checks that there is a (pseudo)random component in how data messages are ordered in the sending queue, i. e. they
+     * might get ordered differently for different hosts.
      */
     @Test
     public void testDataMessageOrderIsDynamic() {
@@ -284,6 +285,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
         // Make h1 meet several nodes and remember order of messages.
         DTNHost[] hostsToMeet = { h2, h3 };
+        // We expect all messages in buffer and a data messages.
         int numMessages = h1.getNrofMessages() + 1;
         String[][] messageOrder = new String[hostsToMeet.length][numMessages];
         for (int hostIdx = 0; hostIdx < hostsToMeet.length; hostIdx++) {

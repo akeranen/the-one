@@ -250,6 +250,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 DOUBLE_COMPARISON_DELTA);
     }
 
+    /**
+     * Checks that no message transfers are started when the app is already transferring.
+     */
     public void testNoMessagesAreSentWhenAlreadyTransferring() {
         h1.connect(h2);
 
@@ -320,7 +323,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         h1.createNewMessage(directMessage);
         h1.createNewMessage(indirectMessage);
 
-        // Advance time to prevent head starts.
+        // Advance time to prevent that any message gets a head start in sorting due to being new.
         this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
 
         // Add high utility data for data message.

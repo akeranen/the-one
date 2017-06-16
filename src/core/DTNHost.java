@@ -583,6 +583,7 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
         return this.getAddress() - h.getAddress();
     }
     
+    
     /**
      * Tears down all connections to other interfaces
      * Use for node reset only!

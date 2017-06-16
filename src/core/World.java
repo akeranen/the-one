@@ -305,7 +305,8 @@ public class World {
 				return;
 			}
 			
-			if (energy.getEnergy() <= 0) {
+			// 0.9 only for testing, normally it should be <= 0
+			if (energy.getEnergy() <= 0.2) {
 				NodeReset.resetNode(host);
 			}
 	}

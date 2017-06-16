@@ -205,4 +205,5 @@ public class EnergyModel implements ModuleCommunicationListener {
 	public void moduleValueChanged(String key, Object newValue) {
 		this.currentEnergy = (Double)newValue;
 	}
+	
 }

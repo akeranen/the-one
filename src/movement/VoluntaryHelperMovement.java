@@ -208,7 +208,10 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * @return true if success
      */
     @Override
-    public boolean newOrders() {   	
+    public boolean newOrders() {
+    	int a;
+    	if (host.getAddress() == 215)
+    		a = 215;
         //when the just changed flag is set, the path and destination of the host were just set to null,
         //so getPath and thus newOrders is called,
         //but here a new movement model would possibly be selected, so to prevent that, if justChanged is true,...
@@ -251,7 +254,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * and takes care of all necessary parameter initialization/updates,
      * to make the host of this movement model move towards a disaster.
      */
-    private void chooseMovingToEventMode() {   	
+    private void chooseMovingToEventMode() {
         mode = movementMode.MOVING_TO_EVENT_MODE;
         setCurrentMovementModel(carMM);
         carMM.setNextRoute(carMM.getLastLocation(),

@@ -1,12 +1,10 @@
 package test;
 
+import core.BroadcastMessage;
 import core.Group;
 import core.Message;
 import org.junit.Assert;
 import routing.DisasterRouter;
-import routing.util.DeliveryPredictabilityStorage;
-import routing.util.EncounterValueManager;
-import routing.util.ReplicationsDensityManager;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -17,23 +15,15 @@ import routing.util.ReplicationsDensityManager;
 // because this class extends TestCase.
 @SuppressWarnings({"squid:S2187"})
 public class DisasterRouterTest extends AbstractRouterTest {
-    /* Constants needed for delivery predictabilities. */
-    private static final double BETA = 0.25;
-    private static final double GAMMA = 0.95;
-    private static final double SUMMAND = 0.75;
-    private static final double SECONDS_IN_TIME_UNIT = 2;
-
-    /* Constants needed for encounter value. */
-    private static final double NEW_DATA_WEIGHT = 0.3;
-    private static final double EV_WINDOW_LENGTH = 21.3;
-
-    /* Constant needed for replications density. */
-    private static final double RD_WINDOW_LENGTH = 12.0;
-
     /* Some time (span)s needed for tests. */
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
+
+    /* Some priority values needed for tests. */
+    private static final int PRIORITY = 5;
+    private static final int HIGH_PRIORITY = 6;
+    private static final int LOW_PRIORITY = 4;
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
@@ -46,20 +36,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     @Override
     public void setUp() throws Exception {
-        ts.setNameSpace(null);
-        ts.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(BETA));
-        ts.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(GAMMA));
-        ts.putSetting(DeliveryPredictabilityStorage.SUMMAND_S, Double.toString(SUMMAND));
-        ts.putSetting(DeliveryPredictabilityStorage.TIME_UNIT_S, Double.toString(SECONDS_IN_TIME_UNIT));
-
-        ts.setNameSpace(EncounterValueManager.ENCOUNTER_VALUE_NS);
-        ts.putSetting(EncounterValueManager.AGING_FACTOR, Double.toString(NEW_DATA_WEIGHT));
-        ts.putSetting(EncounterValueManager.WINDOW_LENGTH_S, Double.toString(EV_WINDOW_LENGTH));
-        ts.restoreNameSpace();
-
-        ts.setNameSpace(ReplicationsDensityManager.REPLICATIONS_DENSITY_NS);
-        ts.putSetting(ReplicationsDensityManager.WINDOW_LENGTH_S, Double.toString(RD_WINDOW_LENGTH));
-        ts.restoreNameSpace();
+        DisasterRouterTestUtils.addDisasterRouterSettings(ts);
 
         setRouterProto(new DisasterRouter(ts));
         super.setUp();
@@ -76,14 +53,14 @@ public class DisasterRouterTest extends AbstractRouterTest {
     }
 
     public void testEncounterValueIsComputedCorrectly() {
-        this.clock.setTime(EV_WINDOW_LENGTH);
+        this.clock.setTime(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
         h1.connect(h2);
         this.updateAllNodes();
 
         DisasterRouter router = (DisasterRouter)h2.getRouter();
         Assert.assertEquals(
                 "Expected different encounter value.",
-                1 * NEW_DATA_WEIGHT, router.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
+                1 * DisasterRouterTestUtils.NEW_DATA_WEIGHT, router.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
     }
 
     public void testEncounterValueIsUpdatedAtCorrectTime() {
@@ -92,14 +69,14 @@ public class DisasterRouterTest extends AbstractRouterTest {
         DisasterRouter router = (DisasterRouter)h2.getRouter();
 
         // Check encounter value is not updated shortly before time window is up.
-        this.clock.setTime(EV_WINDOW_LENGTH - SHORT_TIME_SPAN);
+        this.clock.setTime(DisasterRouterTestUtils.EV_WINDOW_LENGTH - SHORT_TIME_SPAN);
         this.updateAllNodes();
         Assert.assertEquals(
                 "Encounter value should not have been updated yet.",
                 0, router.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
 
         // Check encounter value is updated shortly after time window is up.
-        this.clock.setTime(EV_WINDOW_LENGTH + SHORT_TIME_SPAN);
+        this.clock.setTime(DisasterRouterTestUtils.EV_WINDOW_LENGTH + SHORT_TIME_SPAN);
         this.updateAllNodes();
         Assert.assertNotEquals(
                 "Encounter value should have been updated.",
@@ -107,7 +84,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     }
 
     public void testEncounterValueManagersDifferBetweenHosts() {
-        this.clock.setTime(EV_WINDOW_LENGTH);
+        this.clock.setTime(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
         h1.connect(h2);
         this.updateAllNodes();
 
@@ -122,7 +99,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
      */
     public void testReplicationsDensitiesAreComputedCorrectly() {
         // Make sure it's the correct time.
-        this.clock.setTime(RD_WINDOW_LENGTH);
+        this.clock.setTime(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
 
         // Give a message to two hosts.
         Message message = new Message(h3, h4, "M1", 0);
@@ -182,14 +159,14 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Check replications density is not updated shortly before time window is up.
         DisasterRouter router = (DisasterRouter)h2.getRouter();
-        this.clock.setTime(RD_WINDOW_LENGTH - SHORT_TIME_SPAN);
+        this.clock.setTime(DisasterRouterTestUtils.RD_WINDOW_LENGTH - SHORT_TIME_SPAN);
         this.updateAllNodes();
         Assert.assertEquals(
                 "Replications density should not have been updated yet.",
                 DEFAULT_REPLICATIONS_DENSITY, router.getReplicationsDensity(message), DOUBLE_COMPARISON_DELTA);
 
         // Check replications density is updated shortly after time window is up.
-        this.clock.setTime(RD_WINDOW_LENGTH + SHORT_TIME_SPAN);
+        this.clock.setTime(DisasterRouterTestUtils.RD_WINDOW_LENGTH + SHORT_TIME_SPAN);
         this.updateAllNodes();
         Assert.assertNotEquals(
                 "Replications density should have been updated.",
@@ -235,29 +212,33 @@ public class DisasterRouterTest extends AbstractRouterTest {
         // Check delivery predictabilies for h1.
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,
-                SUMMAND, router1.getDeliveryPredictability(messageToH2), DOUBLE_COMPARISON_DELTA);
+                DisasterRouterTestUtils.SUMMAND, router1.getDeliveryPredictability(messageToH2),
+                DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,
                 0, router1.getDeliveryPredictability(messageToH3), DOUBLE_COMPARISON_DELTA);
 
         // Check delivery predictabilies for h2.
-        double age = (SECOND_MEETING_TIME - FIRST_MEETING_TIME) / SECONDS_IN_TIME_UNIT;
-        double agedPredictability = SUMMAND * Math.pow(GAMMA, age);
+        double age = (SECOND_MEETING_TIME - FIRST_MEETING_TIME) / DisasterRouterTestUtils.SECONDS_IN_TIME_UNIT;
+        double agedPredictability = DisasterRouterTestUtils.SUMMAND * Math.pow(DisasterRouterTestUtils.GAMMA, age);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,
                 agedPredictability, router2.getDeliveryPredictability(messageToH1), DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,
-                SUMMAND, router2.getDeliveryPredictability(messageToH3), DOUBLE_COMPARISON_DELTA);
+                DisasterRouterTestUtils.SUMMAND, router2.getDeliveryPredictability(messageToH3),
+                DOUBLE_COMPARISON_DELTA);
 
         // Check delivery predictabilies for h3.
-        double transitivePredictability = SUMMAND * BETA * agedPredictability;
+        double transitivePredictability =
+                DisasterRouterTestUtils.SUMMAND * DisasterRouterTestUtils.BETA * agedPredictability;
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,
                 transitivePredictability, router3.getDeliveryPredictability(messageToH1), DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,
-                SUMMAND, router3.getDeliveryPredictability(messageToH2), DOUBLE_COMPARISON_DELTA);
+                DisasterRouterTestUtils.SUMMAND, router3.getDeliveryPredictability(messageToH2),
+                DOUBLE_COMPARISON_DELTA);
     }
 
     public void testNoMessagesAreSentWhenAlreadyTransferring() {
@@ -283,20 +264,85 @@ public class DisasterRouterTest extends AbstractRouterTest {
         }
     }
 
+    /**
+     * Tests that direct messages are sorted in correct order when we send them out.
+     */
+    public void testDirectMessagesAreSentSortedByPriority() {
+        // Connect to several hosts.
+        h1.connect(h2);
+        h1.connect(h3);
+
+        // Create direct messages with different priorities to two different neighbors.
+        Message broadcast = new BroadcastMessage(h1, "B1", 0, PRIORITY);
+        Message lowPrio = new Message(h1, h2,"M1", 0, LOW_PRIORITY);
+        Message highPrio = new Message(h1, h3, "M2", 0, HIGH_PRIORITY);
+        h1.createNewMessage(broadcast);
+        h1.createNewMessage(lowPrio);
+        h1.createNewMessage(highPrio);
+
+        // Make sure they are sent in correct order.
+        Message[] expectedOrder = { highPrio, broadcast, broadcast, lowPrio };
+        this.mc.reset();
+        for (Message expectedMessage : expectedOrder) {
+            h1.update(true);
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals("Expected different message.", expectedMessage.getId(), mc.getLastMsg().getId());
+        }
+    }
+
+    /**
+     * Tests that direct messages are received in correct order if neighbor wants to send us some.
+     */
+    public void testDirectMessagesAreReceivedSortedByPriority() {
+        // Connect to a neighbor.
+        h1.connect(h2);
+
+        // Let it create direct messages to attached host.
+        Message broadcast = new BroadcastMessage(h2, "B1", 0, PRIORITY);
+        Message lowPrio = new Message(h2, h1,"M1", 0, LOW_PRIORITY);
+        Message highPrio = new Message(h2, h1, "M2", 0, HIGH_PRIORITY);
+        h2.createNewMessage(broadcast);
+        h2.createNewMessage(lowPrio);
+        h2.createNewMessage(highPrio);
+
+        // Also give a message to h1 so it tries to find messages to receive.
+        h1.createNewMessage(new Message(h1, h3, "M6", 1));
+
+        // Make sure direct messages h2 --> h1 are sent in correct order.
+        Message[] expectedOrder = { highPrio, broadcast, lowPrio };
+        for (Message expectedMessage : expectedOrder) {
+            this.mc.reset();
+
+            // Let H1 update while connected to H2, but not the other way around (else we look at sending direct
+            // messages, not receiving them!).
+            h1.connect(h2);
+            h1.update(true);
+            disconnect(h2);
+            h2.update(true);
+
+            // Find started message and see if it is the correct one.
+            while (!this.mc.TYPE_START.equals(this.mc.getLastType())) {
+                this.mc.next();
+            }
+            Assert.assertEquals("Expected different message.", expectedMessage.getId(), mc.getLastMsg().getId());
+
+            // Don't send it again even if transfer was not completed.
+            h2.deleteMessage(mc.getLastMsg().getId(), true);
+        }
+    }
+
     // TODO: Test that direct messages (multicasts, broadcasts, one-to-ones, but NOT db messages) are sent first, both
     // to and from the neighbor
-    // This can only be tested after trying to send other messages does not throw an exception.
+    // This can only be tested after trying to send other messages does not throw an exception, i.e. message choosing
+    // and prioritization are implemented.
 
     // TODO: Test that no messages are received when already transferring another message.
     // This can only be tested after the message chooser was implemented.
 
-    // TODO: Test that direct messages are sent in correct order, both when sending and receiving.
-    // This can only be tested after prioritization for direct messages was implemented.
-    // Make sure your test is such that it is tested that replicated routers have the correct rating mechanisms linked
-    // to their prioritizers.
-
     // TODO: Test that non-direct messages and DB messages are sorted correctly.
-    // This can only be tested after prioritization was implemented.
+    // This can only be tested after message choosing and prioritization was implemented.
     // Make sure your test is such that it is tested that replicated routers have the correct rating mechanisms linked
     // to their prioritizers.
 }

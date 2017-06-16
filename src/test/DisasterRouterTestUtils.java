@@ -39,11 +39,12 @@ public final class DisasterRouterTestUtils {
     }
 
     public static void addDisasterRouterSettings(TestSettings s) {
-        s.setNameSpace(null);
+        s.setNameSpace(DeliveryPredictabilityStorage.DELIVERY_PREDICTABILITY_STORAGE_NS);
         s.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(BETA));
         s.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(GAMMA));
         s.putSetting(DeliveryPredictabilityStorage.SUMMAND_S, Double.toString(SUMMAND));
         s.putSetting(DeliveryPredictabilityStorage.TIME_UNIT_S, Double.toString(SECONDS_IN_TIME_UNIT));
+        s.restoreNameSpace();
 
         s.setNameSpace(EncounterValueManager.ENCOUNTER_VALUE_NS);
         s.putSetting(EncounterValueManager.AGING_FACTOR, Double.toString(NEW_DATA_WEIGHT));
@@ -54,9 +55,11 @@ public final class DisasterRouterTestUtils {
         s.putSetting(ReplicationsDensityManager.WINDOW_LENGTH_S, Double.toString(RD_WINDOW_LENGTH));
         s.restoreNameSpace();
 
+        s.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         s.putSetting(DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S, Double.toString(HEAD_START_THRESHOLD));
         s.putSetting(DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S, Double.toString(PRIORITY_THRESHOLD));
         s.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
+        s.restoreNameSpace();
 
         s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.2");
         s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");

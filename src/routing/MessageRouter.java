@@ -454,9 +454,12 @@ public abstract class MessageRouter {
 	 * message, if false, nothing is informed.
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
-	    if (!this.messages.containsKey(m.getId())){
-            occupancy += m.getSize();
+	    //Remove previous size of message from the occupancy if we already had the message
+	    if (this.messages.containsKey(m.getId())){
+	        occupancy -= messages.get(m.getId()).getSize();
         }
+        //Add the current size of the message to the occupancy
+        occupancy += m.getSize();
 		this.messages.put(m.getId(), m);
 
 		if (newMessage) {

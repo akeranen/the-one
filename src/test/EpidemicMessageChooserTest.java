@@ -22,7 +22,6 @@ import util.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Contains tests for the {@link EpidemicMessageChooser} class.
@@ -115,14 +114,8 @@ public class EpidemicMessageChooserTest {
         this.attachedHost.createNewMessage(oneToOne);
 
         // Check non-direct messages were returned for each connection.
-        List<Message> messagesToFirstNeighbor = this.chooseMessages().stream()
-                .filter(tuple -> tuple.getValue().getOtherNode(this.attachedHost).equals(neighbor1))
-                .map(Tuple::getKey)
-                .collect(Collectors.toList());
-        List<Message> messagesToSecondNeighbor = this.chooseMessages().stream()
-                .filter(tuple -> tuple.getValue().getOtherNode(this.attachedHost).equals(neighbor2))
-                .map(Tuple::getKey)
-                .collect(Collectors.toList());
+        List<Message> messagesToFirstNeighbor = this.filterMessagesForNeighbor(this.chooseMessages(), neighbor1);
+        List<Message> messagesToSecondNeighbor = this.filterMessagesForNeighbor(this.chooseMessages(), neighbor2);
         Assert.assertEquals("Expected one message to each neighbor.", 1, messagesToFirstNeighbor.size());
         Assert.assertEquals("Expected one message to each neighbor.", 1, messagesToSecondNeighbor.size());
         Assert.assertEquals("Expected the multicast to be sent to H1.", multicast, messagesToFirstNeighbor.get(0));
@@ -164,5 +157,23 @@ public class EpidemicMessageChooserTest {
     private Collection<Tuple<Message, Connection>> chooseMessages() {
         return this.messageChooser.findOtherMessages(
                 this.attachedHost.getMessageCollection(), this.attachedHost.getConnections());
+    }
+
+    /**
+     * Filters the provided messages for messages that will be sent to the provided {@link DTNHost}.
+     * @param messages Messages to filter.
+     * @param neighbor The {@link DTNHost} to filter for.
+     * @return The filtered set of messages.
+     */
+    private List<Message> filterMessagesForNeighbor(Collection<Tuple<Message, Connection>> messages, DTNHost neighbor) {
+        List<Message> messagesToNeighbor = new ArrayList<>();
+        for (Tuple<Message, Connection> t : messages) {
+            DTNHost receiver = t.getValue().getOtherNode(this.attachedHost);
+            if (receiver.equals(neighbor)) {
+                messagesToNeighbor.add(t.getKey());
+            }
+        }
+
+        return messagesToNeighbor;
     }
 }

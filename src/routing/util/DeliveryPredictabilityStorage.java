@@ -222,6 +222,7 @@ public class DeliveryPredictabilityStorage {
                 return this.getDeliveryPredictability(message.getTo());
             case MULTICAST:
                 MulticastMessage multicast = (MulticastMessage)message;
+                // Return the maximum predictability to any of the recipients.
                 return Arrays.stream(multicast.getGroup().getMembers())
                         .mapToDouble(this::getDeliveryPredictability)
                         .max().getAsDouble();

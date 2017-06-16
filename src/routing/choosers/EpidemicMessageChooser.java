@@ -17,8 +17,15 @@ import java.util.List;
  * Created by Britta Heymann on 21.05.2017.
  */
 public class EpidemicMessageChooser implements MessageChoosingStrategy {
+    /**
+     * The {@link DTNHost} attached to this chooser, i.e. the host sending the messages.
+     */
     private DTNHost attachedHost;
 
+    /**
+     * Initializes a new instance of the {@link EpidemicMessageChooser} class.
+     * @param attachedHost The host attached to this chooser, i.e. the host sending the messages.
+     */
     public EpidemicMessageChooser(DTNHost attachedHost) {
         this.attachedHost = attachedHost;
     }
@@ -47,7 +54,7 @@ public class EpidemicMessageChooser implements MessageChoosingStrategy {
             }
         }
 
-        // Add data messages.
+        // Wrap useful data stored at host in data messages to neighbors and add them to the messages to sent.
         chosenMessages.addAll(DatabaseApplicationUtil.createDataMessages(
                 this.attachedHost.getRouter(), this.attachedHost, connections));
 

@@ -170,14 +170,12 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
      * @return The found index, or {@link #INDEX_NOT_FOUND} if there was none.
      */
     private static int findFirstNonDataMessageIndex(List<Tuple<Message, Connection>> messages) {
-        int firstOrdinaryMessageIndex = INDEX_NOT_FOUND;
         for (int i = 0; i < messages.size(); i++) {
             if (!(messages.get(i).getKey() instanceof DataMessage)) {
-                firstOrdinaryMessageIndex = i;
-                break;
+                return i;
             }
         }
-        return firstOrdinaryMessageIndex;
+        return INDEX_NOT_FOUND;
     }
 
     /**

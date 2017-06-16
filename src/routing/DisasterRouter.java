@@ -84,8 +84,8 @@ public class DisasterRouter extends ActiveRouter {
     public void init(DTNHost host, List<MessageListener> mListeners) {
         super.init(host, mListeners);
         this.deliveryPredictabilityStorage.setAttachedHost(host);
-        this.messageChooser = new EpidemicMessageChooser(host);
         this.messagePrioritizer.setAttachedHost(host);
+        this.messageChooser = new EpidemicMessageChooser(host);
     }
 
     /**
@@ -142,7 +142,7 @@ public class DisasterRouter extends ActiveRouter {
         this.encounterValueManager.update();
         this.replicationsDensityManager.update();
 
-        // Don't continue computing if there is no chance any message will be send.
+        // Don't continue computing if there is no chance any message will be sent.
         if (this.isTransferring() || this.getConnections().isEmpty() ||
                 DatabaseApplicationUtil.hasNoMessagesToSend(this)) {
             return;

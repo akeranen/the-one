@@ -6,6 +6,7 @@ import movement.*;
 import movement.map.MapNode;
 import core.*;
 import routing.*;
+import routing.util.EnergyModel;
 
 public class NodeReset {
 	/**
@@ -35,8 +36,10 @@ public class NodeReset {
 		
 		// Set a random energy level between 0.1 and 1.0
 		double[] range = {0.1,1.0};
-		
-		((ActiveRouter)(host.getRouter())).getEnergy().setEnergy(range);
+
+		EnergyModel energyModel =((ActiveRouter)(host.getRouter())).getEnergy();
+		energyModel.setEnergy(range);
+		host.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, energyModel.getEnergy());
 		
 	}
 }

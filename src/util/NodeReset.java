@@ -8,27 +8,28 @@ import core.*;
 import routing.*;
 
 public class NodeReset {
+	/**
+	 * Factor used for seeding the pseudo-random number generator that decides the node's new location.
+	 * Without this factor, hosts with similar addresses would get similar new locations.
+	 */
+	private static final int SEED_VARIETY_FACTOR = 7079;
 
 	public static void resetNode(DTNHost host) {
-		Random rnd = new Random(host.getAddress());
-		
 		// Node Reset should only be done within the VoluntaryHelperMovement Model
 		if (host.getMovement().getClass() != VoluntaryHelperMovement.class)
 			return;
-		
+
+		Random rnd = new Random((SEED_VARIETY_FACTOR * host.getAddress()) ^ SimClock.getIntTime());
 		// List of all map nodes
-		List<MapNode> nodes = ((VoluntaryHelperMovement)host.getMovement()).getMap().getNodes();
+		List<MapNode> nodes = ((VoluntaryHelperMovement)host.getMovement()).getOkMapNodes();
 		
 		// Node that the host is reset on
 		int index = rnd.nextInt(nodes.size());
 		
 		// Forces node to get a new path
-		host.setLocation(nodes.get(index).getLocation());
-		((VoluntaryHelperMovement)host.getMovement()).getCarMM().setLastMapNode(nodes.get(index));
-		
-		// Switch to Random Map Based Movement
 		((VoluntaryHelperMovement)(host.getMovement())).setMovementAsForcefullySwitched();
-		((VoluntaryHelperMovement)(host.getMovement())).chooseRandomMapBasedMode();
+		host.setLocation(nodes.get(index).getLocation());
+		((VoluntaryHelperMovement)(host.getMovement())).startOver();
 		
 		
 		

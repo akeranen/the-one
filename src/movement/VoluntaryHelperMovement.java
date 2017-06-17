@@ -7,6 +7,7 @@ import core.DTNHost;
 import core.SimClock;
 import input.VhmEvent;
 import input.VhmEventNotifier;
+import movement.map.MapNode;
 import movement.map.SimMap;
 
 import java.util.ArrayList;
@@ -359,6 +360,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     public SimMap getMap() {
         return shortestPathMapBasedMM.getMap();
+    }
+
+    public List<MapNode> getOkMapNodes() {
+        List<MapNode> possibleNodes = new ArrayList<>();
+        for (MapNode node : this.getMap().getNodes()) {
+            if (node.isType(shortestPathMapBasedMM.getOkMapNodeTypes())) {
+                possibleNodes.add(node);
+            }
+        }
+        return possibleNodes;
     }
 
     /**

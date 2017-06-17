@@ -690,15 +690,4 @@ public abstract class MessageRouter {
 			this.getHost().toString() + " with " + getNrofMessages()
 			+ " messages";
 	}
-	
-	/**
-	 * Deletes all messages the node stores. 
-	 * Use this method for node reset only!
-	 */
-	public void clearAllMessageLists() {
-		incomingMessages = new HashMap<String, Message>();
-		messages = new HashMap<String, Message>();
-		deliveredMessages = new HashMap<String, Message>();
-		blacklistedMessages = new HashMap<String, Object>();
-	}
 }

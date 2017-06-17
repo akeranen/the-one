@@ -1,42 +1,25 @@
-## Scenarios with duration of 6 hours and with few / many events
-## Scenario used for the evaluation of the different routing protocols
-## Scenario settings
-# 21600s = 6h
-Scenario.endTime = 21600
-# to get a correct matching between name and events file, the number of runs should
-# be chosen appropriate
-Scenario.name = [Node_Reset_Test ; Node_Reset_Test]
+Scenario.name = Node_Reset_Test
 
-#Settings for the disaster and hospital events
-# max number of external events to preload
-Events1.nrofPreload = 24
-# path to external events file 
-Events1.filePath = [ee/VhmEvents/eventsScenarioFewShortDuration.json ; ee/VhmEvents/eventsScenarioManyShortDuration.json]
-
-Events3.hosts = 0,299
-Events4.hosts = 0,299
-Events5.hosts = 0,299
-Events6.hosts = 0,299
-Events7.hosts = 0,299
-Events8.hosts = 0,299
-Events9.hosts = 0,299
-
-# Define 1 different node groups
+# Use less hosts
 Scenario.nrofHostGroups = 1
+Group1.nrofHosts = 3
+Events2.hosts = 0,3
+Events3.hosts = 0,3
+Events4.hosts = 0,3
+Events5.hosts = 0,3
+Events6.hosts = 0,3
+Events7.hosts = 0,3
+Events8.hosts = 0,2
+Events9.hosts = 0,2
 
-
-Group.movementModel = VoluntaryHelperMovement
-Group.router = EpidemicRouter
-Group.bufferSize = 5M
-Group.waitTime = 0, 120
-# Walking speeds
-Group.speed = 0.5, 1.5
-# Message TTL of 300 minutes (5 hours)
-Group.msgTtl = 300
-
-# group1 (pedestrians) specific settings
-Group1.groupID = p
-Group1.nrofHosts = 300
+# Total number of multicast groups across all groups
+Events4.group_count = 1,1
+# Size of multicast groups
+Events4.group_size = 2,2
+# Total number of multicast groups across all groups
+Events5.group_count = 1,1
+# Size of multicast groups
+Events5.group_size = 2,2
 
 # Specifies how much energy the hosts have at the beginning of the simulation
 Group1.initialEnergy = 0.1,1

@@ -6,10 +6,8 @@ package routing;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
@@ -534,21 +532,6 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		return null;
-	}
-
-
-
-	/**
-	 * Shuffles a messages list so the messages are in random order.
-	 * @param messages The list to sort and shuffle
-	 */
-	protected void shuffleMessages(List<Message> messages) {
-		if (messages.size() <= 1) {
-			return; // nothing to shuffle
-		}
-
-		Random rng = new Random(SimClock.getIntTime());
-		Collections.shuffle(messages, rng);
 	}
 
 	/**

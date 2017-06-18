@@ -718,4 +718,5 @@ public abstract class ActiveRouter extends MessageRouter {
 	public double getMessageOrderingInterval(){
         return this.messageOrderingInterval;
     }
+
 }

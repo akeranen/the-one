@@ -12,7 +12,6 @@ import input.VhmEvent;
 import input.VhmEventNotifier;
 import movement.map.MapNode;
 import movement.map.SimMap;
-import routing.ActiveRouter;
 import routing.util.EnergyModel;
 
 import java.util.ArrayList;
@@ -190,9 +189,9 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Set up method called once per group on the movement model prototype.
+     * Set up method called once per group when initializing hosts.
      */
-    public void setUp(SimScenario simScenario) {
+    public static void setUp(SimScenario simScenario) {
         // Make sure recharging is checked at every update time.
         if (!isRechargeInitiatorReady) {
             simScenario.addUpdateListener(rechargeInitiator);
@@ -391,7 +390,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         return shortestPathMapBasedMM.getMap();
     }
 
-    public List<MapNode> getOkMapNodes() {
+    private List<MapNode> getOkMapNodes() {
         List<MapNode> possibleNodes = new ArrayList<>();
         for (MapNode node : this.getMap().getNodes()) {
             if (node.isType(shortestPathMapBasedMM.getOkMapNodeTypes())) {
@@ -406,7 +405,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * and resets the hosts path and destination, so that it has to get a new one,
      * effectively leading to an immediate change to whatever movement model is set directly after calling this method.
      */
-    public void setMovementAsForcefullySwitched() {
+    private void setMovementAsForcefullySwitched() {
         justChanged = true;
         host.interruptMovement();
     }

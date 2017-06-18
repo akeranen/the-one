@@ -113,7 +113,7 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * @param range The min and max values of the range, or if only one value
 	 * is given, that is used as the energy level
 	 */
-	private void setEnergy(double range[]) {
+	protected void setEnergy(double range[]) {
 		if (range.length == 1) {
 			this.currentEnergy = range[0];
 		}
@@ -205,4 +205,5 @@ public class EnergyModel implements ModuleCommunicationListener {
 	public void moduleValueChanged(String key, Object newValue) {
 		this.currentEnergy = (Double)newValue;
 	}
+
 }

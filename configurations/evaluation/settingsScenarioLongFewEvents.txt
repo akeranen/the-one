@@ -1,4 +1,4 @@
-## Scenarios with duration of three days and with few / many events
+## Scenarios with duration of three days and with few events
 ## Scenario used for the evaluation of the different routing protocols
 ## Scenario settings
 # 259200s = 72h = 3d

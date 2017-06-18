@@ -304,7 +304,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * This means checking all disasters, and deciding to help at one of them and moving there or,
      * if for no disaster helping was chosen, starting random map based movement.
      */
-    public void startOver() {
+    private void startOver() {
         //start over at the beginning
         if (chooseNextDisaster()) {
             chooseMovingToEventMode();

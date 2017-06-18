@@ -210,9 +210,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     @Override
     public boolean newOrders() {
-    	int a;
-    	if (host.getAddress() == 215)
-    		a = 215;
         //when the just changed flag is set, the path and destination of the host were just set to null,
         //so getPath and thus newOrders is called,
         //but here a new movement model would possibly be selected, so to prevent that, if justChanged is true,...
@@ -266,7 +263,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * Sets the random map based movement model as the current movement model
      * and takes care of all necessary parameter initialization/updates.
      */
-    public void chooseRandomMapBasedMode() {
+    private void chooseRandomMapBasedMode() {
         mode = movementMode.RANDOM_MAP_BASED_MODE;
         setCurrentMovementModel(shortestPathMapBasedMM);
     }
@@ -590,21 +587,5 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     public VhmEvent getChosenHospital(){
         return chosenHospital;
-    }
-    
-    /**
-     * Returns the current levyWalk movement model
-     * @return current levyWalk movement model
-     */
-    public LevyWalkMovement getlevyWalkMM() {
-    	return levyWalkMM;
-    }
-    
-    /**
-     * Returns the current car movement model
-     * @return current car movement model
-     */
-    public CarMovement getCarMM() {
-    	return carMM;
     }
 }

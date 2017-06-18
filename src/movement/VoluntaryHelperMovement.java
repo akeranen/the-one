@@ -1,5 +1,8 @@
 package movement;
 
+import core.ModuleCommunicationBus;
+import core.ModuleCommunicationListener;
+import core.SimScenario;
 import core.VhmListener;
 import core.Settings;
 import core.Coord;
@@ -9,6 +12,8 @@ import input.VhmEvent;
 import input.VhmEventNotifier;
 import movement.map.MapNode;
 import movement.map.SimMap;
+import routing.ActiveRouter;
+import routing.util.EnergyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +31,7 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  *
  * @author Ansgar Mährlein
  */
-public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener {
+public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, ModuleCommunicationListener {
 
     /**
      * the movement modes the node can be in
@@ -61,6 +66,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
          */
         PANIC_MODE
     }
+
+    /**
+     * Update listener responsible for initiating host recharging.
+     */
+    private static VhmRechargeInitiator rechargeInitiator = new VhmRechargeInitiator();
+
+    /**
+     * Whether {@link #rechargeInitiator} has been added as listener yet.
+     */
+    private static boolean isRechargeInitiatorReady;
 
     /**
      * the current movement mode of the node
@@ -120,6 +135,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private boolean justChanged;
 
     /**
+     * Indicates that the host is ready for recharging.
+     */
+    private boolean readyForRecharge;
+
+    /**
      * Time the last movement model started
      */
     private double startTime;
@@ -133,6 +153,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     public VoluntaryHelperMovement(Settings settings) {
         super(settings);
 
+        // Read all movement specific properties.
         this.properties = new VhmProperties(settings);
 
         //create the sub-movement-models
@@ -166,6 +187,17 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //just make sure this is initialized
         justChanged = false;
+    }
+
+    /**
+     * Set up method called once per group on the movement model prototype.
+     */
+    public void setUp(SimScenario simScenario) {
+        // Make sure recharging is checked at every update time.
+        if (!isRechargeInitiatorReady) {
+            simScenario.addUpdateListener(rechargeInitiator);
+            isRechargeInitiatorReady = true;
+        }
     }
 
     /**
@@ -539,6 +571,55 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             setMovementAsForcefullySwitched();
             startOver();
         }
+    }
+
+    /**
+     * Sets the module communication bus for this movement model
+     *
+     * @param comBus The communications bus to set
+     */
+    @Override
+    public void setComBus(ModuleCommunicationBus comBus) {
+        super.setComBus(comBus);
+        this.comBus.subscribe(EnergyModel.ENERGY_VALUE_ID, this);
+    }
+
+    /**
+     * Called by the combus if the energy value is changed
+     * @param key The energy ID
+     * @param newValue The new energy value
+     */
+    @Override
+    public void moduleValueChanged(String key, Object newValue) {
+        // TODO: This is only for testing; change to 0 for real thing.
+        this.readyForRecharge = (Double)newValue <= 0.2;
+    }
+
+    /**
+     * Checks whether the {@link DTNHost} directed by this movement model instance should be recharged and executes that
+     * recharge if needed.
+     */
+    void possiblyRecharge() {
+        if (!this.readyForRecharge) {
+            return;
+        }
+
+        List<MapNode> nodes = this.getOkMapNodes();
+        int index = rng.nextInt(nodes.size());
+
+        // Forces node to get a new path
+        this.setMovementAsForcefullySwitched();
+        this.host.setLocation(nodes.get(index).getLocation());
+        this.startOver();
+
+        //  TODO: get this range from settings.
+        // Set a random energy level between 0.1 and 1.0
+        double[] range = {0.1,1.0};
+
+        // TODO: Do this correctly.
+        //EnergyModel energyModel =((ActiveRouter)(host.getRouter())).getEnergy();
+        //energyModel.setEnergy(range);
+        this.comBus.updateProperty(EnergyModel.ENERGY_VALUE_ID, 0.8);
     }
 
     /**

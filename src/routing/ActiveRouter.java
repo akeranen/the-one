@@ -718,13 +718,4 @@ public abstract class ActiveRouter extends MessageRouter {
 	public double getMessageOrderingInterval(){
         return this.messageOrderingInterval;
     }
-	
-	/**
-	 * Returns the current energy model
-	 * @return current energy model
-	 */
-	public EnergyModel getEnergy() {
-		return energy;
-	}
-
 }

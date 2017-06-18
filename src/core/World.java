@@ -7,9 +7,6 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
-import routing.*;
-import routing.util.EnergyModel;
-import util.NodeReset;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -181,18 +178,12 @@ public class World {
 	 * are made in random order.
 	 */
 	private void updateHosts() {
-		double energy = 0;
-		
 		if (this.updateOrder == null) { // randomizing is off
 			for (int i=0, n = hosts.size();i < n; i++) {
 				if (this.isCancelled) {
 					break;
 				}
-				DTNHost host = hosts.get(i);
-				host.update(simulateConnections);
-				//Node reset
-				tryNodeReset(host);
-				energy += ((ActiveRouter)(host.getRouter())).getEnergy().getEnergy();	
+				hosts.get(i).update(simulateConnections);
 			}
 		}
 		else { // update order randomizing is on
@@ -204,11 +195,7 @@ public class World {
 				if (this.isCancelled) {
 					break;
 				}
-				DTNHost host = this.updateOrder.get(i);
-				host.update(simulateConnections);
-				//Node reset
-				tryNodeReset(host);
-				energy += ((ActiveRouter)(host.getRouter())).getEnergy().getEnergy();	
+				this.updateOrder.get(i).update(simulateConnections);
 			}
 		}
 
@@ -284,30 +271,5 @@ public class World {
 	 */
 	public void scheduleUpdate(double simTime) {
 		scheduledUpdates.addUpdate(simTime);
-	}
-	
-	private void tryNodeReset(DTNHost host) {
-			MessageRouter router = host.getRouter();
-			
-			if (router == null) {
-				// host does not have a router yet
-				return;
-			}
-			
-			if (router.getClass().getSuperclass() != ActiveRouter.class)
-				// host does not use an ActiveRouter -> no node reset needed
-				return;
-			
-			EnergyModel energy = ((ActiveRouter)router).getEnergy();
-			
-			if (energy == null) {
-				// router does not have an energy model yet
-				return;
-			}
-			
-			// 0.9 only for testing, normally it should be <= 0
-			if (energy.getEnergy() <= 0.2) {
-				NodeReset.resetNode(host);
-			}
 	}
 }

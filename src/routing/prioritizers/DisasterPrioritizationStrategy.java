@@ -24,6 +24,8 @@ import java.util.List;
  * Created by Britta Heymann on 25.05.2017.
  */
 public class DisasterPrioritizationStrategy implements MessagePrioritizationStrategy {
+    /** Namespace for all disaster prioritization settings. */
+    public static final String DISASTER_PRIORITIZATION_NS = "DisasterPrioritization";
     /**
      * Maximum time since creation for which a message is a allowed a head start -setting id ({@value}).
      * Value in seconds. Messages which meet this threshold are sorted before all messages which don't.
@@ -61,10 +63,11 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
 
     /**
      * Initializes a new instance of the {@link DisasterPrioritizationStrategy} class.
-     * @param s Settings to use.
      * @param attachedRouter Router prioritizing the messages.
      */
-    public DisasterPrioritizationStrategy(Settings s, MessageRouter attachedRouter) {
+    public DisasterPrioritizationStrategy(MessageRouter attachedRouter) {
+        Settings s = new Settings(DISASTER_PRIORITIZATION_NS);
+
         this.headStartThreshold = s.getDouble(HEAD_START_THRESHOLD_S);
         if (this.headStartThreshold < 0) {
             throw new SettingsError(

@@ -54,7 +54,7 @@ public class DisasterPrioritizationStrategyTest {
         this.testUtils.setMessageRouterProto(new DisasterRouter(this.settings));
         this.host = this.testUtils.createHost();
 
-        this.prioritization = new DisasterPrioritizationStrategy(this.settings, this.host.getRouter());
+        this.prioritization = new DisasterPrioritizationStrategy(this.host.getRouter());
         this.prioritization.setAttachedHost(this.host);
     }
 
@@ -67,42 +67,52 @@ public class DisasterPrioritizationStrategyTest {
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnMissingHeadStartThreshold() {
         TestSettings s = new TestSettings();
+        s.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         s.putSetting(
                 DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S,
                 Double.toString(DisasterRouterTestUtils.PRIORITY_THRESHOLD));
-        new DisasterPrioritizationStrategy(s, this.host.getRouter());
+        s.restoreNameSpace();
+        new DisasterPrioritizationStrategy(this.host.getRouter());
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnNegativeHeadStartThreshold() {
+        this.settings.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         this.settings.putSetting(DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S, Integer.toString(-1));
-        new DisasterPrioritizationStrategy(this.settings, this.host.getRouter());
+        this.settings.restoreNameSpace();
+
+        new DisasterPrioritizationStrategy(this.host.getRouter());
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnMissingPriorityThreshold() {
         TestSettings s = new TestSettings();
+        s.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         s.putSetting(
                 DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S,
                 Double.toString(DisasterRouterTestUtils.HEAD_START_THRESHOLD));
-        new DisasterPrioritizationStrategy(s, this.host.getRouter());
+        s.restoreNameSpace();
+        new DisasterPrioritizationStrategy(this.host.getRouter());
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsOnNegativePriorityThreshold() {
+        this.settings.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         this.settings.putSetting(DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S, Integer.toString(-1));
-        new DisasterPrioritizationStrategy(this.settings, this.host.getRouter());
+        this.settings.restoreNameSpace();
+
+        new DisasterPrioritizationStrategy(this.host.getRouter());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorThrowsOnMissingRouter() {
-        new DisasterPrioritizationStrategy(this.settings, null);
+        new DisasterPrioritizationStrategy(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorThrowsOnNonDisasterRouter() {
         this.testUtils.setMessageRouterProto(new PassiveRouter(this.settings));
-        new DisasterPrioritizationStrategy(this.settings, this.testUtils.createHost().getRouter());
+        new DisasterPrioritizationStrategy(this.testUtils.createHost().getRouter());
     }
 
     @Test
@@ -268,6 +278,7 @@ public class DisasterPrioritizationStrategyTest {
 
         // Therefore, the order without head starts should be:
         // D1, M1, D2, M2, M3
+        this.settings.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         DisasterPrioritization nonHeadStartPrioritizer =
                 new DisasterPrioritization(this.settings, (DisasterRouter)this.host.getRouter());
         nonHeadStartPrioritizer.setAttachedHost(this.host);
@@ -419,6 +430,7 @@ public class DisasterPrioritizationStrategyTest {
      */
     private void checkOrderWithoutHeadStarts(
             Tuple<Message, Connection> expectedFirstMessage, Tuple<Message, Connection> expectedSecondMessage) {
+        this.settings.setNameSpace(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         DisasterPrioritization nonHeadStartPrioritizer =
                 new DisasterPrioritization(this.settings, (DisasterRouter)this.host.getRouter());
         nonHeadStartPrioritizer.setAttachedHost(this.host);

@@ -65,13 +65,7 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * @param s The settings object
 	 */
 	public EnergyModel(Settings s) {
-		this.initEnergy = s.getCsvDoubles(INIT_ENERGY_S);
-
-		if (this.initEnergy.length != 1 && this.initEnergy.length != 2) {
-			throw new SettingsError(INIT_ENERGY_S + " setting must have " +
-					"either a single value or two comma separated values");
-		}
-
+		this.initEnergy = EnergyModel.readInitEnergy(s);
 		this.scanEnergy = s.getDouble(SCAN_ENERGY_S);
 		this.transmitEnergy = s.getDouble(TRANSMIT_ENERGY_S);
 		this.scanResponseEnergy = s.getDouble(SCAN_RSP_ENERGY_S);
@@ -107,6 +101,20 @@ public class EnergyModel implements ModuleCommunicationListener {
 		return new EnergyModel(this);
 	}
 
+    /**
+     * Reads the {@link #INIT_ENERGY_S} setting and checks its validity.
+     * @param s The settings object.
+     * @return The read initial energy.
+     */
+	public static double[] readInitEnergy(Settings s) {
+        double[] energy = s.getCsvDoubles(INIT_ENERGY_S);
+        if (energy.length != 1 && energy.length != Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE) {
+            throw new SettingsError(INIT_ENERGY_S + " setting must have " +
+                    "either a single value or two comma separated values");
+        }
+        return energy;
+    }
+
 	/**
 	 * Sets the current energy level into the given range using uniform
 	 * random distribution.
@@ -114,17 +122,26 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * is given, that is used as the energy level
 	 */
 	protected void setEnergy(double range[]) {
-		if (range.length == 1) {
-			this.currentEnergy = range[0];
-		}
-		else {
-			if (rng == null) {
-				rng = new Random((int)(range[0] + range[1]));
-			}
-			this.currentEnergy = range[0] +
-				rng.nextDouble() * (range[1] - range[0]);
-		}
+        if (range.length != 1 && rng == null) {
+            rng = new Random((int)(range[0] + range[1]));
+        }
+        this.currentEnergy = EnergyModel.chooseRandomEnergyLevel(range, rng);
 	}
+
+    /**
+     * Chooses a uniformly distributed energy level from the provided single value or range.
+     * @param energyRange Either a single value or an energy range.
+     * @param randomizer A {@link Random} instance to choose the value. May be {@code null} if the energy range is a
+     *                   single value.
+     * @return An energy value.
+     */
+	public static double chooseRandomEnergyLevel(double[] energyRange, Random randomizer) {
+        if (energyRange.length == 1) {
+            return energyRange[0];
+        } else {
+            return energyRange[0] + randomizer.nextDouble() * (energyRange[1] - energyRange[0]);
+        }
+    }
 
 	/**
 	 * Returns the current energy level

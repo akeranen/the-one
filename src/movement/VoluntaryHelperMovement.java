@@ -1,7 +1,5 @@
 package movement;
 
-import core.ModuleCommunicationBus;
-import core.ModuleCommunicationListener;
 import core.SimScenario;
 import core.VhmListener;
 import core.Settings;
@@ -10,7 +8,6 @@ import core.DTNHost;
 import core.SimClock;
 import input.VhmEvent;
 import input.VhmEventNotifier;
-import movement.map.MapNode;
 import movement.map.SimMap;
 import routing.util.EnergyModel;
 
@@ -30,7 +27,7 @@ import static input.VhmEvent.VhmEventType.HOSPITAL;
  *
  * @author Ansgar Mährlein
  */
-public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener, ModuleCommunicationListener {
+public class VoluntaryHelperMovement extends ExtendedMovementModel implements VhmListener {
 
     /**
      * the movement modes the node can be in
@@ -132,11 +129,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      * Indicates that the internal movement model has just changed
      */
     private boolean justChanged;
-
-    /**
-     * Indicates that the host is ready for recharging.
-     */
-    private boolean readyForRecharge;
 
     /**
      * Time the last movement model started
@@ -390,16 +382,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
         return shortestPathMapBasedMM.getMap();
     }
 
-    private List<MapNode> getOkMapNodes() {
-        List<MapNode> possibleNodes = new ArrayList<>();
-        for (MapNode node : this.getMap().getNodes()) {
-            if (node.isType(shortestPathMapBasedMM.getOkMapNodeTypes())) {
-                possibleNodes.add(node);
-            }
-        }
-        return possibleNodes;
-    }
-
     /**
      * sets a flag to indicate, that the movement model was forcefully changed
      * and resets the hosts path and destination, so that it has to get a new one,
@@ -573,52 +555,24 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Sets the module communication bus for this movement model
-     *
-     * @param comBus The communications bus to set
-     */
-    @Override
-    public void setComBus(ModuleCommunicationBus comBus) {
-        super.setComBus(comBus);
-        this.comBus.subscribe(EnergyModel.ENERGY_VALUE_ID, this);
-    }
-
-    /**
-     * Called by the combus if the energy value is changed
-     * @param key The energy ID
-     * @param newValue The new energy value
-     */
-    @Override
-    public void moduleValueChanged(String key, Object newValue) {
-        // TODO: This is only for testing; change to 0 for real thing.
-        this.readyForRecharge = (Double)newValue <= 0.2;
-    }
-
-    /**
      * Checks whether the {@link DTNHost} directed by this movement model instance should be recharged and executes that
      * recharge if needed.
      */
     void possiblyRecharge() {
-        if (!this.readyForRecharge) {
+        boolean batteryIsEmpty = this.comBus.getDouble(EnergyModel.ENERGY_VALUE_ID, 1) <= 0;
+        if (!batteryIsEmpty) {
             return;
         }
 
-        List<MapNode> nodes = this.getOkMapNodes();
-        int index = rng.nextInt(nodes.size());
-
-        // Forces node to get a new path
+        // Start over movement at random node.
         this.setMovementAsForcefullySwitched();
-        this.host.setLocation(nodes.get(index).getLocation());
+        this.host.setLocation(this.shortestPathMapBasedMM.chooseRandomNode().getLocation());
         this.startOver();
 
-        //  TODO: get this range from settings.
-        // Set a random energy level between 0.1 and 1.0
-        double[] range = {0.1,1.0};
-
-        // TODO: Do this correctly.
-        //EnergyModel energyModel =((ActiveRouter)(host.getRouter())).getEnergy();
-        //energyModel.setEnergy(range);
-        this.comBus.updateProperty(EnergyModel.ENERGY_VALUE_ID, 0.8);
+        // Then recharge battery.
+        this.comBus.updateProperty(
+                EnergyModel.ENERGY_VALUE_ID,
+                EnergyModel.chooseRandomEnergyLevel(this.properties.getInitEnergy(), rng));
     }
 
     /**

@@ -1,6 +1,7 @@
 package movement;
 
 import core.Settings;
+import routing.util.EnergyModel;
 
 /**
  * Class storing all properties of the {@link VoluntaryHelperMovement} that can be modified over the settings file.
@@ -82,6 +83,11 @@ public class VhmProperties {
     private double intensityWeight;
 
     /**
+     * Initial energy levels. Needed for host recharging.
+     */
+    private double[] initEnergy;
+
+    /**
      * Initializes a new instance of the {@link VhmProperties} class using the given settings.
      * @param settings Settings determining parameters for the voluntary helper movement.
      */
@@ -93,6 +99,7 @@ public class VhmProperties {
         injuryProbability = settings.getDouble(INJURY_PROBABILITY_SETTING, DEFAULT_INJURY_PROBABILITY);
         waitProbability = settings.getDouble(HOSPITAL_WAIT_PROBABILITY_SETTING,DEFAULT_HOSPITAL_WAIT_PROBABILITY);
         intensityWeight = settings.getDouble(INTENSITY_WEIGHT_SETTING, DEFAULT_INTENSITY_WEIGHT);
+        initEnergy = EnergyModel.readInitEnergy(settings);
     }
 
     /**
@@ -106,6 +113,7 @@ public class VhmProperties {
         injuryProbability = prototype.injuryProbability;
         waitProbability = prototype.waitProbability;
         intensityWeight = prototype.intensityWeight;
+        initEnergy = prototype.initEnergy;
     }
 
     public boolean isLocalHelper() {
@@ -146,5 +154,9 @@ public class VhmProperties {
 
     public void setIntensityWeight(double intensityWeight) {
         this.intensityWeight = intensityWeight;
+    }
+
+    public double[] getInitEnergy() {
+        return this.initEnergy;
     }
 }

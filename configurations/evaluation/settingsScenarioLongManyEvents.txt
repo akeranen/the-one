@@ -1,0 +1,12 @@
+## Scenarios with duration of three days and with many events
+## Scenario used for the evaluation of the different routing protocols
+## Scenario settings
+# 259200s = 72h = 3d
+Scenario.endTime = 259200
+Scenario.name = three_days_many_events
+
+#Settings for the disaster and hospital events
+# max number of external events to preload
+Events1.nrofPreload = 24
+# path to external events file 
+Events1.filePath = ee/VhmEvents/eventsScenarioMany.json

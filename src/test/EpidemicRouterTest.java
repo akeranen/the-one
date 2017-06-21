@@ -4,14 +4,20 @@
  */
 package test;
 
+import applications.DatabaseApplication;
+import core.DataMessage;
+import core.DisasterData;
+import core.SimClock;
 import org.junit.Test;
 import routing.ActiveRouter;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
 import core.Message;
+import routing.util.DatabaseApplicationUtil;
 
 import java.util.Arrays;
+
 import java.util.List;
 
 /**
@@ -21,14 +27,28 @@ import java.util.List;
 public class EpidemicRouterTest extends AbstractRouterTest {
 
 	private static int TTL = 300;
+	private static final int SHORT_TIMESPAN = 10;
+
+	/* Data base item sizes needed for tests. */
+	private static final int DB_SIZE = 50;
+	private static final int SMALL_SIZE_DIFFERENCE = 10;
 
 	@Override
 	public void setUp() throws Exception {
 		ts.putSetting(MessageRouter.MSG_TTL_S, ""+TTL);
 		ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
+		addDatabaseApplicationSettings();
 		setRouterProto(new EpidemicRouter(ts));
 		super.setUp();
 	}
+
+	private static void addDatabaseApplicationSettings() {
+        ts.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.2");
+        ts.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
+        ts.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE,
+                String.format("%s,%s", Integer.toString(DB_SIZE), Integer.toString(DB_SIZE)));
+        ts.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "30");
+    }
 
 	/**
 	 * Tests routing messages between three hosts
@@ -230,6 +250,94 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		assertEquals(h1, mc.getLastFrom());
 		assertFalse(mc.next());
 	}
+
+    /**
+     * Checks that {@link EpidemicRouter} can deal with {@link DataMessage}s.
+     */
+	@Test
+    public void testDataMessagesAreDelivered() {
+        // Add relevant data to h1.
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        EpidemicRouterTest.setUpAsDataCarrier(h1, data);
+
+        // Check that it is sent.
+        h1.connect(h2);
+        updateAllNodes();
+        assertTrue("A message should have been sent.", mc.next());
+        assertEquals("Data message should have been sent.", data.toString(), mc.getLastMsg().getId());
+        assertEquals("Message should have had neighbor as receiver.", h2, mc.getLastMsg().getTo());
+        assertEquals("Message transfer should just have started.", mc.TYPE_START, mc.getLastType());
+    }
+
+    /**
+     * Checks that there is a (pseudo)random component in how data messages are ordered in the sending queue, i. e. they
+     * might get ordered differently for different hosts.
+     */
+    @Test
+    public void testDataMessageOrderIsDynamic() {
+        // Make sure h1 has several normal messages and one data message.
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        Message m1 = new Message(h1, h5, "M1", 0);
+        Message m2 = new Message(h1, h5, "M2", 0);
+        EpidemicRouterTest.setUpAsDataCarrier(h1, data);
+        h1.createNewMessage(m1);
+        h1.createNewMessage(m2);
+
+        // Make h1 meet several nodes and remember order of messages.
+        DTNHost[] hostsToMeet = { h2, h3 };
+        // We expect all messages in buffer and a data messages.
+        int numMessages = h1.getNrofMessages() + 1;
+        String[][] messageOrder = new String[hostsToMeet.length][numMessages];
+        for (int hostIdx = 0; hostIdx < hostsToMeet.length; hostIdx++) {
+            h1.connect(hostsToMeet[hostIdx]);
+            messageOrder[hostIdx] = new String[numMessages];
+            // For each node: Check MessageChecker iteratively until all messages have been sent.
+            mc.reset();
+            for (int i = 0; i < numMessages; i++) {
+                this.updateAllNodes();
+                do {
+                    mc.next();
+                } while (!mc.getLastType().equals(mc.TYPE_START));
+                // And remember their order.
+                messageOrder[hostIdx][i] = mc.getLastMsg().getId();
+
+            }
+        }
+
+        // Check order was different depending on neighbor.
+        assertFalse("Message order should be different.", Arrays.equals(messageOrder[0], messageOrder[1]));
+    }
+
+    /**
+     * Checks that the data messages which get sent are based on data in the host's database.
+     */
+    @Test
+    public void testDataMessagesAdaptToDatabase() {
+        // Start off with one data object.
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 1, SimClock.getTime(), h1.getLocation());
+        EpidemicRouterTest.setUpAsDataCarrier(h1, data);
+
+        // Check it gets sent.
+        h1.connect(h2);
+        updateAllNodes();
+        mc.next();
+        assertEquals("Data message should have been sent.", data.toString(), mc.getLastMsg().getId());
+
+        // Add another, large one to replace the original object. It is more useful so it stays in the database.
+        this.clock.advance(SHORT_TIMESPAN);
+        DisasterData newData = new DisasterData(
+                DisasterData.DataType.SKILL, DB_SIZE - SMALL_SIZE_DIFFERENCE, SimClock.getTime(), h1.getLocation());
+        EpidemicRouterTest.setUpAsDataCarrier(h1, newData);
+
+        // Now, only the second object should get sent.
+        h1.connect(h3);
+        updateAllNodes();
+        do {
+            mc.next();
+        } while (!mc.getLastType().equals(mc.TYPE_START));
+        assertEquals("Other data message should have been sent.", newData.toString(), mc.getLastMsg().getId());
+        assertFalse("Only one message should have been sent.", mc.next());
+    }
 
 	/**
 	 * try disconnecting on the same update interval when a transfer should
@@ -755,5 +863,21 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         updateAllNodes();
         assertTrue("We should send the message with higher priority now.", sendingRouter.isSending(MSG_ID3));
 
+    }
+
+    /**
+     * Makes sure the provided host has a {@link DatabaseApplication} and adds the provided data item to its stored
+     * data.
+     * @param host Host to add data item to.
+     * @param data The data item to add.
+     */
+    private static void setUpAsDataCarrier(DTNHost host, DisasterData data) {
+        DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(host.getRouter());
+        if (app == null) {
+            app = new DatabaseApplication(ts);
+            host.getRouter().addApplication(app);
+        }
+        app.update(host);
+        app.disasterDataCreated(host, data);
     }
 }

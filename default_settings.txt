@@ -34,10 +34,6 @@ Group.hospitalWaitTime = 900
 Group.hospitalWaitProbability = 0.1
 # Weight of a disasters intensity for determining if a node will help at the disaster site [0, 1]
 Group.intensityWeight = 0.7
-# Total number of multicast groups across all groups
-Group.group_count = 1000,5000
-# Size of multicast groups
-Group.group_size = 3,30
 # Specifies how much energy the hosts have at the beginning of the simulation
 # TODO: comment these parameters in at the earliest, when node reset is merged into master
 #Group.initialEnergy = 0.1,1
@@ -122,6 +118,10 @@ Events4.hosts = 0,10000
 Events4.prefix = m
 # Message priority 1
 Events4.priorities = 1,1
+# Total number of multicast groups across all groups
+Events4.group_count = 1000,5000
+# Size of multicast groups
+Events4.group_size = 3,30
 
 # Class for fourth message type (Multicasts large)
 Events5.class = MulticastEventGenerator
@@ -135,6 +135,10 @@ Events5.hosts = 0,10000
 Events5.prefix = M
 # Message priority 1
 Events5.priorities = 1,1
+# Total number of multicast groups across all groups
+Events5.group_count = 1000,5000
+# Size of multicast groups
+Events5.group_size = 3,30
 
 # Class for fifth message type (1-to-1 messages small)
 Events6.class = MessageEventGenerator

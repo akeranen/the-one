@@ -14,7 +14,8 @@ import java.util.ArrayList;
 /**
  * Includes basic method tests for {@link VoluntaryHelperMovement}.
  * Tests only correct initialization and getter and setter methods.
- * The behavior of the model is tested in {@link VhmBehaviorTest}
+ * The behavior of the model is mostly tested in {@link VhmBehaviorTest}. Everything to do with battery recharging
+ * can be found in {@link VhmRechargeTest}.
  *
  * Created by Marius Meyer on 10.04.17.
  */

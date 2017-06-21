@@ -9,7 +9,7 @@ import core.SimScenario;
 import input.EventQueueHandler;
 import movement.MovementModel;
 import movement.StationaryMovement;
-import routing.EpidemicRouter;
+import routing.PassiveRouter;
 
 import java.util.Properties;
 
@@ -84,7 +84,7 @@ public class TestSettings extends core.Settings {
 	    settings.putSetting(SimScenario.NROF_INTERF_S, "0");
 	    settings.putSetting(SimScenario.MOVEMENT_MODEL_S, StationaryMovement.class.getSimpleName());
 	    settings.putSetting(StationaryMovement.LOCATION_S, "0, 0");
-	    settings.putSetting(SimScenario.ROUTER_S, EpidemicRouter.class.getSimpleName());
+	    settings.putSetting(SimScenario.ROUTER_S, PassiveRouter.class.getSimpleName());
 	    settings.restoreNameSpace();
 	}
 

@@ -19,7 +19,7 @@ import static junit.framework.TestCase.assertFalse;
 
 /**
  * Tests for behavior of the {@link VoluntaryHelperMovement}.
- * Basic method tests are done in {@link VhmBasicTest}.
+ * Basic method tests are done in {@link VhmBasicTest}, tests for battery recharging in {@link VhmRechargeTest}.
  *
  * Created by Marius Meyer on 10.04.17.
  */
@@ -470,7 +470,4 @@ public class VhmBehaviorTest {
         assertEquals("Help probability differs from calculation given in specification",
                 calculatedHelpProb,(double) helpCount / TEST_RUNS,PROB_DELTA);
     }
-
-    //TODO: Add tests for dying battery, after feature is implemented
-    //TODO: Add tests for node reset, after feature is implemented
 }

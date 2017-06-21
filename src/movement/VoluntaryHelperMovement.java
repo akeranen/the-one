@@ -69,11 +69,6 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private static VhmRechargeInitiator rechargeInitiator = new VhmRechargeInitiator();
 
     /**
-     * Whether {@link #rechargeInitiator} has been added as listener yet.
-     */
-    private static boolean isRechargeInitiatorReady;
-
-    /**
      * the current movement mode of the node
      */
     private VoluntaryHelperMovement.movementMode mode;
@@ -190,9 +185,8 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
      */
     public static void setUp(SimScenario simScenario) {
         // Make sure recharging is checked at every update time.
-        if (!isRechargeInitiatorReady) {
+        if (!simScenario.getUpdateListeners().contains(rechargeInitiator)) {
             simScenario.addUpdateListener(rechargeInitiator);
-            isRechargeInitiatorReady = true;
         }
     }
 

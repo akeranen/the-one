@@ -35,16 +35,18 @@ Group.hospitalWaitProbability = 0.1
 # Weight of a disasters intensity for determining if a node will help at the disaster site [0, 1]
 Group.intensityWeight = 0.7
 # Specifies how much energy the hosts have at the beginning of the simulation
-# TODO: comment these parameters in at the earliest, when node reset is merged into master
-#Group.initialEnergy = 0.1,1
+Group.initialEnergy = 0.1,1
 # Specifies how much energy is used for scanning
-#Group.scanEnergy = 0.00001
+Group.scanEnergy = 0.00001
 # Specifies how much energy is used for transmitting
-#Group.transmitEnergy = 0.0001
+Group.transmitEnergy = 0.0001
 # energy starts to decrease from the beginning of the simulation
-#Group.energyWarmup = 0.0
+Group.energyWarmup = 0.0
 # Specifies how much energy is used per device discovery response
-#Group.scanResponseEnergy = 0.00001
+Group.scanResponseEnergy = 0.00001
+# Specifies the range of possible number of seconds before an empty battery is recharged
+# 2-12h: 7200 - 43200 seconds
+Group.rechargeWait = 7200,43200
 
 # Add database application
 dbApp.type = DatabaseApplication

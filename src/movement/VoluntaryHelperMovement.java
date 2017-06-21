@@ -136,6 +136,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private double startTime;
 
     /**
+     * Time at which the host's energy should be recharged next.
+     */
+    private double nextScheduledRecharge = Double.POSITIVE_INFINITY;
+
+    /**
      * Creates a new VoluntaryHelperMovement.
      * Only called once per nodegroup to create a prototype.
      *
@@ -555,24 +560,38 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     }
 
     /**
-     * Checks whether the {@link DTNHost} directed by this movement model instance should be recharged and executes that
-     * recharge if needed.
+     * Checks whether the {@link DTNHost} directed by this movement model instance should be recharged and executes or
+     * schedules that recharge as needed.
      */
     void possiblyRecharge() {
         boolean batteryIsEmpty = this.comBus.getDouble(EnergyModel.ENERGY_VALUE_ID, 1) <= 0;
         if (!batteryIsEmpty) {
+            // Do nothing if host still has battery.
             return;
         }
 
-        // Start over movement at random node.
-        this.setMovementAsForcefullySwitched();
-        this.host.setLocation(this.shortestPathMapBasedMM.chooseRandomNode().getLocation());
-        this.startOver();
+        // If no recharge time is set yet, set a new one.
+        if (Double.isInfinite(this.nextScheduledRecharge)) {
+            double[] interval = this.properties.getTimeBeforeRecharge();
+            double diffToCurrentTime = interval[0] + rng.nextDouble() * (interval[1] - interval[0]);
+            this.nextScheduledRecharge = SimClock.getTime() + diffToCurrentTime;
+        }
 
-        // Then recharge battery.
-        this.comBus.updateProperty(
-                EnergyModel.ENERGY_VALUE_ID,
-                EnergyModel.chooseRandomEnergyLevel(this.properties.getInitEnergy(), rng));
+        // Check if we should recharge at current time. Then:
+        if (SimClock.getTime() >= this.nextScheduledRecharge) {
+            // Start over movement at random node.
+            this.setMovementAsForcefullySwitched();
+            this.host.setLocation(this.shortestPathMapBasedMM.chooseRandomNode().getLocation());
+            this.startOver();
+
+            // Recharge battery.
+            this.comBus.updateProperty(
+                    EnergyModel.ENERGY_VALUE_ID,
+                    EnergyModel.chooseRandomEnergyLevel(this.properties.getInitEnergy(), rng));
+
+            // Finally, reset next scheduled recharge.
+            this.nextScheduledRecharge = Double.POSITIVE_INFINITY;
+        }
     }
 
     /**

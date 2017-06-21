@@ -21,12 +21,11 @@ Events5.group_count = 1,1
 # Size of multicast groups
 Events5.group_size = 2,2
 
-# Specifies how much energy the hosts have at the beginning of the simulation
-Group1.initialEnergy = 0.1,1
 # Specifies how much energy is used for scanning
 Group1.scanEnergy = 0.1
 # Specifies how much energy is used for transmitting
 Group1.transmitEnergy = 0.2
-# energy starts to decrease from the beginning of the simulation
-Group1.energyWarmup = 0.0
+# Specifies how much energy is used per device discovery response
 Group1.scanResponseEnergy = 0.1
+# Specifies the range of possible number of seconds before an empty battery is recharged
+Group.rechargeWait = 10,200

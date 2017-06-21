@@ -35,6 +35,11 @@ public class VhmProperties {
      */
     public static final String INTENSITY_WEIGHT_SETTING = "intensityWeight";
     /**
+     * Setting key for the interval of possible time spans a host will have an empty battery before recharging
+     * (in seconds).
+     */
+    public static final String TIME_BEFORE_RECHARGE = "rechargeWait";
+    /**
      * default value for the time the node will help at a disaster site (seconds)
      */
     public static final double DEFAULT_HELP_TIME = 3600;
@@ -88,6 +93,11 @@ public class VhmProperties {
     private double[] initEnergy;
 
     /**
+     * Interval of possible time spans a host will have an empty battery before recharging (in seconds).
+     */
+    private double[] timeBeforeRecharge;
+
+    /**
      * Initializes a new instance of the {@link VhmProperties} class using the given settings.
      * @param settings Settings determining parameters for the voluntary helper movement.
      */
@@ -100,6 +110,7 @@ public class VhmProperties {
         waitProbability = settings.getDouble(HOSPITAL_WAIT_PROBABILITY_SETTING,DEFAULT_HOSPITAL_WAIT_PROBABILITY);
         intensityWeight = settings.getDouble(INTENSITY_WEIGHT_SETTING, DEFAULT_INTENSITY_WEIGHT);
         initEnergy = EnergyModel.readInitEnergy(settings);
+        timeBeforeRecharge = settings.getCsvDoubles(TIME_BEFORE_RECHARGE, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
     }
 
     /**
@@ -114,6 +125,7 @@ public class VhmProperties {
         waitProbability = prototype.waitProbability;
         intensityWeight = prototype.intensityWeight;
         initEnergy = prototype.initEnergy;
+        timeBeforeRecharge = prototype.timeBeforeRecharge;
     }
 
     public boolean isLocalHelper() {
@@ -158,5 +170,9 @@ public class VhmProperties {
 
     public double[] getInitEnergy() {
         return this.initEnergy;
+    }
+
+    public double[] getTimeBeforeRecharge() {
+        return this.timeBeforeRecharge;
     }
 }

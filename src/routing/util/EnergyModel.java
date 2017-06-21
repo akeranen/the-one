@@ -5,6 +5,7 @@
 package routing.util;
 
 import java.util.Random;
+import java.util.Set;
 
 import core.*;
 
@@ -133,14 +134,19 @@ public class EnergyModel implements ModuleCommunicationListener {
      * @param energyRange Either a single value or an energy range.
      * @param randomizer A {@link Random} instance to choose the value. May be {@code null} if the energy range is a
      *                   single value.
+	 * @throws IllegalArgumentException If the provided range does not have either one or two values.
      * @return An energy value.
      */
 	public static double chooseRandomEnergyLevel(double[] energyRange, Random randomizer) {
         if (energyRange.length == 1) {
             return energyRange[0];
-        } else {
+        } else if (energyRange.length == Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE){
             return energyRange[0] + randomizer.nextDouble() * (energyRange[1] - energyRange[0]);
-        }
+        } else {
+            throw new IllegalArgumentException(
+                    "Energy range must be either a single value or two values, but consists of "
+                            + energyRange.length + " values!");
+		}
     }
 
 	/**

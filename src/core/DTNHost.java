@@ -588,6 +588,6 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
      * @return movement model
      */
     public MovementModel getMovement() {
-    	return movement;
+        return movement;
     }
 }

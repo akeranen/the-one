@@ -5,8 +5,14 @@
 package test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
-import core.*;
+import core.ConnectionListener;
+import core.DTNHost;
+import core.Message;
+import core.MessageListener;
+import core.SimClock;
+import core.World;
 import junit.framework.TestCase;
 
 import org.junit.Before;
@@ -154,28 +160,22 @@ public class MessageTest extends TestCase {
     }
 
     @Test
-    public void testGetHopCountWithMessagePath(){
-        DTNHost relayHost = this.utils.createHost();
+    public void testGetHopCount(){
+        DTNHost relayHost1 = this.utils.createHost();
         msg = new Message(from, to, "M", 100);
         from.createNewMessage(msg);
-        from.connect(relayHost);
-        from.sendMessage(msg.getId(),relayHost);
-        relayHost.messageTransferred(msg.getId(), from);
-        //Get message copy host "relayHost" received because only that has the longer path
-        for (Message msgRelay : relayHost.getRouter().getMessageCollection() ){
-            if (msgRelay.getId().equals(msg.getId())){
-                assertEquals("The message has made one hop.", 1, msgRelay.getHopCount());
-            }
-        }
-        relayHost.connect(to);
-        relayHost.sendMessage(msg.getId(),to);
-        to.messageTransferred(msg.getId(), relayHost);
-        //Get message copy host "to" received because only that has the longer path
-        for (Message msgTo : to.getRouter().getMessageCollection() ){
-            if (msgTo.getId().equals(msg.getId())){
-                assertEquals("The message has traversed two nodes.", 2, msgTo.getHopCount());
-            }
-        }
+        transferMessage(msg.getId(), from, relayHost1);
+        //Get hop count of message copy from host "relayHost1" because only that has the longer path
+        int hopCount = getHopCountForMsgInCollection(msg.getId(), relayHost1.getRouter().getMessageCollection());
+        final int expectedHopCountAfterRelay =1;
+        assertEquals("The message has made one hop.", expectedHopCountAfterRelay, hopCount);
+
+        DTNHost relayHost2 = this.utils.createHost();
+        transferMessage(msg.getId(), relayHost1, relayHost2);
+        //Get hop count of message copy from host "relayHost2" because only that has the longer path
+        hopCount = getHopCountForMsgInCollection(msg.getId(), relayHost2.getRouter().getMessageCollection());
+        final int expectedHopCountAfterDelivery =2;
+        assertEquals("The message has made made two hops.", expectedHopCountAfterDelivery, hopCount);
     }
 
     @Test
@@ -185,27 +185,23 @@ public class MessageTest extends TestCase {
         ts.setNameSpace(World.OPTIMIZATION_SETTINGS_NS);
         ts.putSetting(Message.MSG_PATH_S, "false");
         Message.setStoreFullMsgPath(ts);
-        //Now transfer messages check whether hop counts are correct
-        DTNHost relayHost = this.utils.createHost();
-        msg = new Message(from, to, "M", 100);
-        from.createNewMessage(msg);
-        from.connect(relayHost);
-        from.sendMessage(msg.getId(),relayHost);
-        relayHost.messageTransferred(msg.getId(), from);
-        //Get message copy host "relayHost" received because only that has the longer path
-        for (Message msgRelay : relayHost.getRouter().getMessageCollection() ){
-            if (msgRelay.getId().equals(msg.getId())){
-                assertEquals("The message has made one hop.", 1, msgRelay.getHopCount());
+
+        testGetHopCount();
+    }
+
+    private int getHopCountForMsgInCollection(String msgId, Collection<Message> collection){
+        for (Message message : collection){
+            if (message.getId().equals(msgId)){
+                return message.getHopCount();
             }
         }
-        relayHost.connect(to);
-        relayHost.sendMessage(msg.getId(),to);
-        to.messageTransferred(msg.getId(), relayHost);
-        //Get message copy host "to" received because only that has the longer path
-        for (Message msgTo : to.getRouter().getMessageCollection() ){
-            if (msgTo.getId().equals(msg.getId())){
-                assertEquals("The message has traversed two nodes.", 2, msgTo.getHopCount());
-            }
-        }
+        //If we do not find the message at all return an error value
+        return -1;
+    }
+
+    private void transferMessage(String msgId, DTNHost transferFrom, DTNHost transferTo){
+        transferFrom.connect(transferTo);
+        transferFrom.sendMessage(msgId, transferTo);
+        transferTo.messageTransferred(msgId, transferFrom);
     }
 }

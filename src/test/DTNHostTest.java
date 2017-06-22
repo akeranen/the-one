@@ -62,6 +62,23 @@ public class DTNHostTest extends TestCase {
     }
 
     /**
+     * Checks that {@link DTNHost#getMovement()} returns the used movement model.
+     */
+    public void testGetMovement() {
+        // Create host with specific movement model.
+        Coord location = new Coord(0, 0);
+        MovementModel movementModel = new StationaryMovement(location);
+        DTNHost host = createHost(movementModel);
+
+        // Test it is returned correctly.
+        MovementModel returnedMovement = host.getMovement();
+        assertTrue(
+                "Should have returned different movement model type.",
+                returnedMovement instanceof StationaryMovement);
+        assertEquals("Expected different location.", location, returnedMovement.getInitialLocation());
+    }
+
+    /**
      * Dummy class for a {@link ExtendedMovementModel}. It is used in the {@link DTNHostTest#testInterruptMovement()}
      * test to switch movement models.
      */

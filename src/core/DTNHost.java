@@ -582,5 +582,12 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
     public int compareTo(DTNHost h) {
         return this.getAddress() - h.getAddress();
     }
-
+        
+    /**
+     * Returns the host's movement model
+     * @return movement model
+     */
+    public MovementModel getMovement() {
+        return movement;
+    }
 }

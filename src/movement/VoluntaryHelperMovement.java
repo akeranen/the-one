@@ -1,5 +1,6 @@
 package movement;
 
+import core.SimScenario;
 import core.VhmListener;
 import core.Settings;
 import core.Coord;
@@ -8,6 +9,7 @@ import core.SimClock;
 import input.VhmEvent;
 import input.VhmEventNotifier;
 import movement.map.SimMap;
+import routing.util.EnergyModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,6 +62,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
          */
         PANIC_MODE
     }
+
+    /**
+     * Update listener responsible for initiating host recharging.
+     */
+    private static VhmRechargeInitiator rechargeInitiator = new VhmRechargeInitiator();
 
     /**
      * the current movement mode of the node
@@ -124,6 +131,11 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     private double startTime;
 
     /**
+     * Time at which the host's energy should be recharged next.
+     */
+    private double nextScheduledRecharge = Double.POSITIVE_INFINITY;
+
+    /**
      * Creates a new VoluntaryHelperMovement.
      * Only called once per nodegroup to create a prototype.
      *
@@ -132,6 +144,7 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
     public VoluntaryHelperMovement(Settings settings) {
         super(settings);
 
+        // Read all movement specific properties.
         this.properties = new VhmProperties(settings);
 
         //create the sub-movement-models
@@ -165,6 +178,16 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         //just make sure this is initialized
         justChanged = false;
+    }
+
+    /**
+     * Set up method called once per group when initializing hosts.
+     */
+    public static void setUp(SimScenario simScenario) {
+        // Make sure recharging is checked at every update time.
+        if (!simScenario.getUpdateListeners().contains(rechargeInitiator)) {
+            simScenario.addUpdateListener(rechargeInitiator);
+        }
     }
 
     /**
@@ -527,6 +550,36 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
             chosenDisaster = null;
             setMovementAsForcefullySwitched();
             startOver();
+        }
+    }
+
+    /**
+     * Checks whether the {@link DTNHost} directed by this movement model instance should be recharged and executes or
+     * schedules that recharge as needed.
+     */
+    void possiblyRecharge() {
+        boolean batteryIsEmpty = this.comBus.getDouble(EnergyModel.ENERGY_VALUE_ID, 1) <= 0;
+        if (!batteryIsEmpty) {
+            // Do nothing if host still has battery.
+            return;
+        }
+
+        // If no recharge time is set yet, set a new one.
+        if (Double.isInfinite(this.nextScheduledRecharge)) {
+            double[] interval = this.properties.getTimeBeforeRecharge();
+            double diffToCurrentTime = interval[0] + rng.nextDouble() * (interval[1] - interval[0]);
+            this.nextScheduledRecharge = SimClock.getTime() + diffToCurrentTime;
+        }
+
+        // Check if we should recharge at current time. Then:
+        if (SimClock.getTime() >= this.nextScheduledRecharge) {
+            // Recharge battery.
+            this.comBus.updateProperty(
+                    EnergyModel.ENERGY_VALUE_ID,
+                    EnergyModel.chooseRandomEnergyLevel(this.properties.getInitEnergy(), rng));
+
+            // And reset next scheduled recharge.
+            this.nextScheduledRecharge = Double.POSITIVE_INFINITY;
         }
     }
 

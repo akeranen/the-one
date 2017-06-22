@@ -16,8 +16,15 @@ public class VhmPropertiesTest {
     private static final String INJURY_PROB_DIFFERS = "Injury probability differs from specified one";
     private static final String WAIT_PROB_DIFFERS = "Wait probability differs from specified one";
     private static final String INTESITY_WEIGHT_DIFFERS = "Intensity weight differs from specified one";
+    private static final String MIN_TIME_BEFORE_RECHARGE_DIFFERS =
+            "Minimum time span before recharge differs from specified one.";
+    private static final String MAX_TIME_BEFORE_RECHARGE_DIFFERS =
+            "Maximum time span before recharge differs from specified one.";
+    private static final String MIN_INIT_ENERGY_DIFFERS = "Minimum initial energy differs from specified one.";
+    private static final String MAX_INIT_ENERGY_DIFFERS = "Maximum initial energy differs from specified one.";
 
-    private VhmProperties properties = new VhmProperties(new TestSettings());
+    private VhmProperties properties =
+            new VhmProperties(VhmTestHelper.addMinimalSettingsForVoluntaryHelperMovement(new TestSettings()));
     private VhmProperties noDefaultProp = new VhmProperties(VhmTestHelper.createSettingsWithoutDefaultValues());
 
     @Test
@@ -28,7 +35,7 @@ public class VhmPropertiesTest {
 
     @Test
     public void testPropertiesUseDefaultValuesWhenNoOthersAreGiven(){
-        checkPropertiesUseDefaultValues(new VhmProperties(new TestSettings()));
+        checkPropertiesUseDefaultValues(properties);
     }
 
     @Test
@@ -66,6 +73,14 @@ public class VhmPropertiesTest {
         TestCase.assertEquals(INTESITY_WEIGHT_DIFFERS,
                 VhmTestHelper.INTENSITY_WEIGHT,properties.getIntensityWeight(),VhmTestHelper.DELTA);
         TestCase.assertTrue("Node should be local helper",properties.isLocalHelper());
+        TestCase.assertEquals(MIN_TIME_BEFORE_RECHARGE_DIFFERS,
+                VhmTestHelper.TIME_BEFORE_RECHARGE[0], properties.getTimeBeforeRecharge()[0]);
+        TestCase.assertEquals(MAX_TIME_BEFORE_RECHARGE_DIFFERS,
+                VhmTestHelper.TIME_BEFORE_RECHARGE[1], properties.getTimeBeforeRecharge()[1]);
+        TestCase.assertEquals(MIN_INIT_ENERGY_DIFFERS,
+                VhmTestHelper.INIT_ENERGY[0], properties.getInitEnergy()[0]);
+        TestCase.assertEquals(MAX_INIT_ENERGY_DIFFERS,
+                VhmTestHelper.INIT_ENERGY[1], properties.getInitEnergy()[1]);
     }
 
     @Test

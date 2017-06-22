@@ -13,6 +13,7 @@ import movement.ShortestPathMapBasedMovement;
 import movement.SwitchableStationaryMovement;
 import movement.VhmProperties;
 import movement.VoluntaryHelperMovement;
+import routing.util.EnergyModel;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -55,6 +56,14 @@ public final class VhmTestHelper {
      * Time a node will wait in a hospital before making new decisions
      */
     public static final double HOSPITAL_WAIT_TIME = 45;
+    /**
+     * Time a host will stay at zero power before recharging.
+     */
+    static final double[] TIME_BEFORE_RECHARGE = { 3, 45 };
+    /**
+     * Initial power of a host.
+     */
+    static final double[] INIT_ENERGY = { 0.2, 1 };
     /**
      * delta used for comparison of float numbers
      */
@@ -100,6 +109,9 @@ public final class VhmTestHelper {
         testSettings.putSetting(MapBasedMovement.NROF_FILES_S, "1");
         testSettings.putSetting("mapFile1","data/Manhattan/roads.wkt");
         testSettings.restoreNameSpace();
+        testSettings.putSetting(
+                VhmProperties.TIME_BEFORE_RECHARGE, TIME_BEFORE_RECHARGE[0] + "," + TIME_BEFORE_RECHARGE[1]);
+        testSettings.putSetting(EnergyModel.INIT_ENERGY_S, INIT_ENERGY[0] + "," + INIT_ENERGY[1]);
         return testSettings;
     }
 

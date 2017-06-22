@@ -461,6 +461,7 @@ public class SimScenario implements Serializable {
             if (mmProto instanceof MapBasedMovement) {
                 this.simMap = ((MapBasedMovement) mmProto).getMap();
             } else if (mmProto instanceof VoluntaryHelperMovement) {
+                VoluntaryHelperMovement.setUp(this);
                 this.simMap = ((VoluntaryHelperMovement) mmProto).getMap();
             }
 

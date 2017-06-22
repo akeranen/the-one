@@ -6,10 +6,8 @@ package routing;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
@@ -238,7 +236,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return True if router can start transfer, false if not
 	 */
 	protected boolean canStartTransfer() {
-		if (this.getNrofMessages() == 0) {
+		if (this.hasNothingToSend()) {
 			return false;
 		}
 		if (this.getConnections().size() == 0) {
@@ -493,7 +491,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected Connection tryAllMessagesToAllConnections(){
 		List<Connection> connections = getConnections();
-		if (connections.size() == 0 || this.getNrofMessages() == 0) {
+		if (connections.size() == 0 || this.hasNothingToSend()) {
 			return null;
 		}
 		/** Check if it's time to reorder the messages */
@@ -534,21 +532,6 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		return null;
-	}
-
-
-
-	/**
-	 * Shuffles a messages list so the messages are in random order.
-	 * @param messages The list to sort and shuffle
-	 */
-	protected void shuffleMessages(List<Message> messages) {
-		if (messages.size() <= 1) {
-			return; // nothing to shuffle
-		}
-
-		Random rng = new Random(SimClock.getIntTime());
-		Collections.shuffle(messages, rng);
 	}
 
 	/**
@@ -600,6 +583,15 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 		return false;
 	}
+
+	/**
+	 * Checks whether this router has anything to send out.
+	 * @return Whether or not the router has anything to send out.
+	 */
+	protected boolean hasNothingToSend() {
+        return getNrofMessages() == 0;
+	}
+
 
 	/**
 	 * Returns true if the node has energy left (i.e., energy modeling is

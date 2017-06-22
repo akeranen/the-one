@@ -62,6 +62,7 @@ public class MessageChecker implements MessageListener {
 		Addressable recipient;
 		switch (m.getType()) {
 			case ONE_TO_ONE:
+            case DATA:
 				recipient = m.getTo();
 				break;
 			case BROADCAST:

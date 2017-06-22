@@ -18,6 +18,7 @@ import org.junit.Test;
 import routing.DisasterRouter;
 import routing.PassiveRouter;
 import routing.prioritizers.DisasterPrioritization;
+import routing.prioritizers.DisasterPrioritizationStrategy;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -86,7 +87,7 @@ public class DisasterPrioritizationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorThrowsOnMissingRouter() {
-        TestSettings settings = new TestSettings();
+        TestSettings settings = new TestSettings(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         settings.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
         new DisasterPrioritization(settings, null);
     }
@@ -346,7 +347,7 @@ public class DisasterPrioritizationTest {
      * @return The created {@link DisasterPrioritization} instance.
      */
     private static DisasterPrioritization createDisasterPrioritization(double weight, DTNHost attachedHost) {
-        TestSettings settings = new TestSettings();
+        TestSettings settings = new TestSettings(DisasterPrioritizationStrategy.DISASTER_PRIORITIZATION_NS);
         settings.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(weight));
 
         DisasterPrioritization prio =  new DisasterPrioritization(settings, (DisasterRouter)attachedHost.getRouter());

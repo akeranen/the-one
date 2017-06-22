@@ -573,17 +573,12 @@ public class VoluntaryHelperMovement extends ExtendedMovementModel implements Vh
 
         // Check if we should recharge at current time. Then:
         if (SimClock.getTime() >= this.nextScheduledRecharge) {
-            // Start over movement at random node.
-            this.setMovementAsForcefullySwitched();
-            this.host.setLocation(this.shortestPathMapBasedMM.chooseRandomNode().getLocation());
-            this.startOver();
-
             // Recharge battery.
             this.comBus.updateProperty(
                     EnergyModel.ENERGY_VALUE_ID,
                     EnergyModel.chooseRandomEnergyLevel(this.properties.getInitEnergy(), rng));
 
-            // Finally, reset next scheduled recharge.
+            // And reset next scheduled recharge.
             this.nextScheduledRecharge = Double.POSITIVE_INFINITY;
         }
     }

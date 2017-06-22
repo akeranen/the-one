@@ -140,14 +140,19 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	 */
 	@Override
 	public Coord getInitialLocation() {
+		List<MapNode> nodes = map.getNodes();
+		MapNode n,n2;
 		Coord n2Location, nLocation, placement;
 		double dx, dy;
 		double rnd = rng.nextDouble();
 
-		MapNode n = this.chooseRandomNode();
+		// choose a random node (from OK types if such are defined)
+		do {
+			n = nodes.get(rng.nextInt(nodes.size()));
+		} while (okMapNodeTypes != null && !n.isType(okMapNodeTypes));
 
 		// choose a random neighbor of the selected node
-		MapNode n2 = n.getNeighbors().get(rng.nextInt(n.getNeighbors().size()));
+		n2 = n.getNeighbors().get(rng.nextInt(n.getNeighbors().size()));
 
 		nLocation = n.getLocation();
 		n2Location = n2.getLocation();
@@ -162,19 +167,6 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 		this.lastMapNode = n;
 		return placement;
 	}
-
-    /**
-     * Chooses a random node (from OK types if such are defined).
-     * @return A random node, valid for this host.
-     */
-	MapNode chooseRandomNode() {
-        List<MapNode> nodes = map.getNodes();
-        MapNode n;
-        do {
-            n = nodes.get(rng.nextInt(nodes.size()));
-        } while (okMapNodeTypes != null && !n.isType(okMapNodeTypes));
-        return n;
-    }
 
 	/**
 	 * Returns map node types that are OK for this movement model in an array

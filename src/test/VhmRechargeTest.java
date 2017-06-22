@@ -4,6 +4,7 @@ import core.DTNHost;
 import core.SimClock;
 import core.SimScenario;
 import core.World;
+import input.VhmEvent;
 import movement.VoluntaryHelperMovement;
 import org.junit.After;
 import org.junit.Assert;
@@ -124,7 +125,28 @@ public class VhmRechargeTest {
                 powerAfterRecharge, VhmRechargeTest.getPowerOrDefault(this.host, 0), POWER_DELTA);
     }
 
-    //TODO: Add tests for what happens mobility-wise after the battery was reset
+    /**
+     * Checks that the current movement is continued even when the battery is reset.
+     */
+    @Test
+    public void testHostContinuesWithMovementAfterEnergyReset() {
+        // Set battery to zero.
+        this.host.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, 0D);
+        this.world.update();
+
+        // Make host panic.
+        VoluntaryHelperMovement vhm = (VoluntaryHelperMovement)this.host.getMovement();
+        VhmEvent disaster = new VhmEvent("testDisaster", VhmEventTest.createJsonForCompletelySpecifiedEvent());
+        vhm.getHost().setLocation(disaster.getLocation());
+        vhm.getProperties().setInjuryProbability(0);
+        vhm.vhmEventStarted(disaster);
+
+        // Wait until energy is increased again and check new value.
+        this.waitUntilRecharge(this.host);
+
+        // Check host is still in panic.
+        VhmTestHelper.testPanicState(vhm);
+    }
 
     /**
      * Updates the world until the provided host has positive battery power.

@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import routing.util.EnergyModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +57,7 @@ public class DatabaseApplicationTest {
     /* Error messages */
     private static final String UNEXPECTED_NUMBER_DATA_MESSAGES = "Expected different number of data messages.";
     private static final String EXPECTED_INITIALIZED_APPLICATION = "Application should be set up now.";
+    private static final String UNEXPECTED_DATA_MESSAGE = "Did not expect any data messages.";
 
     private TestSettings settings = new TestSettings();
     private TestUtils utils;
@@ -363,7 +365,7 @@ public class DatabaseApplicationTest {
 
         /* Test map data is not returned shortly before interval... */
         List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
-        TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
+        TestCase.assertTrue(UNEXPECTED_DATA_MESSAGE, messages.isEmpty());
 
         /* ... but is returned after it completed. */
         this.clock.setTime(MAP_SENDING_INTERVAL);
@@ -425,7 +427,17 @@ public class DatabaseApplicationTest {
                 DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.utils.createHost(), data);
         List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
-        TestCase.assertTrue("Did not expect any data messages.", messages.isEmpty());
+        TestCase.assertTrue(UNEXPECTED_DATA_MESSAGE, messages.isEmpty());
+    }
+
+    @Test
+    public void testDiasterDataCreatedDoesNotAddOwnDataToDatabaseOnEmptyBattery() {
+        this.hostAttachedToApp.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, 0D);
+        DisasterData data =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterDataNotifier.dataCreated(this.utils.createHost(), data);
+        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        TestCase.assertTrue(UNEXPECTED_DATA_MESSAGE, messages.isEmpty());
     }
 
     @Test

@@ -13,6 +13,7 @@ import input.DisasterDataCreationListener;
 import input.DisasterDataNotifier;
 import routing.MessageRouter;
 
+import routing.util.EnergyModel;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -257,6 +258,11 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         // If the host is not known yet, stash the information until it is known.
         if (!this.isInitialized()) {
             this.stashedCreationData.add(new Tuple<>(creator, data));
+            return;
+        }
+
+        // If battery is empty, no data will be created.
+        if (this.host.getComBus().getDouble(EnergyModel.ENERGY_VALUE_ID, 1) <= 0) {
             return;
         }
 

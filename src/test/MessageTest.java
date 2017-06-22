@@ -189,6 +189,12 @@ public class MessageTest extends TestCase {
         testGetHopCount();
     }
 
+    /**
+     * Searches the collection for a message with the given id and returns its hop count
+     * @param msgId The id of the message whose hop count is requested
+     * @param collection The collection to search for the message in
+     * @return The hop count of the message with the id or -1 if the message is not found.
+     */
     private int getHopCountForMsgInCollection(String msgId, Collection<Message> collection){
         for (Message message : collection){
             if (message.getId().equals(msgId)){
@@ -199,6 +205,12 @@ public class MessageTest extends TestCase {
         return -1;
     }
 
+    /**
+     * Connects the given hosts and transfers the message with the given ID from one to the other.
+     * @param msgId The id of the message to transfer
+     * @param transferFrom The host the message is sent from
+     * @param transferTo The host the message is sent to
+     */
     private void transferMessage(String msgId, DTNHost transferFrom, DTNHost transferTo){
         transferFrom.connect(transferTo);
         transferFrom.sendMessage(msgId, transferTo);

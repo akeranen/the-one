@@ -19,14 +19,21 @@ public class Message implements Comparable<Message> {
     public static final int INFINITE_TTL = -1;
     /** Default value for messages without any priority */
     public static final int INVALID_PRIORITY = -1;
+    /** Setting string for how the message path is handled */
+    public static final String MSG_PATH_S="storeFullMessagePath";
+    /** Setting whether the full message path should be stored (alternative would be just the hop count */
+    private static boolean storeFullMsgPath=true;
+
     protected DTNHost from;
     private DTNHost to;
     /** Identifier of the message */
     protected String id;
     /** Size of the message (bytes) */
     protected int size;
-    /** List of nodes this message has passed */
+    /** List of hosts this message has passed */
     private List<DTNHost> path;
+    /** Amount of hosts this message has passed */
+    private int hopCount;
     /** Next unique identifier to be given */
     private static int nextUniqueId;
     /** Unique ID of this message */
@@ -127,6 +134,7 @@ public class Message implements Comparable<Message> {
         this.id = id;
         this.size = size;
         this.path = new ArrayList<DTNHost>();
+        this.hopCount = 0;
         this.uniqueId = nextUniqueId;
         if (prio >= -1) {
             this.priority = prio;
@@ -145,6 +153,11 @@ public class Message implements Comparable<Message> {
 
         Message.nextUniqueId++;
         addNodeOnPath(from);
+    }
+
+    /** Sets whether we store the full message path or just the hop count from the settings*/
+    public static void setStoreFullMsgPath(Settings settings){
+        storeFullMsgPath = settings.getBoolean(MSG_PATH_S, true);
     }
 
     /**
@@ -200,7 +213,10 @@ public class Message implements Comparable<Message> {
      *            The node to add
      */
     public void addNodeOnPath(DTNHost node) {
-        this.path.add(node);
+        if (storeFullMsgPath){
+            this.path.add(node);
+        }
+        this.hopCount++;
     }
 
     /**
@@ -218,7 +234,8 @@ public class Message implements Comparable<Message> {
      * @return the amount of hops this message has passed
      */
     public int getHopCount() {
-        return this.path.size() - 1;
+        //Return hop count minus the host who created the message
+        return hopCount-1;
     }
 
     /**
@@ -344,7 +361,11 @@ public class Message implements Comparable<Message> {
      *            The message where the data is copied
      */
     protected void copyFrom(Message m) {
-        this.path = new ArrayList<DTNHost>(m.path);
+        hopCount = m.hopCount;
+        if (storeFullMsgPath){
+            this.path = new ArrayList<>(m.path);
+        }
+
         this.timeCreated = m.timeCreated;
         this.responseSize = m.responseSize;
         this.requestMsg = m.requestMsg;

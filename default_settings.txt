@@ -114,10 +114,6 @@ Events4.class = MulticastEventGenerator
 Events4.interval = 0.1,3
 # Message sizes (0.1KB - 1KB)
 Events4.size = 0.1k,1k
-# Total number of multicast groups across all groups
-Events4.group_count = 1000,5000
-# Size of multicast groups
-Events4.group_size = 3,30
 # range of message source/destination addresses
 Events4.hosts = 0,10000
 # Message ID prefix
@@ -135,10 +131,6 @@ Events5.class = MulticastEventGenerator
 Events5.interval = 10,30
 # Message sizes (500KB - 4MB)
 Events5.size = 500k,4M
-# Total number of multicast groups across all groups
-Events5.group_count = 1000,5000
-# Size of multicast groups
-Events5.group_size = 3,30
 # range of message source/destination addresses
 Events5.hosts = 0,10000
 # Message ID prefix

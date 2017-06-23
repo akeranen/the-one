@@ -8,15 +8,27 @@ import core.SettingsError;
 import routing.DisasterRouter;
 import routing.MessageChoosingStrategy;
 import routing.MessageRouter;
+import routing.util.DatabaseApplicationUtil;
 import util.Tuple;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Chooses the messages to send to neighbors dependent on the utility value of (neighbor, message) pairs. The utility
- * value itself is a weighted sum of the neighbor's delivery predictability, power, encounter value, and the message's
- * replications density.
+ * Chooses the messages to send to neighbors dependent on the utility value of (neighbor, message) pairs.
+ *
+ * The utility value is a weighted sum of the neighbor's delivery predictability, power, encounter value, and the
+ * message's replications density:
+ *      Util(B,m) = \alpha_{DP^+}\cdot (\alpha_{DP}\cdot V_{DP}(B,m)+ \alpha_P \cdot V_P(B))
+ *                + \alpha_{RD_2} \cdot (1-RD(A,m)) + \alpha_{EV} \cdot EV(A, B)
+ * where V_{DP}(B, m) is the neighbor's delivery predictability of the message, V_P(B) the neighbor's remaining power
+ * as a percentage value between 0 and 1, RD(A, m) the message's replication's density as the host choosing the messages
+ * knows it, and EV(A, B) the encounter value ratio between the choosing host and the neighbor.
+ * For the weights, we have:
+ *      \alpha_{DP^+} + \alpha_{RD_2} + \alpha_{EV} = 1
+ * and
+ *      \alpha_{DP} + \alpha_P = 1.
  *
  * Created by Britta Heymann on 23.06.2017.
  */
@@ -24,14 +36,45 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
     /** Namespace for all utility message chooser settings. */
     public static final String UTILITY_MESSAGE_CHOOSER_NS = "UtilityMessageChooser";
 
+    /**
+     * Weight for the adapted PRoPHET+ value -setting id ({@value}).
+     * A weight between 0 and 1 that is used in balancing the adapted PRoPHET+ value against replications density and
+     * encounter value in the (neighbor, message) utility function. Their weights need to sum up to 1.
+     */
     public static final String PROPHET_PLUS_WEIGHT = "prophetPlusWeight";
+    /**
+     * Weight for the delivery predictability -setting id ({@value}).
+     * A weight between 0 and 1 that is used in balancing the delivery predictability against remaining power percentage
+     * in the adapted PRoPHET+ value. Their weights need to sum up to 1.
+     */
     public static final String DELIVERY_PREDICTABILITY_WEIGHT = "dpWeight";
+    /**
+     * Weight for the remaining power percentage -setting id ({@value}).
+     * A weight between 0 and 1 that is used in balancing the remaining power percentage against delivery predictability
+     * in the adapted PRoPHET+ value. Their weights need to sum up to 1.
+     */
     public static final String POWER_WEIGHT = "powerWeight";
 
+    /**
+     * Weight for replications density -setting id ({@value}).
+     * A weight between 0 and 1 that is used in balancing replications density against the adapted PRoPHET+ value and
+     * encounter value in the (neighbor, message) utility function. Their weights need to sum up to 1.
+     */
     public static final String REPLICATIONS_DENSITY_WEIGHT = "rdWeight";
+    /**
+     * Weight for encounter value -setting id ({@value}).
+     * A weight between 0 and 1 that is used in balancing encounter value against the adapted PRoPHET+ value and
+     * replications density in the (neighbor, message) utility function. Their weights need to sum up to 1.
+     */
     public static final String ENCOUNTER_VALUE_WEIGHT = "evWeight";
 
+    /**
+     * Value above which a (neighbor, message) utility value must be for the message to be sent. -setting id ({@value}).
+     */
     public static final String UTILITY_THRESHOLD = "messageUtilityThreshold";
+
+    /** Acceptable difference of weight sums to 1. */
+    private static final double SUM_EQUALS_ONE_DELTA = 0.00001;
 
     /* Weights used in utility function. */
     private double deliveryPredictabilityWeight;
@@ -107,7 +150,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         // Check their sum is 1.
         double sum = this.deliveryPredictabilityWeight + this.powerWeight
                 + this.replicationsDensityWeight + this.encounterValueWeight;
-        if (Math.abs(1 - sum) >= 0.0001) {
+        if (Math.abs(1 - sum) >= SUM_EQUALS_ONE_DELTA) {
             throw new SettingsError("Weights must sum up to 1, but sum up to " + sum + " instead!");
         }
 
@@ -148,6 +191,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
      *
      * @param host host prioritizing the messages.
      */
+    @Override
     public void setAttachedHost(DTNHost host) {
         this.attachedHost = host;
     }
@@ -160,8 +204,25 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
      * @return Which messages should be sent to which neighbors.
      */
     @Override
-    public Collection<Tuple<Message, Connection>> findOtherMessages(Collection<Message> messages, List<Connection> connections) {
-        return null;
+    public Collection<Tuple<Message, Connection>> findOtherMessages(
+            Collection<Message> messages, List<Connection> connections) {
+        Collection<Tuple<Message, Connection>> chosenMessages = new ArrayList<>();
+
+        // Add ordinary messages.
+        for (Connection con : connections) {
+            DTNHost neighbor = con.getOtherNode(this.attachedHost);
+            for (Message m : messages) {
+                if (!m.isFinalRecipient(neighbor) && this.shouldBeSent(m, neighbor)) {
+                    chosenMessages.add(new Tuple<>(m, con));
+                }
+            }
+        }
+
+        // Wrap useful data stored at host in data messages to neighbors and add them to the messages to sent.
+        chosenMessages.addAll(DatabaseApplicationUtil.createDataMessages(
+                this.attachedHost.getRouter(), this.attachedHost, connections));
+
+        return chosenMessages;
     }
 
     /**
@@ -174,7 +235,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         return this.deliveryPredictabilityWeight * otherRouter.getDeliveryPredictability(m)
                 + this.powerWeight * otherRouter.remainingEnergyRatio()
                 + this.replicationsDensityWeight * (1 - this.attachedRouter.getReplicationsDensity(m))
-                + this.encounterValueWeight * otherRouter.getEncounterValue();
+                + this.encounterValueWeight * this.attachedRouter.computeEncounterValueRatio(otherRouter);
     }
 
     /**
@@ -192,5 +253,18 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
                 && !otherRouter.hasMessage(m.getId())
                 && this.computeUtility(m, otherRouter) > this.utilityThreshold;
         // TODO: also check other's energy (routing protocol v3)
+    }
+
+
+    /**
+     * Creates a replicate of this message choosing strategy. The replicate has the same settings as this message
+     * choosing strategy but is attached to the provided router and has no attached host.
+     *
+     * @param attachedRouter Router choosing the messages.
+     * @return The replicate.
+     */
+    @Override
+    public MessageChoosingStrategy replicate(MessageRouter attachedRouter) {
+        return new UtilityMessageChooser(this, attachedRouter);
     }
 }

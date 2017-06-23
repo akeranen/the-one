@@ -603,6 +603,18 @@ public abstract class ActiveRouter extends MessageRouter {
 	}
 
 	/**
+     * Returns the percentage of energy the {@link DTNHost} still has left. If energy modeling is not enabled, always
+     * returns full energy, i.e. 1.
+     * @return Percentage as a value between 0 and 1.
+     */
+    public double remainingEnergyRatio() {
+        if (this.energy == null) {
+            return 1;
+        }
+        return this.energy.getEnergyRatio();
+    }
+
+	/**
 	 * Checks out all sending connections to finalize the ready ones
 	 * and abort those whose connection went down. Also drops messages
 	 * whose TTL <= 0 (checking every one simulated minute).

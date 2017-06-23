@@ -20,7 +20,7 @@ import java.util.Set;
 public class EnergyModelTest {
     /* Energy values used in tests. */
     private static final double MIN_ENERGY = 0.2;
-    private static final double MAX_ENERGY = 0.7;
+    public static final double MAX_ENERGY = 0.7;
     private static final double SOME_ENERGY_LEVEL = 0.1;
 
     /** Acceptable delta in double comparisons. */
@@ -146,7 +146,7 @@ public class EnergyModelTest {
      * Adds values to all settings concerning energy.
      * @param settings The settings object to add settings to.
      */
-    private static void addAllEnergySettings(TestSettings settings) {
+    static void addAllEnergySettings(TestSettings settings) {
         settings.putSetting(EnergyModel.INIT_ENERGY_S, MIN_ENERGY + "," + MAX_ENERGY);
         settings.putSetting(EnergyModel.SCAN_ENERGY_S, "0.05");
         settings.putSetting(EnergyModel.SCAN_RSP_ENERGY_S, "0.025");
@@ -158,8 +158,8 @@ public class EnergyModelTest {
      * Adds values to all necessary settings concerning network interfaces.
      * @param settings The settings object to add settings to.
      */
-    private static void addNecessaryInterfaceSettings(TestSettings settings) {
-        settings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
+    static void addNecessaryInterfaceSettings(TestSettings settings) {
+        settings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "0");
         settings.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
     }
 }

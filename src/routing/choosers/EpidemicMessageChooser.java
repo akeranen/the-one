@@ -4,6 +4,7 @@ import core.Connection;
 import core.DTNHost;
 import core.Message;
 import routing.MessageChoosingStrategy;
+import routing.MessageRouter;
 import routing.util.DatabaseApplicationUtil;
 import util.Tuple;
 
@@ -20,16 +21,17 @@ public class EpidemicMessageChooser implements MessageChoosingStrategy {
     /**
      * The {@link DTNHost} attached to this chooser, i.e. the host sending the messages.
      */
-    private DTNHost attachedHost;
+    private DTNHost attachedHost = null;
 
     /**
-     * Initializes a new instance of the {@link EpidemicMessageChooser} class.
-     * @param attachedHost The host attached to this chooser, i.e. the host sending the messages.
+     * Sets the attached host.
+     *
+     * @param host host choosing the messages.
      */
-    public EpidemicMessageChooser(DTNHost attachedHost) {
-        this.attachedHost = attachedHost;
+    @Override
+    public void setAttachedHost(DTNHost host) {
+        this.attachedHost = host;
     }
-
     /**
      * Chooses non-direct messages to send.
      *
@@ -59,5 +61,17 @@ public class EpidemicMessageChooser implements MessageChoosingStrategy {
                 this.attachedHost.getRouter(), this.attachedHost, connections));
 
         return chosenMessages;
+    }
+
+    /**
+     * Creates a replicate of this message choosing strategy. The replicate has the same settings as this message
+     * choosing strategy but is attached to the provided router and has no attached host.
+     *
+     * @param attachedRouter Router choosing the messages.
+     * @return The replicate.
+     */
+    @Override
+    public MessageChoosingStrategy replicate(MessageRouter attachedRouter) {
+        return new EpidemicMessageChooser();
     }
 }

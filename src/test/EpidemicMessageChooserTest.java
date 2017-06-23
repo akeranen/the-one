@@ -60,7 +60,8 @@ public class EpidemicMessageChooserTest {
         this.attachedHost.update(true);
 
         // Create message chooser.
-        this.messageChooser = new EpidemicMessageChooser(this.attachedHost);
+        this.messageChooser = new EpidemicMessageChooser();
+        this.messageChooser.setAttachedHost(this.attachedHost);
     }
 
     @After

@@ -5,7 +5,7 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
-import routing.choosers.EpidemicMessageChooser;
+import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.prioritizers.PrioritySorter;
 import routing.prioritizers.PriorityTupleSorter;
@@ -51,7 +51,7 @@ public class DisasterRouter extends ActiveRouter {
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage();
 
         // Initialize message chooser.
-        this.messageChooser = new EpidemicMessageChooser();
+        this.messageChooser = new UtilityMessageChooser(this);
 
         // Initialize message orderers.
         this.messagePrioritizer = new DisasterPrioritizationStrategy(this);

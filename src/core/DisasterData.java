@@ -36,6 +36,8 @@ public class DisasterData {
     private double creation;
     /** Location of the object represented by the data. */
     private Coord location;
+    /** String representation of this object */
+    private String stringRepresentation;
 
     /**
      * Initializes a new instance of the {@link DisasterData} class.
@@ -49,6 +51,7 @@ public class DisasterData {
         this.size = size;
         this.creation = creation;
         this.location = location;
+        this.stringRepresentation =""+ this.type +"@"+ this.creation + "@" + this.location;
     }
 
     /**
@@ -90,6 +93,6 @@ public class DisasterData {
      */
     @Override
     public String toString() {
-        return ""+ this.type +"@"+ this.creation + "@" + this.location;
+        return stringRepresentation;
     }
 }

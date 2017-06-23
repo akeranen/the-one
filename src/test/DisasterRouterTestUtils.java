@@ -1,6 +1,7 @@
 package test;
 
 import applications.DatabaseApplication;
+import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
@@ -59,6 +60,15 @@ public final class DisasterRouterTestUtils {
         s.putSetting(DisasterPrioritizationStrategy.HEAD_START_THRESHOLD_S, Double.toString(HEAD_START_THRESHOLD));
         s.putSetting(DisasterPrioritizationStrategy.PRIORITY_THRESHOLD_S, Double.toString(PRIORITY_THRESHOLD));
         s.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
+        s.restoreNameSpace();
+
+        s.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
+        s.putSetting(UtilityMessageChooser.DELIVERY_PREDICTABILITY_WEIGHT, "0.95");
+        s.putSetting(UtilityMessageChooser.POWER_WEIGHT, "0.05");
+        s.putSetting(UtilityMessageChooser.PROPHET_PLUS_WEIGHT, "0.65");
+        s.putSetting(UtilityMessageChooser.REPLICATIONS_DENSITY_WEIGHT, "0.25");
+        s.putSetting(UtilityMessageChooser.ENCOUNTER_VALUE_WEIGHT, "0.1");
+        s.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, "0");
         s.restoreNameSpace();
 
         s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.2");

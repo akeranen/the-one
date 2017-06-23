@@ -448,9 +448,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
      */
     public void testNonDirectMessageSorting() {
         // Create messages to sort.
-        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
-        Message vipDataMessages = new DataMessage(h1, h3, "D1", data, 0, VERY_HIGH_PRIORITY);
-        Message usefulDataMessages = new DataMessage(h1, h3, "D2", data, 1, 0);
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        Message usefulDataMessage = new DataMessage(h1, h3, data.toString(), data, 1, 0);
         Message highDeliveryPredictabilityMessage = new Message(h1, h4, "M1", 0, 0);
         Message lowReplicationsDensityMessage = new Message(h1, h3, "M2", 0, 0);
         Message highReplicationsDensityMessage = new Message(h1, h3, "M3", 0, 0);
@@ -460,13 +459,22 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.clock.advance(SHORT_TIME_SPAN);
         Message newestMessage = new Message(h1, h3, "M5", 0, 0);
 
-        // Make h1 know all of them.
+        // Install DB app on h1 for data messages.
+        DatabaseApplication app = new DatabaseApplication(ts);
+        h1.getRouter().addApplication(app);
+        app.update(h1);
+
+        // Make h1 know all messages.
         Message[] allMessages = {
-                vipDataMessages, usefulDataMessages, highDeliveryPredictabilityMessage, lowReplicationsDensityMessage,
+                usefulDataMessage, highDeliveryPredictabilityMessage, lowReplicationsDensityMessage,
                 highReplicationsDensityMessage, newMessage, newestMessage, vipMessage
         };
         for (Message m : allMessages) {
-            h1.createNewMessage(m);
+            if (!(m instanceof DataMessage)) {
+                h1.createNewMessage(m);
+            } else {
+                app.disasterDataCreated(h1, ((DataMessage)m).getData());
+            }
         }
 
         // Increase delivery predictability for message M1 by letting h2 meet its final recipient, h4.
@@ -484,7 +492,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Check order of messages.
         Message[] expectedOrder = {
-                vipDataMessages, newestMessage, newMessage, vipMessage, usefulDataMessages,
+                newestMessage, newMessage, vipMessage, usefulDataMessage,
                 highDeliveryPredictabilityMessage, lowReplicationsDensityMessage, highReplicationsDensityMessage
         };
         this.mc.reset();

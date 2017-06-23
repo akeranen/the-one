@@ -157,6 +157,15 @@ public class EnergyModel implements ModuleCommunicationListener {
 		return this.currentEnergy;
 	}
 
+    /**
+     * Returns the percentage of energy the {@link DTNHost} still has left. The upper bound of {@link #initEnergy} is
+     * set as the 100% mark.
+     * @return Percentage as a value between 0 and 1.
+     */
+	public double getEnergyRatio() {
+        return this.currentEnergy / this.initEnergy[this.initEnergy.length - 1];
+    }
+
 	/**
 	 * Updates the current energy so that the given amount is reduced from it.
 	 * If the energy level goes below zero, sets the level to zero.

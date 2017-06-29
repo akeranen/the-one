@@ -201,7 +201,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * Returns whether any attached {@link NetworkInterface} has any {@link Connection}.
      * @return True if connections are found for any interface, false if not
      */
-	public boolean hasConnections(){
+	protected boolean hasConnections(){
 	    return getHost().hasConnections();
     }
 

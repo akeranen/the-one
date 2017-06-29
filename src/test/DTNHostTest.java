@@ -115,19 +115,38 @@ public class DTNHostTest extends TestCase {
         assertFalse(NO_MORE_CONNECTIONS, host3.hasConnections());
     }
 
+    /**
+     * Checks whether {@link DTNHost#hasConnections()} works correctly for hosts with multiple
+     * Network Interfaces
+     */
     public void testHasConnectionsWithMultipleNetworkInterfaces(){
         DTNHost hostWithTwoNI = createDTNHostWithTwoNetworkInterfaces();
+        NetworkInterface interface1 = hostWithTwoNI.getInterfaces().get(0);
+        NetworkInterface interface2 = hostWithTwoNI.getInterfaces().get(1);
 
         assertFalse("Initially hosts should not have any connections.", hostWithTwoNI.hasConnections());
 
         //Create a host with a single network interface to connect to
         DTNHost host1 = utils.createHost();
+        interface1.connect(host1.getInterfaces().get(0));
+        assertTrue("One connected interface should mean hasConnections returns true.", hostWithTwoNI.hasConnections());
+        assertTrue("The host with just one interface should be connected as well.", host1.hasConnections());
 
-        //Connect the hosts
-        hostWithTwoNI.getInterfaces().get(0).connect(host1.getInterfaces().get(0));
-        assertTrue("The host should be connected now.", hostWithTwoNI.hasConnections());
-        assertTrue("Both hosts should be connected", host1.hasConnections());
+        //Create another host with single network interface to connect the second interface to
+        DTNHost host2 = utils.createHost();
+        interface2.connect(host2.getInterfaces().get(0));
+        assertTrue("Two connected interfaces should mean hasConnections returns true.", hostWithTwoNI.hasConnections());
+        assertTrue("The hosts with just one interface each should be connected as well.", host1.hasConnections());
+        assertTrue("The hosts with just one interface each should be connected as well.", host2.hasConnections());
 
+        //Break the first connection
+        interface1.destroyConnection(host1.getInterfaces().get(0));
+        assertTrue("hasConnections should still return true.", hostWithTwoNI.hasConnections());
+
+        //Break the other connection
+        interface2.destroyConnection(host2.getInterfaces().get(0));
+        assertFalse("hasConnections should still return false once all connections were destroyed.",
+                hostWithTwoNI.hasConnections());
     }
 
     public DTNHost createDTNHostWithTwoNetworkInterfaces(){

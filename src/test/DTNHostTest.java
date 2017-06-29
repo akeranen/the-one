@@ -1,6 +1,7 @@
 package test;
 
 
+import core.ConnectionListener;
 import core.Coord;
 import core.DTNHost;
 import core.MessageListener;
@@ -79,6 +80,39 @@ public class DTNHostTest extends TestCase {
     }
 
     /**
+     * Checks whether {@link DTNHost#hasConnections()} works correctly
+     */
+    public void testHasConnections(){
+        TestUtils utils = new TestUtils(new ArrayList<ConnectionListener>(),
+                new ArrayList<MessageListener>(),
+                new TestSettings());
+
+        //Create a single host. Initially it shouldn't have any connections
+        DTNHost host = utils.createHost();
+        assertFalse(host.hasConnections());
+
+        //Connect that host to another one. Both should have connections.
+        DTNHost host2 = utils.createHost();
+        host.connect(host2);
+        assertTrue(host.hasConnections());
+        assertTrue(host2.hasConnections());
+
+        //Connect the initial host to a third one. All three hosts should have connections.
+        DTNHost host3 = utils.createHost();
+        host.connect(host3);
+        assertTrue(host.hasConnections());
+        assertTrue(host2.hasConnections());
+        assertTrue(host3.hasConnections());
+
+        //Remove all connections from the initial host.
+        //Since the other host weren't connected to each other, no host should have any connections.
+        AbstractRouterTest.disconnect(host);
+        assertFalse(host.hasConnections());
+        assertFalse(host2.hasConnections());
+        assertFalse(host3.hasConnections());
+    }
+
+    /**
      * Dummy class for a {@link ExtendedMovementModel}. It is used in the {@link DTNHostTest#testInterruptMovement()}
      * test to switch movement models.
      */
@@ -120,6 +154,7 @@ public class DTNHostTest extends TestCase {
     }
 
     private static DTNHost createHost(MovementModel movementModel){
+
         return new DTNHost(
             new ArrayList<MessageListener>(),
             new ArrayList<MovementListener>(),

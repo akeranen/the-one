@@ -202,7 +202,7 @@ public abstract class ActiveRouter extends MessageRouter {
      * @return True if connections are found for any interface, false if not
      */
 	protected boolean hasConnections(){
-	    return getHost().hasConnections();
+        return getHost().hasConnections();
     }
 
 	/**

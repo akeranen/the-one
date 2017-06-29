@@ -22,6 +22,8 @@ import java.util.ArrayList;
  */
 public class DTNHostTest extends TestCase {
 
+    private static final String NO_MORE_CONNECTIONS="The host should not have any connections now.";
+
     private static Path expectedPath = new Path();
 
     public DTNHostTest(){
@@ -89,27 +91,27 @@ public class DTNHostTest extends TestCase {
 
         //Create a single host. Initially it shouldn't have any connections
         DTNHost host = utils.createHost();
-        assertFalse(host.hasConnections());
+        assertFalse("Initially hosts should not have any connections.", host.hasConnections());
 
         //Connect that host to another one. Both should have connections.
         DTNHost host2 = utils.createHost();
         host.connect(host2);
-        assertTrue(host.hasConnections());
-        assertTrue(host2.hasConnections());
+        assertTrue("The host should be connected now.", host.hasConnections());
+        assertTrue("Both hosts should be connected", host2.hasConnections());
 
         //Connect the initial host to a third one. All three hosts should have connections.
         DTNHost host3 = utils.createHost();
         host.connect(host3);
-        assertTrue(host.hasConnections());
-        assertTrue(host2.hasConnections());
-        assertTrue(host3.hasConnections());
+        assertTrue("The host should have connections when connected to both.", host.hasConnections());
+        assertTrue("The second host should still be connected.", host2.hasConnections());
+        assertTrue("The third host should be connected now", host3.hasConnections());
 
         //Remove all connections from the initial host.
         //Since the other host weren't connected to each other, no host should have any connections.
         AbstractRouterTest.disconnect(host);
-        assertFalse(host.hasConnections());
-        assertFalse(host2.hasConnections());
-        assertFalse(host3.hasConnections());
+        assertFalse(NO_MORE_CONNECTIONS, host.hasConnections());
+        assertFalse(NO_MORE_CONNECTIONS, host2.hasConnections());
+        assertFalse(NO_MORE_CONNECTIONS, host3.hasConnections());
     }
 
     /**

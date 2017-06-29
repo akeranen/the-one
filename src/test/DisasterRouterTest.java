@@ -2,7 +2,6 @@ package test;
 
 import applications.DatabaseApplication;
 import core.BroadcastMessage;
-import core.Coord;
 import core.DataMessage;
 import core.DisasterData;
 import core.Group;
@@ -35,6 +34,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
+
+    /** A value checked in a test. */
+    private static final double TWO_THIRDS = 2.0/3.0;
 
     private static final String EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY =
             "Expected different delivery predictability.";
@@ -103,6 +105,20 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 0, router.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
     }
 
+    public void testEncounterValueRatioIsComputedCorrectly() {
+        // Make sure h2 has double the encounters of h1.
+        this.clock.setTime(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        h1.connect(h2);
+        h2.connect(h3);
+        this.updateAllNodes();
+
+        // Check encounter value ratio.
+        DisasterRouter router = (DisasterRouter)h1.getRouter();
+        Assert.assertEquals(
+                "Expected different encounter value ratio.",
+                TWO_THIRDS, router.computeEncounterValueRatio((DisasterRouter)h2.getRouter()),
+                DOUBLE_COMPARISON_DELTA);
+    }
     /**
      * Tests that the replications density is computed correctly if two nodes with the same message meet each other.
      */

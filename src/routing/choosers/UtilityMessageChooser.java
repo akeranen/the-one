@@ -255,6 +255,45 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         // TODO: also check other's energy (routing protocol v3)
     }
 
+    /**
+     * Gets the delivery predictability weight.
+     * @return The delivery predictability weight.
+     */
+    public double getDeliveryPredictabilityWeight() {
+        return deliveryPredictabilityWeight;
+    }
+
+    /**
+     * Gets the power weight.
+     * @return The power weight.
+     */
+    public double getPowerWeight() {
+        return powerWeight;
+    }
+
+    /**
+     * Gets the replications density weight.
+     * @return The replications density weight.
+     */
+    public double getReplicationsDensityWeight() {
+        return replicationsDensityWeight;
+    }
+
+    /**
+     * Gets the encounter value weight.
+     * @return The encounter value weight.
+     */
+    public double getEncounterValueWeight() {
+        return encounterValueWeight;
+    }
+
+    /**
+     * Gets the utility threshold.
+     * @return The utility threshold.
+     */
+    public double getUtilityThreshold() {
+        return utilityThreshold;
+    }
 
     /**
      * Creates a replicate of this message choosing strategy. The replicate has the same settings as this message

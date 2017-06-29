@@ -5,9 +5,11 @@ import core.ConnectionListener;
 import core.Coord;
 import core.DTNHost;
 import core.MessageListener;
+import core.ModuleCommunicationBus;
 import core.MovementListener;
 import core.NetworkInterface;
 import core.Settings;
+import interfaces.SimpleBroadcastInterface;
 import junit.framework.TestCase;
 import movement.ExtendedMovementModel;
 import movement.MovementModel;
@@ -25,6 +27,9 @@ public class DTNHostTest extends TestCase {
     private static final String NO_MORE_CONNECTIONS="The host should not have any connections now.";
 
     private static Path expectedPath = new Path();
+    private TestUtils utils = new TestUtils(new ArrayList<ConnectionListener>(),
+            new ArrayList<MessageListener>(),
+            new TestSettings());;
 
     public DTNHostTest(){
         DTNHost.reset();
@@ -85,10 +90,6 @@ public class DTNHostTest extends TestCase {
      * Checks whether {@link DTNHost#hasConnections()} works correctly
      */
     public void testHasConnections(){
-        TestUtils utils = new TestUtils(new ArrayList<ConnectionListener>(),
-                new ArrayList<MessageListener>(),
-                new TestSettings());
-
         //Create a single host. Initially it shouldn't have any connections
         DTNHost host = utils.createHost();
         assertFalse("Initially hosts should not have any connections.", host.hasConnections());
@@ -112,6 +113,46 @@ public class DTNHostTest extends TestCase {
         assertFalse(NO_MORE_CONNECTIONS, host.hasConnections());
         assertFalse(NO_MORE_CONNECTIONS, host2.hasConnections());
         assertFalse(NO_MORE_CONNECTIONS, host3.hasConnections());
+    }
+
+    public void testHasConnectionsWithMultipleNetworkInterfaces(){
+        DTNHost hostWithTwoNI = createDTNHostWithTwoNetworkInterfaces();
+
+        assertFalse("Initially hosts should not have any connections.", hostWithTwoNI.hasConnections());
+
+        //Create a host with a single network interface to connect to
+        DTNHost host1 = utils.createHost();
+
+        //Connect the hosts
+        hostWithTwoNI.getInterfaces().get(0).connect(host1.getInterfaces().get(0));
+        assertTrue("The host should be connected now.", hostWithTwoNI.hasConnections());
+        assertTrue("Both hosts should be connected", host1.hasConnections());
+
+    }
+
+    public DTNHost createDTNHostWithTwoNetworkInterfaces(){
+        TestSettings settings = new TestSettings();
+
+        ArrayList<NetworkInterface> networkInterfaces = new ArrayList<>();
+
+        settings.setNameSpace("TestInterface");
+        utils.addTransmitRangeAndSpeedSettings(settings);
+        networkInterfaces.add(new TestInterface(settings));
+        settings.restoreNameSpace();
+
+        settings.setNameSpace("SimpleBroadcastInterface");
+        utils.addTransmitRangeAndSpeedSettings(settings);
+        networkInterfaces.add(new SimpleBroadcastInterface(settings));
+        settings.restoreNameSpace();
+
+        return new DTNHost(
+                new ArrayList<MessageListener>(),
+                new ArrayList<MovementListener>(),
+                "",
+                networkInterfaces,
+                new ModuleCommunicationBus(),
+                new StationaryMovement(new Coord(0,0)),
+                makeMessageRouter());
     }
 
     /**

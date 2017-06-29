@@ -25,7 +25,7 @@ Group.net.scanInterval = 30
 #How often nodes in the group will reorder the messages in their buffer
 Group.MessageOrderingInterval=2.0
 # Time the node will help at a disaster site (in seconds)
-Group.helpTime = 1800
+Group.helpTime = 7200
 # Probability that a node gets injured if an event happens to close to it [0, 1]
 Group.injuryProbability = 0.1
 # Time the node will stay at the hospital after transporting someone to it (in seconds)

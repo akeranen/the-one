@@ -240,7 +240,7 @@ public class ReplicationsDensityManagerTest extends AbstractIntervalRatingMechan
     }
 
     @Test
-    public void testNeverEncounteredMessageStaysOnUnknownValue() {
+    public void testNonEncounteredMessageIsSetToZero() {
         // Add new message.
         this.replicationsDensityManager.addMessage(MESSAGE_ID);
 
@@ -251,10 +251,10 @@ public class ReplicationsDensityManagerTest extends AbstractIntervalRatingMechan
         this.clock.setTime(WINDOW_LENGTH);
         this.replicationsDensityManager.update();
 
-        // Make sure the replications density stays unknown.
+        // Make sure the replications density is set to 0.
         Assert.assertEquals(
-                "Replications density should still be unknown.",
-                UNKNOWN_REPLICATIONS_DENSITY,
+                "Replications density should be zero.",
+                0,
                 this.replicationsDensityManager.getReplicationsDensity(MESSAGE_ID),
                 DOUBLE_COMPARISON_DELTA);
     }

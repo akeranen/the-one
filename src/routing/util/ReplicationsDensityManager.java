@@ -115,16 +115,16 @@ public class ReplicationsDensityManager extends AbstractIntervalRatingMechanism 
         }
 
         // Else, update all replications densities:
-        int numberUniqueEncounters = this.uniqueEncountersInTimeWindow.size();
+        double numberUniqueEncounters = this.uniqueEncountersInTimeWindow.size();
         for (String msgId : this.replicationsDensities.keySet()) {
+            // Set replications density for a message to the rate of hosts met with that message.
+            double newDensity;
             if (!this.encounteredMessagesInTimeWindow.containsKey(msgId)) {
-                // If no hosts were met, keep old density.
-                continue;
+                newDensity = 0;
+            } else {
+                newDensity = this.encounteredMessagesInTimeWindow.get(msgId).size() / numberUniqueEncounters;
             }
-            // Else, set replications density for a message to the rate of hosts met with that message.
-            double newReplicationsDensity =
-                (double) this.encounteredMessagesInTimeWindow.get(msgId).size() / numberUniqueEncounters;
-            this.replicationsDensities.put(msgId, newReplicationsDensity);
+            this.replicationsDensities.put(msgId, newDensity);
         }
 
         // Clear time window variables.

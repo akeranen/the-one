@@ -19,6 +19,7 @@ import routing.EpidemicRouter;
 import routing.MessageRouter;
 import routing.choosers.UtilityMessageChooser;
 import routing.util.DatabaseApplicationUtil;
+import routing.util.EnergyModel;
 import util.Tuple;
 
 import java.util.ArrayList;
@@ -68,6 +69,9 @@ public class UtilityMessageChooserTest {
         this.attachedHost = this.utils.createHost();
         this.neighbor1 = this.utils.createHost();
         this.neighbor2 = this.utils.createHost();
+        this.attachedHost.update(true);
+        this.neighbor1.update(true);
+        this.neighbor2.update(true);
 
         this.chooser = new UtilityMessageChooser(this.attachedHost.getRouter());
         this.chooser.setAttachedHost(this.attachedHost);
@@ -385,7 +389,7 @@ public class UtilityMessageChooserTest {
         // Prepare two messages with high replications density (shouldn't be sent on that alone).
         Message lowDeliveryPredMessage = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
         Message highDeliveryPredMessage = new Message(this.attachedHost, this.neighbor2, "M2", 0);
-        this.createMessagesWithHighReplicationsDensity(lowDeliveryPredMessage, highDeliveryPredMessage);
+        this.createMessagesWithReplicationsDensityOf(1, lowDeliveryPredMessage, highDeliveryPredMessage);
 
         // Make sure neighbor 1 knows the receiver of one of the messages.
         this.neighbor1.forceConnection(highDeliveryPredMessage.getTo(), null, true);
@@ -404,22 +408,86 @@ public class UtilityMessageChooserTest {
         Assert.assertTrue(
                 "Message with high delivery predictability should be returned.",
                 this.messageToHostsExists(messages, highDeliveryPredMessage.getId(), this.neighbor1));
-
     }
 
     @Test
     public void testRemainingPowerInfluencesMessageChoosing() {
+        // Prepare a message with replications density above 0 (shouldn't be sent on that alone).
+        Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
+        this.createMessagesWithReplicationsDensityOf(0.5, m);
 
+        // Make sure neighbor 1 has low power.
+        this.neighbor1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, 0.5);
+
+        // Call findOtherMessages with two connections, one of them to neighbor 1.
+        List<Connection> connections = new ArrayList<>();
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor2));
+        Collection<Tuple<Message, Connection>> messages =
+                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+
+        // Check the message is only send to the neighbor with full power.
+        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertFalse(
+                "Message should not be returned for host with lower battery.",
+                this.messageToHostsExists(messages, m.getId(), this.neighbor1));
+        Assert.assertTrue(
+                "Message should be returned for host with full battery.",
+                this.messageToHostsExists(messages, m.getId(), this.neighbor2));
     }
 
     @Test
     public void testReplicationsDensityInfluencesMessageChoosing() {
+        // Prepare one message with low and one message with high replications density.
+        Message lowReplicationsDensityMessage = new Message(this.attachedHost, this.utils.createHost(), "M2", 0);
+        Message highReplicationsDensityMessage = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
+        this.createMessagesWithReplicationsDensityOf(0, lowReplicationsDensityMessage);
+        this.createMessagesWithReplicationsDensityOf(1, highReplicationsDensityMessage);
 
+        // Call findOtherMessages with the messages to neighbor 1.
+        List<Connection> connections = new ArrayList<>();
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
+        Collection<Tuple<Message, Connection>> messages = this.chooser.findOtherMessages(
+                Arrays.asList(highReplicationsDensityMessage, lowReplicationsDensityMessage), connections);
+
+        // Check only the one with low replications density is returned.
+        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertFalse(
+                "Message with high replications density should not be returned.",
+                this.messageToHostsExists(messages, highReplicationsDensityMessage.getId(), this.neighbor1));
+        Assert.assertTrue(
+                "Message with low replications density should be returned.",
+                this.messageToHostsExists(messages, lowReplicationsDensityMessage.getId(), this.neighbor1));
     }
 
     @Test
     public void testEncounterValueRatioInfluencesMessageChoosing() {
+        // Make sure neighbor 2 and the attached host have a positive encounter value.
+        this.neighbor2.forceConnection(this.attachedHost, null, true);
+        this.neighbor2.forceConnection(this.attachedHost, null, false);
+        this.clock.advance(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        this.neighbor2.update(true);
+        this.attachedHost.update(true);
 
+        // Prepare a message with replications density above 0 (shouldn't be sent on that alone).
+        Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
+        this.createMessagesWithReplicationsDensityOf(0.4, m);
+
+        // Call findOtherMessages with two connections, one of them to neighbor 2.
+        List<Connection> connections = new ArrayList<>();
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor2));
+        Collection<Tuple<Message, Connection>> messages =
+                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+
+        // Check the message is only send to the equally social neighbor (2).
+        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertFalse(
+                "Message should not be returned for less social host.",
+                this.messageToHostsExists(messages, m.getId(), this.neighbor1));
+        Assert.assertTrue(
+                "Message should be returned for equally social host.",
+                this.messageToHostsExists(messages, m.getId(), this.neighbor2));
     }
 
     @Test
@@ -455,13 +523,29 @@ public class UtilityMessageChooserTest {
         return messageFound;
     }
 
-    private void createMessagesWithHighReplicationsDensity(Message... messages) {
-        DTNHost hostKnowningMessages = this.utils.createHost();
+    private void createMessagesWithReplicationsDensityOf(double replicationsDensity, Message... messages) {
+        // Create 100 neighbors to meet.
+        DTNHost[] hostsToMeet = new DTNHost[100];
+        for (int i = 0; i < hostsToMeet.length; i++) {
+            hostsToMeet[i] = this.utils.createHost();
+        }
+
+        // Make sure the correct percentage knows the message.
+        int numHostsKnowingMessage = (int)(replicationsDensity * 100);
         for (Message m : messages) {
             this.attachedHost.createNewMessage(m);
-            hostKnowningMessages.createNewMessage(m);
+            for (int i = 0; i < numHostsKnowingMessage; i++) {
+                hostsToMeet[i].createNewMessage(m);
+            }
         }
-        this.attachedHost.forceConnection(hostKnowningMessages, null, true);
+
+        // Meet all the hosts.
+        for (DTNHost hostToMeet : hostsToMeet) {
+            this.attachedHost.forceConnection(hostToMeet, null, true);
+            this.attachedHost.forceConnection(hostToMeet, null, false);
+        }
+
+        // Update replications density.
         this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
         this.attachedHost.update(true);
     }

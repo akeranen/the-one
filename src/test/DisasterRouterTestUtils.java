@@ -6,6 +6,7 @@ import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
 import routing.util.EncounterValueManager;
+import routing.util.EnergyModel;
 import routing.util.ReplicationsDensityManager;
 
 /**
@@ -80,9 +81,17 @@ public final class DisasterRouterTestUtils {
         s.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(UTILITY_THRESHOLD));
         s.restoreNameSpace();
 
+        // Database constants.
         s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.2");
         s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
         s.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE, "50,50");
         s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "30");
+
+        // Energy constants.
+        s.putSetting(EnergyModel.INIT_ENERGY_S, "1");
+        s.putSetting(EnergyModel.SCAN_ENERGY_S, "0");
+        s.putSetting(EnergyModel.TRANSMIT_ENERGY_S, "0");
+        s.putSetting(EnergyModel.WARMUP_S, "0");
+        s.putSetting(EnergyModel.SCAN_RSP_ENERGY_S, "0");
     }
 }

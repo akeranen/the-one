@@ -497,10 +497,19 @@ public class DisasterRouterTest extends AbstractRouterTest {
         h2.connect(h4);
         disconnect(h4);
 
-        // Increase replications density for M3 by giving it to h5, then letting h1 notice that h5 has it.
+        // Increase replications density for M3 by giving it to h5, then letting h1 notice that h5 has it, but h4
+        // hasn't.
         h5.createNewMessage(highReplicationsDensityMessage);
         h1.connect(h5);
         disconnect(h5);
+        h1.connect(h4);
+        disconnect(h4);
+        this.updateAllNodes();
+
+        // Make sure h2 is more social than h1.
+        h2.connect(h6);
+        this.clock.advance(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        disconnect(h6);
         this.updateAllNodes();
 
         // Connect h1 to h2.

@@ -5,7 +5,6 @@ import core.BroadcastMessage;
 import core.CBRConnection;
 import core.Connection;
 import core.DTNHost;
-import core.DataMessage;
 import core.DisasterData;
 import core.Message;
 import core.SettingsError;
@@ -34,22 +33,33 @@ import java.util.List;
  * Created by Britta Heymann on 29.06.2017.
  */
 public class UtilityMessageChooserTest {
+    /* Some values needed in tests. */
     private static final double NEGATIVE_VALUE = -0.1;
     private static final double OPPOSITE_OF_NEGATIVE_VALUE = 0.1;
     private static final double VALUE_ABOVE_ONE = 1.1;
+    private static final double QUITE_LOW_REPLICATIONS_DENSITY = 0.4;
+    private static final double MEDIUM_REPLICATIONS_DENSITY = 0.5;
+    private static final double MEDIUM_ENERGY_VALUE = 0.5;
+    private static final int ONE_HUNDRED_HOSTS = 100;
+    private static final int TWO_MESSAGES = 2;
 
+    /* Some error messages. */
     private static final String UNEXPECTED_WEIGHT = "Expected different weight.";
+    private static final String UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES = "Expected different number of chosen messages.";
 
+    /** The maximum delta when comparing for double equality. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.00001;
+
+    private TestUtils utils;
+    private SimClock clock = SimClock.getInstance();
 
     private TestSettings settings;
     private UtilityMessageChooser chooser;
-    private TestUtils utils;
     private DTNHost attachedHost;
+
     private DTNHost neighbor1;
     private DTNHost neighbor2;
 
-    private SimClock clock = SimClock.getInstance();
 
     public UtilityMessageChooserTest() {
         // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
@@ -282,7 +292,7 @@ public class UtilityMessageChooserTest {
                 this.chooser.findOtherMessages(new ArrayList<>(), connections);
 
         // Check data message has been returned for both neighbors.
-        Assert.assertEquals("Expected different number of chosen messages.", 2, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertTrue(
                 "Data message to first neighbor expected.",
                 this.messageToHostsExists(messages, data.toString(), neighbor1));
@@ -309,7 +319,7 @@ public class UtilityMessageChooserTest {
                 this.chooser.findOtherMessages(Collections.singletonList(m), connections);
 
         // Make sure the direct message was not returned.
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Direct message should not have been returned.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
@@ -336,7 +346,7 @@ public class UtilityMessageChooserTest {
                 this.chooser.findOtherMessages(Collections.singletonList(m), connections);
 
         // Make sure the known message was not returned.
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Known message should not have been returned.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
@@ -373,7 +383,7 @@ public class UtilityMessageChooserTest {
                 this.chooser.findOtherMessages(Collections.singletonList(m), connections);
 
         // Make sure only the non-transferring host got the message.
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Host which initiated a transfer should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
@@ -401,7 +411,7 @@ public class UtilityMessageChooserTest {
                 Arrays.asList(lowDeliveryPredMessage, highDeliveryPredMessage), connections);
 
         // Check only the one whose receiver neighbor 1 knows is returned.
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Popular message with no chance of delivery should not be returned.",
                 this.messageToHostsExists(messages, lowDeliveryPredMessage.getId(), this.neighbor1));
@@ -414,10 +424,10 @@ public class UtilityMessageChooserTest {
     public void testRemainingPowerInfluencesMessageChoosing() {
         // Prepare a message with replications density above 0 (shouldn't be sent on that alone).
         Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
-        this.createMessagesWithReplicationsDensityOf(0.5, m);
+        this.createMessagesWithReplicationsDensityOf(MEDIUM_REPLICATIONS_DENSITY, m);
 
         // Make sure neighbor 1 has low power.
-        this.neighbor1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, 0.5);
+        this.neighbor1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, MEDIUM_ENERGY_VALUE);
 
         // Call findOtherMessages with two connections, one of them to neighbor 1.
         List<Connection> connections = new ArrayList<>();
@@ -427,7 +437,7 @@ public class UtilityMessageChooserTest {
                 this.chooser.findOtherMessages(Collections.singletonList(m), connections);
 
         // Check the message is only send to the neighbor with full power.
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Message should not be returned for host with lower battery.",
                 this.messageToHostsExists(messages, m.getId(), this.neighbor1));
@@ -451,7 +461,7 @@ public class UtilityMessageChooserTest {
                 Arrays.asList(highReplicationsDensityMessage, lowReplicationsDensityMessage), connections);
 
         // Check only the one with low replications density is returned.
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Message with high replications density should not be returned.",
                 this.messageToHostsExists(messages, highReplicationsDensityMessage.getId(), this.neighbor1));
@@ -471,7 +481,7 @@ public class UtilityMessageChooserTest {
 
         // Prepare a message with replications density above 0 (shouldn't be sent on that alone).
         Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
-        this.createMessagesWithReplicationsDensityOf(0.4, m);
+        this.createMessagesWithReplicationsDensityOf(QUITE_LOW_REPLICATIONS_DENSITY, m);
 
         // Call findOtherMessages with two connections, one of them to neighbor 2.
         List<Connection> connections = new ArrayList<>();
@@ -481,18 +491,13 @@ public class UtilityMessageChooserTest {
                 this.chooser.findOtherMessages(Collections.singletonList(m), connections);
 
         // Check the message is only send to the equally social neighbor (2).
-        Assert.assertEquals("Expected different number of chosen messages.", 1, messages.size());
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
         Assert.assertFalse(
                 "Message should not be returned for less social host.",
                 this.messageToHostsExists(messages, m.getId(), this.neighbor1));
         Assert.assertTrue(
                 "Message should be returned for equally social host.",
                 this.messageToHostsExists(messages, m.getId(), this.neighbor2));
-    }
-
-    @Test
-    public void testUtilityThresholdInfluencesMessageChoosing() {
-
     }
 
     /**
@@ -513,6 +518,15 @@ public class UtilityMessageChooserTest {
         return new CBRConnection(from, from.getInterfaces().get(0), to, to.getInterfaces().get(0), 1);
     }
 
+    /**
+     * Checks the provided message-connection tuple list for the existence of a tuple mapping a message with the
+     * provided ID to a connection where the host which is not {@link #attachedHost} is the provided host.
+     *
+     * @param messages List to check.
+     * @param id Message ID to look for.
+     * @param host Host to look for.
+     * @return True if such a message can be found.
+     */
     private boolean messageToHostsExists(Collection<Tuple<Message, Connection>> messages, String id, DTNHost host) {
         boolean messageFound = false;
         for (Tuple<Message, Connection> tuple : messages) {
@@ -523,15 +537,22 @@ public class UtilityMessageChooserTest {
         return messageFound;
     }
 
+    /**
+     * Adds the provided messages to {@link #attachedHost}'s buffer and makes sure that at the current time, they all
+     * have a replications density that is less than 0.01 different from the provided density.
+     *
+     * @param replicationsDensity Density to set.
+     * @param messages Messages to add to buffer.
+     */
     private void createMessagesWithReplicationsDensityOf(double replicationsDensity, Message... messages) {
         // Create 100 neighbors to meet.
-        DTNHost[] hostsToMeet = new DTNHost[100];
+        DTNHost[] hostsToMeet = new DTNHost[ONE_HUNDRED_HOSTS];
         for (int i = 0; i < hostsToMeet.length; i++) {
             hostsToMeet[i] = this.utils.createHost();
         }
 
         // Make sure the correct percentage knows the message.
-        int numHostsKnowingMessage = (int)(replicationsDensity * 100);
+        int numHostsKnowingMessage = (int)(replicationsDensity * ONE_HUNDRED_HOSTS);
         for (Message m : messages) {
             this.attachedHost.createNewMessage(m);
             for (int i = 0; i < numHostsKnowingMessage; i++) {

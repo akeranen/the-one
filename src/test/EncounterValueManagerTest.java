@@ -1,9 +1,12 @@
 package test;
 
+import core.DTNHost;
 import core.SettingsError;
 import org.junit.Assert;
 import org.junit.Test;
 import routing.util.EncounterValueManager;
+
+import java.util.ArrayList;
 
 /**
  * Contains tests for the {@link routing.util.EncounterValueManager} class.
@@ -22,6 +25,8 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
 
     private static final String EXPECTED_DIFFERENT_VALUE = "Unexpected encounter value.";
     private static final String EXPECTED_DIFFERENT_RATIO = "Unexpected encounter value ratio.";
+
+    private TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
 
     /** The {@link EncounterValueManager} used in tests. */
     private EncounterValueManager evManager =
@@ -92,7 +97,7 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
         double originalEncounterValue = this.evManager.getEncounterValue();
 
         // Make sure it gets updated in the future.
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(utils.createHost());
 
         // Update shortly before time window ends.
         this.clock.setTime(WINDOW_LENGTH - SHORT_TIME_SPAN);
@@ -120,7 +125,7 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
     @Test
     public void testRatingMechanismIsUpdatedCorrectly() {
         // Add encounter.
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(this.utils.createHost());
 
         // Update encounter value.
         this.clock.setTime(WINDOW_LENGTH);
@@ -134,13 +139,49 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
     }
 
     /**
+     * Checks that multiple encounters with the same host in one time window are only counted once, but the encounter is
+     * considered again in a new time window.
+     */
+    @Test
+    public void testEncounterValueCorrectlyHandlesMultipleEncountersWithSameHost() {
+        DTNHost friend = this.utils.createHost();
+
+        // Add some encounter twice.
+        this.evManager.addEncounter(friend);
+        this.evManager.addEncounter(friend);
+
+        // Update encounter value.
+        this.clock.advance(WINDOW_LENGTH);
+        this.evManager.update();
+
+        // Check the met host was only counted once.
+        double expectedEncounterValue = NEW_DATA_WEIGHT * 1 + (1 - NEW_DATA_WEIGHT) * 0;
+        Assert.assertEquals(
+                EXPECTED_DIFFERENT_VALUE,
+                expectedEncounterValue, this.evManager.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
+
+        // Meet the host again.
+        this.evManager.addEncounter(friend);
+
+        // Update encounter value.
+        this.clock.advance(WINDOW_LENGTH);
+        this.evManager.update();
+
+        // Check new encounter was considered.
+        expectedEncounterValue = NEW_DATA_WEIGHT * 1 + (1 - NEW_DATA_WEIGHT) * expectedEncounterValue;
+        Assert.assertEquals(
+                EXPECTED_DIFFERENT_VALUE,
+                expectedEncounterValue, this.evManager.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
      * Checks that the encounter value is updated correctly if the host has not met any other node in the last time
      * window, i.e. it ages.
      */
     @Test
     public void testEncounterValueAgesCorrectlyForIsolatedHost() {
         // Start with a non-zero encounter value.
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(this.utils.createHost());
         this.clock.setTime(WINDOW_LENGTH);
         this.evManager.update();
 
@@ -172,7 +213,7 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
                 1, this.evManager.computeEncounterValueRatio(SOME_ENCOUNTER_VALUE), DOUBLE_COMPARISON_DELTA);
 
         // Change own encounter value.
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(this.utils.createHost());
         this.clock.setTime(WINDOW_LENGTH);
         this.evManager.update();
 
@@ -185,7 +226,7 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
     @Test
     public void testEncounterValueRatioIsCorrectForNoEncounterValueZero() {
         // Change own encounter value.
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(this.utils.createHost());
         this.clock.setTime(WINDOW_LENGTH);
         this.evManager.update();
         double ownEncounterValue = this.evManager.getEncounterValue();
@@ -206,13 +247,13 @@ public class EncounterValueManagerTest extends AbstractIntervalRatingMechanismTe
     @Override
     @Test
     public void testConsecutiveUpdatesWork() {
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(this.utils.createHost());
         this.clock.setTime(WINDOW_LENGTH);
         this.evManager.update();
         double encounterValueAfterFirstUpdate = this.evManager.getEncounterValue();
 
-        this.evManager.addEncounter();
-        this.evManager.addEncounter();
+        this.evManager.addEncounter(this.utils.createHost());
+        this.evManager.addEncounter(this.utils.createHost());
         this.clock.advance(WINDOW_LENGTH);
         this.evManager.update();
 

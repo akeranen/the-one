@@ -115,7 +115,7 @@ public class DisasterRouter extends ActiveRouter {
             DTNHost encounteredHost = con.getOtherNode(this.getHost());
 
             // Update rating mechanisms.
-            this.encounterValueManager.addEncounter();
+            this.encounterValueManager.addEncounter(encounteredHost);
             this.replicationsDensityManager.addEncounter(encounteredHost);
             // Initiator updates the delivery predictabilities for both hosts so that the values
             // for both are updated before exchanging them and doing transitive updates.

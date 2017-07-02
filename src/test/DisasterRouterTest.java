@@ -2,6 +2,7 @@ package test;
 
 import applications.DatabaseApplication;
 import core.BroadcastMessage;
+import core.Coord;
 import core.DataMessage;
 import core.DisasterData;
 import core.Group;
@@ -11,6 +12,7 @@ import core.SimClock;
 import org.junit.Assert;
 import org.junit.Test;
 import routing.DisasterRouter;
+import routing.util.EnergyModel;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -25,12 +27,16 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
+    private static final double TWELVE_WEEKS = 12 * 7 * 24 * 60 * 60D;
 
     /* Some priority values needed for tests. */
     private static final int PRIORITY = 5;
     private static final int VERY_HIGH_PRIORITY = 10;
     private static final int HIGH_PRIORITY = 6;
     private static final int LOW_PRIORITY = 4;
+
+    /* Some coordinates needed for tests. */
+    private static final Coord FAR_AWAY_LOCATION = new Coord(5000, 10_000);
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
@@ -528,5 +534,110 @@ public class DisasterRouterTest extends AbstractRouterTest {
             } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
             Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
         }
+    }
+
+    /**
+     * Tests that message choosing considers delivery predictability, replications density and utility (data messages).
+     */
+    public void testNonDirectMessageChoosingPerMessage() {
+        // Install DB app on h1 for data messages.
+        DatabaseApplication app = new DatabaseApplication(ts);
+        h1.getRouter().addApplication(app);
+        app.update(h1);
+
+        // Add data.
+        this.clock.advance(TWELVE_WEEKS);
+        h1.setLocation(FAR_AWAY_LOCATION);
+        DisasterData uselessData = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
+        DisasterData usefulData =
+                new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        app.disasterDataCreated(h1, uselessData);
+        app.disasterDataCreated(h1, usefulData);
+
+        // Add messages to buffer.
+        Message knownMessage = new Message(h1, h5, "M1", 0);
+        Message popularMessage = new Message(h1, h3, "M2", 0);
+        Message popularMessageWithHighDeliveryPred = new Message(h1, h4, "M3", 0);
+        Message unpopularMessage = new Message(h1, h6, "M4", 0);
+        h1.createNewMessage(knownMessage);
+        h1.createNewMessage(popularMessage);
+        h1.createNewMessage(popularMessageWithHighDeliveryPred);
+        h1.createNewMessage(unpopularMessage);
+
+        // Make sure h2 knows one of the messages.
+        h2.createNewMessage(knownMessage);
+
+        // Increase replications densities for M2 and M3 by giving it to h0, then letting h1 notice that h5 has it.
+        h0.createNewMessage(popularMessage);
+        h0.createNewMessage(popularMessageWithHighDeliveryPred);
+        h1.connect(h0);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        disconnect(h0);
+        this.updateAllNodes();
+
+        // Increase delivery predictability for message M3 by letting h2 meet its final recipient, h4.
+        h2.connect(h4);
+        disconnect(h4);
+
+        // Check which messages h1 sends to h2.
+        String[] expectedMessageIds = new String[] {
+                usefulData.toString(), popularMessageWithHighDeliveryPred.getId(), unpopularMessage.getId() };
+        h1.connect(h2);
+        this.mc.reset();
+        for (String expectedMessageId : expectedMessageIds) {
+            h1.update(false);
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessageId, mc.getLastMsg().getId());
+        }
+        Assert.assertFalse("Did not expect any additional message.", this.mc.next());
+    }
+
+    /**
+     * Tests that message choosing considers a host's power and how social it is.
+     */
+    public void testNonDirectMessageChoosingPerConnection() {
+        // Make sure h1 has some encounters.
+        h1.connect(h5);
+        // Increase h2's and h3's encounter values by providing some encounters.
+        h2.connect(h5);
+        h3.connect(h5);
+        disconnect(h5);
+        this.clock.advance(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        this.updateAllNodes();
+
+        // Make sure h2 has lower power.
+        h2.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, 0.1);
+
+        // Prepare message with medium replications density.
+        Message popularMessage = new Message(h1, h6, "M1", 0);
+        h1.createNewMessage(popularMessage);
+        h0.createNewMessage(popularMessage);
+        h1.connect(h0);
+        h1.connect(h5);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        disconnect(h1);
+        this.updateAllNodes();
+
+        // Check that we only send to the neighbor with high encounter value AND high power.
+        this.mc.reset();
+        h1.connect(h2);
+        this.updateAllNodes();
+        Assert.assertFalse("Should not send to social neighbor with low power value.", this.mc.next());
+        disconnect(h2);
+        this.updateAllNodes();
+
+        this.mc.reset();
+        h1.connect(h3);
+        this.updateAllNodes();
+        Assert.assertTrue("Should send to social neighbor with high power value.", this.mc.next());
+        disconnect(h3);
+        this.updateAllNodes();
+
+        this.mc.reset();
+        h1.connect(h4);
+        this.updateAllNodes();
+        Assert.assertFalse("Should not send to non-social neighbor with high power value.", this.mc.next());
     }
 }

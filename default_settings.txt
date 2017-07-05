@@ -85,7 +85,7 @@ Events.nrof = 9
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
 # Creation interval in seconds (one new message every 60 to 300 seconds)
-Events2.interval = 60,300
+Events2.interval = 200,1000
 # Message sizes (0.1KB - 1KB)
 Events2.size = 0.1k,1k
 # range of message source/destination addresses
@@ -98,7 +98,7 @@ Events2.priorities = 2,10
 # Class for second message type (Broadcasts with photo)
 Events3.class = BroadcastEventGenerator
 # Creation interval in seconds (one new message every 60 to 120 seconds)
-Events3.interval = 60,120
+Events3.interval = 200,400
 # Message sizes (500KB - 4MB)
 Events3.size = 500k,4M
 # range of message source/destination addresses

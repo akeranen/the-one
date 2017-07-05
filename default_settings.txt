@@ -61,14 +61,14 @@ Group.application1 = dbApp
 Group1.groupID = p
 Group1.isLocalHelper = true
 Group1.speed = 1,2
-Group1.nrofHosts = 2550
+Group1.nrofHosts = 2565
 Group1.okMaps = 1,2
 
 # group2 (transporting pedestrians) specific settings
 Group2.groupID = t
 Group2.isLocalHelper = false
 Group2.speed = 1,2
-Group2.nrofHosts = 150
+Group2.nrofHosts = 135
 Group2.okMaps = 1,2
 
 # group3 (cars) specific settings

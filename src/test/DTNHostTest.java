@@ -149,7 +149,7 @@ public class DTNHostTest extends TestCase {
                 hostWithTwoNI.hasConnections());
     }
 
-    public DTNHost createDTNHostWithTwoNetworkInterfaces(){
+    private DTNHost createDTNHostWithTwoNetworkInterfaces(){
         TestSettings settings = new TestSettings();
 
         ArrayList<NetworkInterface> networkInterfaces = new ArrayList<>();

@@ -145,7 +145,7 @@ public class DTNHostTest extends TestCase {
 
         //Break the other connection
         interface2.destroyConnection(host2.getInterfaces().get(0));
-        assertFalse("hasConnections should still return false once all connections were destroyed.",
+        assertFalse("hasConnections should return false once all connections were destroyed.",
                 hostWithTwoNI.hasConnections());
     }
 

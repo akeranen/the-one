@@ -156,6 +156,11 @@ public class TestUtils {
 		return this.allHosts;
 	}
 
+    /**
+     * Adds default test values for transmit range and transmit speed to {@link TestSettings} if the settings do not
+     * contain a range setting yet.
+     * @param s The settings to which transmit range and speed settings should be added
+     */
 	public void addTransmitRangeAndSpeedSettings(TestSettings s){
         if (!s.contains(NetworkInterface.TRANSMIT_RANGE_S)) {
             s.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");

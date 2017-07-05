@@ -149,6 +149,10 @@ public class DTNHostTest extends TestCase {
                 hostWithTwoNI.hasConnections());
     }
 
+    /**
+     * Creates and returns a new {@link DTNHost} which has two network interfaces, one
+     * {@link TestInterface} and one {@link SimpleBroadcastInterface}
+     */
     private DTNHost createDTNHostWithTwoNetworkInterfaces(){
         TestSettings settings = new TestSettings();
 

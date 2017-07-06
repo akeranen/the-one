@@ -7,7 +7,6 @@ import core.Settings;
 import core.SettingsError;
 import core.SimClock;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -205,8 +204,8 @@ public class DeliveryPredictabilityStorage {
      * @param to Host to return the delivery predictability to.
      * @return The stored delivery predictability or 0 if the host is unknown.
      */
-    public double getDeliveryPredictabilityForHost(DTNHost to) {
-        return this.getDeliveryPredictabilityForAddress(to.getAddress());
+    public double getDeliveryPredictability(DTNHost to) {
+        return this.getDeliveryPredictability(to.getAddress());
     }
 
     /**
@@ -216,16 +215,16 @@ public class DeliveryPredictabilityStorage {
      * predictability to any of the recipients.
      * @throws IllegalArgumentException if a message not of type one-to-one or multicast is provided.
      */
-    public double getDeliveryPredictabilityForMessage(Message message) {
+    public double getDeliveryPredictability(Message message) {
         switch (message.getType()) {
             case ONE_TO_ONE:
-                return this.getDeliveryPredictabilityForHost(message.getTo());
+                return this.getDeliveryPredictability(message.getTo());
             case MULTICAST:
                 MulticastMessage multicast = (MulticastMessage)message;
                 // Return the maximum predictability to any of the recipients.
                 double maxDeliveryPred = 0;
                 for (int address : multicast.getGroup().getMembers()) {
-                    maxDeliveryPred = Math.max(maxDeliveryPred, this.getDeliveryPredictabilityForAddress(address));
+                    maxDeliveryPred = Math.max(maxDeliveryPred, this.getDeliveryPredictability(address));
                 }
                 return maxDeliveryPred;
             default:
@@ -239,7 +238,7 @@ public class DeliveryPredictabilityStorage {
      * @param address The address to return the delivery predictability for.
      * @return The delivery predictability.
      */
-    private double getDeliveryPredictabilityForAddress(int address) {
+    private double getDeliveryPredictability(int address) {
         return this.deliveryPredictabilites.getOrDefault(address, 0D);
     }
 

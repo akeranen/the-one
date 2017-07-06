@@ -185,10 +185,10 @@ public class DeliveryPredictabilityStorageTest {
         double expectedPredictability = SUMMAND;
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
-                expectedPredictability, this.dpStorage.getDeliveryPredictabilityForHost(b), DOUBLE_COMPARISON_DELTA);
+                expectedPredictability, this.dpStorage.getDeliveryPredictability(b), DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
-                expectedPredictability, bStorage.getDeliveryPredictabilityForHost(this.attachedHost), DOUBLE_COMPARISON_DELTA);
+                expectedPredictability, bStorage.getDeliveryPredictability(this.attachedHost), DOUBLE_COMPARISON_DELTA);
 
         // Let B and C meet each other at a later time.
         this.clock.setTime(SECOND_MEETING_TIME);
@@ -197,21 +197,21 @@ public class DeliveryPredictabilityStorageTest {
         // Check their delivery predictabilites to each other.
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
-                expectedPredictability, cStorage.getDeliveryPredictabilityForHost(b), DOUBLE_COMPARISON_DELTA);
+                expectedPredictability, cStorage.getDeliveryPredictability(b), DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
-                expectedPredictability, bStorage.getDeliveryPredictabilityForHost(c), DOUBLE_COMPARISON_DELTA);
+                expectedPredictability, bStorage.getDeliveryPredictability(c), DOUBLE_COMPARISON_DELTA);
 
         // Check their delivery predictabilites to ownHost.
         double decayedPredictability = SUMMAND * Math.pow(GAMMA, SECOND_MEETING_TIME - FIRST_MEETING_TIME);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
-                decayedPredictability, bStorage.getDeliveryPredictabilityForHost(this.attachedHost), DOUBLE_COMPARISON_DELTA);
+                decayedPredictability, bStorage.getDeliveryPredictability(this.attachedHost), DOUBLE_COMPARISON_DELTA);
         double transitivePredictability = SUMMAND * decayedPredictability * BETA;
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
                 transitivePredictability,
-                cStorage.getDeliveryPredictabilityForHost(this.attachedHost),
+                cStorage.getDeliveryPredictability(this.attachedHost),
                 DOUBLE_COMPARISON_DELTA);
     }
 
@@ -222,12 +222,12 @@ public class DeliveryPredictabilityStorageTest {
     public void testGetDeliveryPredictabilityForUnknownHost() {
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_PREDICTABILITY,
-                0, this.dpStorage.getDeliveryPredictabilityForHost(this.testUtils.createHost()), DOUBLE_COMPARISON_DELTA);
+                0, this.dpStorage.getDeliveryPredictability(this.testUtils.createHost()), DOUBLE_COMPARISON_DELTA);
     }
 
     /**
-     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictabilityForMessage(Message)} returns the same for a
-     * one-to-one message as {@link DeliveryPredictabilityStorage#getDeliveryPredictabilityForHost(DTNHost)} does for its
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} returns the same for a
+     * one-to-one message as {@link DeliveryPredictabilityStorage#getDeliveryPredictability(DTNHost)} does for its
      * recipient.
      */
     @Test
@@ -241,14 +241,14 @@ public class DeliveryPredictabilityStorageTest {
         Message oneToOneMessage = new Message(this.testUtils.createHost(), recipient, "M1", 0);
         Assert.assertEquals(
                 "Delivery predictability of 1-to-1 message should equal the delivery predictability to the recipient",
-                this.dpStorage.getDeliveryPredictabilityForHost(recipient),
-                this.dpStorage.getDeliveryPredictabilityForMessage(oneToOneMessage),
+                this.dpStorage.getDeliveryPredictability(recipient),
+                this.dpStorage.getDeliveryPredictability(oneToOneMessage),
                 DOUBLE_COMPARISON_DELTA);
     }
 
     /**
-     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictabilityForMessage(Message)} returns the same for a
-     * multicast as the maximum {@link DeliveryPredictabilityStorage#getDeliveryPredictabilityForHost(DTNHost)} returns for any
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} returns the same for a
+     * multicast as the maximum {@link DeliveryPredictabilityStorage#getDeliveryPredictability(DTNHost)} returns for any
      * of its recipients.
      */
     @Test
@@ -268,37 +268,37 @@ public class DeliveryPredictabilityStorageTest {
         DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(oftenMetRecipientStorage, this.dpStorage);
         Assert.assertTrue(
                 "One host should be known better than the other.",
-                this.dpStorage.getDeliveryPredictabilityForHost(oftenMetRecipient)
-                        > this.dpStorage.getDeliveryPredictabilityForHost(recipient));
+                this.dpStorage.getDeliveryPredictability(oftenMetRecipient)
+                        > this.dpStorage.getDeliveryPredictability(recipient));
 
         // Check delivery predictability of a multicast message.
         Message multicast = new MulticastMessage(recipient, group, "M1", 0);
         Assert.assertEquals(
                 "Multicast delivery predictability should equal the maximum recipient delivery predictability.",
-                this.dpStorage.getDeliveryPredictabilityForHost(oftenMetRecipient),
-                this.dpStorage.getDeliveryPredictabilityForMessage(multicast),
+                this.dpStorage.getDeliveryPredictability(oftenMetRecipient),
+                this.dpStorage.getDeliveryPredictability(multicast),
                 DOUBLE_COMPARISON_DELTA);
     }
 
     /**
-     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictabilityForMessage(Message)} throws an
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} throws an
      * {@link IllegalArgumentException} if the given message argument is a {@link DataMessage}.
      */
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForDataMessage() {
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
         Message dataMessage = new DataMessage(this.testUtils.createHost(), this.attachedHost, "M1", data, 1, 0);
-        this.dpStorage.getDeliveryPredictabilityForMessage(dataMessage);
+        this.dpStorage.getDeliveryPredictability(dataMessage);
     }
 
     /**
-     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictabilityForMessage(Message)} throws an
+     * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} throws an
      * {@link IllegalArgumentException} if the given message argument is a {@link BroadcastMessage}.
      */
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForBroadcastMessage() {
         Message broadcast = new BroadcastMessage(this.testUtils.createHost(), "M1", 0);
-        this.dpStorage.getDeliveryPredictabilityForMessage(broadcast);
+        this.dpStorage.getDeliveryPredictability(broadcast);
     }
 
     /**

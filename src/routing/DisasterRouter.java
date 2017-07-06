@@ -224,7 +224,7 @@ public class DisasterRouter extends ActiveRouter {
      * @return The delivery predictability.
      */
     public double getDeliveryPredictability(Message m) {
-        return this.deliveryPredictabilityStorage.getDeliveryPredictabilityForMessage(m);
+        return this.deliveryPredictabilityStorage.getDeliveryPredictability(m);
     }
 
     /**

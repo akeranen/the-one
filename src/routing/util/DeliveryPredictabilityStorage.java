@@ -164,7 +164,7 @@ public class DeliveryPredictabilityStorage {
      * @param hostAddress Address of the host we just met.
      */
     private void updateDirectDeliveryPredictabilityTo(int hostAddress) {
-        double oldValue = this.getDeliveryPredictability(hostAddress);
+        double oldValue = this.getDeliveryPredictabilityInternal(hostAddress);
         this.deliveryPredictabilites.put(hostAddress, oldValue + (1 - oldValue) * this.summand);
     }
 
@@ -184,8 +184,8 @@ public class DeliveryPredictabilityStorage {
             }
 
             // Change them using the transitive delivery predictability equation:
-            double oldValue = this.getDeliveryPredictability(knownAddress);
-            double predictabilityToNeighbor = this.getDeliveryPredictability(othersAddress);
+            double oldValue = this.getDeliveryPredictabilityInternal(knownAddress);
+            double predictabilityToNeighbor = this.getDeliveryPredictabilityInternal(othersAddress);
             double neighborsValue = addressToDeliveryPredictability.getValue();
             this.deliveryPredictabilites.put(
                     knownAddress, oldValue + (1 - oldValue) * predictabilityToNeighbor * neighborsValue * this.beta);
@@ -205,8 +205,8 @@ public class DeliveryPredictabilityStorage {
      * @param to Host to return the delivery predictability to.
      * @return The stored delivery predictability or 0 if the host is unknown.
      */
-    public double getDeliveryPredictability(DTNHost to) {
-        return this.getDeliveryPredictability(to.getAddress());
+    public double getDeliveryPredictabilityForHost(DTNHost to) {
+        return this.getDeliveryPredictabilityForAddress(to.getAddress());
     }
 
     /**
@@ -216,15 +216,15 @@ public class DeliveryPredictabilityStorage {
      * predictability to any of the recipients.
      * @throws IllegalArgumentException if a message not of type one-to-one or multicast is provided.
      */
-    public double getDeliveryPredictability(Message message) {
+    public double getDeliveryPredictabilityForMessage(Message message) {
         switch (message.getType()) {
             case ONE_TO_ONE:
-                return this.getDeliveryPredictability(message.getTo());
+                return this.getDeliveryPredictabilityForHost(message.getTo());
             case MULTICAST:
                 MulticastMessage multicast = (MulticastMessage)message;
                 // Return the maximum predictability to any of the recipients.
                 return Arrays.stream(multicast.getGroup().getMembers())
-                        .mapToDouble(this::getDeliveryPredictability)
+                        .mapToDouble(this::getDeliveryPredictabilityForAddress)
                         .max().getAsDouble();
             default:
                 throw new IllegalArgumentException(
@@ -237,7 +237,11 @@ public class DeliveryPredictabilityStorage {
      * @param address The address to return the delivery predictability for.
      * @return The delivery predictability.
      */
-    private double getDeliveryPredictability(int address) {
+    private double getDeliveryPredictabilityForAddress(int address) {
+        return this.deliveryPredictabilites.getOrDefault(address, 0D);
+    }
+
+    private double getDeliveryPredictabilityInternal(int address) {
         return this.deliveryPredictabilites.getOrDefault(address, 0D);
     }
 

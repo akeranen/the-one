@@ -7,15 +7,15 @@ package test;
 import java.util.ArrayList;
 import java.util.List;
 
-import movement.MovementModel;
-import routing.MessageRouter;
-import routing.PassiveRouter;
 import core.ConnectionListener;
 import core.Coord;
 import core.DTNHost;
 import core.MessageListener;
 import core.ModuleCommunicationBus;
 import core.NetworkInterface;
+import movement.MovementModel;
+import routing.MessageRouter;
+import routing.PassiveRouter;
 
 /**
  * Generic convenience methods for tests.
@@ -100,13 +100,10 @@ public class TestUtils {
 	 * @return the host
 	 */
 	public DTNHost createHost(MovementModel mmProto, String name) {
-		if (settings.getNameSpace() == null) {
-			settings.setNameSpace(IFACE_NS);
-		}
-		if (!this.settings.contains(NetworkInterface.TRANSMIT_RANGE_S)) {
-			settings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
-			settings.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
-		}
+        if (settings.getNameSpace() == null) {
+            settings.setNameSpace(IFACE_NS);
+        }
+        addTransmitRangeAndSpeedSettings(this.settings);
 
 		NetworkInterface ni = new TestInterface(settings);
 		ni.setClisteners(conListeners);
@@ -159,4 +156,16 @@ public class TestUtils {
 	public List<DTNHost> getAllHosts() {
 		return this.allHosts;
 	}
+
+    /**
+     * Adds default test values for transmit range and transmit speed to {@link TestSettings} if the settings do not
+     * contain a range setting yet.
+     * @param s The settings to which transmit range and speed settings should be added
+     */
+	public void addTransmitRangeAndSpeedSettings(TestSettings s){
+        if (!s.contains(NetworkInterface.TRANSMIT_RANGE_S)) {
+            s.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
+            s.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
+        }
+    }
 }

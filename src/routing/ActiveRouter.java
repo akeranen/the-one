@@ -197,6 +197,14 @@ public abstract class ActiveRouter extends MessageRouter {
 		return getHost().getConnections();
 	}
 
+    /**
+     * Returns whether any attached {@link NetworkInterface} has any {@link Connection}.
+     * @return True if connections are found for any interface, false if not
+     */
+	protected boolean hasConnections(){
+        return getHost().hasConnections();
+    }
+
 	/**
 	 * Tries to start a transfer of message using a connection. Is starting
 	 * succeeds, the connection is added to the watch list of active connections
@@ -239,7 +247,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (this.hasNothingToSend()) {
 			return false;
 		}
-		if (this.getConnections().size() == 0) {
+		if (!this.hasConnections()) {
 			return false;
 		}
 
@@ -396,7 +404,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
 		List<Tuple<Message, Connection>> forTuples = new ArrayList<>();
-		if (getNrofMessages() == 0 || getConnections().isEmpty()) {
+		if (getNrofMessages() == 0 || !hasConnections()) {
 			/* no messages -> empty list */
 			return forTuples;
 		}
@@ -490,8 +498,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * accepted a message.
 	 */
 	protected Connection tryAllMessagesToAllConnections(){
-		List<Connection> connections = getConnections();
-		if (connections.size() == 0 || this.hasNothingToSend()) {
+		if (!hasConnections() || this.hasNothingToSend()) {
 			return null;
 		}
 		/** Check if it's time to reorder the messages */
@@ -499,8 +506,7 @@ public abstract class ActiveRouter extends MessageRouter {
             cachedMessages = sortListByQueueMode(new ArrayList<Message>(this.getMessageCollection()));
             lastMessageOrdering = SimClock.getTime();
         }
-
-		return tryMessagesToConnections(cachedMessages, connections);
+		return tryMessagesToConnections(cachedMessages, getConnections());
 	}
 
 	/**
@@ -512,8 +518,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * was started
 	 */
 	protected Connection exchangeDeliverableMessages() {
-        List<Connection> connections = getConnections();
-        if (connections.isEmpty()) {
+        if (!hasConnections()) {
 			return null;
 		}
 
@@ -525,7 +530,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		// didn't start transfer to any node -> ask messages from connected
-		for (Connection con : connections) {
+		for (Connection con : getConnections()) {
 			if (con.getOtherNode(getHost()).requestDeliverableMessages(con)) {
 				return con;
 			}
@@ -553,10 +558,10 @@ public abstract class ActiveRouter extends MessageRouter {
 		if (this.sendingConnections.size() > 0) {
 			return true; // sending something
 		}
-        List<Connection> connections = getConnections();
-        if (connections.isEmpty()) {
+        if (!hasConnections()) {
 			return false; // not connected
 		}
+        List<Connection> connections = getConnections();
 		for (Connection con : connections) {
 			if (!con.isReadyForTransfer()) {
 				return true;	// a connection isn't ready for new transfer

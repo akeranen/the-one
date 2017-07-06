@@ -1,13 +1,18 @@
 package routing.util;
 
+import core.DTNHost;
 import core.Settings;
 import core.SettingsError;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Manages a node's encounter value, a rating mechanism to measure a host's popularity.
  *
- * The measure is implemented as described in S. C. Nelson, M. Bakht and R. Kravets: Encounter-Based Routing in
+ * The measure is mostly implemented as described in S. C. Nelson, M. Bakht and R. Kravets: Encounter-Based Routing in
  * Disruption-Tolerant Networks, IEEE INFOCOM, 846-854.
+ * In contrast to the original description, we only count unique encounters.
  *
  * Created by Britta Heymann on 14.05.2017.
  */
@@ -36,7 +41,12 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
     private double agingFactor;
 
     private double encounterValue;
-    private int currentWindowCounter;
+
+    /**
+     * Remembers all hosts we have encountered in the time window.
+     * (current window counter - adapted, to filter out doubled encounters)
+     */
+    private Set<DTNHost> currentWindowEncounters = new HashSet<>();
 
     /**
      * Initializes a new instance of the {@link EncounterValueManager} class.
@@ -70,9 +80,10 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
 
     /**
      * Adds a new encounter that will be considered when computing the encounter value.
+     * @param host Encountered host.
      */
-    public void addEncounter() {
-        this.currentWindowCounter++;
+    public void addEncounter(DTNHost host) {
+        this.currentWindowEncounters.add(host);
     }
 
     /**
@@ -89,8 +100,8 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
     @Override
     protected void updateRatingMechanism() {
         this.encounterValue =
-                this.agingFactor * this.currentWindowCounter + (1 - this.agingFactor) * this.encounterValue;
-        this.currentWindowCounter = 0;
+                this.agingFactor * this.currentWindowEncounters.size() + (1 - this.agingFactor) * this.encounterValue;
+        this.currentWindowEncounters.clear();
     }
 
     /**

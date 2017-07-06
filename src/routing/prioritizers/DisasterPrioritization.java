@@ -9,6 +9,7 @@ import core.SettingsError;
 import core.SimClock;
 import routing.DisasterRouter;
 import routing.MessageRouter;
+import routing.util.MessageConnectionTuple;
 import util.Tuple;
 
 import java.util.Comparator;
@@ -42,7 +43,7 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
      * item.
      * Invalidated every timestep to ensure correct value.
      */
-    private HashMap<Tuple<Message, Connection>, Double> priorityFunctionValueCache = new HashMap<>();
+    private HashMap<MessageConnectionTuple, Double> priorityFunctionValueCache = new HashMap<>();
     /**
      * The simulation time the current {@link #priorityFunctionValueCache} is for.
      */
@@ -122,7 +123,7 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
         this.possiblyInvalidateCache();
 
         // If we already have the function value cached, don't compute it.
-        Double cachedValue = this.priorityFunctionValueCache.get(t);
+        Double cachedValue = this.priorityFunctionValueCache.get(new MessageConnectionTuple(t));
         if (cachedValue != null) {
             return cachedValue;
         }
@@ -149,7 +150,7 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
         }
 
         // Cache before returning.
-        this.priorityFunctionValueCache.put(t, priorityFunctionValue);
+        this.priorityFunctionValueCache.put(new MessageConnectionTuple(t), priorityFunctionValue);
         return priorityFunctionValue;
     }
 

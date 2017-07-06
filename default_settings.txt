@@ -84,7 +84,7 @@ Events.nrof = 9
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator
-# Creation interval in seconds (one new message every 60 to 300 seconds)
+# Creation interval in seconds (one new message every 200 to 1000 seconds)
 Events2.interval = 200,1000
 # Message sizes (0.1KB - 1KB)
 Events2.size = 0.1k,1k
@@ -97,7 +97,7 @@ Events2.priorities = 2,10
 
 # Class for second message type (Broadcasts with photo)
 Events3.class = BroadcastEventGenerator
-# Creation interval in seconds (one new message every 60 to 120 seconds)
+# Creation interval in seconds (one new message every 200 to 400 seconds)
 Events3.interval = 200,400
 # Message sizes (500KB - 4MB)
 Events3.size = 500k,4M
@@ -110,8 +110,8 @@ Events3.priorities = 2,10
 
 # Class for third message type (Multicasts small)
 Events4.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 0.1 to 3 seconds)
-Events4.interval = 0.1,3
+# Creation interval in seconds (one new message every 0.33 to 10 seconds)
+Events4.interval = 0.33,10
 # Message sizes (0.1KB - 1KB)
 Events4.size = 0.1k,1k
 # range of message source/destination addresses
@@ -144,8 +144,8 @@ Events5.group_size = 3,30
 
 # Class for fifth message type (1-to-1 messages small)
 Events6.class = MessageEventGenerator
-# Creation interval in seconds (one new message every 0.5 to 15 seconds)
-Events6.interval = 0.5,15
+# Creation interval in seconds (one new message every 1.66 to 50 seconds)
+Events6.interval = 1.66,50
 # Message sizes (0.1KB - 1KB)
 Events6.size = 0.1k,1k
 # range of message source/destination addresses
@@ -157,8 +157,8 @@ Events6.priorities = 0,0
 
 # Class for sixth message type (1-to-1 messages large)
 Events7.class = MessageEventGenerator
-# Creation interval in seconds (one new message every 50 to 150 seconds)
-Events7.interval = 50,150
+# Creation interval in seconds (one new message every 167 to 500 seconds)
+Events7.interval = 167,500
 # Message sizes (500KB - 4MB)
 Events7.size = 500k,4M
 # range of message source/destination addresses

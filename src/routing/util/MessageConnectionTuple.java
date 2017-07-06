@@ -2,21 +2,23 @@ package routing.util;
 
 import core.Connection;
 import core.Message;
-import routing.prioritizers.DisasterPrioritization;
 import util.Tuple;
 
 import java.util.HashMap;
 
 /**
+ * A wrapper around {@link Tuple<Message, Connection>} with a more suitable hash function.
+ *
  * Created by Britta Heymann on 04.07.2017.
  */
 public class MessageConnectionTuple {
-    // TODO: Tests!!!
-    // TODO: Try out different hash functions...?
-    // TODO: Why do we still compute it so often? --> count number it is reused?
+    /** The wrapped tuple. */
     private Tuple<Message, Connection> innerTuple;
-    private int hashcode;
 
+    /**
+     * Initializes a new instance {@link MessageConnectionTuple}.
+     * @param tuple The tuple to wrap.
+     */
     public MessageConnectionTuple(Tuple<Message, Connection> tuple) {
         this.innerTuple = tuple;
     }
@@ -58,17 +60,10 @@ public class MessageConnectionTuple {
      */
     @Override
     public int hashCode() {
-        if (this.hashcode == 0) {
-            this.hashcode = this.computeHashCode();
-        }
-        return this.hashcode;
-    }
-
-    private int computeHashCode() {
         int h = innerTuple.getKey().hashCode();
-        h *= 1000003;
+        h *= 1_000_003;
         h += innerTuple.getValue().hashCode();
-        h *= 1000003;
+        h *= 1_000_003;
         return Integer.hashCode(h);
     }
 
@@ -120,17 +115,8 @@ public class MessageConnectionTuple {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !obj.getClass().equals(this.getClass())) {
-            return false;
-        }
-        return this.innerTuple.equals(((MessageConnectionTuple)obj).innerTuple);
-    }
-
-    public Message getMessage() {
-        return this.innerTuple.getKey();
-    }
-
-    public Connection getConnection() {
-        return this.innerTuple.getValue();
+        return obj != null
+                && obj.getClass().equals(this.getClass())
+                && this.innerTuple.equals(((MessageConnectionTuple)obj).innerTuple);
     }
 }

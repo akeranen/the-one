@@ -163,23 +163,22 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
         this.possiblyInvalidateCache();
 
         // Then: If we already have the function value cached, don't compute it.
-        MessageConnectionTuple messageToNeighbor = new MessageConnectionTuple(t);
-        Double cachedValue = this.priorityFunctionValueCache.get(messageToNeighbor);
+        MessageConnectionTuple cacheKey = new MessageConnectionTuple(t);
+        Double cachedValue = this.priorityFunctionValueCache.get(cacheKey);
         if (cachedValue != null) {
             return cachedValue;
         }
 
         // Else: Compute the value...
-        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(
-                messageToNeighbor.getConnection().getOtherNode(this.attachedHost));
-        Message message = messageToNeighbor.getMessage();
+        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(t.getValue().getOtherNode(this.attachedHost));
+        Message message = t.getKey();
         double deliveryPredictability = neighborRouter.getDeliveryPredictability(message);
         double replicationsDensity = this.attachedRouter.getReplicationsDensity(message);
         double priorityFunctionValue = this.deliveryPredictabilityWeight * deliveryPredictability
                 + this.replicationsDensityWeight * (1 - replicationsDensity);
 
         // ...and cache it before returning.
-        this.priorityFunctionValueCache.put(messageToNeighbor, priorityFunctionValue);
+        this.priorityFunctionValueCache.put(cacheKey, priorityFunctionValue);
         return priorityFunctionValue;
     }
 

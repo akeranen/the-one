@@ -163,7 +163,7 @@ public class DeliveryPredictabilityStorage {
      * @param hostAddress Address of the host we just met.
      */
     private void updateDirectDeliveryPredictabilityTo(int hostAddress) {
-        double oldValue = this.getDeliveryPredictabilityInternal(hostAddress);
+        double oldValue = this.getDeliveryPredictability(hostAddress);
         this.deliveryPredictabilites.put(hostAddress, oldValue + (1 - oldValue) * this.summand);
     }
 
@@ -183,8 +183,8 @@ public class DeliveryPredictabilityStorage {
             }
 
             // Change them using the transitive delivery predictability equation:
-            double oldValue = this.getDeliveryPredictabilityInternal(knownAddress);
-            double predictabilityToNeighbor = this.getDeliveryPredictabilityInternal(othersAddress);
+            double oldValue = this.getDeliveryPredictability(knownAddress);
+            double predictabilityToNeighbor = this.getDeliveryPredictability(othersAddress);
             double neighborsValue = addressToDeliveryPredictability.getValue();
             this.deliveryPredictabilites.put(
                     knownAddress, oldValue + (1 - oldValue) * predictabilityToNeighbor * neighborsValue * this.beta);
@@ -239,10 +239,6 @@ public class DeliveryPredictabilityStorage {
      * @return The delivery predictability.
      */
     private double getDeliveryPredictability(int address) {
-        return this.deliveryPredictabilites.getOrDefault(address, 0D);
-    }
-
-    private double getDeliveryPredictabilityInternal(int address) {
         return this.deliveryPredictabilites.getOrDefault(address, 0D);
     }
 

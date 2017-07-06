@@ -110,6 +110,8 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
      */
     @Override
     public int compare(Tuple<Message, Connection> t1, Tuple<Message, Connection> t2) {
+        // Invalidate value cache if it is time for it.
+        this.possiblyInvalidateCache();
         return (-1) * Double.compare(this.computePriorityFunction(t1), this.computePriorityFunction(t2));
     }
 
@@ -119,15 +121,6 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
      * @return The computed value.
      */
     private double computePriorityFunction(Tuple<Message, Connection> t) {
-        // Invalidate value cache if it is time for it.
-        this.possiblyInvalidateCache();
-
-        // If we already have the function value cached, don't compute it.
-        Double cachedValue = this.priorityFunctionValueCache.get(new MessageConnectionTuple(t));
-        if (cachedValue != null) {
-            return cachedValue;
-        }
-
         // Else: Compute.
         DisasterRouter neighborRouter = DisasterPrioritization.getRouter(t.getValue().getOtherNode(this.attachedHost));
         Message m = t.getKey();
@@ -135,23 +128,26 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
         switch (m.getType()) {
             case ONE_TO_ONE:
             case MULTICAST:
+                // If we already have the function value cached, don't compute it.
+                Double cachedValue = this.priorityFunctionValueCache.get(new MessageConnectionTuple(t));
+                if (cachedValue != null) {
+                    return cachedValue;
+                }
                 double deliveryPredictability = neighborRouter.getDeliveryPredictability(m);
                 double replicationsDensity = this.attachedRouter.getReplicationsDensity(m);
                 priorityFunctionValue = this.deliveryPredictabilityWeight * deliveryPredictability
                         + this.replicationsDensityWeight * (1 - replicationsDensity);
-                break;
+
+                // Cache before returning.
+                this.priorityFunctionValueCache.put(new MessageConnectionTuple(t), priorityFunctionValue);
+                return priorityFunctionValue;
             case DATA:
-                priorityFunctionValue = ((DataMessage)m).getUtility();
-                break;
+                return ((DataMessage)m).getUtility();
             default:
                 throw new IllegalArgumentException(
                         "Priority function only defined for 1-to-1, multicasts and data messages, not for type "
                         + m.getType() + "!");
         }
-
-        // Cache before returning.
-        this.priorityFunctionValueCache.put(new MessageConnectionTuple(t), priorityFunctionValue);
-        return priorityFunctionValue;
     }
 
     private static DisasterRouter getRouter(DTNHost host) {

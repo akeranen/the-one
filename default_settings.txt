@@ -189,8 +189,8 @@ Events9.hosts = 0,2999
 Events9.seed = 0
 # data location offset for the distance between created data item and the creator
 Events9.location_offset = 0,100
-# Creation interval in seconds (one new message every 1 to 3 seconds)
-Events9.interval = 1,3
+# Creation interval in seconds (one new message every 3 to 10 seconds)
+Events9.interval = 3,10
 
 ## Movement model settings
 # World's size for Movement Models without implicit size (width, height; meters)

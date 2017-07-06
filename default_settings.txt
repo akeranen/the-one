@@ -127,8 +127,8 @@ Events4.group_size = 3,30
 
 # Class for fourth message type (Multicasts large)
 Events5.class = MulticastEventGenerator
-# Creation interval in seconds (one new message every 10 to 30 seconds)
-Events5.interval = 10,30
+# Creation interval in seconds (one new message every 30 to 100 seconds)
+Events5.interval = 30,100
 # Message sizes (500KB - 4MB)
 Events5.size = 500k,4M
 # range of message source/destination addresses

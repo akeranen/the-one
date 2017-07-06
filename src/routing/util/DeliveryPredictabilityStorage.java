@@ -223,9 +223,11 @@ public class DeliveryPredictabilityStorage {
             case MULTICAST:
                 MulticastMessage multicast = (MulticastMessage)message;
                 // Return the maximum predictability to any of the recipients.
-                return Arrays.stream(multicast.getGroup().getMembers())
-                        .mapToDouble(this::getDeliveryPredictabilityForAddress)
-                        .max().getAsDouble();
+                double maxDeliveryPred = 0;
+                for (int address : multicast.getGroup().getMembers()) {
+                    maxDeliveryPred = Math.max(maxDeliveryPred, this.getDeliveryPredictabilityForAddress(address));
+                }
+                return maxDeliveryPred;
             default:
                 throw new IllegalArgumentException(
                         "No delivery predictability for messages of type " + message.getType() + " defined!");

@@ -1,10 +1,10 @@
 {
 	"vhm_events_version" : 1,
-	"St. Johannisstift Ev. Krankenhaus" :{ 
-		"type" : "HOSPITAL", 
-		"event_range" : 30, 
-		"location" : { 
-			"x" : 10173.82, 
+	"St. Johannisstift Ev. Krankenhaus" :{
+		"type" : "HOSPITAL",
+		"event_range" : 30,
+		"location" : {
+			"x" : 10173.82,
 			"y" : 10612.26
 		} 
 	},

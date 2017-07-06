@@ -110,9 +110,17 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
      */
     @Override
     public int compare(Tuple<Message, Connection> t1, Tuple<Message, Connection> t2) {
-        // Invalidate value cache if it is time for it.
-        this.possiblyInvalidateCache();
         return (-1) * Double.compare(this.computePriorityFunction(t1), this.computePriorityFunction(t2));
+    }
+
+    /**
+     * Invalidates the {@link #priorityFunctionValueCache} if it is obsolete.
+     */
+    private void possiblyInvalidateCache() {
+        if (SimClock.getTime() > this.cacheTime) {
+            this.priorityFunctionValueCache.clear();
+            this.cacheTime = SimClock.getTime();
+        }
     }
 
     /**
@@ -121,26 +129,11 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
      * @return The computed value.
      */
     private double computePriorityFunction(Tuple<Message, Connection> t) {
-        // Else: Compute.
-        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(t.getValue().getOtherNode(this.attachedHost));
         Message m = t.getKey();
-        double priorityFunctionValue;
         switch (m.getType()) {
             case ONE_TO_ONE:
             case MULTICAST:
-                // If we already have the function value cached, don't compute it.
-                Double cachedValue = this.priorityFunctionValueCache.get(new MessageConnectionTuple(t));
-                if (cachedValue != null) {
-                    return cachedValue;
-                }
-                double deliveryPredictability = neighborRouter.getDeliveryPredictability(m);
-                double replicationsDensity = this.attachedRouter.getReplicationsDensity(m);
-                priorityFunctionValue = this.deliveryPredictabilityWeight * deliveryPredictability
-                        + this.replicationsDensityWeight * (1 - replicationsDensity);
-
-                // Cache before returning.
-                this.priorityFunctionValueCache.put(new MessageConnectionTuple(t), priorityFunctionValue);
-                return priorityFunctionValue;
+                return this.computePriorityFunctionForMessageWithRecipients(t);
             case DATA:
                 return ((DataMessage)m).getUtility();
             default:
@@ -160,13 +153,34 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
     }
 
     /**
-     * Invalidates the {@link #priorityFunctionValueCache} if it is obsolete.
+     * Computes the value used for message-connection prioritization for a message which has specified recipients,
+     * i.e. is not a {@link core.BroadcastMessage} or {@link DataMessage}.
+     * @param t The message-connection tuple to compute the value for.
+     * @return The computed value.
      */
-    private void possiblyInvalidateCache() {
-        if (SimClock.getTime() > this.cacheTime) {
-            this.priorityFunctionValueCache.clear();
-            this.cacheTime = SimClock.getTime();
+    private double computePriorityFunctionForMessageWithRecipients(Tuple<Message, Connection> t) {
+        // Invalidate cache if required.
+        this.possiblyInvalidateCache();
+
+        // Then: If we already have the function value cached, don't compute it.
+        MessageConnectionTuple messageToNeighbor = new MessageConnectionTuple(t);
+        Double cachedValue = this.priorityFunctionValueCache.get(messageToNeighbor);
+        if (cachedValue != null) {
+            return cachedValue;
         }
+
+        // Else: Compute the value...
+        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(
+                messageToNeighbor.getConnection().getOtherNode(this.attachedHost));
+        Message message = messageToNeighbor.getMessage();
+        double deliveryPredictability = neighborRouter.getDeliveryPredictability(message);
+        double replicationsDensity = this.attachedRouter.getReplicationsDensity(message);
+        double priorityFunctionValue = this.deliveryPredictabilityWeight * deliveryPredictability
+                + this.replicationsDensityWeight * (1 - replicationsDensity);
+
+        // ...and cache it before returning.
+        this.priorityFunctionValueCache.put(messageToNeighbor, priorityFunctionValue);
+        return priorityFunctionValue;
     }
 
     /**

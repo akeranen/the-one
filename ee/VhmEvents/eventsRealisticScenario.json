@@ -1,295 +1,296 @@
 {
-    "vhm_events_version": 1,
-    "Bruederkrankenhaus Sankt Josef": {
-        "event_range": 30,
-        "location": {
-            "x": 10975.67,
-            "y": 11862.38
-        },
-        "type": "HOSPITAL"
-    },
-    "Frauen- und Kinderklinik St. Louise": {
-        "event_range": 35,
-        "location": {
-            "x": 11266.37,
-            "y": 12208.07
-        },
-        "type": "HOSPITAL"
-    },
-    "St. Johannisstift Ev. Krankenhaus": {
-        "event_range": 30,
-        "location": {
-            "x": 10133.82,
-            "y": 10607.26
-        },
-        "type": "HOSPITAL"
-    },
-    "St. Vincenz-Krankenhaus": {
-        "event_range": 80,
-        "location": {
-            "x": 11068.49,
-            "y": 11123.11
-        },
-        "type": "HOSPITAL"
-    },
-    "event1": {
-        "end": 75483,
-        "event_range": 1241.68103614128,
-        "intensity": 5,
-        "location": {
-            "x": 21640,
-            "y": 10570
-        },
-        "max_range": 3725.04310842383,
-        "safe_range": 2483.36207228255,
-        "start": 11160,
-        "type": "DISASTER"
-    },
-    "event2": {
-        "end": 15106,
-        "event_range": 740.564941831496,
-        "intensity": 6,
-        "location": {
-            "x": 8719,
-            "y": 14407
-        },
-        "max_range": 2221.69482549449,
-        "safe_range": 1481.12988366299,
-        "start": 5623,
-        "type": "DISASTER"
-    },
-    "event3": {
-        "end": 74980,
-        "event_range": 434.832153798708,
-        "intensity": 5,
-        "location": {
-            "x": 20711,
-            "y": 12802
-        },
-        "max_range": 1304.49646139612,
-        "safe_range": 869.664307597415,
-        "start": 45873,
-        "type": "DISASTER"
-    },
-    "event4": {
-        "end": 57291,
-        "event_range": 756.056222885384,
-        "intensity": 10,
-        "location": {
-            "x": 15501,
-            "y": 18355
-        },
-        "max_range": 2268.16866865615,
-        "safe_range": 1512.11244577077,
-        "start": 11891,
-        "type": "DISASTER"
-    },
-    "event5": {
-        "end": 56436,
-        "event_range": 192.652999525504,
-        "intensity": 7,
-        "location": {
-            "x": 9861,
-            "y": 3105
-        },
-        "max_range": 577.958998576512,
-        "safe_range": 385.305999051008,
-        "start": 2703,
-        "type": "DISASTER"
-    },
-    "event6": {
-        "end": 85956,
-        "event_range": 122.438641973876,
-        "intensity": 2,
-        "location": {
-            "x": 20510,
-            "y": 19937
-        },
-        "max_range": 367.315925921627,
-        "safe_range": 244.877283947751,
-        "start": 7214,
-        "type": "DISASTER"
-    },
-    "event7": {
-        "end": 70270,
-        "event_range": 898.636986932719,
-        "intensity": 10,
-        "location": {
-            "x": 15895,
-            "y": 1581
-        },
-        "max_range": 2695.91096079816,
-        "safe_range": 1797.27397386544,
-        "start": 2112,
-        "type": "DISASTER"
-    },
-    "event8": {
-        "end": 85150,
-        "event_range": 527.33749379,
-        "intensity": 4,
-        "location": {
-            "x": 12401,
-            "y": 5384
-        },
-        "max_range": 1582.01248137,
-        "safe_range": 1054.67498758,
-        "start": 2983,
-        "type": "DISASTER"
-    },
-    "event9": {
-        "end": 18059,
-        "event_range": 452.413973763208,
-        "intensity": 2,
-        "location": {
-            "x": 11598,
-            "y": 19498
-        },
-        "max_range": 1357.24192128962,
-        "safe_range": 904.827947526416,
-        "start": 33863,
-        "type": "DISASTER"
-    },
-    "event10": {
-        "end": 68241,
-        "event_range": 1300.61762184397,
-        "intensity": 5,
-        "location": {
-            "x": 8931,
-            "y": 1197
-        },
-        "max_range": 3901.85286553191,
-        "safe_range": 2601.23524368794,
-        "start": 13540,
-        "type": "DISASTER"
-    },
-    "event11": {
-        "end": 49492,
-        "event_range": 217.969489048573,
-        "intensity": 5,
-        "location": {
-            "x": 3263,
-            "y": 14423
-        },
-        "max_range": 653.908467145718,
-        "safe_range": 435.938978097145,
-        "start": 44377,
-        "type": "DISASTER"
-    },
-    "event12": {
-        "end": 70256,
-        "event_range": 396.727012729782,
-        "intensity": 2,
-        "location": {
-            "x": 12009,
-            "y": 14632
-        },
-        "max_range": 1190.18103818934,
-        "safe_range": 793.454025459563,
-        "start": 39711,
-        "type": "DISASTER"
-    },
-    "event13": {
-        "end": 86238,
-        "event_range": 2183.36961523563,
-        "intensity": 9,
-        "location": {
-            "x": 7617,
-            "y": 16792
-        },
-        "max_range": 6550.10884570689,
-        "safe_range": 4366.73923047126,
-        "start": 46083,
-        "type": "DISASTER"
-    },
-    "event14": {
-        "end": 67222,
-        "event_range": 805.794561387066,
-        "intensity": 3,
-        "location": {
-            "x": 11150,
-            "y": 193
-        },
-        "max_range": 2417.3836841612,
-        "safe_range": 1611.58912277413,
-        "start": 26092,
-        "type": "DISASTER"
-    },
-    "event15": {
-        "end": 51525,
-        "event_range": 875.487014279275,
-        "intensity": 10,
-        "location": {
-            "x": 1290,
-            "y": 19170
-        },
-        "max_range": 2626.46104283783,
-        "safe_range": 1750.97402855855,
-        "start": 32875,
-        "type": "DISASTER"
-    },
-    "event16": {
-        "end": 72116,
-        "event_range": 783.511776171957,
-        "intensity": 10,
-        "location": {
-            "x": 21593,
-            "y": 15388
-        },
-        "max_range": 2350.53532851587,
-        "safe_range": 1567.02355234391,
-        "start": 45348,
-        "type": "DISASTER"
-    },
-    "event17": {
-        "end": 77114,
-        "event_range": 400.340249579084,
-        "intensity": 3,
-        "location": {
-            "x": 15735,
-            "y": 9658
-        },
-        "max_range": 1201.02074873725,
-        "safe_range": 800.680499158167,
-        "start": 2141,
-        "type": "DISASTER"
-    },
-    "event18": {
-        "end": 48425,
-        "event_range": 132.299954419001,
-        "intensity": 7,
-        "location": {
-            "x": 7920,
-            "y": 12261
-        },
-        "max_range": 396.899863257003,
-        "safe_range": 264.599908838002,
-        "start": 13682,
-        "type": "DISASTER"
-    },
-    "event19": {
-        "end": 41144,
-        "event_range": 1558.87272733274,
-        "intensity": 6,
-        "location": {
-            "x": 14809,
-            "y": 18785
-        },
-        "max_range": 4676.61818199823,
-        "safe_range": 3117.74545466548,
-        "start": 47047,
-        "type": "DISASTER"
-    },
-    "event20": {
-        "end": 50408,
-        "event_range": 114.757946146764,
-        "intensity": 6,
-        "location": {
-            "x": 13520,
-            "y": 12912
-        },
-        "max_range": 344.273838440293,
-        "safe_range": 229.515892293529,
-        "start": 44978,
-        "type": "DISASTER"
+  "vhm_events_version": 1,
+  "St. Johannisstift Ev. Krankenhaus": {
+    "type": "HOSPITAL",
+    "event_range": 32,
+    "location": {
+      "x": 10174,
+      "y": 10612
     }
+  },
+  "St. Vincenz-Krankenhaus": {
+    "type": "HOSPITAL",
+    "event_range": 27,
+    "location": {
+      "x": 10928,
+      "y": 11053
+    }
+  },
+  "Brüderkrankenhaus Sankt Josef": {
+    "type": "HOSPITAL",
+    "event_range": 64,
+    "location": {
+      "x": 11036,
+      "y": 11862
+    }
+  },
+  "Frauen- und Kinderklinik St. Louise": {
+    "type": "HOSPITAL",
+    "event_range": 42,
+    "location": {
+      "x": 11236,
+      "y": 12208
+    }
+  },
+  "event1": {
+    "type": "DISASTER",
+    "event_range": 487,
+    "safe_range": 509,
+    "max_range": 1603,
+    "intensity": 9,
+    "start": 48626,
+    "end": 50400,
+    "location": {
+      "x": 3887,
+      "y": 13309
+    }
+  },
+  "event2": {
+    "type": "DISASTER",
+    "event_range": 315,
+    "safe_range": 514,
+    "max_range": 2207,
+    "intensity": 5,
+    "start": 26911,
+    "end": 29088,
+    "location": {
+      "x": 3386,
+      "y": 5083
+    }
+  },
+  "event3": {
+    "type": "DISASTER",
+    "event_range": 389,
+    "safe_range": 593,
+    "max_range": 2622,
+    "intensity": 7,
+    "start": 23893,
+    "end": 27415,
+    "location": {
+      "x": 4170,
+      "y": 13203
+    }
+  },
+  "event4": {
+    "type": "DISASTER",
+    "event_range": 102,
+    "safe_range": 260,
+    "max_range": 1302,
+    "intensity": 1,
+    "start": 35616,
+    "end": 37905,
+    "location": {
+      "x": 5347,
+      "y": 14057
+    }
+  },
+  "event5": {
+    "type": "DISASTER",
+    "event_range": 600,
+    "safe_range": 648,
+    "max_range": 1457,
+    "intensity": 10,
+    "start": 36026,
+    "end": 40620,
+    "location": {
+      "x": 15893,
+      "y": 12362
+    }
+  },
+  "event6": {
+    "type": "DISASTER",
+    "event_range": 163,
+    "safe_range": 355,
+    "max_range": 1766,
+    "intensity": 3,
+    "start": 38604,
+    "end": 43149,
+    "location": {
+      "x": 18615,
+      "y": 4510
+    }
+  },
+  "event7": {
+    "type": "DISASTER",
+    "event_range": 459,
+    "safe_range": 654,
+    "max_range": 1057,
+    "intensity": 9,
+    "start": 3987,
+    "end": 7758,
+    "location": {
+      "x": 4730,
+      "y": 14332
+    }
+  },
+  "event8": {
+    "type": "DISASTER",
+    "event_range": 326,
+    "safe_range": 474,
+    "max_range": 1730,
+    "intensity": 5,
+    "start": 35721,
+    "end": 38082,
+    "location": {
+      "x": 13850,
+      "y": 3012
+    }
+  },
+  "event9": {
+    "type": "DISASTER",
+    "event_range": 438,
+    "safe_range": 458,
+    "max_range": 1549,
+    "intensity": 7,
+    "start": 36284,
+    "end": 39828,
+    "location": {
+      "x": 5804,
+      "y": 4908
+    }
+  },
+  "event10": {
+    "type": "DISASTER",
+    "event_range": 536,
+    "safe_range": 566,
+    "max_range": 1385,
+    "intensity": 10,
+    "start": 33572,
+    "end": 37128,
+    "location": {
+      "x": 10414,
+      "y": 6035
+    }
+  },
+  "event11": {
+    "type": "DISASTER",
+    "event_range": 107,
+    "safe_range": 124,
+    "max_range": 1006,
+    "intensity": 2,
+    "start": 6968,
+    "end": 10416,
+    "location": {
+      "x": 19001,
+      "y": 12117
+    }
+  },
+  "event12": {
+    "type": "DISASTER",
+    "event_range": 63,
+    "safe_range": 153,
+    "max_range": 1045,
+    "intensity": 1,
+    "start": 10284,
+    "end": 12664,
+    "location": {
+      "x": 18000,
+      "y": 4050
+    }
+  },
+  "event13": {
+    "type": "DISASTER",
+    "event_range": 292,
+    "safe_range": 302,
+    "max_range": 1106,
+    "intensity": 4,
+    "start": 46005,
+    "end": 49144,
+    "location": {
+      "x": 8547,
+      "y": 9803
+    }
+  },
+  "event14": {
+    "type": "DISASTER",
+    "event_range": 358,
+    "safe_range": 464,
+    "max_range": 1045,
+    "intensity": 7,
+    "start": 25697,
+    "end": 30683,
+    "location": {
+      "x": 15709,
+      "y": 3160
+    }
+  },
+  "event15": {
+    "type": "DISASTER",
+    "event_range": 533,
+    "safe_range": 764,
+    "max_range": 3415,
+    "intensity": 10,
+    "start": 36490,
+    "end": 38665,
+    "location": {
+      "x": 13357,
+      "y": 9963
+    }
+  },
+  "event16": {
+    "type": "DISASTER",
+    "event_range": 81,
+    "safe_range": 224,
+    "max_range": 1392,
+    "intensity": 1,
+    "start": 23080,
+    "end": 25885,
+    "location": {
+      "x": 5217,
+      "y": 8548
+    }
+  },
+  "event17": {
+    "type": "DISASTER",
+    "event_range": 481,
+    "safe_range": 724,
+    "max_range": 1479,
+    "intensity": 9,
+    "start": 34589,
+    "end": 39968,
+    "location": {
+      "x": 18883,
+      "y": 3398
+    }
+  },
+  "event18": {
+    "type": "DISASTER",
+    "event_range": 249,
+    "safe_range": 286,
+    "max_range": 1068,
+    "intensity": 3,
+    "start": 11629,
+    "end": 14092,
+    "location": {
+      "x": 14719,
+      "y": 17073
+    }
+  },
+  "event19": {
+    "type": "DISASTER",
+    "event_range": 400,
+    "safe_range": 638,
+    "max_range": 1889,
+    "intensity": 7,
+    "start": 33962,
+    "end": 36533,
+    "location": {
+      "x": 18511,
+      "y": 5278
+    }
+  },
+  "event20": {
+    "type": "DISASTER",
+    "event_range": 543,
+    "safe_range": 651,
+    "max_range": 1900,
+    "intensity": 9,
+    "start": 3070,
+    "end": 6044,
+    "location": {
+      "x": 17829,
+      "y": 2463
+    }
+  }
 }
+

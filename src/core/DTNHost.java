@@ -200,6 +200,19 @@ public class DTNHost implements Comparable<DTNHost>, Addressable {
     }
 
     /**
+     * Returns whether any attached {@link NetworkInterface} has any {@link Connection}.
+     * @return True if connections are found for any interface, false if not
+     */
+    public boolean hasConnections(){
+        for (NetworkInterface i : net) {
+            if(!i.getConnections().isEmpty()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns the current location of this host.
      *
      * @return The location

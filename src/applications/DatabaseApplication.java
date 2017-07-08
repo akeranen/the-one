@@ -55,7 +55,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     public static final String MIN_INTERVAL_MAP_SENDING = "mapSendingInterval";
     /**
      * The number of database items to sent per database message -setting id ({@value}).
-     * May be less if less data is sent to a neighbor.
+     * Messages with less database items may be created if the total number to sent is not a multiple of this value.
      */
     public static final String ITEMS_PER_MESSAGE = "itemsPerMessage";
 
@@ -95,7 +95,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     /** The prefix of all data message IDs. */
     private String messageIdPrefix;
 
-    /** The number for the data message that gets created next. */
+    /** The number specified in the ID for the data message that gets created next. */
     private int nextMessageId;
 
     /** Pseudo-random number generator for this application. */

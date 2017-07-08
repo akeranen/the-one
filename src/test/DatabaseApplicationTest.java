@@ -216,6 +216,7 @@ public class DatabaseApplicationTest {
         /* Check data was added. */
         List<DataMessage> interestingData = copy.createDataMessages(host);
         TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
+        TestCase.assertEquals("Expected one data item.", 1, interestingData.get(0).getData().size());
         TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData().get(0));
     }
 
@@ -271,7 +272,7 @@ public class DatabaseApplicationTest {
 
         /* Check data was added. */
         List<DataMessage> interestingData = this.app.createDataMessages(this.hostAttachedToApp);
-        TestCase.assertEquals("Expected two data items.", 1, interestingData.size());
+        TestCase.assertEquals("Expected two data items in one message.", 1, interestingData.size());
         TestCase.assertEquals("Expected two data items.", TWO_DATA_ITEMS, interestingData.get(0).getData().size());
         TestCase.assertTrue("Expected data to include both handled data items.",
                 interestingData.get(0).getData().contains(usefulData));

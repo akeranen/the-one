@@ -150,7 +150,8 @@ public class EpidemicMessageChooserTest {
         Collection<Tuple<Message, Connection>> selected = this.chooseMessages();
         Assert.assertEquals("Only one message should have been returned.", 1, selected.size());
         DataMessage selectedMessage = (DataMessage)selected.iterator().next().getKey();
-        Assert.assertEquals("Correct message has been returned.", perfectUtilityData, selectedMessage.getData().get(0));
+        Assert.assertEquals("Message should only store one data item.", 1, selectedMessage.getData().size());
+        Assert.assertEquals("Correct item has been returned.", perfectUtilityData, selectedMessage.getData().get(0));
     }
 
     /**

@@ -1,12 +1,18 @@
 package core;
 
+import util.Tuple;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
- * A message wrapping a data item.
+ * A message wrapping multiple data items.
  *
  * Created by Britta Heymann on 12.04.2017.
  */
 public class DataMessage extends Message {
-    private DisasterData data;
+    private List<DisasterData> data;
     private double utility;
 
     /**
@@ -14,14 +20,57 @@ public class DataMessage extends Message {
      * @param from The message's sender.
      * @param to The message receiver.
      * @param id The message's ID.
-     * @param data The {@link DisasterData} this message is wrapping.
-     * @param utility Utility of the {@link DisasterData} when this message was created.
+     * @param dataWithUtility The {@link DisasterData} items this message is wrapping and the utility of each
+     * {@link DisasterData} at the time this message was created.
      * @param priority Priority of the message.
      */
-    public DataMessage(DTNHost from, DTNHost to, String id, DisasterData data, double utility, int priority) {
-        super(from, to, id, data.getSize(), priority);
-        this.utility = utility;
-        this.data = data;
+    public DataMessage(
+            DTNHost from, DTNHost to, String id, Iterable<Tuple<DisasterData, Double>> dataWithUtility, int priority) {
+        super(from, to, id, computeTotalDataSize(dataWithUtility), priority);
+        this.utility = computeUtility(dataWithUtility);
+
+        List<DisasterData> dataList = new ArrayList<>();
+        for (Tuple<DisasterData, Double> dataItem : dataWithUtility) {
+            dataList.add(dataItem.getKey());
+        }
+        this.data = Collections.unmodifiableList(dataList);
+    }
+
+    /**
+     * Copy constructor of {@link DataMessage} which changes its receiver.
+     * @param message Message to copy.
+     * @param receiver The new receiver.
+     */
+    private DataMessage(DataMessage message, DTNHost receiver) {
+        super(message.from, receiver, message.getId(), message.size, message.getPriority());
+        this.utility = message.utility;
+        this.data = message.data;
+    }
+
+    /**
+     * Computes the total size of the given data.
+     * @param dataWithUtility Data to compute total size for.
+     * @return The sum of all item sizes.
+     */
+    private static int computeTotalDataSize(Iterable<Tuple<DisasterData, Double>> dataWithUtility) {
+        int size = 0;
+        for (Tuple<DisasterData, Double> item : dataWithUtility) {
+            size += item.getKey().getSize();
+        }
+        return size;
+    }
+
+    /**
+     * Computes overall utility for a message wrapping all provided data items.
+     * @param dataWithUtility The data items to wrap and their utilities.
+     * @return A combined utility for the whole message.
+     */
+    private static double computeUtility(Iterable<Tuple<DisasterData, Double>> dataWithUtility) {
+        double maxUtility = 0;
+        for (Tuple<DisasterData, Double> item : dataWithUtility) {
+            maxUtility = Math.max(maxUtility, item.getValue());
+        }
+        return maxUtility;
     }
 
     /**
@@ -31,7 +80,7 @@ public class DataMessage extends Message {
      * @return The new message.
      */
     public DataMessage instantiateFor(DTNHost receiver) {
-        DataMessage m = new DataMessage(this.from, receiver, this.id, this.data, this.utility, this.getPriority());
+        DataMessage m = new DataMessage(this, receiver);
         m.copyFrom(this);
         return m;
     }
@@ -50,8 +99,8 @@ public class DataMessage extends Message {
      * Gets the data this message is wrapping.
      * @return The wrapped {@link DisasterData}.
      */
-    public DisasterData getData() {
-        return data;
+    public List<DisasterData> getData() {
+        return Collections.unmodifiableList(data);
     }
 
     /**

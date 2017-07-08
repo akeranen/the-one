@@ -22,6 +22,7 @@ import routing.prioritizers.DisasterPrioritizationStrategy;
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static test.DisasterRouterTestUtils.RD_WINDOW_LENGTH;
 
@@ -310,7 +311,8 @@ public class DisasterPrioritizationTest {
         Message knownMessage = new Message(this.host, neighbor, "M1", 0);
         Message unknownMessage = new Message(this.host, neighbor, "M2", 0);
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
-        Message dataMessage = new DataMessage(this.host, neighbor, "D1", data, MEDIUM_UTILITY, 0);
+        Message dataMessage = new DataMessage(
+                this.host, neighbor, "D1", Collections.singleton(new Tuple<>(data, MEDIUM_UTILITY)), 0);
 
         // One of the non-data messages should be known by the neighbor s.t. they have different priority values.
         neighbor.createNewMessage(knownMessage);

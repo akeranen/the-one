@@ -17,6 +17,7 @@ import routing.util.EnergyModel;
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,11 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
      * no map has been sent in the specified interval, a randomly chosen map data item is sent to all neighbors.
      */
     public static final String MIN_INTERVAL_MAP_SENDING = "mapSendingInterval";
+    /**
+     * The number of database items to sent per database message -setting id ({@value}).
+     * May be less if less data is sent to a neighbor.
+     */
+    public static final String ITEMS_PER_MESSAGE = "itemsPerMessage";
 
     /** Application ID */
     public static final String APP_ID = "AdHocNetworksInDisasterScenarios";
@@ -72,6 +78,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     private long[] databaseSizeRange;
     private int seed;
     private double mapSendingInterval;
+    private int itemsPerMessage;
 
     /** The host this application instance is attached to. */
     private DTNHost host;
@@ -84,6 +91,12 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
 
     /** The last time when a map data item was sent to neighbors. */
     private double lastMapSendingTime;
+
+    /** The prefix of all data message IDs. */
+    private String messageIdPrefix;
+
+    /** The number for the data message that gets created next. */
+    private int nextMessageId;
 
     /** Pseudo-random number generator for this application. */
     private Random pseudoRandom;
@@ -100,10 +113,12 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         this.databaseSizeRange = s.getCsvLongs(DATABASE_SIZE_RANGE, Settings.EXPECTED_VALUE_NUMBER_FOR_RANGE);
         this.seed = s.getInt(SIZE_RANDOMIZER_SEED);
         this.mapSendingInterval = s.getDouble(MIN_INTERVAL_MAP_SENDING);
+        this.itemsPerMessage = s.getInt(ITEMS_PER_MESSAGE);
 
         /* Check they are valid. */
         DatabaseApplication.checkUtilityThreshold(this.utilityThreshold);
         DatabaseApplication.checkDatabaseSizeRange(this.databaseSizeRange);
+        DatabaseApplication.checkItemsPerMessage(this.itemsPerMessage);
 
         /* Set last map sending time. */
         this.lastMapSendingTime = 0.0;
@@ -123,6 +138,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         this.databaseSizeRange = application.databaseSizeRange;
         this.seed = application.seed;
         this.mapSendingInterval = application.mapSendingInterval;
+        this.itemsPerMessage = application.itemsPerMessage;
 
         DisasterDataNotifier.addListener(this);
     }
@@ -151,6 +167,18 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         }
         if (databaseSizeRange[0] < 0) {
             throw new SettingsError("Database size may not be negative!");
+        }
+    }
+
+    /**
+     * Checks that we have at least one item per message.
+     *
+     * @param itemsPerMessage Setting to check.
+     * @throws SettingsError if less than one item should be sent per message.
+     */
+    private static void checkItemsPerMessage(double itemsPerMessage) {
+        if (itemsPerMessage <= 0) {
+            throw new SettingsError("Items per message must be at least 1!");
         }
     }
 
@@ -193,7 +221,9 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         // If the message is a data message sent to the host the application instance is attached to, unwrap and store
         // the data and don't forward the message any further.
         if (msg instanceof DataMessage && msg.getTo().equals(this.host)) {
-            this.database.add(((DataMessage) msg).getData());
+            for (DisasterData dataItem : ((DataMessage)msg).getData()) {
+                this.database.add(dataItem);
+            }
             return null;
         } else {
             // Else act as you would usually do.
@@ -228,20 +258,33 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             }
         }
 
-        // Then create a message out of each data item.
-        List<DataMessage> messages = new ArrayList<>(interestingData.size());
+        // Sort data items by utility.
+        interestingData.sort(Comparator.comparingDouble(t -> (-1) * t.getValue()));
+
+        // Then create a message out of every x data items.
         DTNHost unknownReceiver = null;
-        for (Tuple<DisasterData, Double> dataWithUtility : interestingData) {
-            DisasterData data = dataWithUtility.getKey();
-            double utilityValue = dataWithUtility.getValue();
+        List<DataMessage> messages = new ArrayList<>(interestingData.size());
+        for (int i = 0; i < interestingData.size(); i += itemsPerMessage) {
+            int firstIndexNotToSent = Math.min(i + itemsPerMessage, interestingData.size());
+            List<Tuple<DisasterData, Double>> subsetToSent = interestingData.subList(i, firstIndexNotToSent);
             DataMessage message = new DataMessage(
-                    this.host, unknownReceiver, data.toString(), data, utilityValue, DATA_MESSAGE_PRIORITY);
+                    this.host, unknownReceiver, this.getNextDataMessageId(), subsetToSent, DATA_MESSAGE_PRIORITY);
             message.setAppID(APP_ID);
             messages.add(message);
         }
 
         // And return all messages.
         return messages;
+    }
+
+    /**
+     * Gets the ID for the next data message.
+     * @return A message ID.
+     */
+    private String getNextDataMessageId() {
+        String messageId = this.messageIdPrefix + this.nextMessageId;
+        this.nextMessageId++;
+        return messageId;
     }
 
     /**
@@ -311,6 +354,10 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             }
         }
         this.stashedCreationData.clear();
+
+        // Initialize database message ID generator.
+        this.messageIdPrefix = "DataFrom" + host.getAddress() + "_";
+        this.nextMessageId = 1;
     }
 
     /**
@@ -341,6 +388,10 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
 
     public double getMapSendingInterval() {
         return mapSendingInterval;
+    }
+
+    public int getItemsPerMessage() {
+        return this.itemsPerMessage;
     }
 
     /**

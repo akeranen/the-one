@@ -18,10 +18,12 @@ import org.junit.Test;
 import report.Report;
 import report.TrafficReport;
 import routing.EpidemicRouter;
+import util.Tuple;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link report.TrafficReport} class.
@@ -178,7 +180,8 @@ public class TrafficReportTest extends AbstractReportTest {
         //Create data and data message
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER,
                 DATA_SIZE, AFTER_WARM_UP_TIME, sender.getLocation());
-        this.sender.createNewMessage(new DataMessage(this.sender, this.receiver, "M5", data, DATA_SIZE, 1));
+        this.sender.createNewMessage(new DataMessage(
+                this.sender, this.receiver, "M5", Collections.singleton(new Tuple<>(data, 1D)), 1));
 
         // Transfer messages.
         for (int msg=1; msg<=noOfMessages; msg++){

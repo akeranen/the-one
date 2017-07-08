@@ -15,8 +15,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import routing.util.DeliveryPredictabilityStorage;
+import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link routing.util.DeliveryPredictabilityStorage} class.
@@ -287,7 +289,8 @@ public class DeliveryPredictabilityStorageTest {
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForDataMessage() {
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
-        Message dataMessage = new DataMessage(this.testUtils.createHost(), this.attachedHost, "M1", data, 1, 0);
+        Message dataMessage = new DataMessage(
+                this.testUtils.createHost(), this.attachedHost, "M1", Collections.singleton(new Tuple<>(data, 1D)),0);
         this.dpStorage.getDeliveryPredictability(dataMessage);
     }
 

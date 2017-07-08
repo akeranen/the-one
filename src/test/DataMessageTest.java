@@ -8,8 +8,10 @@ import core.Message;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
+import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Contains tests for the {@link DataMessage} class.
@@ -19,11 +21,14 @@ import java.util.ArrayList;
 public class DataMessageTest {
     /** Properties of data resp. data message used in tests. */
     private static final int DATA_SIZE = 34;
-    private static final int PRIORITY = 2;
+    private static final int SMALL_DATA_SIZE = 12;
     private static final double UTILITY = 0.1;
+    private static final double LARGER_UTILITY = 0.11;
+    private static final int PRIORITY = 2;
+    private static final int ITEMS_IN_MESSAGE = 2;
 
     /** Data used in test message. */
-    private DisasterData data = new DisasterData(DisasterData.DataType.MARKER, DATA_SIZE, 0, new Coord(0, 0));
+    private List<DisasterData> data;
     /** Test message. */
     private DataMessage message;
 
@@ -37,7 +42,16 @@ public class DataMessageTest {
     @Before
     public void setUp() {
         this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
-        this.message = new DataMessage(utils.createHost(), utils.createHost(), "D1", this.data, UTILITY, PRIORITY);
+
+        this.data = new ArrayList<>(ITEMS_IN_MESSAGE);
+        this.data.add(new DisasterData(DisasterData.DataType.MARKER, DATA_SIZE, 0, new Coord(0, 0)));
+        this.data.add(new DisasterData(DisasterData.DataType.RESOURCE, SMALL_DATA_SIZE, 0, new Coord(0, 0)));
+
+        List<Tuple<DisasterData, Double>> dataWithUtility = new ArrayList<>(ITEMS_IN_MESSAGE);
+        dataWithUtility.add(new Tuple<>(this.data.get(0), UTILITY));
+        dataWithUtility.add(new Tuple<>(this.data.get(1), LARGER_UTILITY));
+
+        this.message = new DataMessage(utils.createHost(), utils.createHost(), "D1", dataWithUtility, PRIORITY);
     }
 
     @Test
@@ -47,12 +61,12 @@ public class DataMessageTest {
 
     @Test
     public void testGetData() {
-        TestCase.assertEquals("Expected different data item.", this.data, this.message.getData());
+        TestCase.assertEquals("Expected different data.", this.data, this.message.getData());
     }
 
     @Test
-    public void testGetUtility() {
-        TestCase.assertEquals("Expected different utility.", UTILITY, this.message.getUtility());
+    public void testUtilityEqualsMaxUtility() {
+        TestCase.assertEquals("Expected different utility.", LARGER_UTILITY, this.message.getUtility());
     }
 
     @Test
@@ -61,8 +75,9 @@ public class DataMessageTest {
     }
 
     @Test
-    public void testSizeEqualsDataSize() {
-        TestCase.assertEquals("Expected size to equal data size.", this.data.getSize(), this.message.getSize());
+    public void testSizeEqualsSumOfDataSizes() {
+        TestCase.assertEquals("Expected size to equal the sum of data sizes.",
+                DATA_SIZE + SMALL_DATA_SIZE, this.message.getSize());
     }
 
     @Test
@@ -74,13 +89,15 @@ public class DataMessageTest {
     @Test
     public void testReplicateCopiesData() {
         Message copy = this.message.replicate();
-        TestCase.assertEquals("Copy should point to same data.", this.data, ((DataMessage)copy).getData());
+        TestCase.assertEquals("Copy should point to same data.",
+                this.message.getData(), ((DataMessage)copy).getData());
     }
 
     @Test
     public void testReplicateCopiesUtility() {
         Message copy = this.message.replicate();
-        TestCase.assertEquals("Utility value should not have changed.", UTILITY, ((DataMessage)copy).getUtility());
+        TestCase.assertEquals("Utility value should not have changed.",
+                this.message.getUtility(), ((DataMessage)copy).getUtility());
     }
 
     @Test
@@ -93,12 +110,14 @@ public class DataMessageTest {
     @Test
     public void testInstantiateForCopiesData() {
         DataMessage instantiation = this.message.instantiateFor(this.utils.createHost());
-        TestCase.assertEquals("Instantiation should point to same data.", this.data, instantiation.getData());
+        TestCase.assertEquals("Instantiation should point to same data.",
+                this.message.getData(), instantiation.getData());
     }
 
     @Test
     public void testInstantiateForCopiesUtility() {
         DataMessage instantiation = this.message.instantiateFor(this.utils.createHost());
-        TestCase.assertEquals("Utility value should not have changed.", UTILITY, instantiation.getUtility());
+        TestCase.assertEquals("Utility value should not have changed.",
+                this.message.getUtility(), instantiation.getUtility());
     }
 }

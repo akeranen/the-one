@@ -12,6 +12,9 @@ import core.SimClock;
 import org.junit.Assert;
 import org.junit.Test;
 import routing.DisasterRouter;
+import util.Tuple;
+
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -360,7 +363,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         // Make sure messages are sent in correct order.
         String[] expectedIdOrder = {
                 directMulticast.getId(), directMessage.getId(), broadcast.getId(), indirectMessage.getId(),
-                indirectMulticast.getId(), data.toString()
+                indirectMulticast.getId(), "DataFrom1_3"
         };
         this.mc.reset();
         for (String expectedId : expectedIdOrder) {
@@ -449,8 +452,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
     public void testNonDirectMessageSorting() {
         // Create messages to sort.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
-        Message vipDataMessages = new DataMessage(h1, h3, "D1", data, 0, VERY_HIGH_PRIORITY);
-        Message usefulDataMessages = new DataMessage(h1, h3, "D2", data, 1, 0);
+        Message vipDataMessages =
+                new DataMessage(h1, h3, "D1", Collections.singleton(new Tuple<>(data, 0D)), VERY_HIGH_PRIORITY);
+        Message usefulDataMessages = new DataMessage(h1, h3, "D2", Collections.singleton(new Tuple<>(data, 1D)), 0);
         Message highDeliveryPredictabilityMessage = new Message(h1, h4, "M1", 0, 0);
         Message lowReplicationsDensityMessage = new Message(h1, h3, "M2", 0, 0);
         Message highReplicationsDensityMessage = new Message(h1, h3, "M3", 0, 0);

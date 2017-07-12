@@ -1,0 +1,12 @@
+## Scenarios with duration of one day and with many events
+## Scenario used for the evaluation of the different routing protocols
+## Scenario settings
+# 50400s = 14h about one day from 8am to 22pm
+Scenario.endTime = 50400
+Scenario.name = realisticScenario
+
+#Settings for the disaster and hospital events
+# max number of external events to preload
+Events1.nrofPreload = 24
+# path to external events file 
+Events1.filePath = ee/VhmEvents/eventsRealisticScenario.json

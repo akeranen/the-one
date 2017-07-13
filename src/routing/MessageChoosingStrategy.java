@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Strategy to choose messages in routing.
+ * Strategy to choose non-direct messages in routing.
  *
  * Created by Britta Heymann on 19.05.2017.
  */
@@ -20,7 +20,7 @@ public interface MessageChoosingStrategy {
      * @param connections All connections the host has.
      * @return Which messages should be send to which neighbors.
      */
-    Collection<Tuple<Message, Connection>> findOtherMessages(
+    Collection<Tuple<Message, Connection>> chooseNonDirectMessages(
             Collection<Message> messages, List<Connection> connections);
 
     /**

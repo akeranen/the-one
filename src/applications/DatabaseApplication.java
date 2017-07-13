@@ -48,7 +48,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     public static final String SIZE_RANDOMIZER_SEED = "seed";
     /**
      * Minimum time between map sending in seconds -setting id ({@value}).
-     * If {@link routing.util.DatabaseApplicationUtil#createDataMessages(MessageRouter, DTNHost, List)} is called and
+     * If {@link routing.util.DatabaseApplicationUtil#wrapUsefulDataIntoMessages(MessageRouter, DTNHost, List)} is called and
      * no map has been sent in the specified interval, a randomly chosen map data item is sent to all neighbors.
      */
     public static final String MIN_INTERVAL_MAP_SENDING = "mapSendingInterval";
@@ -202,12 +202,12 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     }
 
     /**
-     * Creates database synchronization messages
+     * Creates database synchronization messages from existing useful data.
      *
      * @param databaseOwner The DTNHost this instance of the application is attached to.
      * @return The created messages. They don't have a receiver yet, so {@link Message#getTo()} will return null.
      */
-    public List<DataMessage> createDataMessages(DTNHost databaseOwner) {
+    public List<DataMessage> wrapUsefulDataIntoMessages(DTNHost databaseOwner) {
         // If we don't know who the application is attached to yet, use the new knowledge for initialization.
         if (!this.isInitialized()) {
             this.initialize(databaseOwner);

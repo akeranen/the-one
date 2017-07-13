@@ -272,7 +272,7 @@ public class UtilityMessageChooserTest {
     }
 
     /**
-     * Checks {@link UtilityMessageChooser#findOtherMessages(Collection, List)} returns data messages for all
+     * Checks {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} returns data messages for all
      * connections.
      */
     @Test
@@ -284,12 +284,12 @@ public class UtilityMessageChooserTest {
         app.update(this.attachedHost);
         app.disasterDataCreated(this.attachedHost, data);
 
-        // Call findOtherMessages with two connections.
+        // Call chooseNonDirectMessages with two connections.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
         Collection<Tuple<Message, Connection>> messages =
-                this.chooser.findOtherMessages(new ArrayList<>(), connections);
+                this.chooser.chooseNonDirectMessages(new ArrayList<>(), connections);
 
         // Check data message has been returned for both neighbors.
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
@@ -302,7 +302,7 @@ public class UtilityMessageChooserTest {
     }
 
     /**
-     * Checks that {@link UtilityMessageChooser#findOtherMessages(Collection, List)} does not return any
+     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
      * (message, connection) tuples for which the receiving host would be a final recipient of the message.
      */
     @Test
@@ -311,12 +311,12 @@ public class UtilityMessageChooserTest {
         Message m = new Message(this.attachedHost, neighbor1, "M1", 0);
         this.attachedHost.createNewMessage(m);
 
-        // Call findOtherMessages with two connections, one of them to neighbor 1.
+        // Call chooseNonDirectMessages with two connections, one of them to neighbor 1.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
         Collection<Tuple<Message, Connection>> messages =
-                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Make sure the direct message was not returned.
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
@@ -328,7 +328,7 @@ public class UtilityMessageChooserTest {
     }
 
     /**
-     * Checks that {@link UtilityMessageChooser#findOtherMessages(Collection, List)} does not return any
+     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
      * (message, connection) tuples for which the receiving host already knows the message.
      */
     @Test
@@ -338,12 +338,12 @@ public class UtilityMessageChooserTest {
         this.attachedHost.createNewMessage(m);
         this.neighbor1.createNewMessage(m);
 
-        // Call findOtherMessages with two connections, one of them to neighbor 1.
+        // Call chooseNonDirectMessages with two connections, one of them to neighbor 1.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
         Collection<Tuple<Message, Connection>> messages =
-                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Make sure the known message was not returned.
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
@@ -355,7 +355,7 @@ public class UtilityMessageChooserTest {
     }
 
     /**
-     * Checks that {@link UtilityMessageChooser#findOtherMessages(Collection, List)} does not return any
+     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
      * (message, connection) tuples for which the receiving host is transferring right now.
      */
     @Test
@@ -374,13 +374,13 @@ public class UtilityMessageChooserTest {
         Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
         this.attachedHost.createNewMessage(m);
 
-        // Call findOtherMessages with connections to all other three hosts.
+        // Call chooseNonDirectMessages with connections to all other three hosts.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, otherHost));
         Collection<Tuple<Message, Connection>> messages =
-                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Make sure only the non-transferring host got the message.
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
@@ -404,10 +404,10 @@ public class UtilityMessageChooserTest {
         // Make sure neighbor 1 knows the receiver of one of the messages.
         this.neighbor1.forceConnection(highDeliveryPredMessage.getTo(), null, true);
 
-        // Call findOtherMessages with the messages to neighbor 1.
+        // Call chooseNonDirectMessages with the messages to neighbor 1.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
-        Collection<Tuple<Message, Connection>> messages = this.chooser.findOtherMessages(
+        Collection<Tuple<Message, Connection>> messages = this.chooser.chooseNonDirectMessages(
                 Arrays.asList(lowDeliveryPredMessage, highDeliveryPredMessage), connections);
 
         // Check only the one whose receiver neighbor 1 knows is returned.
@@ -429,12 +429,12 @@ public class UtilityMessageChooserTest {
         // Make sure neighbor 1 has low power.
         this.neighbor1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, MEDIUM_ENERGY_VALUE);
 
-        // Call findOtherMessages with two connections, one of them to neighbor 1.
+        // Call chooseNonDirectMessages with two connections, one of them to neighbor 1.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor2));
         Collection<Tuple<Message, Connection>> messages =
-                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Check the message is only send to the neighbor with full power.
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
@@ -454,10 +454,10 @@ public class UtilityMessageChooserTest {
         this.createMessagesWithReplicationsDensityOf(0, lowReplicationsDensityMessage);
         this.createMessagesWithReplicationsDensityOf(1, highReplicationsDensityMessage);
 
-        // Call findOtherMessages with the messages to neighbor 1.
+        // Call chooseNonDirectMessages with the messages to neighbor 1.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
-        Collection<Tuple<Message, Connection>> messages = this.chooser.findOtherMessages(
+        Collection<Tuple<Message, Connection>> messages = this.chooser.chooseNonDirectMessages(
                 Arrays.asList(highReplicationsDensityMessage, lowReplicationsDensityMessage), connections);
 
         // Check only the one with low replications density is returned.
@@ -483,12 +483,12 @@ public class UtilityMessageChooserTest {
         Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
         this.createMessagesWithReplicationsDensityOf(QUITE_LOW_REPLICATIONS_DENSITY, m);
 
-        // Call findOtherMessages with two connections, one of them to neighbor 2.
+        // Call chooseNonDirectMessages with two connections, one of them to neighbor 2.
         List<Connection> connections = new ArrayList<>();
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
         connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor2));
         Collection<Tuple<Message, Connection>> messages =
-                this.chooser.findOtherMessages(Collections.singletonList(m), connections);
+                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Check the message is only send to the equally social neighbor (2).
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());

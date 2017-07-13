@@ -195,7 +195,7 @@ public class DatabaseApplicationTest {
         DisasterDataNotifier.dataCreated(host, usefulData);
 
         /* Check data was added. */
-        List<DataMessage> interestingData = copy.createDataMessages(host);
+        List<DataMessage> interestingData = copy.wrapUsefulDataIntoMessages(host);
         TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
         TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData());
     }
@@ -230,10 +230,10 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testApplicationIsInitializedAfterFirstCreateDataMessages() {
+    public void testApplicationIsInitializedAfterFirstWrapUsefulDataIntoMessages() {
         DatabaseApplication uninitializedApp = new DatabaseApplication(this.settings);
         DatabaseApplicationTest.checkAppIsNotInitialized(uninitializedApp);
-        uninitializedApp.createDataMessages(this.utils.createHost());
+        uninitializedApp.wrapUsefulDataIntoMessages(this.utils.createHost());
         TestCase.assertNotNull(EXPECTED_INITIALIZED_APPLICATION, uninitializedApp.getDatabaseSize());
     }
 
@@ -247,7 +247,7 @@ public class DatabaseApplicationTest {
         this.app.handle(dataMessage, this.hostAttachedToApp);
 
         /* Check data was added. */
-        List<DataMessage> interestingData = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> interestingData = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
         TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData());
 
@@ -263,7 +263,7 @@ public class DatabaseApplicationTest {
         this.app.handle(dataMessage, this.hostAttachedToApp);
 
         /* Check no data was added. */
-        List<DataMessage> interestingData = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> interestingData = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertEquals("Expected no data item.", 0, interestingData.size());
     }
 
@@ -307,7 +307,7 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testCreateDataMessagesCreatesCorrectMessageForEachInterestingDataItem() {
+    public void testWrapUsefulDataIntoMessagesCreatesCorrectMessageForEachInterestingDataItem() {
         /* Create data. */
         Coord currLocation = this.hostAttachedToApp.getLocation();
         double currTime = SimClock.getTime();
@@ -321,7 +321,7 @@ public class DatabaseApplicationTest {
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, skill);
 
         /* Check all data items are returned as messages. */
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, THREE_DATA_ITEMS, messages.size());
         TestCase.assertTrue(
                 "Expected marker to be in a message.",
@@ -335,7 +335,7 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testCreateDataMessagesOnlySendsOutInterestingData() {
+    public void testWrapUsefulDataIntoMessagesOnlySendsOutInterestingData() {
         this.clock.setTime(TIME_IN_DISTANT_FUTURE);
         DisasterData usefulData =
                 DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
@@ -344,7 +344,7 @@ public class DatabaseApplicationTest {
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData);
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, uselessData);
 
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
         TestCase.assertTrue(
                 "Expected useful data to be in a message.",
@@ -355,7 +355,7 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testCreateDataMessagesSendsMapOutAfterMinInterval() {
+    public void testWrapUsefulDataIntoMessagesSendsMapOutAfterMinInterval() {
         this.clock.setTime(MAP_SENDING_INTERVAL - SMALL_TIME_DIFF);
 
         /* Insert map data into database. */
@@ -364,12 +364,12 @@ public class DatabaseApplicationTest {
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, mapData);
 
         /* Test map data is not returned shortly before interval... */
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertTrue(UNEXPECTED_DATA_MESSAGE, messages.isEmpty());
 
         /* ... but is returned after it completed. */
         this.clock.setTime(MAP_SENDING_INTERVAL);
-        messages = this.app.createDataMessages(this.hostAttachedToApp);
+        messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
         TestCase.assertTrue(
                 "Expected map to be in a message.",
@@ -377,7 +377,7 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testCreateDataMessagesMaySendOutEachMap() {
+    public void testWrapUsefulDataIntoMessagesMaySendOutEachMap() {
         List<DisasterData> mapData = new ArrayList<>();
         for (int i = 0; i < THREE_DATA_ITEMS; i++) {
             DisasterData usefulMap =
@@ -389,7 +389,7 @@ public class DatabaseApplicationTest {
         Set<DisasterData> mapsInMessages = new HashSet<>();
         for (int i = 0; i < NUM_TESTS; i++) {
             this.clock.advance(MAP_SENDING_INTERVAL + SMALL_TIME_DIFF);
-            List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+            List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
             TestCase.assertEquals("Only one map should have been sent out.", 1, messages.size());
             mapsInMessages.add(messages.get(0).getData());
         }
@@ -414,7 +414,7 @@ public class DatabaseApplicationTest {
         DisasterData data =
                 DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.hostAttachedToApp, data);
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertEquals("Data was not added to database.", 1, messages.size());
         TestCase.assertTrue(
                 "Expected created data to be in database.",
@@ -426,7 +426,7 @@ public class DatabaseApplicationTest {
         DisasterData data =
                 DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.utils.createHost(), data);
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertTrue(UNEXPECTED_DATA_MESSAGE, messages.isEmpty());
     }
 
@@ -436,7 +436,7 @@ public class DatabaseApplicationTest {
         DisasterData data =
                 DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
         DisasterDataNotifier.dataCreated(this.utils.createHost(), data);
-        List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
+        List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
         TestCase.assertTrue(UNEXPECTED_DATA_MESSAGE, messages.isEmpty());
     }
 
@@ -454,7 +454,7 @@ public class DatabaseApplicationTest {
         DisasterDataNotifier.dataCreated(host, data2);
 
         /* Call create database messages and thereby initialize the application. */
-        List<DataMessage> messages = uninitializedApp.createDataMessages(host);
+        List<DataMessage> messages = uninitializedApp.wrapUsefulDataIntoMessages(host);
 
         /* Check data was added. */
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_ITEMS, messages.size());

@@ -177,7 +177,7 @@ public class DisasterRouter extends ActiveRouter {
      */
     private void tryOtherMessages() {
         Collection<Tuple<Message, Connection>> messages =
-                this.messageChooser.findOtherMessages(this.getMessageCollection(), this.getConnections());
+                this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
         List<Tuple<Message, Connection>> prioritizedMessages = this.messagePrioritizer.sortMessages(messages);
         this.tryMessagesForConnected(prioritizedMessages);
     }

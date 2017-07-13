@@ -64,7 +64,7 @@ public class DatabaseApplicationUtilTest {
     }
 
     @Test
-    public void testCreateDataMessagesReturnsEmptyListForNoDatabaseApplication() {
+    public void testWrapUsefulDataIntoMessagesReturnsEmptyListForNoDatabaseApplication() {
         DTNHost host = this.utils.createHost();
         DisasterDataNotifier.dataCreated(host, MARKER_DATA);
 
@@ -72,23 +72,23 @@ public class DatabaseApplicationUtilTest {
         host.connect(connected);
 
         List<Tuple<Message, Connection>> dataMessages =
-                DatabaseApplicationUtil.createDataMessages(host.getRouter(), host, host.getConnections());
+                DatabaseApplicationUtil.wrapUsefulDataIntoMessages(host.getRouter(), host, host.getConnections());
         TestCase.assertEquals("No data messages should have been returned.", 0, dataMessages.size());
     }
 
     @Test
-    public void testCreateDataMessagesReturnsEmptyListIfNoConnectionsAvailable() {
+    public void testWrapUsefulDataIntoMessagesReturnsEmptyListIfNoConnectionsAvailable() {
         this.addDatabaseApplication();
         DTNHost host = this.utils.createHost();
         DisasterDataNotifier.dataCreated(host, MARKER_DATA);
 
         List<Tuple<Message, Connection>> dataMessages =
-                DatabaseApplicationUtil.createDataMessages(host.getRouter(), host, host.getConnections());
+                DatabaseApplicationUtil.wrapUsefulDataIntoMessages(host.getRouter(), host, host.getConnections());
         TestCase.assertEquals("No data messages should have been returned.", 0, dataMessages.size());
     }
 
     @Test
-    public void testCreateDataMessagesReturnsMessagesWithCorrectAppId() {
+    public void testWrapUsefulDataIntoMessagesReturnsMessagesWithCorrectAppId() {
         this.addDatabaseApplication();
         DTNHost host = this.utils.createHost();
         DisasterDataNotifier.dataCreated(host, MARKER_DATA);
@@ -97,14 +97,14 @@ public class DatabaseApplicationUtilTest {
         host.connect(connected);
 
         List<Tuple<Message, Connection>> dataMessages =
-                DatabaseApplicationUtil.createDataMessages(host.getRouter(), host, host.getConnections());
+                DatabaseApplicationUtil.wrapUsefulDataIntoMessages(host.getRouter(), host, host.getConnections());
         TestCase.assertEquals(
                 "App ID not set correctly.", DatabaseApplication.APP_ID, dataMessages.get(0).getKey().getAppID());
 
     }
 
     @Test
-    public void testCreateDataMessagesReturnsEachMessageForEachNeighbor() {
+    public void testWrapUsefulDataIntoMessagesReturnsEachMessageForEachNeighbor() {
         this.addDatabaseApplication();
         DTNHost host = this.utils.createHost();
         DisasterDataNotifier.dataCreated(host, MARKER_DATA);
@@ -115,7 +115,7 @@ public class DatabaseApplicationUtilTest {
         host.connect(neighbor2);
 
         List<Tuple<Message, Connection>> dataMessages =
-                DatabaseApplicationUtil.createDataMessages(host.getRouter(), host, host.getConnections());
+                DatabaseApplicationUtil.wrapUsefulDataIntoMessages(host.getRouter(), host, host.getConnections());
         TestCase.assertEquals("Expected different number of data messages.", TWO_MESSAGES, dataMessages.size());
 
         DataMessage message1 = (DataMessage)dataMessages.get(0).getKey();
@@ -134,7 +134,7 @@ public class DatabaseApplicationUtilTest {
     }
 
     @Test
-    public void testCreateDataMessagesCreatesMessagesForAllInterestingDataItems() {
+    public void testWrapUsefulDataIntoMessagesCreatesMessagesForAllInterestingDataItems() {
         this.addDatabaseApplication();
         DTNHost host = this.utils.createHost();
         DisasterDataNotifier.dataCreated(host, MARKER_DATA);
@@ -144,7 +144,7 @@ public class DatabaseApplicationUtilTest {
         host.connect(connected);
 
         List<Tuple<Message, Connection>> dataMessages =
-                DatabaseApplicationUtil.createDataMessages(host.getRouter(), host, host.getConnections());
+                DatabaseApplicationUtil.wrapUsefulDataIntoMessages(host.getRouter(), host, host.getConnections());
         TestCase.assertEquals("Expected different number of data messages.", TWO_MESSAGES, dataMessages.size());
         TestCase.assertTrue(
                 "Marker should have been returned.",

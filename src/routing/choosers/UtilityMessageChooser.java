@@ -204,7 +204,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
      * @return Which messages should be sent to which neighbors.
      */
     @Override
-    public Collection<Tuple<Message, Connection>> findOtherMessages(
+    public Collection<Tuple<Message, Connection>> chooseNonDirectMessages(
             Collection<Message> messages, List<Connection> connections) {
         Collection<Tuple<Message, Connection>> chosenMessages = new ArrayList<>();
 
@@ -219,7 +219,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         }
 
         // Wrap useful data stored at host in data messages to neighbors and add them to the messages to sent.
-        chosenMessages.addAll(DatabaseApplicationUtil.createDataMessages(
+        chosenMessages.addAll(DatabaseApplicationUtil.wrapUsefulDataIntoMessages(
                 this.attachedHost.getRouter(), this.attachedHost, connections));
 
         return chosenMessages;

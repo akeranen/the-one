@@ -54,6 +54,11 @@ public class DataMessageTest {
         this.message = new DataMessage(utils.createHost(), utils.createHost(), "D1", dataWithUtility, PRIORITY);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorThrowsIfNoItemsAreProvided() {
+        new DataMessage(this.utils.createHost(), this.utils.createHost(), "Test", new ArrayList<>(), PRIORITY);
+    }
+
     @Test
     public void testGetType() {
         TestCase.assertEquals("Type should have been DATA.", Message.MessageType.DATA, this.message.getType());
@@ -65,8 +70,9 @@ public class DataMessageTest {
     }
 
     @Test
-    public void testUtilityEqualsMaxUtility() {
-        TestCase.assertEquals("Expected different utility.", LARGER_UTILITY, this.message.getUtility());
+    public void testUtilityEqualsAverageUtility() {
+        TestCase.assertEquals("Expected different utility.",
+                (LARGER_UTILITY + UTILITY) / ITEMS_IN_MESSAGE, this.message.getUtility());
     }
 
     @Test

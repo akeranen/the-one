@@ -61,16 +61,22 @@ public class DataMessage extends Message {
     }
 
     /**
-     * Computes overall utility for a message wrapping all provided data items.
+     * Computes overall utility for a message wrapping all provided data items by taking the items' average.
      * @param dataWithUtility The data items to wrap and their utilities.
      * @return A combined utility for the whole message.
      */
     private static double computeUtility(Iterable<Tuple<DisasterData, Double>> dataWithUtility) {
-        double maxUtility = 0;
+        double utilitySum = 0;
+        int numberItems = 0;
         for (Tuple<DisasterData, Double> item : dataWithUtility) {
-            maxUtility = Math.max(maxUtility, item.getValue());
+            utilitySum += item.getValue();
+            numberItems++;
         }
-        return maxUtility;
+
+        if (numberItems == 0) {
+            throw new IllegalArgumentException("There must be at least one data item in a data message!");
+        }
+        return utilitySum / numberItems;
     }
 
     /**

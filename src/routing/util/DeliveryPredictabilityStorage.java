@@ -9,14 +9,17 @@ import core.SimClock;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Manages a host's delivery predictabilities. Delivery predictability for a host B from the point of view of host A
  * indicates how likely it is that node A will be able to deliver a message to B.
  *
- * The measure is implemented as described in   A. Lindgren, A. Doria and O. Schelén (2003): Probabilistic Routing in
- * Intermittently Connected Networks, SIGMOBILE Mob. Comput. Commun. Rev., vol.3, 19-20.
+ * The measure is mostly implemented as described in   A. Lindgren, A. Doria and O. Schelén (2003): Probabilistic
+ * Routing in Intermittently Connected Networks, SIGMOBILE Mob. Comput. Commun. Rev., vol.3, 19-20.
+ * However, we completeley drop delivery predictabilities (= set them to zero again) if they fall below a certain
+ * threshold. This measure improves performance.
  *
  * Created by Britta Heymann on 18.05.2017.
  */
@@ -44,6 +47,12 @@ public class DeliveryPredictabilityStorage {
      * Positive constant describing how many seconds are in a time unit (used for decay).
      */
     public static final String TIME_UNIT_S = "dpTimeUnit";
+
+    /**
+     * The minimum delivery predictability we store. If a predictability falls below this value, we set it to zero
+     * (= drop it). This measure improves performance.
+     */
+    private static final double MINIMUM_POSITIVE_DELIVERY_PREDICTABILITY = 0.01;
 
     /** Constant in [0, 1] used in direct updates, also known as DP_init. */
     private double summand;
@@ -153,8 +162,20 @@ public class DeliveryPredictabilityStorage {
     private void decayDeliveryPredictabilities() {
         double timeDiff = (SimClock.getTime() - this.lastUpdate) / this.secondsInTimeUnit;
         double decay = Math.pow(this.gamma, timeDiff);
-        for (Map.Entry<Integer, Double> entry : this.deliveryPredictabilites.entrySet()) {
-            entry.setValue(entry.getValue() * decay);
+
+        // For each stored predictability:
+        Iterator<Map.Entry<Integer, Double>> dpIterator = this.deliveryPredictabilites.entrySet().iterator();
+        while (dpIterator.hasNext()) {
+            Map.Entry<Integer, Double> entry = dpIterator.next();
+
+            // Update the value to a decayed version.
+            double agedValue = entry.getValue() * decay;
+            if (agedValue >= MINIMUM_POSITIVE_DELIVERY_PREDICTABILITY) {
+                entry.setValue(agedValue);
+            } else {
+                // If the aged value is small enough, we just set it to zero = delete it.
+                dpIterator.remove();
+            }
         }
     }
 

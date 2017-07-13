@@ -37,7 +37,7 @@ public class DisasterPrioritizationTest {
 
     /* Some values needed in tests. */
     private static final double WEIGHT_GREATER_ONE = 1.1;
-    private static final double MEDIUM_UTILITY = 0.65;
+    private static final double MEDIUM_UTILITY = 0.15;
 
     /** The allowed delta when comparing doubles for equality. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;

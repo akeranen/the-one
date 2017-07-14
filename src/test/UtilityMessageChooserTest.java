@@ -528,13 +528,12 @@ public class UtilityMessageChooserTest {
      * @return True if such a message can be found.
      */
     private boolean messageToHostsExists(Collection<Tuple<Message, Connection>> messages, String id, DTNHost host) {
-        boolean messageFound = false;
         for (Tuple<Message, Connection> tuple : messages) {
             if (tuple.getKey().getId().equals(id) && tuple.getValue().getOtherNode(this.attachedHost).equals(host)) {
-                messageFound = true;
+                return true;
             }
         }
-        return messageFound;
+        return false;
     }
 
     /**

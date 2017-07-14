@@ -6,11 +6,14 @@ import core.DataMessage;
 import core.Message;
 import core.Settings;
 import core.SettingsError;
+import core.SimClock;
 import routing.DisasterRouter;
 import routing.MessageRouter;
+import routing.util.MessageConnectionTuple;
 import util.Tuple;
 
 import java.util.Comparator;
+import java.util.HashMap;
 
 /**
  * A message-connection tuple prioritization depending on delivery predictability and replications density. Also uses
@@ -34,6 +37,17 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
 
     private DTNHost attachedHost;
     private DisasterRouter attachedRouter;
+
+    /**
+     * Caches priority function evaluations. Very useful because comparators may be called multiple times for each
+     * item.
+     * Invalidated every timestep to ensure correct value.
+     */
+    private HashMap<MessageConnectionTuple, Double> priorityFunctionValueCache = new HashMap<>();
+    /**
+     * The simulation time the current {@link #priorityFunctionValueCache} is for.
+     */
+    private double cacheTime;
 
     /**
      * Initializes a new instance of the {@link DisasterPrioritization} class.
@@ -100,21 +114,26 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
     }
 
     /**
+     * Invalidates the {@link #priorityFunctionValueCache} if it is obsolete.
+     */
+    private void possiblyInvalidateCache() {
+        if (SimClock.getTime() > this.cacheTime) {
+            this.priorityFunctionValueCache.clear();
+            this.cacheTime = SimClock.getTime();
+        }
+    }
+
+    /**
      * Computes the value used for messages-connection prioritization.
      * @param t The message-connection tuple to compute the value for.
      * @return The computed value.
      */
     private double computePriorityFunction(Tuple<Message, Connection> t) {
-        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(t.getValue().getOtherNode(this.attachedHost));
         Message m = t.getKey();
-
         switch (m.getType()) {
             case ONE_TO_ONE:
             case MULTICAST:
-                double deliveryPredictability = neighborRouter.getDeliveryPredictability(m);
-                double replicationsDensity = this.attachedRouter.getReplicationsDensity(m);
-                return this.deliveryPredictabilityWeight * deliveryPredictability
-                        + this.replicationsDensityWeight * (1 - replicationsDensity);
+                return this.computePriorityFunctionForMessageWithRecipients(t);
             case DATA:
                 return ((DataMessage)m).getUtility();
             default:
@@ -131,6 +150,36 @@ public class DisasterPrioritization implements Comparator<Tuple<Message, Connect
                     "Disaster prioritization cannot handle routers of type " + neighborRouter.getClass() + "!");
         }
         return (DisasterRouter)neighborRouter;
+    }
+
+    /**
+     * Computes the value used for message-connection prioritization for a message which has specified recipients,
+     * i.e. is not a {@link core.BroadcastMessage} or {@link DataMessage}.
+     * @param t The message-connection tuple to compute the value for.
+     * @return The computed value.
+     */
+    private double computePriorityFunctionForMessageWithRecipients(Tuple<Message, Connection> t) {
+        // Invalidate cache if required.
+        this.possiblyInvalidateCache();
+
+        // Then: If we already have the function value cached, don't compute it.
+        MessageConnectionTuple cacheKey = new MessageConnectionTuple(t);
+        Double cachedValue = this.priorityFunctionValueCache.get(cacheKey);
+        if (cachedValue != null) {
+            return cachedValue;
+        }
+
+        // Else: Compute the value...
+        DisasterRouter neighborRouter = DisasterPrioritization.getRouter(t.getValue().getOtherNode(this.attachedHost));
+        Message message = t.getKey();
+        double deliveryPredictability = neighborRouter.getDeliveryPredictability(message);
+        double replicationsDensity = this.attachedRouter.getReplicationsDensity(message);
+        double priorityFunctionValue = this.deliveryPredictabilityWeight * deliveryPredictability
+                + this.replicationsDensityWeight * (1 - replicationsDensity);
+
+        // ...and cache it before returning.
+        this.priorityFunctionValueCache.put(cacheKey, priorityFunctionValue);
+        return priorityFunctionValue;
     }
 
     /**

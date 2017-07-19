@@ -52,7 +52,7 @@ Group.rechargeWait = 7200,43200
 dbApp.type = DatabaseApplication
 dbApp.utility_threshold = 0.25
 dbApp.db_size = 50M, 150M
-dbApp.mapSendingInterval = 5400
+dbApp.mapSendingInterval = -1
 dbApp.seed = 0
 Group.nrofApplications = 1
 Group.application1 = dbApp
@@ -168,29 +168,18 @@ Events7.prefix = P
 # Message priority 0
 Events7.priorities = 0,0
 
-# Class for map data
-Events8.class = MapDataGenerator
-# Data sizes ( 500kB - 3MB )
-Events8.size = 500k,3M
+# Class for disaster data
+Events8.class = DisasterDataGenerator
+# Data sizes ( 50kB - 100kB )
+Events8.size = 50k,100k
 # range of message source/destination addresses
 Events8.hosts = 0,2999
 # seed for the pseudo random generator
 Events8.seed = 0
-# number of map data per host
-Events8.numMaps = 1,1
-
-# Class for disaster data
-Events9.class = DisasterDataGenerator
-# Data sizes ( 50kB - 100kB )
-Events9.size = 50k,100k
-# range of message source/destination addresses
-Events9.hosts = 0,2999
-# seed for the pseudo random generator
-Events9.seed = 0
 # data location offset for the distance between created data item and the creator
-Events9.location_offset = 0,100
+Events8.location_offset = 0,100
 # Creation interval in seconds (one new message every 3 to 10 seconds)
-Events9.interval = 3,10
+Events8.interval = 3,10
 
 ## Movement model settings
 # World's size for Movement Models without implicit size (width, height; meters)

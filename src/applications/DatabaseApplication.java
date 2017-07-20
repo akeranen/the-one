@@ -263,7 +263,9 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             int firstIndexNotToSent = Math.min(i + itemsPerMessage, interestingData.size());
             List<Tuple<DisasterData, Double>> subsetToSent = interestingData.subList(i, firstIndexNotToSent);
             DataMessage message = new DataMessage(
-                    this.host, unknownReceiver, this.createMessageId(subsetToSent), subsetToSent, DATA_MESSAGE_PRIORITY);
+                    this.host, unknownReceiver,
+                    this.createMessageId(subsetToSent), subsetToSent,
+                    DATA_MESSAGE_PRIORITY);
             message.setAppID(APP_ID);
             messages.add(message);
         }

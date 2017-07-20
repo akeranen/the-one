@@ -181,8 +181,8 @@ Events8.numMaps = 1,1
 
 # Class for disaster data
 Events9.class = DisasterDataGenerator
-# Data sizes ( 50kB - 100kB )
-Events9.size = 50k,100k
+# Data sizes ( 50B - 100B )
+Events9.size = 50,100
 # range of message source/destination addresses
 Events9.hosts = 0,2999
 # seed for the pseudo random generator

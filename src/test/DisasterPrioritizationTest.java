@@ -1,6 +1,7 @@
 package test;
 
 import core.BroadcastMessage;
+import core.CBRConnection;
 import core.Connection;
 import core.Coord;
 import core.DTNHost;
@@ -37,7 +38,7 @@ public class DisasterPrioritizationTest {
 
     /* Some values needed in tests. */
     private static final double WEIGHT_GREATER_ONE = 1.1;
-    private static final double MEDIUM_UTILITY = 0.65;
+    private static final double MEDIUM_UTILITY = 0.15;
 
     /** The allowed delta when comparing doubles for equality. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
@@ -216,6 +217,49 @@ public class DisasterPrioritizationTest {
                 this.prioritization.compare(highDeliveryPredictabilityMessage, lowDeliveryPredictabilityMessage) < 0);
     }
 
+    /**
+     * Checks that the return value of {@link DisasterPrioritization#compare(Tuple, Tuple)} may change if the
+     * underlying values change.
+     * This test is interesting because we cache some values and have to make sure that the cache gets invalidated.
+     */
+    @Test
+    public void testComparisonReactsToNewInformation() {
+        // Create some hosts.
+        DTNHost neighbor = this.testUtils.createHost();
+        DTNHost knownRecipient = this.testUtils.createHost();
+        DTNHost unknownRecipient = this.testUtils.createHost();
+
+        // Let two of them know each other.
+        neighbor.forceConnection(knownRecipient, null, true);
+        neighbor.update(true);
+
+        // Create two messages, one of them to the known host.
+        Message message1 = new Message(this.host, knownRecipient, "M1", 0);
+        Message message2 = new Message(this.host, unknownRecipient, "M2", 0);
+        this.host.createNewMessage(message1);
+        this.host.createNewMessage(message2);
+
+        // Check comparison values.
+        Tuple<Message, Connection> tuple1 = this.messageToHost(message1, neighbor);
+        Tuple<Message, Connection> tuple2 = this.messageToHost(message2, neighbor);
+        Assert.assertTrue(UNEXPECTED_COMPARISON_RESULT, this.prioritization.compare(tuple2, tuple1) > 0);
+
+        // Increase simulator time.
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+
+        // Then make sure that the message to the known host is seen as being spread widely.
+        DTNHost otherHost = this.testUtils.createHost();
+        otherHost.createNewMessage(message1);
+        this.host.forceConnection(otherHost, null, true);
+        this.host.update(true);
+
+        // And also let the neighbor meet the currently unknown host.
+        neighbor.forceConnection(unknownRecipient, null, true);
+
+        // The comparison return value should now have flipped.
+        Assert.assertTrue(UNEXPECTED_COMPARISON_RESULT, this.prioritization.compare(tuple1, tuple2) > 0);
+    }
+
     @Test
     public void testComparisonUsesHigherDeliveryPredictabilityForMulticastMessages() {
         // Create some hosts.
@@ -358,8 +402,8 @@ public class DisasterPrioritizationTest {
     }
 
     /**
-     * Translates a message to a message-connection tuple where the connection is one that is built up to the
-     * provided host.
+     * Translates a message to a message-connection tuple where the connection is one that is built between
+     * {@link #host} and the provided host.
      * @param message The message to use.
      * @param host The host to connect to.
      * @return The message-connection tuple.
@@ -367,22 +411,14 @@ public class DisasterPrioritizationTest {
     private Tuple<Message, Connection> messageToHost(Message message, DTNHost host) {
         return new Tuple<>(
                 message,
-                DisasterPrioritizationTest.createConnection(this.testUtils.createHost(), host));
+                DisasterPrioritizationTest.createConnection(this.host, host));
     }
 
     /**
-     * Connects two hosts and returns their connection.
-     * @param from Host initiating connection.
-     * @param to Host to connect to.
-     * @return The new connection.
+     * Creates a {@link Connection} from the first provided host to the second provided host.
+     * @return The created connection object.
      */
     public static Connection createConnection(DTNHost from, DTNHost to) {
-        from.forceConnection(to, null, true);
-        for (Connection con : from.getConnections()) {
-            if (con.getOtherNode(from).equals(to)) {
-                return con;
-            }
-        }
-        throw new IllegalStateException("This should never happen!");
+        return new CBRConnection(from, from.getInterfaces().get(0), to, to.getInterfaces().get(0), 1);
     }
 }

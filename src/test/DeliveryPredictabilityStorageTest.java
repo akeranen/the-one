@@ -41,6 +41,9 @@ public class DeliveryPredictabilityStorageTest {
     /* Acceptable delta for double equality checks. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
 
+    /* Time span that induces a lot of decay. */
+    private static final int TIME_SPAN_FOR_LARGE_DECAY = 90;
+
     private static final String EXPECTED_DIFFERENT_PREDICTABILITY = "Expected different delivery predictability.";
     private static final String EXPECTED_EMPTY_STORAGE = "No delivery predictabilities should have been set.";
 
@@ -213,6 +216,29 @@ public class DeliveryPredictabilityStorageTest {
                 transitivePredictability,
                 cStorage.getDeliveryPredictability(this.attachedHost),
                 DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
+     * Tests that tiny delivery predictabilities are set to zero when decayed.
+     */
+    @Test
+    public void testTinyDeliveryPredictabilitiesAreSetToZero() {
+        // Make sure recipient is known.
+        DTNHost recipient = this.testUtils.createHost();
+        DeliveryPredictabilityStorage recipientStorage = createDeliveryPredictabilityStorage(recipient);
+        DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(recipientStorage, this.dpStorage);
+
+        // Advance clock s.t. decaying should result in a tiny delivery predictability.
+        this.clock.advance(TIME_SPAN_FOR_LARGE_DECAY);
+
+        // Update delivery predictabilities by letting our host meet another one.
+        DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(
+                this.dpStorage, createDeliveryPredictabilityStorage(this.testUtils.createHost()));
+
+        // Check delivery predictability to recipient.
+        Assert.assertEquals(
+                "Delivery predictability should be zero.",
+                0, this.dpStorage.getDeliveryPredictability(recipient), 0);
     }
 
     /**

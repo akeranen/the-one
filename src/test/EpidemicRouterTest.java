@@ -28,10 +28,11 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 	private static int TTL = 300;
 	private static final int SHORT_TIMESPAN = 10;
+	private static final int THREE_HOURS = 10_800;
 
 	/* Data base item sizes needed for tests. */
 	private static final int DB_SIZE = 50;
-	private static final int SMALL_SIZE_DIFFERENCE = 10;
+	private static final int SMALL_SIZE_DIFFERENCE = 2;
 
 	@Override
 	public void setUp() throws Exception {
@@ -324,19 +325,27 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         assertEquals("Data message should have been sent.", data.toString(), mc.getLastMsg().getId());
 
         // Add another, large one to replace the original object. It is more useful so it stays in the database.
-        this.clock.advance(SHORT_TIMESPAN);
+        this.clock.advance(THREE_HOURS);
         DisasterData newData = new DisasterData(
                 DisasterData.DataType.SKILL, DB_SIZE - SMALL_SIZE_DIFFERENCE, SimClock.getTime(), h1.getLocation());
         EpidemicRouterTest.setUpAsDataCarrier(h1, newData);
 
         // Now, only the second object should get sent.
-        h1.connect(h3);
+        h1.forceConnection(h2, null, false);
+        h1.forceConnection(h3, null, true);
         updateAllNodes();
         do {
             mc.next();
         } while (!mc.getLastType().equals(mc.TYPE_START));
         assertEquals("Other data message should have been sent.", newData.toString(), mc.getLastMsg().getId());
-        assertFalse("Only one message should have been sent.", mc.next());
+
+        // Allow some time to send a new object.
+        this.clock.advance(SHORT_TIMESPAN);
+        updateAllNodes();
+        while(mc.next()) {
+            assertNotSame("Fist data message should not be sent anymore.",
+                    data.toString(), mc.getLastMsg().getId());
+        }
     }
 
 	/**

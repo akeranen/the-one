@@ -14,6 +14,7 @@ import org.junit.Test;
 import routing.DisasterRouter;
 import util.Tuple;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -341,11 +342,13 @@ public class DisasterRouterTest extends AbstractRouterTest {
         Message broadcast = new BroadcastMessage(h2, "B1", 0);
         Message directMessage = new Message(h1, h2, "M1", 0, 0);
         Message indirectMessage = new Message(h1, h3, "M2", 0, VERY_HIGH_PRIORITY);
+        Message lowPrioMessage = new Message(h1, h3, "M3", 0, 0);
         h1.createNewMessage(directMulticast);
         h1.createNewMessage(indirectMulticast);
         h2.createNewMessage(broadcast);
         h1.createNewMessage(directMessage);
         h1.createNewMessage(indirectMessage);
+        h1.createNewMessage(lowPrioMessage);
 
         // Advance time to prevent that any message gets a head start in sorting due to being new.
         this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
@@ -363,7 +366,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         // Make sure messages are sent in correct order.
         String[] expectedIdOrder = {
                 directMulticast.getId(), directMessage.getId(), broadcast.getId(), indirectMessage.getId(),
-                indirectMulticast.getId(), "DataFrom1_3"
+                indirectMulticast.getId(), "D" + Arrays.asList(data).hashCode(), lowPrioMessage.getId()
         };
         this.mc.reset();
         for (String expectedId : expectedIdOrder) {

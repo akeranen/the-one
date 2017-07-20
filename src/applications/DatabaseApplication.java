@@ -92,12 +92,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     /** The last time when a map data item was sent to neighbors. */
     private double lastMapSendingTime;
 
-    /** The prefix of all data message IDs. */
-    private String messageIdPrefix;
-
-    /** The number specified in the ID for the data message that gets created next. */
-    private int nextMessageId;
-
     /** Pseudo-random number generator for this application. */
     private Random pseudoRandom;
 
@@ -269,7 +263,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             int firstIndexNotToSent = Math.min(i + itemsPerMessage, interestingData.size());
             List<Tuple<DisasterData, Double>> subsetToSent = interestingData.subList(i, firstIndexNotToSent);
             DataMessage message = new DataMessage(
-                    this.host, unknownReceiver, this.getNextDataMessageId(), subsetToSent, DATA_MESSAGE_PRIORITY);
+                    this.host, unknownReceiver, this.createMessageId(subsetToSent), subsetToSent, DATA_MESSAGE_PRIORITY);
             message.setAppID(APP_ID);
             messages.add(message);
         }
@@ -278,14 +272,12 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         return messages;
     }
 
-    /**
-     * Gets the ID for the next data message.
-     * @return A message ID.
-     */
-    private String getNextDataMessageId() {
-        String messageId = this.messageIdPrefix + this.nextMessageId;
-        this.nextMessageId++;
-        return messageId;
+    private String createMessageId(List<Tuple<DisasterData, Double>> subsetToSent) {
+        List<DisasterData> dataList = new ArrayList<>(subsetToSent.size());
+        for (Tuple<DisasterData, Double> item : subsetToSent) {
+            dataList.add(item.getKey());
+        }
+        return "D" + dataList.hashCode();
     }
 
     /**
@@ -355,10 +347,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             }
         }
         this.stashedCreationData.clear();
-
-        // Initialize database message ID generator.
-        this.messageIdPrefix = "DataFrom" + host.getAddress() + "_";
-        this.nextMessageId = 1;
     }
 
     /**

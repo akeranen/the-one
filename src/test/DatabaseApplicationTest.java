@@ -416,25 +416,6 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testCreateDataMessagesUsesOwnIdForEachMessage() {
-        // Add enough data s.t. multiple messages can be sent.
-        for (int i = 0; i < TWO_DATA_MESSAGES * ITEMS_PER_MESSAGE; i++) {
-            DisasterDataNotifier.dataCreated(this.hostAttachedToApp,
-                    DatabaseApplicationTest.createUsefulData(DisasterData.DataType.MARKER, this.hostAttachedToApp));
-        }
-
-        // Then check all IDs.
-        Set<String> messageIds = new HashSet<>(NUM_TESTS * TWO_DATA_MESSAGES);
-        for (int i = 0; i < NUM_TESTS; i++) {
-            List<DataMessage> messages = this.app.createDataMessages(this.hostAttachedToApp);
-            TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_MESSAGES, messages.size());
-            messageIds.add(messages.get(0).getId());
-            messageIds.add(messages.get(1).getId());
-        }
-        TestCase.assertEquals("Not all IDs have been different.", NUM_TESTS * TWO_DATA_MESSAGES, messageIds.size());
-    }
-
-    @Test
     public void testCreateDataMessagesSendsMapOutAfterMinInterval() {
         this.clock.setTime(MAP_SENDING_INTERVAL - SMALL_TIME_DIFF);
 

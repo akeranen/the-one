@@ -336,7 +336,8 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         EpidemicRouterTest.setUpAsDataCarrier(h1, newData);
 
         // Now, only the second object should get sent.
-        h1.connect(h3);
+        h1.forceConnection(h2, null, false);
+        h1.forceConnection(h3, null, true);
         updateAllNodes();
         do {
             mc.next();

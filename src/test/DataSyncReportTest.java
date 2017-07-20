@@ -33,10 +33,6 @@ public class DataSyncReportTest extends AbstractReportTest{
     /* Properties of the database application. */
     private static final long BIGGEST_DB_SIZE = 300L;
     private static final long SMALLEST_DB_SIZE = 200L;
-    private static final double MIN_UTILITY = 0.5;
-    private static final double MAP_SENDING_INTERVAL = 43.2;
-    private static final int SEED = 0;
-    private static final int ITEMS_PER_MESSAGE = 2;
 
     /* String arrays containing all the expected metrics and ratios to check whether everything necessary is contained*/
     private static final String[] EXPECTED_METRICS = new String[]{"avg_used_mem", "max_used_mem", "med_avg_data_util",
@@ -122,7 +118,9 @@ public class DataSyncReportTest extends AbstractReportTest{
         java.util.Locale.setDefault(java.util.Locale.US);
 
         /* Create and initialize database application. */
-        addDatabaseApplicationSettings();
+        DatabaseApplicationTest.addDatabaseApplicationSettings(this.settings);
+        this.settings.putSetting(
+               DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
         this.app = new DatabaseApplication(this.settings);
 
         //Create Test Utils for host creation
@@ -135,18 +133,6 @@ public class DataSyncReportTest extends AbstractReportTest{
 
         // Create report
         this.report = new DataSyncReport();
-    }
-
-    /**
-     * Adds all necessary settings the database application needs to function
-     */
-    private void addDatabaseApplicationSettings() {
-        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
-        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
-        this.settings.putSetting(
-                DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
-        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
-        this.settings.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
     }
 
     /**

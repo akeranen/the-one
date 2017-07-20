@@ -248,6 +248,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
                 this.database.getAllNonMapDataWithMinimumUtility(this.utilityThreshold);
 
         // If it's been a while, add a map item to that data.
+        // TODO: Once we use maps again, this should be a single message.
         if (SimClock.getTime() - this.lastMapSendingTime >= this.mapSendingInterval) {
             List<DisasterData> allMaps = this.database.getMapData();
             if (!allMaps.isEmpty()) {

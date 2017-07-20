@@ -80,7 +80,7 @@ Group3.okMaps = 2,3
 
 
 # How many event generators
-Events.nrof = 9
+Events.nrof = 8
 
 # Class for first message type (Broadcasts without photo)
 Events2.class = BroadcastEventGenerator

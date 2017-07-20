@@ -228,7 +228,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 0, router1.getDeliveryPredictability(messageToH3), DOUBLE_COMPARISON_DELTA);
 
         // Check delivery predictabilies for h2.
-        double age = (SECOND_MEETING_TIME - FIRST_MEETING_TIME) / DisasterRouterTestUtils.SECONDS_IN_TIME_UNIT;
+        double age = (SECOND_MEETING_TIME - FIRST_MEETING_TIME) / DisasterRouterTestUtils.DP_WINDOW_LENGTH;
         double agedPredictability = DisasterRouterTestUtils.SUMMAND * Math.pow(DisasterRouterTestUtils.GAMMA, age);
         Assert.assertEquals(
                 EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY,

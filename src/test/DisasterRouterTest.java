@@ -11,6 +11,7 @@ import core.MulticastMessage;
 import core.SimClock;
 import org.junit.Assert;
 import org.junit.Test;
+import routing.ActiveRouter;
 import routing.DisasterRouter;
 
 /**
@@ -26,6 +27,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
+    private static final double NON_ZERO_MESSAGE_ORDERING_INTERVAL = 2D;
 
     /* Some priority values needed for tests. */
     private static final int PRIORITY = 5;
@@ -495,5 +497,51 @@ public class DisasterRouterTest extends AbstractRouterTest {
             } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
             Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
         }
+    }
+
+    /**
+     * Checks that the cache handling non direct messages is recomputed in the correct interval.
+     */
+    public void testNonDirectMessagesAreRecomputedInMessageOrderingInterval() {
+        // TODO: How to set correct setting for disaster router here?
+        // Set the message ordering interval.
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+
+        // Make sure host has a message.
+        Message m = new Message(h1, h0, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to other host to see that the message gets sent.
+        h1.connect(h2);
+        this.mc.reset();
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, m.getId());
+
+        // Create new message.
+        Message newMessage = new Message(h1, h0, "M2", 0);
+        h1.createNewMessage(newMessage);
+
+        // Advance time to shortly before the message ordering interval.
+        this.clock.advance(NON_ZERO_MESSAGE_ORDERING_INTERVAL - SHORT_TIME_SPAN);
+
+        // Make sure new message does not get send.
+        this.mc.reset();
+        this.updateAllNodes();
+        Assert.assertFalse("Message should not have been sent yet.", this.mc.next());
+
+        // Advance to the message ordering interval.
+        this.clock.advance(SHORT_TIME_SPAN);
+
+        // Make sure message does get send now.
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, newMessage.getId());
+    }
+
+    /**
+     * Checks that the cache handling non direct messages is recomputed once a new connection comes up.
+     */
+    @Test
+    public void testNonDirectMessagesAreRecomputedOnNewConnection() {
+
     }
 }

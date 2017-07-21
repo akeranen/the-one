@@ -5,6 +5,7 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
+import core.SimClock;
 import routing.choosers.EpidemicMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.prioritizers.PrioritySorter;
@@ -15,8 +16,10 @@ import routing.util.EncounterValueManager;
 import routing.util.ReplicationsDensityManager;
 import util.Tuple;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -37,6 +40,18 @@ public class DisasterRouter extends ActiveRouter {
     private EncounterValueManager encounterValueManager;
     private ReplicationsDensityManager replicationsDensityManager;
     private DeliveryPredictabilityStorage deliveryPredictabilityStorage;
+
+    /**
+     * A cache for non-direct messages to all neighbors, sorted in the order in which they should be sent.
+     * The cache is recomputed every {@link #messageOrderingInterval} seconds or in the case that a new connection comes
+     * up. As soon as a connection breaks, the respective messages are removed from this cache.
+     *
+     * The introduction of this cache leads to higher memory usage, but more efficiency. It also has the downside that
+     * newly created or received messages are not directly sent to other hosts as they are not in the cache yet, while
+     * messages deleted from cache might still be sent. We can tolerate this as long as {@link #messageOrderingInterval}
+     * is not chosen too high.
+     */
+    private List<Tuple<Message, Connection>> cachedNonDirectMessages = new ArrayList<>();
 
     /**
      * Initializes a new instance of the {@link DisasterRouter} class.
@@ -124,6 +139,12 @@ public class DisasterRouter extends ActiveRouter {
                 DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(
                         this.deliveryPredictabilityStorage, encounteredRouter.deliveryPredictabilityStorage);
             }
+
+            // Add messages to this new neighbor to message cache.
+            this.recomputeMessageCache();
+        } else {
+            // For broken connections, clean up message cache.
+            this.removeConnectionFromMessageCache(con);
         }
     }
 
@@ -170,10 +191,33 @@ public class DisasterRouter extends ActiveRouter {
      * Tries to send non-direct messages to connected hosts.
      */
     private void tryOtherMessages() {
+        if(SimClock.getTime() - this.lastMessageOrdering >= this.messageOrderingInterval){
+            this.recomputeMessageCache();
+        }
+        this.tryMessagesForConnected(this.cachedNonDirectMessages);
+    }
+
+    /**
+     * Recomputes messages that should be sent and the order in which they should be sent.
+     */
+    private void recomputeMessageCache() {
         Collection<Tuple<Message, Connection>> messages =
                 this.messageChooser.findOtherMessages(this.getMessageCollection(), this.getConnections());
-        List<Tuple<Message, Connection>> prioritizedMessages = this.messagePrioritizer.sortMessages(messages);
-        this.tryMessagesForConnected(prioritizedMessages);
+        this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
+        this.lastMessageOrdering = SimClock.getTime();
+    }
+
+    /**
+     * Removes all message-connection pairs with the provided connection from {@link #cachedNonDirectMessages}.
+     * @param con Connection which should not get any messages anymore.
+     */
+    private void removeConnectionFromMessageCache(Connection con) {
+        Iterator<Tuple<Message,Connection>> it = this.cachedNonDirectMessages.listIterator();
+        while (it.hasNext()){
+            if (it.next().getValue().equals(con)){
+                it.remove();
+            }
+        }
     }
 
     /**

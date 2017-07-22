@@ -502,10 +502,10 @@ public class DisasterRouterTest extends AbstractRouterTest {
     /**
      * Checks that the cache handling non direct messages is recomputed in the correct interval.
      */
-    public void testNonDirectMessagesAreRecomputedInMessageOrderingInterval() {
-        // TODO: How to set correct setting for disaster router here?
+    public void testNonDirectMessagesAreRecomputedInMessageOrderingInterval() throws Exception {
         // Set the message ordering interval.
         ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+        this.setUp();
 
         // Make sure host has a message.
         Message m = new Message(h1, h0, "M1", 0);
@@ -526,7 +526,10 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Make sure new message does not get send.
         this.mc.reset();
-        this.updateAllNodes();
+        // Skip all information about old message.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastMsg().equals(m));
         Assert.assertFalse("Message should not have been sent yet.", this.mc.next());
 
         // Advance to the message ordering interval.
@@ -541,7 +544,30 @@ public class DisasterRouterTest extends AbstractRouterTest {
      * Checks that the cache handling non direct messages is recomputed once a new connection comes up.
      */
     @Test
-    public void testNonDirectMessagesAreRecomputedOnNewConnection() {
+    public void testNonDirectMessagesAreRecomputedOnNewConnection() throws Exception {
+        // Set the message ordering interval.
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+        this.setUp();
 
+        // Make sure host has a message.
+        Message m = new Message(h1, h0, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to other host to see that the message gets sent.
+        h1.connect(h2);
+        this.mc.reset();
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, m.getId());
+
+        // Add new connection.
+        h1.connect(h3);
+
+        // Check that the message gets sent directly.
+        // Skip all information about old connection.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastTo().equals(h2));
+        Assert.assertEquals("Message should have been sent.", m.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals("Message should have been sent to newly connected host.", h3, this.mc.getLastTo());
     }
 }

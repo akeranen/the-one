@@ -578,13 +578,43 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Then test the buffer management.
         this.mc.reset();
-        h1.createNewMessage(new Message(h1, h5, "BIG", (int)h1.getRouter().getBufferSize()));
+        h1.createNewMessage(new Message(h1, h5, "BIG", BUFFER_SIZE));
         Message[] expectedDeletionOrder = { e,c,d,f,a,b };
         for (int i = 0; i < expectedDeletionOrder.length; i++) {
             this.mc.next();
             assertEquals("Expected other message to be deleted first.",
                     expectedDeletionOrder[i].getId(), this.mc.getLastMsg().getId());
         }
+    }
+
+    /**
+     * Checks that buffer management will never delete a message that is being sent right now.
+     */
+    public void testSendingMessageIsNotDeleted() {
+        // Start sending a message.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.updateAllNodes();
+
+        // Check the transfer started.
+        this.mc.next();
+        this.checkTransferStart(h2, h3, m1.getId());
+
+        // Deletion should not work now.
+        Message largeMessage = new Message(h2, h1, "BIG", BUFFER_SIZE);
+        h2.createNewMessage(largeMessage);
+        assertTrue("Should not have been able to delete a message that is being sent.",
+                h2.getMessageCollection().contains(m1));
+
+        // Finish sending the message.
+        this.clock.advance(1);
+        this.updateAllNodes();
+
+        // We can now delete it.
+        h2.createNewMessage(largeMessage);
+        assertFalse("Should have been able to delete the existing message.",
+                h2.getMessageCollection().contains(m1));
     }
 
     /**

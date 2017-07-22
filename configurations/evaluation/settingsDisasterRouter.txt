@@ -30,6 +30,5 @@ DisasterPrioritization.priorityThreshold = 5
 DisasterPrioritization.dpWeight = 0.5
 
 # Parameters for buffer management
-# ! TODO: Uncomment this once buffer management is implemented !
-# DisasterBufferComparator.hopThreshold = 5
-# DisasterBufferComparator.ageThreshold = 300
+DisasterBufferComparator.hopThreshold = 6
+DisasterBufferComparator.ageThreshold = 300

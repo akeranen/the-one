@@ -12,6 +12,7 @@ import core.SimClock;
 import org.junit.Assert;
 import org.junit.Test;
 import routing.DisasterRouter;
+import routing.MessageRouter;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -26,12 +27,17 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
+    private static final double MESSAGE_DELETION_TIME = 200;
 
     /* Some priority values needed for tests. */
     private static final int PRIORITY = 5;
     private static final int VERY_HIGH_PRIORITY = 10;
     private static final int HIGH_PRIORITY = 6;
     private static final int LOW_PRIORITY = 4;
+
+    /* Some constants needed for buffer management tests. */
+    private static final double[] SECONDS_IN_BUFFER = { 20, 5, 60, 150, 200, 5 };
+    private static final int[] HOP_COUNTS = { 2, 2, 10, 20, 1, 4 };
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
@@ -46,6 +52,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     @Override
     public void setUp() throws Exception {
         DisasterRouterTestUtils.addDisasterRouterSettings(ts);
+        ts.putSetting(MessageRouter.B_SIZE_S, Integer.toString(BUFFER_SIZE));
 
         setRouterProto(new DisasterRouter(ts));
         super.setUp();
@@ -523,6 +530,71 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 this.mc.next();
             } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
             Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
+        }
+    }
+
+    /**
+     * Checks that buffer management works as expected by executing a small scenario.
+     */
+    public void testBufferManagement() {
+        this.clock.advance(MESSAGE_DELETION_TIME);
+
+        // Create messages.
+        Message a = new Message(h1, h2, "a", 1);
+        Message b = new Message(h1, h2, "b", 1);
+        Message c = new Message(h1, h4, "c", 1);
+        Message d = new Message(h1, h3, "d", 1);
+        Message e = new BroadcastMessage(h1, "e", 1);
+        Message f = new Message(h1, h2, "f", 1);
+        Message[] messages = {a, b, c, d, e, f};
+        for (Message m : messages) {
+            h1.createNewMessage(m);
+        }
+
+        // Change message properties:
+        // 1) Assign different time spans in which the messages have already been in buffer.
+        for (int i = 0; i < messages.length; i++) {
+            messages[i].setReceiveTime(MESSAGE_DELETION_TIME - SECONDS_IN_BUFFER[i]);
+        }
+
+        // 2) Give the messages different hop counts.
+        for (int i = 0; i < messages.length; i++) {
+            this.increaseHopCount(messages[i], HOP_COUNTS[i]);
+        }
+
+        // 3) Increase delivery predictabilities for messages C and D. D should have a higher delivery predictability.
+        d.getTo().connect(c.getTo());
+        h1.connect(d.getTo());
+        h1.connect(c.getTo());
+        disconnect(h1);
+        disconnect(d.getTo());
+
+        // 4) Increase replications density for message e.
+        h5.createNewMessage(e);
+        h1.connect(h5);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        this.updateAllNodes();
+        disconnect(h1);
+
+        // Then test the buffer management.
+        this.mc.reset();
+        h1.createNewMessage(new Message(h1, h5, "BIG", (int)h1.getRouter().getBufferSize()));
+        Message[] expectedDeletionOrder = { e,c,d,f,a,b };
+        for (int i = 0; i < expectedDeletionOrder.length; i++) {
+            this.mc.next();
+            assertEquals("Expected other message to be deleted first.",
+                    expectedDeletionOrder[i].getId(), this.mc.getLastMsg().getId());
+        }
+    }
+
+    /**
+     * Increases the provided message's hop count by the provided value.
+     * @param m Message to increase the hop count for.
+     * @param increase The number of hops to add.
+     */
+    private void increaseHopCount(Message m, int increase) {
+        for (int i = 0; i < increase; i++) {
+            m.addNodeOnPath(this.utils.createHost());
         }
     }
 }

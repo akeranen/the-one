@@ -11,6 +11,7 @@ import routing.prioritizers.PrioritySorter;
 import routing.prioritizers.PriorityTupleSorter;
 import routing.util.DatabaseApplicationUtil;
 import routing.util.DeliveryPredictabilityStorage;
+import routing.util.DisasterBufferComparator;
 import routing.util.EncounterValueManager;
 import routing.util.ReplicationsDensityManager;
 import util.Tuple;
@@ -33,6 +34,9 @@ public class DisasterRouter extends ActiveRouter {
     private MessageChoosingStrategy messageChooser;
     private MessagePrioritizationStrategy messagePrioritizer;
 
+    /* Buffer management strategy. */
+    private Comparator<Message> rankComparator;
+
     /* Rating mechanism helpers. */
     private EncounterValueManager encounterValueManager;
     private ReplicationsDensityManager replicationsDensityManager;
@@ -54,6 +58,7 @@ public class DisasterRouter extends ActiveRouter {
         this.messagePrioritizer = new DisasterPrioritizationStrategy(this);
         this.directMessageComparator = new PrioritySorter();
         this.directMessageTupleComparator = new PriorityTupleSorter();
+        this.rankComparator = new DisasterBufferComparator(this);
     }
 
     /**
@@ -71,6 +76,7 @@ public class DisasterRouter extends ActiveRouter {
         this.messagePrioritizer = router.messagePrioritizer.replicate(this);
         this.directMessageComparator = router.directMessageComparator;
         this.directMessageTupleComparator = router.directMessageTupleComparator;
+        this.rankComparator = new DisasterBufferComparator(this);
     }
 
     /**
@@ -175,6 +181,33 @@ public class DisasterRouter extends ActiveRouter {
                 this.messageChooser.findOtherMessages(this.getMessageCollection(), this.getConnections());
         List<Tuple<Message, Connection>> prioritizedMessages = this.messagePrioritizer.sortMessages(messages);
         this.tryMessagesForConnected(prioritizedMessages);
+    }
+
+    /**
+     * Returns the lowest ranked message in the message buffer
+     * (that is not being sent if excludeMsgBeingSent is true).
+     *
+     * @param excludeMsgBeingSent If true, excludes message(s) that are
+     *                            being sent from the check (i.e. if lowest rank message is
+     *                            being sent, the second lowest rank message is returned)
+     * @return The lowest rank message or null if no message could be returned
+     * (no messages in buffer or all messages in buffer are being sent and
+     * exludeMsgBeingSent is true)
+     */
+    @Override
+    protected Message getNextMessageToRemove(boolean excludeMsgBeingSent) {
+        Message lowestRankMessage = null;
+        for (Message m : this.getMessageCollection()) {
+            if (excludeMsgBeingSent && isSending(m.getId())) {
+                continue;
+            }
+
+            if (lowestRankMessage == null || this.rankComparator.compare(m, lowestRankMessage) < 0) {
+                lowestRankMessage = m;
+            }
+        }
+
+        return lowestRankMessage;
     }
 
     /**

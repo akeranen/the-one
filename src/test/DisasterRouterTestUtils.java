@@ -4,6 +4,7 @@ import applications.DatabaseApplication;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
+import routing.util.DisasterBufferComparator;
 import routing.util.EncounterValueManager;
 import routing.util.ReplicationsDensityManager;
 
@@ -30,6 +31,10 @@ public final class DisasterRouterTestUtils {
     public static final double HEAD_START_THRESHOLD = 30.4;
     public static final int PRIORITY_THRESHOLD = 4;
     public static final double DP_WEIGHT = 0.8;
+
+    /* Constants needed for buffer management. */
+    public static final int HOP_THRESHOLD = 5;
+    public static final double AGE_THRESHOLD = 100D;
 
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
@@ -65,5 +70,10 @@ public final class DisasterRouterTestUtils {
         s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
         s.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE, "50,50");
         s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "30");
+
+        s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
+        s.putSetting(DisasterBufferComparator.AGE_THRESHOLD_S, Double.toString(AGE_THRESHOLD));
+        s.putSetting(DisasterBufferComparator.HOP_THRESHOLD_S, Integer.toString(HOP_THRESHOLD));
+        s.restoreNameSpace();
     }
 }

@@ -232,7 +232,7 @@ public class DisasterBufferComparatorTest {
 
     /**
      * Checks that a low rank broadcast message with a replications density of ~0.33 is sorted between two low rank
-     * one to one messages with replications densities ~0.75 and 0.
+     * one to one messages with replications densities ~0.68 and 0.
      */
     @Test
     public void testLowRankBroadcastsAreSortedByReplicationsDensity() {

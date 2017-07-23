@@ -15,10 +15,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import report.BroadcastDeliveryReport;
+import util.Tuple;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link BroadcastDeliveryReport} class.
@@ -195,7 +197,8 @@ public class BroadcastDeliveryReportTest extends AbstractReportTest {
         DTNHost h2 = utils.createHost();
         DisasterData data = new DisasterData(DisasterData.DataType.RESOURCE, 0, AFTER_WARM_UP_TIME, DATA_LOCATION);
 
-        h1.createNewMessage(new DataMessage(h1, h2, TEST_MESSAGE_ID, data, 1, TEST_MESSAGE_PRIORITY));
+        h1.createNewMessage(new DataMessage(
+                h1, h2, TEST_MESSAGE_ID, Collections.singleton(new Tuple<>(data, 1D)), TEST_MESSAGE_PRIORITY));
 
         testReportIgnoresMessage();
     }

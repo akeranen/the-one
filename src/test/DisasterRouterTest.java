@@ -13,6 +13,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import routing.DisasterRouter;
 import routing.util.EnergyModel;
+import util.Tuple;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -360,11 +364,13 @@ public class DisasterRouterTest extends AbstractRouterTest {
         Message broadcast = new BroadcastMessage(h2, "B1", 0);
         Message directMessage = new Message(h1, h2, "M1", 0, 0);
         Message indirectMessage = new Message(h1, h3, "M2", 0, VERY_HIGH_PRIORITY);
+        Message lowPrioMessage = new Message(h1, h3, "M3", 0, 0);
         h1.createNewMessage(directMulticast);
         h1.createNewMessage(indirectMulticast);
         h2.createNewMessage(broadcast);
         h1.createNewMessage(directMessage);
         h1.createNewMessage(indirectMessage);
+        h1.createNewMessage(lowPrioMessage);
 
         // Advance time to prevent that any message gets a head start in sorting due to being new.
         this.clock.advance(DisasterRouterTestUtils.HEAD_START_THRESHOLD + SHORT_TIME_SPAN);
@@ -382,7 +388,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         // Make sure messages are sent in correct order.
         String[] expectedIdOrder = {
                 directMulticast.getId(), directMessage.getId(), broadcast.getId(), indirectMessage.getId(),
-                indirectMulticast.getId(), data.toString()
+                indirectMulticast.getId(), "D" + Arrays.asList(data).hashCode(), lowPrioMessage.getId()
         };
         this.mc.reset();
         for (String expectedId : expectedIdOrder) {
@@ -471,7 +477,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
     public void testNonDirectMessageSorting() {
         // Create messages to sort.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
-        Message usefulDataMessage = new DataMessage(h1, h3, data.toString(), data, 1, 0);
+        Message usefulDataMessage = new DataMessage(
+                h1, h3, "D" + Arrays.asList(data).hashCode(), Collections.singleton(new Tuple<>(data, 1D)), 0);
         Message highDeliveryPredictabilityMessage = new Message(h1, h4, "M1", 0, 0);
         Message lowReplicationsDensityMessage = new Message(h1, h3, "M2", 0, 0);
         Message highReplicationsDensityMessage = new Message(h1, h3, "M3", 0, 0);
@@ -495,7 +502,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
             if (!(m instanceof DataMessage)) {
                 h1.createNewMessage(m);
             } else {
-                app.disasterDataCreated(h1, ((DataMessage)m).getData());
+                app.disasterDataCreated(h1, ((DataMessage)m).getData().get(0));
             }
         }
 
@@ -581,7 +588,10 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Check which messages h1 sends to h2.
         String[] expectedMessageIds = new String[] {
-                usefulData.toString(), popularMessageWithHighDeliveryPred.getId(), unpopularMessage.getId() };
+                "D" + Arrays.asList(usefulData).hashCode(),
+                popularMessageWithHighDeliveryPred.getId(),
+                unpopularMessage.getId()
+        };
         h1.connect(h2);
         this.mc.reset();
         for (String expectedMessageId : expectedMessageIds) {

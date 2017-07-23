@@ -34,6 +34,9 @@ public class DatabaseApplicationUtilTest {
     /** Expected number of {@link core.DataMessage}s in some tests. */
     private static final int TWO_MESSAGES = 2;
 
+    /** The maximum number of database items per message. */
+    private static final int ITEMS_PER_MESSAGE = 2;
+
     private TestSettings testSettings = new TestSettings();
     private TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.testSettings);
 
@@ -145,17 +148,16 @@ public class DatabaseApplicationUtilTest {
 
         List<Tuple<Message, Connection>> dataMessages =
                 DatabaseApplicationUtil.wrapUsefulDataIntoMessages(host.getRouter(), host, host.getConnections());
-        TestCase.assertEquals("Expected different number of data messages.", TWO_MESSAGES, dataMessages.size());
-        TestCase.assertTrue(
-                "Marker should have been returned.",
-                dataMessages.stream().anyMatch(tuple -> ((DataMessage)tuple.getKey()).getData().equals(MARKER_DATA)));
-        TestCase.assertTrue(
-                "Resource should have been returned.",
-                dataMessages.stream().anyMatch(tuple -> ((DataMessage)tuple.getKey()).getData().equals(RESOURCE_DATA)));
+        TestCase.assertEquals("Expected different number of data messages.", 1, dataMessages.size());
+        DataMessage message = (DataMessage)dataMessages.get(0).getKey();
+        TestCase.assertEquals("Expected different number of data items.", ITEMS_PER_MESSAGE, message.getData().size());
+        TestCase.assertTrue("Marker should have been returned.", message.getData().contains(MARKER_DATA));
+        TestCase.assertTrue("Resource should have been returned.", message.getData().contains(RESOURCE_DATA));
     }
 
     private void addDatabaseApplication() {
         DatabaseApplicationUtilTest.addDummyValuesForDatabaseApplication(this.testSettings);
+        this.testSettings.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
 
         MessageRouter router = new EpidemicRouter(this.testSettings);
         router.addApplication(new DatabaseApplication(this.testSettings));

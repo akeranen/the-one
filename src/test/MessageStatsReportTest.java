@@ -16,12 +16,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import report.MessageStatsReport;
+import util.Tuple;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
@@ -106,10 +108,10 @@ public class MessageStatsReportTest {
 
         //Data Message
         DisasterData data = new DisasterData(DisasterData.DataType.MAP, 0, 0, new Coord(0,0));
-        d.createNewMessage(new DataMessage(d, a, "m4", data, 1,1));
+        d.createNewMessage(new DataMessage(d, a, "m4", Collections.singleton(new Tuple<>(data, 1D)), 1));
         d.sendMessage("m4", a);
         a.messageTransferred("m4", d);
-        d.createNewMessage(new DataMessage(d, b, "m5", data, 0.5, 0));
+        d.createNewMessage(new DataMessage(d, b, "m5", Collections.singleton(new Tuple<>(data, 0.5)), 0));
         d.deleteMessage("m5", true);
 
     }

@@ -53,6 +53,7 @@ dbApp.type = DatabaseApplication
 dbApp.utility_threshold = 0.25
 dbApp.db_size = 50M, 150M
 dbApp.mapSendingInterval = -1
+dbApp.itemsPerMessage = 10
 dbApp.seed = 0
 Group.nrofApplications = 1
 Group.application1 = dbApp

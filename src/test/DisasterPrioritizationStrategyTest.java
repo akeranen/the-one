@@ -20,6 +20,7 @@ import routing.prioritizers.DisasterPrioritizationStrategy;
 import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -208,7 +209,8 @@ public class DisasterPrioritizationStrategyTest {
         // Then create a new data message to an unknown host.
         DisasterData data =
                 new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
-        Message newlyCreatedMessage = new DataMessage(this.host, this.testUtils.createHost(), "M2", data, 0, 0);
+        Message newlyCreatedMessage = new DataMessage(
+                this.host, this.testUtils.createHost(), "M2", Collections.singleton(new Tuple<>(data, 0D)), 0);
         this.host.createNewMessage(newlyCreatedMessage);
         Tuple<Message, Connection> newMessageToNeighbor = this.messageToHost(newlyCreatedMessage, neighbor);
 
@@ -231,7 +233,8 @@ public class DisasterPrioritizationStrategyTest {
 
         // ...and a useless data message.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
-        Message dataMessage = new DataMessage(this.host, this.testUtils.createHost(), "D1", data, 0, 1);
+        Message dataMessage = new DataMessage(
+                this.host, this.testUtils.createHost(), "D1", Collections.singleton(new Tuple<>(data, 0D)), 1);
         Tuple<Message, Connection> dataMessageToNeighbor = this.messageToHost(dataMessage, neighbor);
         this.host.createNewMessage(dataMessage);
 
@@ -254,8 +257,10 @@ public class DisasterPrioritizationStrategyTest {
         // Create two data messages and three other messages:
         // One data message (D1) has high utility, the other one (D2) quite low.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
-        Message highUtilityData = new DataMessage(this.host, this.testUtils.createHost(), "D1", data, 1, 0);
-        Message lowUtilityData = new DataMessage(this.host, this.testUtils.createHost(), "D2", data, LOW_UTILITY, 0);
+        Message highUtilityData = new DataMessage(
+                this.host, this.testUtils.createHost(), "D1", Collections.singleton(new Tuple<>(data, 1D)), 0);
+        Message lowUtilityData = new DataMessage(
+                this.host, this.testUtils.createHost(), "D2", Collections.singleton(new Tuple<>(data, LOW_UTILITY)), 0);
 
         // One of the other messages (M1) has high delivery predictability, the other (M2) none.
         Message messageToKnownHost = new Message(this.host, knownHost, "M1", 0);

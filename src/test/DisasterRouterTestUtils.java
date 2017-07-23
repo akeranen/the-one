@@ -65,5 +65,6 @@ public final class DisasterRouterTestUtils {
         s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
         s.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE, "50,50");
         s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "30");
+        s.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, "2");
     }
 }

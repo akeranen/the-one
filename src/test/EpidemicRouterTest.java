@@ -27,12 +27,13 @@ import java.util.List;
 public class EpidemicRouterTest extends AbstractRouterTest {
 
 	private static int TTL = 300;
-	private static final int SHORT_TIMESPAN = 10;
 	private static final int THREE_HOURS = 10_800;
 
 	/* Data base item sizes needed for tests. */
 	private static final int DB_SIZE = 50;
 	private static final int SMALL_SIZE_DIFFERENCE = 2;
+
+	private static final String EXPECTED_DATA_MESSAGE = "Data message should have been sent.";
 
 	@Override
 	public void setUp() throws Exception {
@@ -49,6 +50,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         ts.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE,
                 String.format("%s,%s", Integer.toString(DB_SIZE), Integer.toString(DB_SIZE)));
         ts.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "30");
+        ts.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, "2");
     }
 
 	/**
@@ -265,7 +267,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         h1.connect(h2);
         updateAllNodes();
         assertTrue("A message should have been sent.", mc.next());
-        assertEquals("Data message should have been sent.", data.toString(), mc.getLastMsg().getId());
+        assertTrue(EXPECTED_DATA_MESSAGE, mc.getLastMsg() instanceof DataMessage);
         assertEquals("Message should have had neighbor as receiver.", h2, mc.getLastMsg().getTo());
         assertEquals("Message transfer should just have started.", mc.TYPE_START, mc.getLastType());
     }
@@ -322,7 +324,10 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         h1.connect(h2);
         updateAllNodes();
         mc.next();
-        assertEquals("Data message should have been sent.", data.toString(), mc.getLastMsg().getId());
+        assertTrue(EXPECTED_DATA_MESSAGE, mc.getLastMsg() instanceof DataMessage);
+        DataMessage message = (DataMessage)mc.getLastMsg();
+        assertEquals("Expected only one data item to be sent.", 1, message.getData().size());
+        assertEquals("Expected other data item to be sent.", data, message.getData().get(0));
 
         // Add another, large one to replace the original object. It is more useful so it stays in the database.
         this.clock.advance(THREE_HOURS);
@@ -337,15 +342,11 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         do {
             mc.next();
         } while (!mc.getLastType().equals(mc.TYPE_START));
-        assertEquals("Other data message should have been sent.", newData.toString(), mc.getLastMsg().getId());
-
-        // Allow some time to send a new object.
-        this.clock.advance(SHORT_TIMESPAN);
-        updateAllNodes();
-        while(mc.next()) {
-            assertNotSame("Fist data message should not be sent anymore.",
-                    data.toString(), mc.getLastMsg().getId());
-        }
+        assertTrue(EXPECTED_DATA_MESSAGE, mc.getLastMsg() instanceof DataMessage);
+        message = (DataMessage)mc.getLastMsg();
+        assertEquals("Expected only one data item to be sent.", 1, message.getData().size());
+        assertEquals("Expected other data item to be sent.", newData, message.getData().get(0));
+        assertFalse("Only one message should have been sent.", mc.next());
     }
 
 	/**

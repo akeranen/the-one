@@ -70,7 +70,7 @@ public final class DatabaseApplicationUtil {
      *                                              data items.
      * @return The created messages and the connection they should be sent over.
      */
-    public static List<Tuple<Message, Connection>> wrapRecentDataIntoMessages(
+    public static List<Tuple<Message, Connection>> wrapRecentUsefulDataIntoMessages(
             DTNHost host, List<Connection> connections, int maximumNumberSecondsSinceModification) {
         // First find out if we even have a database application.
         DatabaseApplication application = DatabaseApplicationUtil.findDatabaseApplication(host.getRouter());
@@ -78,9 +78,9 @@ public final class DatabaseApplicationUtil {
             return new ArrayList<>(0);
         }
 
-        // Then fetch prototypes of messages containing recent data items...
+        // Then fetch prototypes of messages containing recently modified useful data items...
         List<DataMessage> messagePrototypes =
-                application.wrapRecentDataIntoMessages(host, maximumNumberSecondsSinceModification);
+                application.wrapRecentUsefulDataIntoMessages(host, maximumNumberSecondsSinceModification);
 
         // ... and create real instances for each of them:
         return DatabaseApplicationUtil.wrapPrototypesIntoConcreteMessages(messagePrototypes, connections, host);

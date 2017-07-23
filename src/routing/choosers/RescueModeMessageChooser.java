@@ -83,7 +83,7 @@ public class RescueModeMessageChooser implements MessageChoosingStrategy{
         Collection<Tuple<Message, Connection>> chosenMessages = new ArrayList<>();
         List<Connection> availableConnections = new ArrayList<>();
 
-        // Add ordinary messages.
+        // Add ordinary messages: Send everything to all available connections.
         for (Connection con : connections) {
             DTNHost neighbor = con.getOtherNode(this.attachedHost);
             DisasterRouter.checkRouterIsDisasterRouter(neighbor.getRouter());
@@ -103,7 +103,7 @@ public class RescueModeMessageChooser implements MessageChoosingStrategy{
 
         // Wrap useful data stored at host which has been modified recently into data messages to available neighbors
         // and add them to the messages to sent.
-        chosenMessages.addAll(DatabaseApplicationUtil.wrapRecentDataIntoMessages(
+        chosenMessages.addAll(DatabaseApplicationUtil.wrapRecentUsefulDataIntoMessages(
                 this.attachedHost, availableConnections, this.shortTimespanThreshold));
 
         return chosenMessages;

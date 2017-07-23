@@ -257,14 +257,21 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         return this.createDataMessagePrototypes(interestingData);
     }
 
-    public List<DataMessage> wrapRecentDataIntoMessages(
+    /**
+     * Creates database synchronization messages from existing useful data that has been modified recently.
+     *
+     * @param databaseOwner The DTNHost this instance of the application is attached to.
+     * @param maximumNumberSecondsSinceModification The maximum number of seconds since last modification.
+     * @return The created messages. They don't have a receiver yet, so {@link Message#getTo()} will return null.
+     */
+    public List<DataMessage> wrapRecentUsefulDataIntoMessages(
             DTNHost databaseOwner, int maximumNumberSecondsSinceModification) {
         // If we don't know who the application is attached to yet, use the new knowledge for initialization.
         if (!this.isInitialized()) {
             this.initialize(databaseOwner);
         }
 
-        // Find all data which has been modified recently.
+        // Find all interesting data which has been modified recently.
         List<Tuple<DisasterData, Double>> recentData = new ArrayList<>();
         for (Tuple<DisasterData, Double> dataWithUtility :
                 this.database.getAllNonMapDataWithMinimumUtility(this.utilityThreshold)) {

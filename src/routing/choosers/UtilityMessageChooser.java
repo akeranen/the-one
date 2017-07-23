@@ -73,6 +73,11 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
      */
     public static final String UTILITY_THRESHOLD = "messageUtilityThreshold";
 
+    /**
+     * If a neighbor's relative power level is below this threshold, no messages will be sent. -setting id ({@value}).
+     */
+    public static final String POWER_THRESHOLD = "powerThreshold";
+
     /** Acceptable difference of weight sums to 1. */
     private static final double SUM_EQUALS_ONE_DELTA = 0.00001;
 
@@ -84,6 +89,9 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
 
     /** Utility threshold above which messages are sent. */
     private double utilityThreshold;
+
+    /** If a neighbor's relative power level is below this threshold, no messages will be sent. */
+    private double powerThreshold;
 
     /** Router choosing the messages. */
     private DisasterRouter attachedRouter;
@@ -112,12 +120,15 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
 
         // Read thresholds.
         this.utilityThreshold = s.getDouble(UTILITY_THRESHOLD);
-        // TODO: power threshold (protocol v3).
+        this.powerThreshold = s.getDouble(POWER_THRESHOLD);
 
         // Check all values are valid.
         this.validateWeights();
         if (this.utilityThreshold < 0 || this.utilityThreshold > 1) {
             throw new SettingsError("Utility threshold must be in [0, 1], but is " + this.utilityThreshold + "!");
+        }
+        if (this.powerThreshold < 0 || this.powerThreshold > 1) {
+            throw new SettingsError("Power threshold must be in [0, 1], but is " + this.powerThreshold + "!");
         }
 
         // Then set attached router.
@@ -136,7 +147,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         this.replicationsDensityWeight = chooser.replicationsDensityWeight;
         this.encounterValueWeight = chooser.encounterValueWeight;
         this.utilityThreshold = chooser.utilityThreshold;
-        // TODO: power threshold (protocol v3)
+        this.powerThreshold = chooser.powerThreshold;
 
         UtilityMessageChooser.checkRouterIsDisasterRouter(attachedRouter);
         this.attachedRouter = (DisasterRouter)attachedRouter;
@@ -293,6 +304,14 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
      */
     public double getUtilityThreshold() {
         return utilityThreshold;
+    }
+
+    /**
+     * Gets the power threshold.
+     * @return The power threshold.
+     */
+    public double getPowerThreshold() {
+        return powerThreshold;
     }
 
     /**

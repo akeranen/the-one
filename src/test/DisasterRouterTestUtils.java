@@ -17,7 +17,7 @@ public final class DisasterRouterTestUtils {
     public static final double BETA = 0.25;
     public static final double GAMMA = 0.95;
     public static final double SUMMAND = 0.75;
-    public static final double SECONDS_IN_TIME_UNIT = 2;
+    public static final double DP_WINDOW_LENGTH = 2;
 
     /* Constants needed for encounter value. */
     public static final double NEW_DATA_WEIGHT = 0.3;
@@ -43,7 +43,7 @@ public final class DisasterRouterTestUtils {
         s.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(BETA));
         s.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(GAMMA));
         s.putSetting(DeliveryPredictabilityStorage.SUMMAND_S, Double.toString(SUMMAND));
-        s.putSetting(DeliveryPredictabilityStorage.TIME_UNIT_S, Double.toString(SECONDS_IN_TIME_UNIT));
+        s.putSetting(DeliveryPredictabilityStorage.WINDOW_LENGTH_S, Double.toString(DP_WINDOW_LENGTH));
         s.restoreNameSpace();
 
         s.setNameSpace(EncounterValueManager.ENCOUNTER_VALUE_NS);

@@ -81,6 +81,7 @@ public class DisasterRouter extends ActiveRouter {
         if (this.powerThreshold < 0 || this.powerThreshold > 1) {
             throw new SettingsError("Power threshold should be in [0, 1], but is " + this.powerThreshold + "!");
         }
+        s.restoreNameSpace();
     }
 
     /**

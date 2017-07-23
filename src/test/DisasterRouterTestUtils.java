@@ -1,6 +1,7 @@
 package test;
 
 import applications.DatabaseApplication;
+import routing.DisasterRouter;
 import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
@@ -50,6 +51,10 @@ public final class DisasterRouterTestUtils {
     }
 
     public static void addDisasterRouterSettings(TestSettings s) {
+        s.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+        s.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
+        s.restoreNameSpace();
+
         s.setNameSpace(DeliveryPredictabilityStorage.DELIVERY_PREDICTABILITY_STORAGE_NS);
         s.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(BETA));
         s.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(GAMMA));

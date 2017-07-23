@@ -49,6 +49,7 @@ public class DatabaseApplicationTest {
     /** Small time difference used for tests about map sending. */
     private static final double SMALL_TIME_DIFF = 0.1;
     private static final int TIME_IN_DISTANT_FUTURE = 600_000;
+    private static final int THREE_MINUTES = 3 * 60;
 
     /** Used to check that some database sizes are completely in the interval, not on the border. */
     private static final int DISTANCE_FROM_BORDER = 10;
@@ -258,6 +259,14 @@ public class DatabaseApplicationTest {
     }
 
     @Test
+    public void testApplicationIsInitializedAfterFirstWrapRecentUsefulDataIntoMessages() {
+        DatabaseApplication uninitializedApp = new DatabaseApplication(this.settings);
+        DatabaseApplicationTest.checkAppIsNotInitialized(uninitializedApp);
+        uninitializedApp.wrapRecentUsefulDataIntoMessages(this.utils.createHost(), 1);
+        TestCase.assertNotNull(EXPECTED_INITIALIZED_APPLICATION, uninitializedApp.getDatabaseSize());
+    }
+
+    @Test
     public void testHandleMessageStoresNewDisasterData() {
         /* Send data message to app. */
         DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
@@ -457,6 +466,108 @@ public class DatabaseApplicationTest {
         }
 
         TestCase.assertEquals("Not all maps have been returned.", mapData.size(), mapsInMessages.size());
+    }
+
+    @Test
+    public void testWrapRecentUsefulDataIntoMessagesCreatesCorrectMessageForInterestingDataItems() {
+        /* Create data. */
+        Coord currLocation = this.hostAttachedToApp.getLocation();
+        double currTime = SimClock.getTime();
+        DisasterData marker = new DisasterData(DisasterData.DataType.MARKER, 0, currTime, currLocation);
+        DisasterData resource = new DisasterData(DisasterData.DataType.RESOURCE, 0, currTime, currLocation);
+        DisasterData skill = new DisasterData(DisasterData.DataType.SKILL, 0, currTime, currLocation);
+
+        /* Add to database. */
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, marker);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, resource);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, skill);
+
+        /* Check all data items are returned as messages. */
+        List<DataMessage> messages = this.app.wrapRecentUsefulDataIntoMessages(this.hostAttachedToApp, 1);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES,
+                (int)Math.ceil((double)THREE_DATA_ITEMS / ITEMS_PER_MESSAGE), messages.size());
+        TestCase.assertTrue(
+                "Expected marker to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().contains(marker)));
+        TestCase.assertTrue(
+                "Expected resource to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().contains(resource)));
+        TestCase.assertTrue(
+                "Expected skill to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().contains(skill)));
+    }
+
+    @Test
+    public void testWrapRecentUsefulDataIntoMessagesOnlySendsOutInterestingData() {
+        this.clock.setTime(TIME_IN_DISTANT_FUTURE);
+        DisasterData usefulData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterData uselessData = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, new Coord(0, 0));
+
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, uselessData);
+
+        List<DataMessage> messages = this.app.wrapRecentUsefulDataIntoMessages(this.hostAttachedToApp, 1);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
+        TestCase.assertTrue(
+                "Expected useful data to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().contains(usefulData)));
+        TestCase.assertFalse(
+                "Did not expect useless data to be in a message..",
+                messages.stream().anyMatch(msg -> msg.getData().contains(uselessData)));
+    }
+
+    @Test
+    public void testWrapRecentUsefulDataIntoMessagesOnlySendsOutRecentData() {
+        // Create one data item exactly 3 minutes in the past and another one 3 minutes and 1 second.
+        DisasterData oldData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, oldData);
+        this.clock.advance(1);
+        DisasterData newerData =
+                DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterDataNotifier.dataCreated(this.hostAttachedToApp, newerData);
+        this.clock.advance(THREE_MINUTES);
+
+        // Ask for data created at most 3 minutes in the past.
+        List<DataMessage> messages = this.app.wrapRecentUsefulDataIntoMessages(this.hostAttachedToApp, THREE_MINUTES);
+        TestCase.assertTrue(
+                "Expected newer data to be in a message.",
+                messages.stream().anyMatch(msg -> msg.getData().contains(newerData)));
+        TestCase.assertFalse(
+                "Did not expect old data to be in a message..",
+                messages.stream().anyMatch(msg -> msg.getData().contains(oldData)));
+    }
+
+    @Test
+    public void testWrapRecentUsefulDataIntoMessagesGroupsDataByUtility() {
+        // Create app sending out everything.
+        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0");
+        // Use copy constructor to subscribe as data listener.
+        DatabaseApplication floodingApp = new DatabaseApplication(new DatabaseApplication(this.settings));
+        floodingApp.update(this.hostAttachedToApp);
+
+        // Add useful and not that useful data items.
+        this.clock.setTime(TIME_IN_DISTANT_FUTURE);
+        DisasterData[] usefulData = new DisasterData[ITEMS_PER_MESSAGE];
+        DisasterData[] uselessData = new DisasterData[ITEMS_PER_MESSAGE];
+        for (int i = 0; i < ITEMS_PER_MESSAGE; i++) {
+            usefulData[i] =
+                    DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+            uselessData[i] = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, new Coord(0, 0));
+            DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData[i]);
+            DisasterDataNotifier.dataCreated(this.hostAttachedToApp, uselessData[i]);
+        }
+
+        // Create messages.
+        List<DataMessage> messages = floodingApp.wrapRecentUsefulDataIntoMessages(this.hostAttachedToApp, 1);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_MESSAGES, messages.size());
+        TestCase.assertTrue("Expected all useful data in one message.",
+                messages.get(0).getData().containsAll(Arrays.asList(usefulData))
+                        && messages.get(0).getData().size() == ITEMS_PER_MESSAGE);
+        TestCase.assertTrue("Expected all useless data in one message.",
+                messages.get(1).getData().containsAll(Arrays.asList(uselessData))
+                        && messages.get(1).getData().size() == ITEMS_PER_MESSAGE);
     }
 
     @Test

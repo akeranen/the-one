@@ -80,7 +80,7 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
                     "Priority threshold must be non-negative, but is " + this.priorityThreshold + "!");
         }
 
-        DisasterPrioritizationStrategy.checkRouterIsDisasterRouter(attachedRouter);
+        DisasterRouter.checkRouterIsDisasterRouter(attachedRouter);
         this.nonHeadStartPrioritization = new DisasterPrioritization(s, (DisasterRouter)attachedRouter);
     }
 
@@ -93,23 +93,9 @@ public class DisasterPrioritizationStrategy implements MessagePrioritizationStra
         this.headStartThreshold = strategy.headStartThreshold;
         this.priorityThreshold = strategy.priorityThreshold;
 
-        DisasterPrioritizationStrategy.checkRouterIsDisasterRouter(attachedRouter);
+        DisasterRouter.checkRouterIsDisasterRouter(attachedRouter);
         this.nonHeadStartPrioritization =
                 new DisasterPrioritization(strategy.nonHeadStartPrioritization, (DisasterRouter)attachedRouter);
-    }
-
-    /**
-     * Checks if the router is a {@link DisasterRouter} and throws an {@link IllegalArgumentException} if it isn't.
-     * @param router Router to check
-     */
-    private static void checkRouterIsDisasterRouter(MessageRouter router) {
-        if (router == null) {
-            throw new IllegalArgumentException("Router is null!");
-        }
-        if (!(router instanceof DisasterRouter)) {
-            throw new IllegalArgumentException(
-                    "Disaster prioritization strategy cannot handle routers of type " + router.getClass() + "!");
-        }
     }
 
     /**

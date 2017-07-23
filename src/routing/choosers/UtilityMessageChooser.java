@@ -132,7 +132,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         }
 
         // Then set attached router.
-        UtilityMessageChooser.checkRouterIsDisasterRouter(attachedRouter);
+        DisasterRouter.checkRouterIsDisasterRouter(attachedRouter);
         this.attachedRouter = (DisasterRouter)attachedRouter;
     }
 
@@ -149,7 +149,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         this.utilityThreshold = chooser.utilityThreshold;
         this.powerThreshold = chooser.powerThreshold;
 
-        UtilityMessageChooser.checkRouterIsDisasterRouter(attachedRouter);
+        DisasterRouter.checkRouterIsDisasterRouter(attachedRouter);
         this.attachedRouter = (DisasterRouter)attachedRouter;
     }
 
@@ -184,20 +184,6 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
     }
 
     /**
-     * Checks if the router is a {@link DisasterRouter} and throws an {@link IllegalArgumentException} if it isn't.
-     * @param router Router to check
-     */
-    private static void checkRouterIsDisasterRouter(MessageRouter router) {
-        if (router == null) {
-            throw new IllegalArgumentException("Router is null!");
-        }
-        if (!(router instanceof DisasterRouter)) {
-            throw new IllegalArgumentException(
-                    "Utility message chooser cannot handle routers of type " + router.getClass() + "!");
-        }
-    }
-
-    /**
      * Sets the attached host.
      *
      * @param host host prioritizing the messages.
@@ -223,7 +209,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         // Add ordinary messages.
         for (Connection con : connections) {
             DTNHost neighbor = con.getOtherNode(this.attachedHost);
-            UtilityMessageChooser.checkRouterIsDisasterRouter(neighbor.getRouter());
+            DisasterRouter.checkRouterIsDisasterRouter(neighbor.getRouter());
             DisasterRouter neighborRouter = (DisasterRouter)neighbor.getRouter();
 
             if (neighborRouter.isTransferring() || neighborRouter.remainingEnergyRatio() < this.powerThreshold) {

@@ -229,18 +229,46 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         }
 
         // Then create a message out of each data item.
-        List<DataMessage> messages = new ArrayList<>(interestingData.size());
+        return this.createDataMessagePrototypes(interestingData);
+    }
+
+    public List<DataMessage> wrapRecentDataIntoMessages(
+            DTNHost databaseOwner, int maximumNumberSecondsSinceModification) {
+        // If we don't know who the application is attached to yet, use the new knowledge for initialization.
+        if (!this.isInitialized()) {
+            this.initialize(databaseOwner);
+        }
+
+        // Find all data which has been modified recently.
+        List<Tuple<DisasterData, Double>> recentData = new ArrayList<>();
+        for (Tuple<DisasterData, Double> dataWithUtility :
+                this.database.getAllNonMapDataWithMinimumUtility(this.utilityThreshold)) {
+            if (SimClock.getTime() - dataWithUtility.getKey().getCreation() <= maximumNumberSecondsSinceModification) {
+                recentData.add(dataWithUtility);
+            }
+        }
+
+        // Then create a message out of each data item.
+        return this.createDataMessagePrototypes(recentData);
+    }
+
+    /**
+     * Creates a {@link DataMessage} prototype out of each provided data item, i.e. a data message without a receiver.
+     * @param data The data to wrap.
+     * @return The created messages.
+     */
+    private List<DataMessage> createDataMessagePrototypes(List<Tuple<DisasterData, Double>> data) {
+        // Create a message out of each data item.
+        List<DataMessage> messages = new ArrayList<>(data.size());
         DTNHost unknownReceiver = null;
-        for (Tuple<DisasterData, Double> dataWithUtility : interestingData) {
-            DisasterData data = dataWithUtility.getKey();
+        for (Tuple<DisasterData, Double> dataWithUtility : data) {
+            DisasterData dataItem = dataWithUtility.getKey();
             double utilityValue = dataWithUtility.getValue();
             DataMessage message = new DataMessage(
-                    this.host, unknownReceiver, data.toString(), data, utilityValue, DATA_MESSAGE_PRIORITY);
+                    this.host, unknownReceiver, dataItem.toString(), dataItem, utilityValue, DATA_MESSAGE_PRIORITY);
             message.setAppID(APP_ID);
             messages.add(message);
         }
-
-        // And return all messages.
         return messages;
     }
 
@@ -385,5 +413,4 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
         return database.getRatioOfItemsPerDataType();
     }
-
 }

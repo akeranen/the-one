@@ -80,6 +80,19 @@ public class DisasterRouter extends ActiveRouter {
     }
 
     /**
+     * Checks if the router is a {@link DisasterRouter} and throws an {@link IllegalArgumentException} if it isn't.
+     * @param router Router to check
+     */
+    public static void checkRouterIsDisasterRouter(MessageRouter router) {
+        if (router == null) {
+            throw new IllegalArgumentException("Router is null!");
+        }
+        if (!(router instanceof DisasterRouter)) {
+            throw new IllegalArgumentException("Cannot handle routers of type " + router.getClass() + "!");
+        }
+    }
+
+    /**
      * Initializes the router; i.e. sets the host this router is in and
      * message listeners that need to be informed about message related
      * events etc.

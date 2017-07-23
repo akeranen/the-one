@@ -57,6 +57,46 @@ public final class DatabaseApplicationUtil {
         List<DataMessage> messagePrototypes = application.wrapUsefulDataIntoMessages(host);
 
         // ... and create real instances for each of them:
+        return DatabaseApplicationUtil.wrapPrototypesIntoConcreteMessages(messagePrototypes, connections, host);
+    }
+
+    /**
+     * Fetches database synchronization messages from the provided host which are made up of data items which have been
+     * modified recently.
+     *
+     * @param host The {@link DTNHost} to do this for.
+     * @param connections Connections to find data messages for.
+     * @param maximumNumberSecondsSinceModification The maximum number of seconds since the modification of the wrapped
+     *                                              data items.
+     * @return The created messages and the connection they should be sent over.
+     */
+    public static List<Tuple<Message, Connection>> wrapRecentDataIntoMessages(
+            DTNHost host, List<Connection> connections, int maximumNumberSecondsSinceModification) {
+        // First find out if we even have a database application.
+        DatabaseApplication application = DatabaseApplicationUtil.findDatabaseApplication(host.getRouter());
+        if (application == null) {
+            return new ArrayList<>(0);
+        }
+
+        // Then fetch prototypes of messages containing recent data items...
+        List<DataMessage> messagePrototypes =
+                application.wrapRecentDataIntoMessages(host, maximumNumberSecondsSinceModification);
+
+        // ... and create real instances for each of them:
+        return DatabaseApplicationUtil.wrapPrototypesIntoConcreteMessages(messagePrototypes, connections, host);
+    }
+
+    /**
+     * Creates real messages out of each {@link DataMessage} prototype by instantiating them for every receiver provided
+     * by the provided connections.
+     *
+     * @param messagePrototypes The {@link DataMessage} prototypes.
+     * @param connections All connections for which messages should be generated.
+     * @param host The sending {@link DTNHost}.
+     * @return Instantiated messages with explicitly given connection.
+     */
+    private static List<Tuple<Message, Connection>> wrapPrototypesIntoConcreteMessages(
+            List<DataMessage> messagePrototypes, List<Connection> connections, DTNHost host) {
         List<Tuple<Message, Connection>> messages = new ArrayList<>(messagePrototypes.size() * connections.size());
         for (DataMessage dataMessage : messagePrototypes) {
             // For each receiver ...
@@ -69,7 +109,6 @@ public final class DatabaseApplicationUtil {
             }
         }
 
-        // Finally return all messages.
         return messages;
     }
 

@@ -42,6 +42,7 @@ public class UtilityMessageChooserTest {
     private static final double MEDIUM_ENERGY_VALUE = 0.5;
     private static final int ONE_HUNDRED_HOSTS = 100;
     private static final int TWO_MESSAGES = 2;
+    private static final double SMALL_POWER_DIFFERENCE = 0.01;
 
     /* Some error messages. */
     private static final String UNEXPECTED_WEIGHT = "Expected different weight.";
@@ -167,16 +168,30 @@ public class UtilityMessageChooserTest {
     }
 
     @Test(expected = SettingsError.class)
-    public void testConstructorThrowsForNegativeThreshold() {
+    public void testConstructorThrowsForNegativeUtilityThreshold() {
         this.settings.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
         this.settings.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(NEGATIVE_VALUE));
         new UtilityMessageChooser(new DisasterRouter(this.settings));
     }
 
     @Test(expected = SettingsError.class)
-    public void testConstructorThrowsForThresholdAbove1() {
+    public void testConstructorThrowsForUtilityThresholdAbove1() {
         this.settings.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
         this.settings.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(VALUE_ABOVE_ONE));
+        new UtilityMessageChooser(new DisasterRouter(this.settings));
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsForNegativePowerThreshold() {
+        this.settings.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
+        this.settings.putSetting(UtilityMessageChooser.POWER_THRESHOLD, Double.toString(NEGATIVE_VALUE));
+        new UtilityMessageChooser(new DisasterRouter(this.settings));
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsForPowerThresholdAbove1() {
+        this.settings.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
+        this.settings.putSetting(UtilityMessageChooser.POWER_THRESHOLD, Double.toString(VALUE_ABOVE_ONE));
         new UtilityMessageChooser(new DisasterRouter(this.settings));
     }
 
@@ -216,6 +231,12 @@ public class UtilityMessageChooserTest {
                 DisasterRouterTestUtils.UTILITY_THRESHOLD, this.chooser.getUtilityThreshold(), DOUBLE_COMPARISON_DELTA);
     }
 
+    @Test
+    public void testGetPowerThreshold() {
+        Assert.assertEquals("Expected different threshold.",
+                DisasterRouterTestUtils.POWER_THRESHOLD, this.chooser.getPowerThreshold(), DOUBLE_COMPARISON_DELTA);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testReplicateThrowsForMissingRouter() {
         this.chooser.replicate(null);
@@ -240,6 +261,7 @@ public class UtilityMessageChooserTest {
         DisasterRouterTestUtils.addDisasterRouterSettings(otherRouterSettings);
         otherRouterSettings.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
         otherRouterSettings.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, "0.8");
+        otherRouterSettings.putSetting(UtilityMessageChooser.POWER_THRESHOLD, "0.6");
         increaseWeight(otherRouterSettings, UtilityMessageChooser.DELIVERY_PREDICTABILITY_WEIGHT, NEGATIVE_VALUE);
         increaseWeight(otherRouterSettings, UtilityMessageChooser.POWER_WEIGHT, OPPOSITE_OF_NEGATIVE_VALUE);
         increaseWeight(otherRouterSettings, UtilityMessageChooser.REPLICATIONS_DENSITY_WEIGHT, NEGATIVE_VALUE);
@@ -268,6 +290,9 @@ public class UtilityMessageChooserTest {
                 DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals("Expected different utility threshold.",
                 this.chooser.getUtilityThreshold(), copy.getUtilityThreshold(),
+                DOUBLE_COMPARISON_DELTA);
+        Assert.assertEquals("Expected different power threshold.",
+                this.chooser.getPowerThreshold(), copy.getPowerThreshold(),
                 DOUBLE_COMPARISON_DELTA);
     }
 
@@ -370,7 +395,12 @@ public class UtilityMessageChooserTest {
         // Take a look at a non-transferring host for verification.
         DTNHost otherHost = this.utils.createHost();
 
-        // Give a message to our host.
+        // Give a data item and a message to our host.
+        DisasterData data = new DisasterData(
+                DisasterData.DataType.MARKER, 0, SimClock.getTime(), this.attachedHost.getLocation());
+        DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(this.attachedHost.getRouter());
+        app.update(this.attachedHost);
+        app.disasterDataCreated(this.attachedHost, data);
         Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
         this.attachedHost.createNewMessage(m);
 
@@ -382,16 +412,58 @@ public class UtilityMessageChooserTest {
         Collection<Tuple<Message, Connection>> messages =
                 this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
-        // Make sure only the non-transferring host got the message.
-        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
-        Assert.assertFalse(
-                "Host which initiated a transfer should not get messages.",
+        // Make sure only the non-transferring host got the messages.
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
+        Assert.assertFalse("Host which initiated a transfer should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
-        Assert.assertFalse(
-                "Host in a transfer should not get messages.",
+        Assert.assertFalse("Host which initiated a transfer should not get data.",
+                this.messageToHostsExists(messages, data.toString(), neighbor1));
+        Assert.assertFalse("Host in a transfer should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor2));
-        Assert.assertTrue(
-                "Message to other neighbor expected.", this.messageToHostsExists(messages, m.getId(), otherHost));
+        Assert.assertFalse("Host in a transfer should not get data.",
+                this.messageToHostsExists(messages, data.toString(), neighbor2));
+        Assert.assertTrue("Message to other neighbor expected.",
+                this.messageToHostsExists(messages, m.getId(), otherHost));
+        Assert.assertTrue("Data message to other neighbor expected.",
+                this.messageToHostsExists(messages, data.toString(), otherHost));
+    }
+
+    /**
+     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
+     * (message, connection) tuples for which the receiving host does not have sufficient power right now.
+     */
+    @Test
+    public void testFindOtherMessagesDoesNotReturnMessagesForLowPowerRouter() {
+        // Make sure neighbor 1 has low power.
+        this.neighbor1.getComBus().updateProperty(
+                EnergyModel.ENERGY_VALUE_ID, DisasterRouterTestUtils.POWER_THRESHOLD - SMALL_POWER_DIFFERENCE);
+
+        // Give a data item and a message to our host.
+        DisasterData data = new DisasterData(
+                DisasterData.DataType.MARKER, 0, SimClock.getTime(), this.attachedHost.getLocation());
+        DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(this.attachedHost.getRouter());
+        app.update(this.attachedHost);
+        app.disasterDataCreated(this.attachedHost, data);
+        Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
+        this.attachedHost.createNewMessage(m);
+
+        // Call chooseNonDirectMessages with connections to two hosts, one of them with low power.
+        List<Connection> connections = new ArrayList<>();
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor1));
+        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, this.neighbor2));
+        Collection<Tuple<Message, Connection>> messages =
+                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
+
+        // Make sure only the host with high power got the messages.
+        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
+        Assert.assertFalse("Host with low power should not get messages.",
+                this.messageToHostsExists(messages, m.getId(), neighbor1));
+        Assert.assertFalse("Host with low power should not get messages.",
+                this.messageToHostsExists(messages, data.toString(), neighbor1));
+        Assert.assertTrue("Message to other neighbor expected.",
+                this.messageToHostsExists(messages, m.getId(), this.neighbor2));
+        Assert.assertTrue("Data message to other neighbor expected.",
+                this.messageToHostsExists(messages, data.toString(), this.neighbor2));
     }
 
     @Test

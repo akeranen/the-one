@@ -1,6 +1,7 @@
 # Add this file as argument if you want to use DisasterRouter
 
 Group.router = DisasterRouter
+DisasterRouter.powerThreshold = 0.1
 
 # Parameters for rating mechanisms
 
@@ -22,6 +23,9 @@ UtilityMessageChooser.rdWeight = 0.35
 UtilityMessageChooser.evWeight = 0.15
 UtilityMessageChooser.messageUtilityThreshold = 0.45
 UtilityMessageChooser.powerThreshold = 0.1
+
+RescueModeMessageChooser.powerThreshold = 0.1
+RescueModeMessageChooser.shortTimespanThreshold = 1800
 
 # Parameters for prioritization
 DisasterPrioritization.headStartThreshold = 300

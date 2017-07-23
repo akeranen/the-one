@@ -5,6 +5,8 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
+import core.SettingsError;
+import routing.choosers.RescueModeMessageChooser;
 import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.prioritizers.PrioritySorter;
@@ -25,6 +27,15 @@ import java.util.List;
  * Created by Britta Heymann on 19.05.2017.
  */
 public class DisasterRouter extends ActiveRouter {
+    /** Namespace for all general disaster router settings. */
+    public static final String DISASTER_ROUTER_NS = "DisasterRouter";
+
+    /**
+     * If the host's relative power is below this threshold, it will change into a rescue mode. -setting id ({@value}).
+     * In resuce mode, the host tries to save all its messages and recent data from deletion by sending them out.
+     */
+    public static final String POWER_THRESHOLD = "powerThreshold";
+
     /* Comparators to sort direct messages. */
     private Comparator<Message> directMessageComparator;
     private Comparator<Tuple<Message, Connection>> directMessageTupleComparator;
@@ -37,6 +48,12 @@ public class DisasterRouter extends ActiveRouter {
     private EncounterValueManager encounterValueManager;
     private ReplicationsDensityManager replicationsDensityManager;
     private DeliveryPredictabilityStorage deliveryPredictabilityStorage;
+
+    /**
+     * If the {@link DTNHost}'s relative power is below this threshold, it will change into a rescue mode in which
+     * it tries to save all its messages and recent data from deletion by sending them out.
+     */
+    private double powerThreshold;
 
     /**
      * Initializes a new instance of the {@link DisasterRouter} class.
@@ -57,6 +74,13 @@ public class DisasterRouter extends ActiveRouter {
         this.messagePrioritizer = new DisasterPrioritizationStrategy(this);
         this.directMessageComparator = new PrioritySorter();
         this.directMessageTupleComparator = new PriorityTupleSorter();
+
+        // Read power threshold from settings.
+        s.setNameSpace(DISASTER_ROUTER_NS);
+        this.powerThreshold = s.getDouble(POWER_THRESHOLD);
+        if (this.powerThreshold < 0 || this.powerThreshold > 1) {
+            throw new SettingsError("Power threshold should be in [0, 1], but is " + this.powerThreshold + "!");
+        }
     }
 
     /**
@@ -77,6 +101,9 @@ public class DisasterRouter extends ActiveRouter {
         this.messagePrioritizer = router.messagePrioritizer.replicate(this);
         this.directMessageComparator = router.directMessageComparator;
         this.directMessageTupleComparator = router.directMessageTupleComparator;
+
+        // Copy power threshold.
+        this.powerThreshold = router.powerThreshold;
     }
 
     /**
@@ -157,6 +184,9 @@ public class DisasterRouter extends ActiveRouter {
     public void update() {
         super.update();
 
+        // Change strategies depending on remaining energy.
+        this.switchBetweenStrategiesDependingOnEnergy();
+
         // Update rating mechanisms.
         this.encounterValueManager.update();
         this.replicationsDensityManager.update();
@@ -173,6 +203,23 @@ public class DisasterRouter extends ActiveRouter {
 
         // If non are available, try to send other messages.
         this.tryOtherMessages();
+    }
+
+    /**
+     * Checks whether the current {@link #messageChooser} uses the correct strategy with reference to the
+     * {@link DTNHost}'s remaining power.
+     */
+    private void switchBetweenStrategiesDependingOnEnergy() {
+        boolean rescueModeRequired = this.remainingEnergyRatio() < this.powerThreshold;
+        boolean inRescueMode = this.messageChooser instanceof RescueModeMessageChooser;
+        if (rescueModeRequired && !inRescueMode) {
+            this.messageChooser = new RescueModeMessageChooser();
+            this.messageChooser.setAttachedHost(this.getHost());
+        }
+        if (!rescueModeRequired && inRescueMode) {
+            this.messageChooser = new UtilityMessageChooser(this);
+            this.messageChooser.setAttachedHost(this.getHost());
+        }
     }
 
     /**

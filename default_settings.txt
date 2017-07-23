@@ -12,7 +12,7 @@ Scenario.nrofHostGroups = 3
 wInterface.type = InterferenceLimitedInterface
 # Transmit speed of 50 Mbps = 6250kBps
 wInterface.transmitSpeed = 6250k
-wInterface.transmitRange = 30
+wInterface.transmitRange = 80
 
 # Common settings for all groups
 Group.movementModel = VoluntaryHelperMovement

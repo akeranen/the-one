@@ -40,6 +40,7 @@ public final class DisasterRouterTestUtils {
     static final double REPLICATIONS_DENSITY_WEIGHT = 0.25;
     static final double ENCOUNTER_VALUE_WEIGHT = 0.1;
     static final double UTILITY_THRESHOLD = 0.2;
+    static final double POWER_THRESHOLD = 0.1;
 
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
@@ -79,6 +80,7 @@ public final class DisasterRouterTestUtils {
         s.putSetting(UtilityMessageChooser.REPLICATIONS_DENSITY_WEIGHT, Double.toString(REPLICATIONS_DENSITY_WEIGHT));
         s.putSetting(UtilityMessageChooser.ENCOUNTER_VALUE_WEIGHT, Double.toString(ENCOUNTER_VALUE_WEIGHT));
         s.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(UTILITY_THRESHOLD));
+        s.putSetting(UtilityMessageChooser.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
         s.restoreNameSpace();
 
         // Database constants.

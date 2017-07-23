@@ -218,12 +218,21 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
     public Collection<Tuple<Message, Connection>> chooseNonDirectMessages(
             Collection<Message> messages, List<Connection> connections) {
         Collection<Tuple<Message, Connection>> chosenMessages = new ArrayList<>();
+        List<Connection> relevantConnections = new ArrayList<>();
 
         // Add ordinary messages.
         for (Connection con : connections) {
             DTNHost neighbor = con.getOtherNode(this.attachedHost);
+            UtilityMessageChooser.checkRouterIsDisasterRouter(neighbor.getRouter());
+            DisasterRouter neighborRouter = (DisasterRouter)neighbor.getRouter();
+
+            if (neighborRouter.isTransferring() || neighborRouter.remainingEnergyRatio() < this.powerThreshold) {
+                continue;
+            }
+
+            relevantConnections.add(con);
             for (Message m : messages) {
-                if (!m.isFinalRecipient(neighbor) && this.shouldBeSent(m, neighbor)) {
+                if (!m.isFinalRecipient(neighbor) && this.shouldBeSent(m, neighborRouter)) {
                     chosenMessages.add(new Tuple<>(m, con));
                 }
             }
@@ -231,7 +240,7 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
 
         // Wrap useful data stored at host in data messages to neighbors and add them to the messages to sent.
         chosenMessages.addAll(DatabaseApplicationUtil.wrapUsefulDataIntoMessages(
-                this.attachedHost.getRouter(), this.attachedHost, connections));
+                this.attachedHost.getRouter(), this.attachedHost, relevantConnections));
 
         return chosenMessages;
     }
@@ -250,20 +259,15 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
     }
 
     /**
-     * Determines whether the provided message should be sent to the provided host right now.
-     * This is only the case if the host is not transferring, does not know the message yet, and the message - host
+     * Determines whether the provided message should be sent to the provided router right now.
+     * This is only the case if the router does not know the message yet, and the message - host
      * pair's utility is sufficiently high.
      * @param m Message to check.
-     * @param otherHost Host to check.
+     * @param otherRouter Router to check.
      * @return True iff the message should be sent.
      */
-    private boolean shouldBeSent(Message m, DTNHost otherHost) {
-        UtilityMessageChooser.checkRouterIsDisasterRouter(otherHost.getRouter());
-        DisasterRouter otherRouter = (DisasterRouter)otherHost.getRouter();
-        return !otherRouter.isTransferring()
-                && !otherRouter.hasMessage(m.getId())
-                && this.computeUtility(m, otherRouter) > this.utilityThreshold;
-        // TODO: also check other's energy (routing protocol v3)
+    private boolean shouldBeSent(Message m, DisasterRouter otherRouter) {
+        return !otherRouter.hasMessage(m.getId()) && this.computeUtility(m, otherRouter) > this.utilityThreshold;
     }
 
     /**

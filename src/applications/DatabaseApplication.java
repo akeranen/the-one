@@ -253,11 +253,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             }
         }
 
-        // Sort data items by utility.
-        interestingData.sort(Comparator.comparingDouble(t -> (-1) * t.getValue()));
-
-        // Then create a message out of every x data items.
-        DTNHost unknownReceiver = null;
+        // Then create data messages out of the data items.
         return this.createDataMessagePrototypes(interestingData);
     }
 
@@ -277,21 +273,26 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             }
         }
 
-        // Then create a message out of each data item.
+        // Then create data messages out of the data items.
         return this.createDataMessagePrototypes(recentData);
     }
 
     /**
-     * Creates a {@link DataMessage} prototype out of each provided data item, i.e. a data message without a receiver.
+     * Creates a {@link DataMessage} prototype out of every {@link #itemsPerMessage} data items, i.e. a data message
+     * without a receiver. The data items are sorted by utility to group them into messages.
+     *
      * @param data The data to wrap.
      * @return The created messages.
      */
     private List<DataMessage> createDataMessagePrototypes(List<Tuple<DisasterData, Double>> data) {
-        // Create a message out of each data item.
+        // Sort data items by utility.
+        data.sort(Comparator.comparingDouble(t -> (-1) * t.getValue()));
+
+        // Then create a message out of every x data items.
         List<DataMessage> messages = new ArrayList<>(data.size());
         DTNHost unknownReceiver = null;
-        for (int i = 0; i < data.size(); i += itemsPerMessage) {
-            int firstIndexNotToSent = Math.min(i + itemsPerMessage, data.size());
+        for (int i = 0; i < data.size(); i += this.itemsPerMessage) {
+            int firstIndexNotToSent = Math.min(i + this.itemsPerMessage, data.size());
             List<Tuple<DisasterData, Double>> subsetToSent = data.subList(i, firstIndexNotToSent);
             DataMessage message = new DataMessage(
                     this.host, unknownReceiver,

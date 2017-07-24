@@ -13,11 +13,14 @@ import report.SamplingReport;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import util.Tuple;
+
 import static org.junit.Assert.*;
 
 /**
@@ -30,9 +33,6 @@ public class DataSyncReportTest extends AbstractReportTest{
     /* Properties of the database application. */
     private static final long BIGGEST_DB_SIZE = 300L;
     private static final long SMALLEST_DB_SIZE = 200L;
-    private static final double MIN_UTILITY = 0.5;
-    private static final double MAP_SENDING_INTERVAL = 43.2;
-    private static final int SEED = 0;
 
     /* String arrays containing all the expected metrics and ratios to check whether everything necessary is contained*/
     private static final String[] EXPECTED_METRICS = new String[]{"avg_used_mem", "max_used_mem", "med_avg_data_util",
@@ -118,7 +118,9 @@ public class DataSyncReportTest extends AbstractReportTest{
         java.util.Locale.setDefault(java.util.Locale.US);
 
         /* Create and initialize database application. */
-        addDatabaseApplicationSettings();
+        DatabaseApplicationTest.addDatabaseApplicationSettings(this.settings);
+        this.settings.putSetting(
+               DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
         this.app = new DatabaseApplication(this.settings);
 
         //Create Test Utils for host creation
@@ -131,17 +133,6 @@ public class DataSyncReportTest extends AbstractReportTest{
 
         // Create report
         this.report = new DataSyncReport();
-    }
-
-    /**
-     * Adds all necessary settings the database application needs to function
-     */
-    private void addDatabaseApplicationSettings() {
-        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
-        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
-        this.settings.putSetting(
-                DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
-        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
     }
 
     /**
@@ -277,7 +268,8 @@ public class DataSyncReportTest extends AbstractReportTest{
         DTNHost sendingHost = utils.createHost(ORIGIN,"hostWithoutDB");
         allHosts.add(sendingHost);
         DisasterData data = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE, 0, ORIGIN);
-        DataMessage msg = new DataMessage(sendingHost, hostAttachedToApp, "d1", data, 1, 1);
+        DataMessage msg =
+                new DataMessage(sendingHost, hostAttachedToApp, "d1", Collections.singleton(new Tuple<>(data, 1D)), 1);
         app.handle(msg, hostAttachedToApp);
     }
 
@@ -328,7 +320,8 @@ public class DataSyncReportTest extends AbstractReportTest{
         //Send message with map data to hostAttachedToApp
         SimClock.getInstance().advance(REPORT_INTERVAL);
         DisasterData mapData = new DisasterData(DisasterData.DataType.MAP, SMALL_ITEM_SIZE, 0, ORIGIN);
-        DataMessage msg1 = new DataMessage(secondHost, hostAttachedToApp, "d1", mapData, 1, 1);
+        DataMessage msg1 = new DataMessage(
+                secondHost, hostAttachedToApp, "d1", Collections.singleton(new Tuple<>(mapData, 1D)), 1);
         app.handle(msg1, hostAttachedToApp);
 
         //Second report output while one host has one data item
@@ -338,7 +331,8 @@ public class DataSyncReportTest extends AbstractReportTest{
         SimClock.getInstance().advance(REPORT_INTERVAL);
         DisasterData skillData = new DisasterData(DisasterData.DataType.SKILL, SMALL_ITEM_SIZE, TIME_CLOSE_TO_SIM_START,
                 CLOSE_COORD);
-        DataMessage msg2 = new DataMessage(hostAttachedToApp, secondHost, "d2", skillData, 1, 1);
+        DataMessage msg2 = new DataMessage(
+                hostAttachedToApp, secondHost, "d2", Collections.singleton(new Tuple<>(skillData, 1D)), 1);
         secondApp.handle(msg2, secondHost);
 
         //Third report output when each host has a different data item
@@ -348,11 +342,13 @@ public class DataSyncReportTest extends AbstractReportTest{
         SimClock.getInstance().advance(REPORT_INTERVAL);
         DisasterData markerData = new DisasterData(DisasterData.DataType.MARKER, BIG_ITEM_SIZE,
                 SimClock.getIntTime(), DISTANT_COORD);
-        DataMessage msg3 = new DataMessage(hostAttachedToApp, secondHost,  "d3", markerData, 1, 1);
+        DataMessage msg3 = new DataMessage(
+                hostAttachedToApp, secondHost,  "d3", Collections.singleton(new Tuple<>(markerData, 1D)), 1);
         secondApp.handle(msg3, secondHost);
 
         //Send skill data from second host to first host
-        DataMessage msg4 = new DataMessage(secondHost, hostAttachedToApp, "d4", skillData, 1, 1);
+        DataMessage msg4 = new DataMessage(
+                secondHost, hostAttachedToApp, "d4", Collections.singleton(new Tuple<>(skillData, 1D)), 1);
         app.handle(msg4, hostAttachedToApp);
 
         //Fourth report output when each host has two database items

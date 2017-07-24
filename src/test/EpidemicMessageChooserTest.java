@@ -21,6 +21,7 @@ import util.Tuple;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,6 +33,7 @@ public class EpidemicMessageChooserTest {
     /* Constants needed to initialize DB application instances. */
     private static final int DB_SIZE = 200;
     private static final double MAP_SENDING_INTERVAL = 20;
+    private static final int ITEMS_PER_MESSAGE = 2;
 
     private TestUtils testUtils;
     private SimClock clock = SimClock.getInstance();
@@ -52,6 +54,7 @@ public class EpidemicMessageChooserTest {
         settings.putSetting(
                 DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", DB_SIZE, DB_SIZE));
         settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
+        settings.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
 
         // Create host with such an application.
         this.testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), settings);
@@ -135,10 +138,12 @@ public class EpidemicMessageChooserTest {
         // Let both be handled by our host.
         DTNHost dataCreator = this.testUtils.createHost();
         Application app = this.attachedHost.getRouter().getApplications(DatabaseApplication.APP_ID).iterator().next();
-        app.handle(
-                new DataMessage(dataCreator, this.attachedHost, "D1", perfectUtilityData, 0, 0), this.attachedHost);
-        app.handle(
-                new DataMessage(dataCreator, this.attachedHost, "D2", lowUtilityData, 0, 0), this.attachedHost);
+        app.handle(new DataMessage(
+                dataCreator, this.attachedHost, "D1", Collections.singleton(new Tuple<>(perfectUtilityData, 1D)), 0),
+                this.attachedHost);
+        app.handle(new DataMessage(
+                dataCreator, this.attachedHost, "D2", Collections.singleton(new Tuple<>(lowUtilityData, 0D)), 0),
+                this.attachedHost);
 
         // Check which ones are returned for neighbors.
         DTNHost neighbor1 = this.testUtils.createHost();
@@ -146,7 +151,8 @@ public class EpidemicMessageChooserTest {
         Collection<Tuple<Message, Connection>> selected = this.chooseMessages();
         Assert.assertEquals("Only one message should have been returned.", 1, selected.size());
         DataMessage selectedMessage = (DataMessage)selected.iterator().next().getKey();
-        Assert.assertEquals("Correct message has been returned.", perfectUtilityData, selectedMessage.getData());
+        Assert.assertEquals("Message should only store one data item.", 1, selectedMessage.getData().size());
+        Assert.assertEquals("Correct item has been returned.", perfectUtilityData, selectedMessage.getData().get(0));
     }
 
     /**

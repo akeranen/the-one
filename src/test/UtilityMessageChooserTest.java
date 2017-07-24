@@ -292,13 +292,14 @@ public class UtilityMessageChooserTest {
                 this.chooser.chooseNonDirectMessages(new ArrayList<>(), connections);
 
         // Check data message has been returned for both neighbors.
+        String dataMessageId = "D" + Arrays.asList(data).hashCode();
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertTrue(
                 "Data message to first neighbor expected.",
-                this.messageToHostsExists(messages, data.toString(), neighbor1));
+                this.messageToHostsExists(messages, dataMessageId, neighbor1));
         Assert.assertTrue(
                 "Data message to second neighbor expected.",
-                this.messageToHostsExists(messages, data.toString(), neighbor2));
+                this.messageToHostsExists(messages, dataMessageId, neighbor2));
     }
 
     /**

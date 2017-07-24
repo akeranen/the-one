@@ -7,7 +7,7 @@ Group.router = DisasterRouter
 DeliveryPredictabilityStorage.dpInit = 0.75
 DeliveryPredictabilityStorage.dpGamma = 0.98
 DeliveryPredictabilityStorage.dpBeta = 0.25
-DeliveryPredictabilityStorage.dpTimeUnit = 30
+DeliveryPredictabilityStorage.windowLength = 30
 
 EncounterValue.agingFactor = 0.85
 EncounterValue.windowLength = 120

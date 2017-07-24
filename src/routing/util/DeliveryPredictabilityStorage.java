@@ -18,12 +18,15 @@ import java.util.Map;
  *
  * The measure is mostly implemented as described in   A. Lindgren, A. Doria and O. Schelén (2003): Probabilistic
  * Routing in Intermittently Connected Networks, SIGMOBILE Mob. Comput. Commun. Rev., vol.3, 19-20.
- * However, we completeley drop delivery predictabilities (= set them to zero again) if they fall below a certain
- * threshold. This measure improves performance.
+ * However, we
+ *  1) completeley drop delivery predictabilities (= set them to zero again) if they fall below a certain
+ *  threshold. This measure improves performance.
+ *  2) additionally decay the delivery predictabilities after every time window. This is required as we may make use of
+ *  predictabilities between meetings when deleting messages from buffer.
  *
  * Created by Britta Heymann on 18.05.2017.
  */
-public class DeliveryPredictabilityStorage {
+public class DeliveryPredictabilityStorage extends AbstractIntervalRatingMechanism {
     /** Namespace for all delivery predictability storage settings. */
     public static final String DELIVERY_PREDICTABILITY_STORAGE_NS = "DeliveryPredictabilityStorage";
 
@@ -42,11 +45,6 @@ public class DeliveryPredictabilityStorage {
      * Constant in [0, 1] indicating the importance of transitivity updates.
      */
     public static final String BETA_S = "dpBeta";
-    /**
-     * Constant used to control decay -setting ide ({@value}).
-     * Positive constant describing how many seconds are in a time unit (used for decay).
-     */
-    public static final String TIME_UNIT_S = "dpTimeUnit";
 
     /**
      * The minimum delivery predictability we store. If a predictability falls below this value, we set it to zero
@@ -60,8 +58,6 @@ public class DeliveryPredictabilityStorage {
     private double gamma;
     /** Constant in [0, 1] indicating the importance of transitivity updates. */
     private double beta;
-    /** Describes how many seconds are in a time unit (used for decay). */
-    private double secondsInTimeUnit;
 
     /** Address of the host attached to this storage. */
     private int ownAddress;
@@ -77,28 +73,35 @@ public class DeliveryPredictabilityStorage {
      * Initializes a new instance of the {@link DeliveryPredictabilityStorage} class.
      */
     public DeliveryPredictabilityStorage() {
-        Settings s = new Settings(DELIVERY_PREDICTABILITY_STORAGE_NS);
+        super();
 
+        Settings s = new Settings(DELIVERY_PREDICTABILITY_STORAGE_NS);
         this.summand = s.getDouble(SUMMAND_S);
         assertValueBetweenZeroAndOne(this.summand, SUMMAND_S);
         this.gamma = s.getDouble(GAMMA_S);
         assertValueBetweenZeroAndOne(this.gamma, GAMMA_S);
         this.beta = s.getDouble(BETA_S);
         assertValueBetweenZeroAndOne(this.beta, BETA_S);
-        this.secondsInTimeUnit = s.getDouble(TIME_UNIT_S);
-        if (this.secondsInTimeUnit <= 0) {
-            throw new SettingsError("Setting " + TIME_UNIT_S + " should be positive, but is " + this.secondsInTimeUnit);
-        }
     }
 
     /**
      * Copy constructor.
      */
     public DeliveryPredictabilityStorage(DeliveryPredictabilityStorage storage) {
+        super(storage);
         this.summand = storage.summand;
         this.gamma = storage.gamma;
         this.beta = storage.beta;
-        this.secondsInTimeUnit = storage.secondsInTimeUnit;
+    }
+
+    /**
+     * Returns the namespace for all settings about this rating mechanism.
+     *
+     * @return The namespace.
+     */
+    @Override
+    protected String getNamespace() {
+        return DELIVERY_PREDICTABILITY_STORAGE_NS;
     }
 
     /**
@@ -153,14 +156,21 @@ public class DeliveryPredictabilityStorage {
     private void updateOnConnection(int othersAddress) {
         this.decayDeliveryPredictabilities();
         this.updateDirectDeliveryPredictabilityTo(othersAddress);
-        this.lastUpdate = SimClock.getTime();
+    }
+
+    /**
+     * Updates the rating mechanism after a time window has ended.
+     */
+    @Override
+    protected void updateRatingMechanism() {
+        this.decayDeliveryPredictabilities();
     }
 
     /**
      * Decays all entries in the delivery predictabilities.
      */
     private void decayDeliveryPredictabilities() {
-        double timeDiff = (SimClock.getTime() - this.lastUpdate) / this.secondsInTimeUnit;
+        double timeDiff = (SimClock.getTime() - this.lastUpdate) / this.windowLength;
         double decay = Math.pow(this.gamma, timeDiff);
 
         // For each stored predictability:
@@ -177,6 +187,8 @@ public class DeliveryPredictabilityStorage {
                 dpIterator.remove();
             }
         }
+
+        this.lastUpdate = SimClock.getTime();
     }
 
     /**
@@ -293,14 +305,6 @@ public class DeliveryPredictabilityStorage {
      */
     public double getBeta() {
         return beta;
-    }
-
-    /**
-     * Returns the constant describing how many seconds are in a time unit.
-     * @return Number of seconds in a time unit.
-     */
-    public double getSecondsInTimeUnit() {
-        return this.secondsInTimeUnit;
     }
 
     /**

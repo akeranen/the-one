@@ -19,9 +19,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import routing.util.EnergyModel;
+import util.Tuple;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +44,7 @@ public class DatabaseApplicationTest {
     private static final double MIN_UTILITY = 0.5;
     private static final double MAP_SENDING_INTERVAL = 43.2;
     private static final int SEED = 0;
+    private static final int ITEMS_PER_MESSAGE = 2;
 
     /** Small time difference used for tests about map sending. */
     private static final double SMALL_TIME_DIFF = 0.1;
@@ -53,6 +56,9 @@ public class DatabaseApplicationTest {
     /* Number of data items used in several tests. */
     private static final int TWO_DATA_ITEMS = 2;
     private static final int THREE_DATA_ITEMS = 3;
+
+    /* Number of messages expected in some tests. */
+    private static final int TWO_DATA_MESSAGES = 2;
 
     /* Error messages */
     private static final String UNEXPECTED_NUMBER_DATA_MESSAGES = "Expected different number of data messages.";
@@ -74,11 +80,7 @@ public class DatabaseApplicationTest {
     @Before
     public void setUp() {
         /* Add settings for database application */
-        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
-        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
-        this.settings.putSetting(
-                DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
-        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
+        DatabaseApplicationTest.addDatabaseApplicationSettings(this.settings);
 
         /* Create test utils. */
         this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.settings);
@@ -88,6 +90,19 @@ public class DatabaseApplicationTest {
         this.app = new DatabaseApplication(prototype);
         this.hostAttachedToApp = this.utils.createHost();
         this.app.update(this.hostAttachedToApp);
+    }
+
+    /**
+     * Adds all necessary settings for using a {@link DatabaseApplication}.
+     * @param s Settings that get extended.
+     */
+    public static void addDatabaseApplicationSettings(TestSettings s) {
+        s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
+        s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
+        s.putSetting(
+                DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
+        s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
+        s.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
     }
 
     @After
@@ -118,6 +133,12 @@ public class DatabaseApplicationTest {
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForMaxDatabaseSizeGreaterMin() {
         this.settings.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE, "2, 1");
+        new DatabaseApplication(this.settings);
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsForNonPositiveItemsPerMessage() {
+        this.settings.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, "0");
         new DatabaseApplication(this.settings);
     }
 
@@ -181,6 +202,12 @@ public class DatabaseApplicationTest {
     }
 
     @Test
+    public void testGetItemsPerMessage() {
+        TestCase.assertEquals("Expected different number of database items per message.",
+                ITEMS_PER_MESSAGE, this.app.getItemsPerMessage());
+    }
+
+    @Test
     public void testCopyConstructorRegistersToDisasterDataNotifier() {
         /* Use copy constructor. */
         DatabaseApplication copy = new DatabaseApplication(this.app);
@@ -197,7 +224,8 @@ public class DatabaseApplicationTest {
         /* Check data was added. */
         List<DataMessage> interestingData = copy.wrapUsefulDataIntoMessages(host);
         TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
-        TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData());
+        TestCase.assertEquals("Expected one data item.", 1, interestingData.get(0).getData().size());
+        TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData().get(0));
     }
 
     @Test
@@ -242,15 +270,22 @@ public class DatabaseApplicationTest {
         /* Send data message to app. */
         DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
                 DisasterData.DataType.SKILL, this.hostAttachedToApp);
+        DisasterData secondUsefulData = DatabaseApplicationTest.createUsefulData(
+                DisasterData.DataType.MARKER, this.hostAttachedToApp);
         DataMessage dataMessage = new DataMessage(
-                this.utils.createHost(), this.hostAttachedToApp, "data", usefulData, 0, 0);
+                this.utils.createHost(), this.hostAttachedToApp, "data",
+                Arrays.asList(new Tuple<>(usefulData, 1D), new Tuple<>(secondUsefulData, 1D)),
+                0);
         this.app.handle(dataMessage, this.hostAttachedToApp);
 
         /* Check data was added. */
         List<DataMessage> interestingData = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
-        TestCase.assertEquals("Expected one data item.", 1, interestingData.size());
-        TestCase.assertEquals("Expected different data.", usefulData, interestingData.get(0).getData());
-
+        TestCase.assertEquals("Expected two data items in one message.", 1, interestingData.size());
+        TestCase.assertEquals("Expected two data items.", TWO_DATA_ITEMS, interestingData.get(0).getData().size());
+        TestCase.assertTrue("Expected data to include both handled data items.",
+                interestingData.get(0).getData().contains(usefulData));
+        TestCase.assertTrue("Expected data to include both handled data items.",
+                interestingData.get(0).getData().contains(secondUsefulData));
     }
 
     @Test
@@ -258,8 +293,9 @@ public class DatabaseApplicationTest {
         /* Send data message through app. */
         DisasterData usefulData =
                 DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
-        DataMessage dataMessage =
-                new DataMessage(this.utils.createHost(), this.utils.createHost(), "data", usefulData, 0, 0);
+        DataMessage dataMessage = new DataMessage(
+                this.utils.createHost(), this.utils.createHost(),
+                "data", Collections.singleton(new Tuple<>(usefulData, 1D)), 0);
         this.app.handle(dataMessage, this.hostAttachedToApp);
 
         /* Check no data was added. */
@@ -272,8 +308,9 @@ public class DatabaseApplicationTest {
         /* Send data message to app. */
         DisasterData usefulData = DatabaseApplicationTest.createUsefulData(
                 DisasterData.DataType.SKILL, this.hostAttachedToApp);
-        DataMessage dataMessage =
-                new DataMessage(this.utils.createHost(), this.hostAttachedToApp, "data", usefulData, 0, 0);
+        DataMessage dataMessage = new DataMessage(
+                this.utils.createHost(), this.hostAttachedToApp,
+                "data", Collections.singleton(new Tuple<>(usefulData, 1D)), 0);
         TestCase.assertNull(
                 "Data message should have been dropped.", this.app.handle(dataMessage, this.hostAttachedToApp));
     }
@@ -307,7 +344,7 @@ public class DatabaseApplicationTest {
     }
 
     @Test
-    public void testWrapUsefulDataIntoMessagesCreatesCorrectMessageForEachInterestingDataItem() {
+    public void testWrapUsefulDataIntoMessagesCreatesCorrectMessageForInterestingDataItems() {
         /* Create data. */
         Coord currLocation = this.hostAttachedToApp.getLocation();
         double currTime = SimClock.getTime();
@@ -322,16 +359,17 @@ public class DatabaseApplicationTest {
 
         /* Check all data items are returned as messages. */
         List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
-        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, THREE_DATA_ITEMS, messages.size());
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES,
+                (int)Math.ceil((double)THREE_DATA_ITEMS / ITEMS_PER_MESSAGE), messages.size());
         TestCase.assertTrue(
                 "Expected marker to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(marker)));
+                messages.stream().anyMatch(msg -> msg.getData().contains(marker)));
         TestCase.assertTrue(
                 "Expected resource to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(resource)));
+                messages.stream().anyMatch(msg -> msg.getData().contains(resource)));
         TestCase.assertTrue(
                 "Expected skill to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(skill)));
+                messages.stream().anyMatch(msg -> msg.getData().contains(skill)));
     }
 
     @Test
@@ -348,10 +386,41 @@ public class DatabaseApplicationTest {
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
         TestCase.assertTrue(
                 "Expected useful data to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(usefulData)));
+                messages.stream().anyMatch(msg -> msg.getData().contains(usefulData)));
         TestCase.assertFalse(
                 "Did not expect useless data to be in a message..",
-                messages.stream().anyMatch(msg -> msg.getData().equals(uselessData)));
+                messages.stream().anyMatch(msg -> msg.getData().contains(uselessData)));
+    }
+
+    @Test
+    public void testCreateDataMessagesGroupsDataByUtility() {
+        // Create app sending out everything.
+        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0");
+        // Use copy constructor to subscribe as data listener.
+        DatabaseApplication floodingApp = new DatabaseApplication(new DatabaseApplication(this.settings));
+        floodingApp.update(this.hostAttachedToApp);
+
+        // Add useful and not that useful data items.
+        this.clock.setTime(TIME_IN_DISTANT_FUTURE);
+        DisasterData[] usefulData = new DisasterData[ITEMS_PER_MESSAGE];
+        DisasterData[] uselessData = new DisasterData[ITEMS_PER_MESSAGE];
+        for (int i = 0; i < ITEMS_PER_MESSAGE; i++) {
+            usefulData[i] =
+                    DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
+            uselessData[i] = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, new Coord(0, 0));
+            DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData[i]);
+            DisasterDataNotifier.dataCreated(this.hostAttachedToApp, uselessData[i]);
+        }
+
+        // Create messages.
+        List<DataMessage> messages = floodingApp.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_MESSAGES, messages.size());
+        TestCase.assertTrue("Expected all useful data in one message.",
+                messages.get(0).getData().containsAll(Arrays.asList(usefulData))
+                        && messages.get(0).getData().size() == ITEMS_PER_MESSAGE);
+        TestCase.assertTrue("Expected all useless data in one message.",
+                messages.get(1).getData().containsAll(Arrays.asList(uselessData))
+                        && messages.get(1).getData().size() == ITEMS_PER_MESSAGE);
     }
 
     @Test
@@ -373,7 +442,7 @@ public class DatabaseApplicationTest {
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
         TestCase.assertTrue(
                 "Expected map to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(mapData)));
+                messages.stream().anyMatch(msg -> msg.getData().contains(mapData)));
     }
 
     @Test
@@ -391,7 +460,8 @@ public class DatabaseApplicationTest {
             this.clock.advance(MAP_SENDING_INTERVAL + SMALL_TIME_DIFF);
             List<DataMessage> messages = this.app.wrapUsefulDataIntoMessages(this.hostAttachedToApp);
             TestCase.assertEquals("Only one map should have been sent out.", 1, messages.size());
-            mapsInMessages.add(messages.get(0).getData());
+            TestCase.assertEquals("Only one map should have been sent out.", 1, messages.get(0).getData().size());
+            mapsInMessages.add(messages.get(0).getData().get(0));
         }
 
         TestCase.assertEquals("Not all maps have been returned.", mapData.size(), mapsInMessages.size());
@@ -418,7 +488,7 @@ public class DatabaseApplicationTest {
         TestCase.assertEquals("Data was not added to database.", 1, messages.size());
         TestCase.assertTrue(
                 "Expected created data to be in database.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(data)));
+                messages.stream().anyMatch(msg -> msg.getData().get(0).equals(data)));
     }
 
     @Test
@@ -457,13 +527,13 @@ public class DatabaseApplicationTest {
         List<DataMessage> messages = uninitializedApp.wrapUsefulDataIntoMessages(host);
 
         /* Check data was added. */
-        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_ITEMS, messages.size());
+        TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, 1, messages.size());
         TestCase.assertTrue(
                 "Expected data to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(data1)));
+                messages.get(0).getData().contains(data1));
         TestCase.assertTrue(
                 "Expected data to be in a message.",
-                messages.stream().anyMatch(msg -> msg.getData().equals(data2)));
+                messages.get(0).getData().contains(data2));
     }
 
     /**
@@ -501,6 +571,8 @@ public class DatabaseApplicationTest {
         TestCase.assertTrue(
                 "Expected different database size range.",
                 Arrays.equals(original.getDatabaseSizeRange(), copy.getDatabaseSizeRange()));
+        TestCase.assertEquals("Expected different number of database items per message.",
+                original.getItemsPerMessage(), copy.getItemsPerMessage());
     }
 
     /**

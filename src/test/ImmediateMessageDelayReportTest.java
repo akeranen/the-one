@@ -16,10 +16,12 @@ import org.junit.Before;
 import org.junit.Test;
 import report.ImmediateMessageDelayReport;
 import report.Report;
+import util.Tuple;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link ImmediateMessageDelayReport} class.
@@ -126,7 +128,8 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
         this.sender.createNewMessage(new Message(this.sender, this.receiver, "M1", 0));
         this.sender.createNewMessage(new BroadcastMessage(this.sender, "M2", 0));
         this.sender.createNewMessage(new MulticastMessage(this.sender, group, "M3", 0));
-        this.sender.createNewMessage(new DataMessage(this.sender, this.receiver, "M4", data, 1, 1));
+        this.sender.createNewMessage(new DataMessage(
+                this.sender, this.receiver, "M4", Collections.singleton(new Tuple<>(data, 1D)), 1));
         ImmediateMessageDelayReportTest.transferMessage("M1", this.sender, this.receiver);
         ImmediateMessageDelayReportTest.transferMessage("M2", this.sender, this.receiver);
         ImmediateMessageDelayReportTest.transferMessage("M3", this.sender, this.receiver);

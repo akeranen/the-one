@@ -15,8 +15,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import routing.util.DeliveryPredictabilityStorage;
+import util.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Contains tests for the {@link routing.util.DeliveryPredictabilityStorage} class.
@@ -28,7 +30,10 @@ public class DeliveryPredictabilityStorageTest {
     private static final double BETA = 0.25;
     private static final double GAMMA = 0.95;
     private static final double SUMMAND = 0.75;
-    private static final double SECONDS_IN_TIME_UNIT = 1;
+    private static final double WINDOW_LENGTH = 1;
+
+    /* Time span smaller than the window length */
+    protected static final double SHORT_TIME_SPAN = 0.1;
 
     /* Further constants for exception checks. */
     private static final double BELOW_ZERO = -0.1;
@@ -64,7 +69,7 @@ public class DeliveryPredictabilityStorageTest {
         this.clock = SimClock.getInstance();
         this.attachedHost = this.testUtils.createHost();
         this.dpStorage =
-                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, this.attachedHost);
     }
 
     @After
@@ -75,32 +80,32 @@ public class DeliveryPredictabilityStorageTest {
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForNegativeBeta() {
-        createDeliveryPredictabilityStorage(BELOW_ZERO, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+        createDeliveryPredictabilityStorage(BELOW_ZERO, GAMMA, SUMMAND, WINDOW_LENGTH, this.attachedHost);
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForBetaGreaterOne() {
-        createDeliveryPredictabilityStorage(GREATER_THAN_ONE, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+        createDeliveryPredictabilityStorage(GREATER_THAN_ONE, GAMMA, SUMMAND, WINDOW_LENGTH, this.attachedHost);
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForNegativeGamma() {
-        createDeliveryPredictabilityStorage(BETA, BELOW_ZERO, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+        createDeliveryPredictabilityStorage(BETA, BELOW_ZERO, SUMMAND, WINDOW_LENGTH, this.attachedHost);
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForGammaGreaterOne() {
-        createDeliveryPredictabilityStorage(BETA, GREATER_THAN_ONE, SUMMAND, SECONDS_IN_TIME_UNIT, this.attachedHost);
+        createDeliveryPredictabilityStorage(BETA, GREATER_THAN_ONE, SUMMAND, WINDOW_LENGTH, this.attachedHost);
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForNegativeSummand() {
-        createDeliveryPredictabilityStorage(BETA, GAMMA, BELOW_ZERO, SECONDS_IN_TIME_UNIT, this.attachedHost);
+        createDeliveryPredictabilityStorage(BETA, GAMMA, BELOW_ZERO, WINDOW_LENGTH, this.attachedHost);
     }
 
     @Test(expected = SettingsError.class)
     public void testConstructorThrowsForSummandGreaterOne() {
-        createDeliveryPredictabilityStorage(BETA, GAMMA, GREATER_THAN_ONE, SECONDS_IN_TIME_UNIT, this.attachedHost);
+        createDeliveryPredictabilityStorage(BETA, GAMMA, GREATER_THAN_ONE, WINDOW_LENGTH, this.attachedHost);
     }
 
     @Test(expected = SettingsError.class)
@@ -135,10 +140,10 @@ public class DeliveryPredictabilityStorageTest {
     }
 
     @Test
-    public void testGetSecondsInTimeUnit() {
+    public void testGetWindowLength() {
         Assert.assertEquals(
                 "Expected different number of seconds to be returned.",
-                SECONDS_IN_TIME_UNIT, this.dpStorage.getSecondsInTimeUnit(), DOUBLE_COMPARISON_DELTA);
+                WINDOW_LENGTH, this.dpStorage.getWindowLength(), DOUBLE_COMPARISON_DELTA);
     }
 
     @Test
@@ -158,8 +163,8 @@ public class DeliveryPredictabilityStorageTest {
         Assert.assertEquals(
                 "Expected different summand.", this.dpStorage.getSummand(), copy.getSummand(), DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
-                "Expected different number of seconds in time unit.",
-                this.dpStorage.getSecondsInTimeUnit(), copy.getSecondsInTimeUnit(), DOUBLE_COMPARISON_DELTA);
+                "Expected different window length.",
+                this.dpStorage.getWindowLength(), copy.getWindowLength(), DOUBLE_COMPARISON_DELTA);
     }
 
     /**
@@ -171,9 +176,9 @@ public class DeliveryPredictabilityStorageTest {
         DTNHost b = this.testUtils.createHost();
         DTNHost c = this.testUtils.createHost();
         DeliveryPredictabilityStorage bStorage =
-                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, b);
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, b);
         DeliveryPredictabilityStorage cStorage =
-                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, c);
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, c);
 
         // Check all hosts have empty delivery predictability storages in the beginning.
         Assert.assertTrue(EXPECTED_EMPTY_STORAGE, this.dpStorage.getKnownAddresses().isEmpty());
@@ -215,6 +220,82 @@ public class DeliveryPredictabilityStorageTest {
                 EXPECTED_DIFFERENT_PREDICTABILITY,
                 transitivePredictability,
                 cStorage.getDeliveryPredictability(this.attachedHost),
+                DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
+     * Tests that delivery predictabilities are decayed automatically after the specified time window completes.
+     */
+    @Test
+    public void testUpdateHappensAfterTimeWindowCompletes() {
+        // Make sure a delivery predictability > 0 exists.
+        DTNHost b = this.testUtils.createHost();
+        DeliveryPredictabilityStorage bStorage =
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, b);
+        DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(this.dpStorage, bStorage);
+
+        // Remember original delivery predictability.
+        double originalDeliveryPredictability = this.dpStorage.getDeliveryPredictability(b);
+
+        // Update shortly before time window ends.
+        this.clock.setTime(WINDOW_LENGTH - SHORT_TIME_SPAN);
+        this.dpStorage.update();
+
+        // The update shouldn't have done anything.
+        Assert.assertEquals("Delivery predictabilities should not have been decayed yet.",
+                originalDeliveryPredictability, this.dpStorage.getDeliveryPredictability(b), DOUBLE_COMPARISON_DELTA);
+
+        // Update again at end of time window.
+        this.clock.setTime(WINDOW_LENGTH);
+        this.dpStorage.update();
+        // Now, the delivery predictability should have been changed.
+        Assert.assertNotEquals("Delivery predictability should have been decayed.",
+                originalDeliveryPredictability, this.dpStorage.getDeliveryPredictability(b), DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
+     * Tests that delivery predictabilities are decayed correctly even if different types of updates (because of
+     * completed time windows or updates) happen.
+     */
+    @Test
+    public void testMixedTimeWindowUpdatesAndMeetingsWork() {
+        // Make sure a delivery predictability > 0 exists.
+        DTNHost b = this.testUtils.createHost();
+        DeliveryPredictabilityStorage bStorage =
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, b);
+        DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(this.dpStorage, bStorage);
+
+        // Complete time window and update.
+        this.clock.setTime(WINDOW_LENGTH);
+        this.dpStorage.update();
+
+        // Check new value.
+        double decayedPredictability = SUMMAND * Math.pow(GAMMA, WINDOW_LENGTH);
+        Assert.assertEquals(EXPECTED_DIFFERENT_PREDICTABILITY,
+                decayedPredictability, this.dpStorage.getDeliveryPredictability(b),
+                DOUBLE_COMPARISON_DELTA);
+
+        // Advance only a short time span and meet another host.
+        this.clock.advance(SHORT_TIME_SPAN);
+        DTNHost c = this.testUtils.createHost();
+        DeliveryPredictabilityStorage cStorage =
+                createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, c);
+        DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(this.dpStorage, cStorage);
+
+        // Check new value.
+        decayedPredictability = SUMMAND * Math.pow(GAMMA, WINDOW_LENGTH + SHORT_TIME_SPAN);
+        Assert.assertEquals(EXPECTED_DIFFERENT_PREDICTABILITY,
+                decayedPredictability, this.dpStorage.getDeliveryPredictability(b),
+                DOUBLE_COMPARISON_DELTA);
+
+        // Complete time window and update.
+        this.clock.advance(WINDOW_LENGTH - SHORT_TIME_SPAN);
+        this.dpStorage.update();
+
+        // Check new value.
+        decayedPredictability = SUMMAND * Math.pow(GAMMA, WINDOW_LENGTH + WINDOW_LENGTH);
+        Assert.assertEquals(EXPECTED_DIFFERENT_PREDICTABILITY,
+                decayedPredictability, this.dpStorage.getDeliveryPredictability(b),
                 DOUBLE_COMPARISON_DELTA);
     }
 
@@ -313,7 +394,8 @@ public class DeliveryPredictabilityStorageTest {
     @Test(expected = IllegalArgumentException.class)
     public void testGetDeliveryPredictabilityThrowsForDataMessage() {
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), new Coord(0, 0));
-        Message dataMessage = new DataMessage(this.testUtils.createHost(), this.attachedHost, "M1", data, 1, 0);
+        Message dataMessage = new DataMessage(
+                this.testUtils.createHost(), this.attachedHost, "M1", Collections.singleton(new Tuple<>(data, 1D)),0);
         this.dpStorage.getDeliveryPredictability(dataMessage);
     }
 
@@ -393,7 +475,7 @@ public class DeliveryPredictabilityStorageTest {
      * @return The created {@link DeliveryPredictabilityStorage}.
      */
     private static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(DTNHost host) {
-        return createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, SECONDS_IN_TIME_UNIT, host);
+        return createDeliveryPredictabilityStorage(BETA, GAMMA, SUMMAND, WINDOW_LENGTH, host);
     }
 
     /**
@@ -401,18 +483,18 @@ public class DeliveryPredictabilityStorageTest {
      * @param beta Constant indicating the importance of transitivity updates.
      * @param gamma Constant that determines how fast delivery predictabilities decay.
      * @param summand Constant used in direct updates, also known as DP_init.
-     * @param secondsInTimeUnit Constant describing how many seconds are in a time unit.
+     * @param windowLength Constant describing how many seconds are in a time unit.
      * @param host The host to be attached to this storage.
      * @return The created {@link DeliveryPredictabilityStorage}.
      */
     private static DeliveryPredictabilityStorage createDeliveryPredictabilityStorage(
-            double beta, double gamma, double summand, double secondsInTimeUnit, DTNHost host) {
+            double beta, double gamma, double summand, double windowLength, DTNHost host) {
         TestSettings settings = new TestSettings();
         settings.setNameSpace(DeliveryPredictabilityStorage.DELIVERY_PREDICTABILITY_STORAGE_NS);
         settings.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(beta));
         settings.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(gamma));
         settings.putSetting(DeliveryPredictabilityStorage.SUMMAND_S, Double.toString(summand));
-        settings.putSetting(DeliveryPredictabilityStorage.TIME_UNIT_S, Double.toString(secondsInTimeUnit));
+        settings.putSetting(DeliveryPredictabilityStorage.WINDOW_LENGTH_S, Double.toString(windowLength));
         settings.restoreNameSpace();
 
         DeliveryPredictabilityStorage storage = new DeliveryPredictabilityStorage();

@@ -317,13 +317,14 @@ public class UtilityMessageChooserTest {
                 this.chooser.chooseNonDirectMessages(new ArrayList<>(), connections);
 
         // Check data message has been returned for both neighbors.
+        String idForDataMessage = "D" + Arrays.asList(data).hashCode();
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertTrue(
                 "Data message to first neighbor expected.",
-                this.messageToHostsExists(messages, data.toString(), neighbor1));
+                this.messageToHostsExists(messages, idForDataMessage, neighbor1));
         Assert.assertTrue(
                 "Data message to second neighbor expected.",
-                this.messageToHostsExists(messages, data.toString(), neighbor2));
+                this.messageToHostsExists(messages, idForDataMessage, neighbor2));
     }
 
     /**
@@ -413,19 +414,20 @@ public class UtilityMessageChooserTest {
                 this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Make sure only the non-transferring host got the messages.
+        String idForDataMessage = "D" + Arrays.asList(data).hashCode();
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertFalse("Host which initiated a transfer should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
         Assert.assertFalse("Host which initiated a transfer should not get data.",
-                this.messageToHostsExists(messages, data.toString(), neighbor1));
+                this.messageToHostsExists(messages, idForDataMessage, neighbor1));
         Assert.assertFalse("Host in a transfer should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor2));
         Assert.assertFalse("Host in a transfer should not get data.",
-                this.messageToHostsExists(messages, data.toString(), neighbor2));
+                this.messageToHostsExists(messages, idForDataMessage, neighbor2));
         Assert.assertTrue("Message to other neighbor expected.",
                 this.messageToHostsExists(messages, m.getId(), otherHost));
         Assert.assertTrue("Data message to other neighbor expected.",
-                this.messageToHostsExists(messages, data.toString(), otherHost));
+                this.messageToHostsExists(messages, idForDataMessage, otherHost));
     }
 
     /**
@@ -455,15 +457,16 @@ public class UtilityMessageChooserTest {
                 this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
 
         // Make sure only the host with high power got the messages.
+        String idForDataMessage = "D" + Arrays.asList(data).hashCode();
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertFalse("Host with low power should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
         Assert.assertFalse("Host with low power should not get messages.",
-                this.messageToHostsExists(messages, data.toString(), neighbor1));
+                this.messageToHostsExists(messages, idForDataMessage, neighbor1));
         Assert.assertTrue("Message to other neighbor expected.",
                 this.messageToHostsExists(messages, m.getId(), this.neighbor2));
         Assert.assertTrue("Data message to other neighbor expected.",
-                this.messageToHostsExists(messages, data.toString(), this.neighbor2));
+                this.messageToHostsExists(messages, idForDataMessage, this.neighbor2));
     }
 
     @Test

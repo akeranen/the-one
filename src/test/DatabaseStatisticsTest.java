@@ -29,10 +29,6 @@ public class DatabaseStatisticsTest {
     /* Properties of the application. */
     private static final long BIGGEST_DB_SIZE = 100L;
     private static final long SMALLEST_DB_SIZE = 100L;
-    private static final double MIN_UTILITY = 0.5;
-    private static final double MAP_SENDING_INTERVAL = 43.2;
-    private static final int SEED = 0;
-    private static final int ITEMS_PER_MESSAGE = 2;
 
     /* The current time and times relevant to it*/
     private static final double CURR_TIME = 1800;
@@ -80,12 +76,9 @@ public class DatabaseStatisticsTest {
     @Before
     public void setUp() {
         /* Add settings for database application */
-        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
-        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
+        DatabaseApplicationTest.addDatabaseApplicationSettings(this.settings);
         this.settings.putSetting(
                 DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
-        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
-        this.settings.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
 
         /* Create test utils. */
         TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.settings);

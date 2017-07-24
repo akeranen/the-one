@@ -1,6 +1,5 @@
 package test;
 
-import applications.DatabaseApplication;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
@@ -66,10 +65,7 @@ public final class DisasterRouterTestUtils {
         s.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
         s.restoreNameSpace();
 
-        s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.2");
-        s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
-        s.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE, "50,50");
-        s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, "30");
+        DatabaseApplicationTest.addDatabaseApplicationSettings(s);
 
         s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
         s.putSetting(DisasterBufferComparator.AGE_THRESHOLD_S, Double.toString(AGE_THRESHOLD));

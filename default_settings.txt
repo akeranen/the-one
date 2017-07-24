@@ -12,13 +12,13 @@ Scenario.nrofHostGroups = 3
 wInterface.type = InterferenceLimitedInterface
 # Transmit speed of 50 Mbps = 6250kBps
 wInterface.transmitSpeed = 6250k
-wInterface.transmitRange = 30
+wInterface.transmitRange = 60
 
 # Common settings for all groups
 Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
-# Buffer size of 10 MB
-Group.bufferSize = 10M
+# Buffer size of 50 MB
+Group.bufferSize = 50M
 Group.nrofInterfaces = 1
 Group.interface1 = wInterface
 Group.net.scanInterval = 30
@@ -35,7 +35,7 @@ Group.hospitalWaitProbability = 0.1
 # Weight of a disasters intensity for determining if a node will help at the disaster site [0, 1]
 Group.intensityWeight = 0.7
 # Specifies how much energy the hosts have at the beginning of the simulation
-Group.initialEnergy = 0.1,1
+Group.initialEnergy = 0.3,1
 # Specifies how much energy is used for scanning
 Group.scanEnergy = 0.00001
 # Specifies how much energy is used for transmitting
@@ -45,14 +45,15 @@ Group.energyWarmup = 0.0
 # Specifies how much energy is used per device discovery response
 Group.scanResponseEnergy = 0.00001
 # Specifies the range of possible number of seconds before an empty battery is recharged
-# 2-12h: 7200 - 43200 seconds
-Group.rechargeWait = 7200,43200
+# 2-6h: 7200 - 21600 seconds
+Group.rechargeWait = 7200,21600
 
 # Add database application
 dbApp.type = DatabaseApplication
 dbApp.utility_threshold = 0.25
 dbApp.db_size = 50M, 150M
 dbApp.mapSendingInterval = -1
+dbApp.itemsPerMessage = 10
 dbApp.seed = 0
 Group.nrofApplications = 1
 Group.application1 = dbApp
@@ -170,8 +171,8 @@ Events7.priorities = 0,0
 
 # Class for disaster data
 Events8.class = DisasterDataGenerator
-# Data sizes ( 50B - 100B )
-Events8.size = 50,100
+# Data sizes ( 50B - 1kB )
+Events8.size = 50,1k
 # range of message source/destination addresses
 Events8.hosts = 0,2999
 # seed for the pseudo random generator

@@ -179,9 +179,10 @@ public class DisasterBufferComparator implements Comparator<Message> {
      * Invalidates the {@link #deletionRankCache} if it is obsolete.
      */
     private void possiblyInvalidateCache() {
-        if (SimClock.getTime() > this.cacheTime) {
+        double currentTime = SimClock.getTime();
+        if (currentTime > this.cacheTime) {
             this.deletionRankCache.clear();
-            this.cacheTime = SimClock.getTime();
+            this.cacheTime = currentTime;
         }
     }
 

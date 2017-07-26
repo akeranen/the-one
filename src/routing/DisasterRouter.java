@@ -329,4 +329,12 @@ public class DisasterRouter extends ActiveRouter {
         messages.sort(this.directMessageComparator);
         return messages;
     }
+
+    /**
+     * Returns the power threshold.
+     * @return The power threshold.
+     */
+    public double getPowerThreshold() {
+        return this.powerThreshold;
+    }
 }

@@ -1,6 +1,7 @@
 package test;
 
 import routing.DisasterRouter;
+import routing.choosers.RescueModeMessageChooser;
 import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
@@ -41,6 +42,7 @@ public final class DisasterRouterTestUtils {
     static final double ENCOUNTER_VALUE_WEIGHT = 0.1;
     static final double UTILITY_THRESHOLD = 0.2;
     static final double POWER_THRESHOLD = 0.1;
+    static final double SHORT_TIMESPAN_THRESHOLD = 30 * 60;
 
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
@@ -87,7 +89,13 @@ public final class DisasterRouterTestUtils {
         s.putSetting(UtilityMessageChooser.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
         s.restoreNameSpace();
 
+        s.setNameSpace(RescueModeMessageChooser.RESCUE_MODE_MESSAGE_CHOOSER_NS);
+        s.putSetting(RescueModeMessageChooser.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
+        s.putSetting(RescueModeMessageChooser.SHORT_TIMESPAN_THRESHOLD, Double.toString(SHORT_TIMESPAN_THRESHOLD));
+        s.restoreNameSpace();
+
         DatabaseApplicationTest.addDatabaseApplicationSettings(s);
+
         // Energy constants.
         s.putSetting(EnergyModel.INIT_ENERGY_S, "1");
         s.putSetting(EnergyModel.SCAN_ENERGY_S, "0");

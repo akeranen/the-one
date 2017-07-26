@@ -62,9 +62,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     @Override
     public void setUp() throws Exception {
-        DisasterRouterTestUtils.addDisasterRouterSettings(ts);
-
-        setRouterProto(new DisasterRouter(ts));
+        DisasterRouterTestUtils.addDisasterRouterSettings(this.ts);
+        this.setRouterProto(new DisasterRouter(this.ts));
         super.setUp();
     }
 
@@ -98,16 +97,16 @@ public class DisasterRouterTest extends AbstractRouterTest {
     }
 
     public void testCheckRouterIsDisasterRouterDoesNotThrowForDisasterRouter() {
-        DisasterRouter.checkRouterIsDisasterRouter(new DisasterRouter(ts));
+        DisasterRouter.checkRouterIsDisasterRouter(new DisasterRouter(this.ts));
     }
 
     public void testConstructorThrowsForNegativePowerThreshold() {
         try {
-            ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
-            ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(NEGATIVE_VALUE));
-            ts.restoreNameSpace();
+            this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+            this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(NEGATIVE_VALUE));
+            this.ts.restoreNameSpace();
 
-            new DisasterRouter(ts);
+            new DisasterRouter(this.ts);
             fail();
         } catch (SettingsError e) {
             Assert.assertEquals("Expected different error.",
@@ -117,11 +116,11 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     public void testConstructorThrowsForPowerThresholdAbove1() {
         try {
-            ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
-            ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(VALUE_ABOVE_ONE));
-            ts.restoreNameSpace();
+            this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+            this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(VALUE_ABOVE_ONE));
+            this.ts.restoreNameSpace();
 
-            new DisasterRouter(ts);
+            new DisasterRouter(this.ts);
             fail();
         } catch (SettingsError e) {
             Assert.assertEquals("Expected different error.",
@@ -475,7 +474,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Add high utility data for data message.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
-        DatabaseApplication app = new DatabaseApplication(ts);
+        DatabaseApplication app = new DatabaseApplication(this.ts);
         h1.getRouter().addApplication(app);
         app.update(h1);
         app.disasterDataCreated(h1, data);
@@ -587,7 +586,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         Message newestMessage = new Message(h1, h3, "M5", 0, 0);
 
         // Install DB app on h1 for data messages.
-        DatabaseApplication app = new DatabaseApplication(ts);
+        DatabaseApplication app = new DatabaseApplication(this.ts);
         h1.getRouter().addApplication(app);
         app.update(h1);
 
@@ -646,7 +645,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
      */
     public void testNonDirectMessageChoosingPerMessage() {
         // Install DB app on h1 for data messages.
-        DatabaseApplication app = new DatabaseApplication(ts);
+        DatabaseApplication app = new DatabaseApplication(this.ts);
         h1.getRouter().addApplication(app);
         app.update(h1);
 

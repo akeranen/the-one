@@ -53,6 +53,7 @@ public class RescueModeMessageChooser implements MessageChoosingStrategy{
         Settings s = new Settings(RESCUE_MODE_MESSAGE_CHOOSER_NS);
         this.powerThreshold = s.getDouble(POWER_THRESHOLD);
         this.shortTimespanThreshold = s.getInt(SHORT_TIMESPAN_THRESHOLD);
+        s.restoreNameSpace();
 
         // Check thresholds are valid.
         if (this.powerThreshold < 0 || this.powerThreshold > 1) {

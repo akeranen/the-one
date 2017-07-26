@@ -44,7 +44,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 		super.setUp();
 	}
 
-	private static void addDatabaseApplicationSettings() {
+	private void addDatabaseApplicationSettings() {
         ts.putSetting(DatabaseApplication.UTILITY_THRESHOLD, "0.2");
         ts.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, "0");
         ts.putSetting(DatabaseApplication.DATABASE_SIZE_RANGE,
@@ -261,7 +261,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
     public void testDataMessagesAreDelivered() {
         // Add relevant data to h1.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
-        EpidemicRouterTest.setUpAsDataCarrier(h1, data);
+        this.setUpAsDataCarrier(h1, data);
 
         // Check that it is sent.
         h1.connect(h2);
@@ -282,7 +282,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
         Message m1 = new Message(h1, h5, "M1", 0);
         Message m2 = new Message(h1, h5, "M2", 0);
-        EpidemicRouterTest.setUpAsDataCarrier(h1, data);
+        this.setUpAsDataCarrier(h1, data);
         h1.createNewMessage(m1);
         h1.createNewMessage(m2);
 
@@ -318,7 +318,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
     public void testDataMessagesAdaptToDatabase() {
         // Start off with one data object.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 1, SimClock.getTime(), h1.getLocation());
-        EpidemicRouterTest.setUpAsDataCarrier(h1, data);
+        this.setUpAsDataCarrier(h1, data);
 
         // Check it gets sent.
         h1.connect(h2);
@@ -333,7 +333,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         this.clock.advance(THREE_HOURS);
         DisasterData newData = new DisasterData(
                 DisasterData.DataType.SKILL, DB_SIZE - SMALL_SIZE_DIFFERENCE, SimClock.getTime(), h1.getLocation());
-        EpidemicRouterTest.setUpAsDataCarrier(h1, newData);
+        this.setUpAsDataCarrier(h1, newData);
 
         // Now, only the second object should get sent.
         h1.forceConnection(h2, null, false);
@@ -881,7 +881,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
      * @param host Host to add data item to.
      * @param data The data item to add.
      */
-    private static void setUpAsDataCarrier(DTNHost host, DisasterData data) {
+    private void setUpAsDataCarrier(DTNHost host, DisasterData data) {
         DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(host.getRouter());
         if (app == null) {
             app = new DatabaseApplication(ts);

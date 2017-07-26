@@ -122,6 +122,9 @@ public class UtilityMessageChooser implements MessageChoosingStrategy {
         this.utilityThreshold = s.getDouble(UTILITY_THRESHOLD);
         this.powerThreshold = s.getDouble(POWER_THRESHOLD);
 
+        // Restore old settings namespace.
+        s.restoreNameSpace();
+
         // Check all values are valid.
         this.validateWeights();
         if (this.utilityThreshold < 0 || this.utilityThreshold > 1) {

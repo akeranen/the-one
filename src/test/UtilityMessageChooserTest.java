@@ -1,20 +1,17 @@
 package test;
 
 import applications.DatabaseApplication;
-import core.BroadcastMessage;
-import core.CBRConnection;
 import core.Connection;
 import core.DTNHost;
 import core.DisasterData;
 import core.Message;
 import core.SettingsError;
 import core.SimClock;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import routing.DisasterRouter;
 import routing.EpidemicRouter;
+import routing.MessageChoosingStrategy;
 import routing.MessageRouter;
 import routing.choosers.UtilityMessageChooser;
 import routing.util.DatabaseApplicationUtil;
@@ -32,7 +29,7 @@ import java.util.List;
  *
  * Created by Britta Heymann on 29.06.2017.
  */
-public class UtilityMessageChooserTest {
+public class UtilityMessageChooserTest extends AbstractMessageChoosingStrategyTest {
     /* Some values needed in tests. */
     private static final double NEGATIVE_VALUE = -0.1;
     private static final double OPPOSITE_OF_NEGATIVE_VALUE = 0.1;
@@ -41,57 +38,31 @@ public class UtilityMessageChooserTest {
     private static final double MEDIUM_REPLICATIONS_DENSITY = 0.5;
     private static final double MEDIUM_ENERGY_VALUE = 0.5;
     private static final int ONE_HUNDRED_HOSTS = 100;
-    private static final int TWO_MESSAGES = 2;
     private static final double SMALL_POWER_DIFFERENCE = 0.01;
 
-    /* Some error messages. */
+    /* Error messages. */
     private static final String UNEXPECTED_WEIGHT = "Expected different weight.";
-    private static final String UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES = "Expected different number of chosen messages.";
-
-    /** The maximum delta when comparing for double equality. */
-    private static final double DOUBLE_COMPARISON_DELTA = 0.00001;
-
-    private TestUtils utils;
-    private SimClock clock = SimClock.getInstance();
-
-    private TestSettings settings;
-    private UtilityMessageChooser chooser;
-    private DTNHost attachedHost;
-
-    private DTNHost neighbor1;
-    private DTNHost neighbor2;
-
 
     public UtilityMessageChooserTest() {
         // Empty constructor for "Classes and enums with private members should hava a constructor" (S1258).
         // This is dealt with by the setUp method.
     }
 
-    @Before
-    public void setUp() {
-        this.settings = new TestSettings();
+    @Override
+    protected void addNecessarySettings() {
         DisasterRouterTestUtils.addDisasterRouterSettings(this.settings);
-
-        this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.settings);
-        MessageRouter routerProto = new DisasterRouter(this.settings);
-        routerProto.addApplication(new DatabaseApplication(this.settings));
-        this.utils.setMessageRouterProto(routerProto);
-
-        this.attachedHost = this.utils.createHost();
-        this.neighbor1 = this.utils.createHost();
-        this.neighbor2 = this.utils.createHost();
-        this.attachedHost.update(true);
-        this.neighbor1.update(true);
-        this.neighbor2.update(true);
-
-        this.chooser = new UtilityMessageChooser(this.attachedHost.getRouter());
-        this.chooser.setAttachedHost(this.attachedHost);
     }
 
-    @After
-    public void cleanUp() {
-        SimClock.reset();
-        DTNHost.reset();
+    @Override
+    protected MessageRouter createMessageRouterPrototype() {
+        MessageRouter routerProto = new DisasterRouter(this.settings);
+        routerProto.addApplication(new DatabaseApplication(this.settings));
+        return routerProto;
+    }
+
+    @Override
+    protected MessageChoosingStrategy createMessageChooser() {
+        return new UtilityMessageChooser(this.attachedHost.getRouter());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -199,7 +170,7 @@ public class UtilityMessageChooserTest {
     public void testGetDeliveryPredictabilityWeight() {
         Assert.assertEquals(UNEXPECTED_WEIGHT,
                 DisasterRouterTestUtils.DELIVERY_PREDICTABILITY_WEIGHT * DisasterRouterTestUtils.PROPHET_PLUS_WEIGHT,
-                this.chooser.getDeliveryPredictabilityWeight(),
+                this.getChooser().getDeliveryPredictabilityWeight(),
                 DOUBLE_COMPARISON_DELTA);
     }
 
@@ -207,34 +178,36 @@ public class UtilityMessageChooserTest {
     public void testGetPowerWeight() {
         Assert.assertEquals(UNEXPECTED_WEIGHT,
                 DisasterRouterTestUtils.POWER_WEIGHT * DisasterRouterTestUtils.PROPHET_PLUS_WEIGHT,
-                this.chooser.getPowerWeight(),
+                this.getChooser().getPowerWeight(),
                 DOUBLE_COMPARISON_DELTA);
     }
 
     @Test
     public void testGetReplicationsDensityWeight() {
         Assert.assertEquals(UNEXPECTED_WEIGHT,
-                DisasterRouterTestUtils.REPLICATIONS_DENSITY_WEIGHT, this.chooser.getReplicationsDensityWeight(),
+                DisasterRouterTestUtils.REPLICATIONS_DENSITY_WEIGHT, this.getChooser().getReplicationsDensityWeight(),
                 DOUBLE_COMPARISON_DELTA);
     }
 
     @Test
     public void testGetEncounterValueWeight() {
         Assert.assertEquals(UNEXPECTED_WEIGHT,
-                DisasterRouterTestUtils.ENCOUNTER_VALUE_WEIGHT, this.chooser.getEncounterValueWeight(),
+                DisasterRouterTestUtils.ENCOUNTER_VALUE_WEIGHT, this.getChooser().getEncounterValueWeight(),
                 DOUBLE_COMPARISON_DELTA);
     }
 
     @Test
     public void testGetUtilityThreshold() {
         Assert.assertEquals("Expected different threshold.",
-                DisasterRouterTestUtils.UTILITY_THRESHOLD, this.chooser.getUtilityThreshold(), DOUBLE_COMPARISON_DELTA);
+                DisasterRouterTestUtils.UTILITY_THRESHOLD, this.getChooser().getUtilityThreshold(),
+                DOUBLE_COMPARISON_DELTA);
     }
 
     @Test
     public void testGetPowerThreshold() {
         Assert.assertEquals("Expected different threshold.",
-                DisasterRouterTestUtils.POWER_THRESHOLD, this.chooser.getPowerThreshold(), DOUBLE_COMPARISON_DELTA);
+                DisasterRouterTestUtils.POWER_THRESHOLD, this.getChooser().getPowerThreshold(),
+                DOUBLE_COMPARISON_DELTA);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -247,13 +220,15 @@ public class UtilityMessageChooserTest {
         this.chooser.replicate(new EpidemicRouter(this.settings));
     }
 
+    @Override
     @Test
-    public void testReplicateReturnsUtilityMessageChooser() {
+    public void testReplicateReturnsCorrectType() {
         Assert.assertTrue(
                 "Replicate should not change chooser type.",
                 this.chooser.replicate(new DisasterRouter(this.settings)) instanceof UtilityMessageChooser);
     }
 
+    @Override
     @Test
     public void testReplicateCopiesSettings() {
         // Create other router with different settings.
@@ -274,25 +249,25 @@ public class UtilityMessageChooserTest {
         // Check chooser has old settings.
         Assert.assertEquals(
                 UNEXPECTED_WEIGHT,
-                this.chooser.getReplicationsDensityWeight(), copy.getReplicationsDensityWeight(),
+                this.getChooser().getReplicationsDensityWeight(), copy.getReplicationsDensityWeight(),
                 DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 UNEXPECTED_WEIGHT,
-                this.chooser.getDeliveryPredictabilityWeight(), copy.getDeliveryPredictabilityWeight(),
+                this.getChooser().getDeliveryPredictabilityWeight(), copy.getDeliveryPredictabilityWeight(),
                 DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 UNEXPECTED_WEIGHT,
-                this.chooser.getEncounterValueWeight(), copy.getEncounterValueWeight(),
+                this.getChooser().getEncounterValueWeight(), copy.getEncounterValueWeight(),
                 DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals(
                 UNEXPECTED_WEIGHT,
-                this.chooser.getPowerWeight(), copy.getPowerWeight(),
+                this.getChooser().getPowerWeight(), copy.getPowerWeight(),
                 DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals("Expected different utility threshold.",
-                this.chooser.getUtilityThreshold(), copy.getUtilityThreshold(),
+                this.getChooser().getUtilityThreshold(), copy.getUtilityThreshold(),
                 DOUBLE_COMPARISON_DELTA);
         Assert.assertEquals("Expected different power threshold.",
-                this.chooser.getPowerThreshold(), copy.getPowerThreshold(),
+                this.getChooser().getPowerThreshold(), copy.getPowerThreshold(),
                 DOUBLE_COMPARISON_DELTA);
     }
 
@@ -325,109 +300,6 @@ public class UtilityMessageChooserTest {
         Assert.assertTrue(
                 "Data message to second neighbor expected.",
                 this.messageToHostsExists(messages, idForDataMessage, neighbor2));
-    }
-
-    /**
-     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
-     * (message, connection) tuples for which the receiving host would be a final recipient of the message.
-     */
-    @Test
-    public void testFindOtherMessagesDoesNotReturnDirectMessages() {
-        // Create message to neighbor 1.
-        Message m = new Message(this.attachedHost, neighbor1, "M1", 0);
-        this.attachedHost.createNewMessage(m);
-
-        // Call chooseNonDirectMessages with two connections, one of them to neighbor 1.
-        List<Connection> connections = new ArrayList<>();
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
-        Collection<Tuple<Message, Connection>> messages =
-                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
-
-        // Make sure the direct message was not returned.
-        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
-        Assert.assertFalse(
-                "Direct message should not have been returned.",
-                this.messageToHostsExists(messages, m.getId(), neighbor1));
-        Assert.assertTrue(
-                "Message to second neighbor expected.", this.messageToHostsExists(messages, m.getId(), neighbor2));
-    }
-
-    /**
-     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
-     * (message, connection) tuples for which the receiving host already knows the message.
-     */
-    @Test
-    public void testFindOtherMessagesDoesNotReturnKnownMessages() {
-        // Create message which is known by neighbor 1.
-        Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
-        this.attachedHost.createNewMessage(m);
-        this.neighbor1.createNewMessage(m);
-
-        // Call chooseNonDirectMessages with two connections, one of them to neighbor 1.
-        List<Connection> connections = new ArrayList<>();
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
-        Collection<Tuple<Message, Connection>> messages =
-                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
-
-        // Make sure the known message was not returned.
-        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, 1, messages.size());
-        Assert.assertFalse(
-                "Known message should not have been returned.",
-                this.messageToHostsExists(messages, m.getId(), neighbor1));
-        Assert.assertTrue(
-                "Message to second neighbor expected.", this.messageToHostsExists(messages, m.getId(), neighbor2));
-    }
-
-    /**
-     * Checks that {@link UtilityMessageChooser#chooseNonDirectMessages(Collection, List)} does not return any
-     * (message, connection) tuples for which the receiving host is transferring right now.
-     */
-    @Test
-    public void testFindOtherMessagesDoesNotReturnMessagesForTransferringRouter() {
-        // Make sure neighbor 1 is transferring to neighbor 2.
-        Message directMessage = new BroadcastMessage(this.neighbor1, "M1", 0);
-        this.neighbor1.createNewMessage(directMessage);
-        this.neighbor1.forceConnection(neighbor2, null, true);
-        this.neighbor1.update(true);
-        this.neighbor2.update(true);
-
-        // Take a look at a non-transferring host for verification.
-        DTNHost otherHost = this.utils.createHost();
-
-        // Give a data item and a message to our host.
-        DisasterData data = new DisasterData(
-                DisasterData.DataType.MARKER, 0, SimClock.getTime(), this.attachedHost.getLocation());
-        DatabaseApplication app = DatabaseApplicationUtil.findDatabaseApplication(this.attachedHost.getRouter());
-        app.update(this.attachedHost);
-        app.disasterDataCreated(this.attachedHost, data);
-        Message m = new Message(this.attachedHost, this.utils.createHost(), "M1", 0);
-        this.attachedHost.createNewMessage(m);
-
-        // Call chooseNonDirectMessages with connections to all other three hosts.
-        List<Connection> connections = new ArrayList<>();
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor1));
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, neighbor2));
-        connections.add(UtilityMessageChooserTest.createConnection(this.attachedHost, otherHost));
-        Collection<Tuple<Message, Connection>> messages =
-                this.chooser.chooseNonDirectMessages(Collections.singletonList(m), connections);
-
-        // Make sure only the non-transferring host got the messages.
-        String idForDataMessage = "D" + Arrays.asList(data).hashCode();
-        Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
-        Assert.assertFalse("Host which initiated a transfer should not get messages.",
-                this.messageToHostsExists(messages, m.getId(), neighbor1));
-        Assert.assertFalse("Host which initiated a transfer should not get data.",
-                this.messageToHostsExists(messages, idForDataMessage, neighbor1));
-        Assert.assertFalse("Host in a transfer should not get messages.",
-                this.messageToHostsExists(messages, m.getId(), neighbor2));
-        Assert.assertFalse("Host in a transfer should not get data.",
-                this.messageToHostsExists(messages, idForDataMessage, neighbor2));
-        Assert.assertTrue("Message to other neighbor expected.",
-                this.messageToHostsExists(messages, m.getId(), otherHost));
-        Assert.assertTrue("Data message to other neighbor expected.",
-                this.messageToHostsExists(messages, idForDataMessage, otherHost));
     }
 
     /**
@@ -586,32 +458,6 @@ public class UtilityMessageChooserTest {
     }
 
     /**
-     * Creates a {@link Connection} object.
-     * @return The created connection object.
-     */
-    private static Connection createConnection(DTNHost from, DTNHost to) {
-        return new CBRConnection(from, from.getInterfaces().get(0), to, to.getInterfaces().get(0), 1);
-    }
-
-    /**
-     * Checks the provided message-connection tuple list for the existence of a tuple mapping a message with the
-     * provided ID to a connection where the host which is not {@link #attachedHost} is the provided host.
-     *
-     * @param messages List to check.
-     * @param id Message ID to look for.
-     * @param host Host to look for.
-     * @return True if such a message can be found.
-     */
-    private boolean messageToHostsExists(Collection<Tuple<Message, Connection>> messages, String id, DTNHost host) {
-        for (Tuple<Message, Connection> tuple : messages) {
-            if (tuple.getKey().getId().equals(id) && tuple.getValue().getOtherNode(this.attachedHost).equals(host)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Adds the provided messages to {@link #attachedHost}'s buffer and makes sure that at the current time, they all
      * have a replications density that is less than 0.01 different from the provided density.
      *
@@ -643,5 +489,9 @@ public class UtilityMessageChooserTest {
         // Update replications density.
         this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
         this.attachedHost.update(true);
+    }
+
+    private UtilityMessageChooser getChooser() {
+        return (UtilityMessageChooser)this.chooser;
     }
 }

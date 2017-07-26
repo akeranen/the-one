@@ -191,6 +191,7 @@ public class DisasterRouter extends ActiveRouter {
         // Update rating mechanisms.
         this.encounterValueManager.update();
         this.replicationsDensityManager.update();
+        this.deliveryPredictabilityStorage.update();
 
         // Don't continue computing if there is no chance any message will be sent.
         if (this.isTransferring() || !this.canStartTransfer()) {

@@ -17,7 +17,7 @@ public abstract class AbstractIntervalRatingMechanism {
      */
     public static final String WINDOW_LENGTH_S = "windowLength";
 
-    private double windowLength;
+    protected double windowLength;
     private double nextWindowEnd;
 
     protected AbstractIntervalRatingMechanism() {

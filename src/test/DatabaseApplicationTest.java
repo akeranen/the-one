@@ -81,12 +81,7 @@ public class DatabaseApplicationTest {
     @Before
     public void setUp() {
         /* Add settings for database application */
-        this.settings.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
-        this.settings.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
-        this.settings.putSetting(
-                DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
-        this.settings.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
-        this.settings.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
+        DatabaseApplicationTest.addDatabaseApplicationSettings(this.settings);
 
         /* Create test utils. */
         this.utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.settings);
@@ -96,6 +91,19 @@ public class DatabaseApplicationTest {
         this.app = new DatabaseApplication(prototype);
         this.hostAttachedToApp = this.utils.createHost();
         this.app.update(this.hostAttachedToApp);
+    }
+
+    /**
+     * Adds all necessary settings for using a {@link DatabaseApplication}.
+     * @param s Settings that get extended.
+     */
+    public static void addDatabaseApplicationSettings(TestSettings s) {
+        s.putSetting(DatabaseApplication.UTILITY_THRESHOLD, Double.toString(MIN_UTILITY));
+        s.putSetting(DatabaseApplication.SIZE_RANDOMIZER_SEED, Integer.toString(SEED));
+        s.putSetting(
+                DatabaseApplication.DATABASE_SIZE_RANGE, String.format("%d,%d", SMALLEST_DB_SIZE, BIGGEST_DB_SIZE));
+        s.putSetting(DatabaseApplication.MIN_INTERVAL_MAP_SENDING, Double.toString(MAP_SENDING_INTERVAL));
+        s.putSetting(DatabaseApplication.ITEMS_PER_MESSAGE, Integer.toString(ITEMS_PER_MESSAGE));
     }
 
     @After
@@ -549,12 +557,13 @@ public class DatabaseApplicationTest {
 
         // Add useful and not that useful data items.
         this.clock.setTime(TIME_IN_DISTANT_FUTURE);
+        this.hostAttachedToApp.setLocation(new Coord(1, 1));
         DisasterData[] usefulData = new DisasterData[ITEMS_PER_MESSAGE];
         DisasterData[] uselessData = new DisasterData[ITEMS_PER_MESSAGE];
         for (int i = 0; i < ITEMS_PER_MESSAGE; i++) {
             usefulData[i] =
                     DatabaseApplicationTest.createUsefulData(DisasterData.DataType.SKILL, this.hostAttachedToApp);
-            uselessData[i] = new DisasterData(DisasterData.DataType.RESOURCE, 0, 0, new Coord(0, 0));
+            uselessData[i] = new DisasterData(DisasterData.DataType.RESOURCE, 0, SimClock.getTime(), new Coord(0, 0));
             DisasterDataNotifier.dataCreated(this.hostAttachedToApp, usefulData[i]);
             DisasterDataNotifier.dataCreated(this.hostAttachedToApp, uselessData[i]);
         }

@@ -461,7 +461,7 @@ public class UtilityMessageChooserTest {
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertFalse("Host with low power should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
-        Assert.assertFalse("Host with low power should not get messages.",
+        Assert.assertFalse("Host with low power should not get data message.",
                 this.messageToHostsExists(messages, idForDataMessage, neighbor1));
         Assert.assertTrue("Message to other neighbor expected.",
                 this.messageToHostsExists(messages, m.getId(), this.neighbor2));

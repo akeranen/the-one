@@ -6,6 +6,7 @@ package report;
 
 
 import core.DTNHost;
+import core.SimClock;
 import core.SimError;
 import core.UpdateListener;
 
@@ -16,7 +17,7 @@ import core.UpdateListener;
  * Works only if all nodes use energy model; see 
  * {@link routing.util.EnergyModel}.
  */
-public class EnergyLevelReport extends SnapshotReport 
+public class EnergyLevelReport extends SnapshotReport
 	implements UpdateListener {
 
 	@Override
@@ -27,7 +28,7 @@ public class EnergyLevelReport extends SnapshotReport
 				throw new SimError("Host " + h +
 						" is not using energy model");
 			}
-			write(h.toString() + " " +  format(value));
+			write(SimClock.getIntTime()+"," +h.toString()+ "," + format(value));
 	}
 
 }

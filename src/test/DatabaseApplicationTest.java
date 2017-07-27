@@ -570,13 +570,21 @@ public class DatabaseApplicationTest {
 
         // Create messages.
         List<DataMessage> messages = floodingApp.wrapRecentUsefulDataIntoMessages(this.hostAttachedToApp, 1);
+
+        // Check for correct number messages.
         TestCase.assertEquals(UNEXPECTED_NUMBER_DATA_MESSAGES, TWO_DATA_MESSAGES, messages.size());
+
+        // Check first message consists of useful data.
+        boolean allUsefulDataInFirstMessage = messages.get(0).getData().containsAll(Arrays.asList(usefulData));
+        boolean noOtherDataInFirstMessage = messages.get(0).getData().size() == ITEMS_PER_MESSAGE;
         TestCase.assertTrue("Expected all useful data in one message.",
-                messages.get(0).getData().containsAll(Arrays.asList(usefulData))
-                        && messages.get(0).getData().size() == ITEMS_PER_MESSAGE);
+                allUsefulDataInFirstMessage && noOtherDataInFirstMessage);
+
+        // Check second message consists of useless data.
+        boolean allUselessDataInSecondMessage = messages.get(1).getData().containsAll(Arrays.asList(uselessData));
+        boolean noOtherDataInSecondMessage = messages.get(1).getData().size() == ITEMS_PER_MESSAGE;
         TestCase.assertTrue("Expected all useless data in one message.",
-                messages.get(1).getData().containsAll(Arrays.asList(uselessData))
-                        && messages.get(1).getData().size() == ITEMS_PER_MESSAGE);
+                allUselessDataInSecondMessage && noOtherDataInSecondMessage);
     }
 
     @Test

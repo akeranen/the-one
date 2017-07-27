@@ -8,7 +8,6 @@ package report;
 import core.DTNHost;
 import core.SimClock;
 import core.SimError;
-import core.UpdateListener;
 
 /**
  * Node energy level report. Reports the energy level of all 
@@ -17,8 +16,7 @@ import core.UpdateListener;
  * Works only if all nodes use energy model; see 
  * {@link routing.util.EnergyModel}.
  */
-public class EnergyLevelReport extends SnapshotReport
-	implements UpdateListener {
+public class EnergyLevelReport extends SnapshotReport {
 
 	@Override
 	protected void writeSnapshot(DTNHost h) {

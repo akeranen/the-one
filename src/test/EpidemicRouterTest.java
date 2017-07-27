@@ -876,6 +876,37 @@ public class EpidemicRouterTest extends AbstractRouterTest {
     }
 
     /**
+     * Checks that the direct messages can directly be sent once a new connection comes up.
+	 * This test is relevant because we cache direct messages.
+     */
+    @Test
+    public void testMessagesToConnectedAreDirectlySentOnNewConnection() throws Exception {
+        // Set the message ordering interval.
+        final double messageOrderingInterval = 2D;
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(messageOrderingInterval));
+        this.setUp();
+
+        // Make sure host has a message.
+        Message m = new Message(h1, h2, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to some host to make sure cache is computed for the first time.
+        h1.connect(h3);
+        this.updateAllNodes();
+        disconnect(h3);
+
+        // Connect to recipient to see that the message gets sent directly.
+        this.mc.reset();
+        h1.connect(h2);
+        // Skip all information about old connection.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastTo().equals(h3));
+        assertEquals("Message should have been sent.", m.getId(), this.mc.getLastMsg().getId());
+        assertEquals("Message should have been sent to newly connected host.", h2, this.mc.getLastTo());
+    }
+
+    /**
      * Makes sure the provided host has a {@link DatabaseApplication} and adds the provided data item to its stored
      * data.
      * @param host Host to add data item to.

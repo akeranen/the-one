@@ -291,14 +291,14 @@ public class UtilityMessageChooserTest extends AbstractMessageChoosingStrategyTe
                 this.chooser.chooseNonDirectMessages(new ArrayList<>(), connections);
 
         // Check data message has been returned for both neighbors.
-        String idForDataMessage = "D" + Arrays.asList(data).hashCode();
+        String dataMessageId = "D" + Arrays.asList(data).hashCode();
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertTrue(
                 "Data message to first neighbor expected.",
-                this.messageToHostsExists(messages, idForDataMessage, neighbor1));
+                this.messageToHostsExists(messages, dataMessageId, neighbor1));
         Assert.assertTrue(
                 "Data message to second neighbor expected.",
-                this.messageToHostsExists(messages, idForDataMessage, neighbor2));
+                this.messageToHostsExists(messages, dataMessageId, neighbor2));
     }
 
     /**
@@ -332,7 +332,7 @@ public class UtilityMessageChooserTest extends AbstractMessageChoosingStrategyTe
         Assert.assertEquals(UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES, TWO_MESSAGES, messages.size());
         Assert.assertFalse("Host with low power should not get messages.",
                 this.messageToHostsExists(messages, m.getId(), neighbor1));
-        Assert.assertFalse("Host with low power should not get messages.",
+        Assert.assertFalse("Host with low power should not get data message.",
                 this.messageToHostsExists(messages, idForDataMessage, neighbor1));
         Assert.assertTrue("Message to other neighbor expected.",
                 this.messageToHostsExists(messages, m.getId(), this.neighbor2));

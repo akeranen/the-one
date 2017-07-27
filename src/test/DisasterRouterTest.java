@@ -11,7 +11,9 @@ import core.MulticastMessage;
 import core.SettingsError;
 import core.SimClock;
 import org.junit.Assert;
+import routing.ActiveRouter;
 import routing.DisasterRouter;
+import routing.MessageRouter;
 import routing.PassiveRouter;
 import routing.util.EnergyModel;
 import util.Tuple;
@@ -36,6 +38,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
+    private static final double MESSAGE_DELETION_TIME = 200;
+    private static final double NON_ZERO_MESSAGE_ORDERING_INTERVAL = 2D;
     private static final double TWELVE_WEEKS = 12 * 7 * 24 * 60 * 60D;
 
     /* Some priority values needed for tests. */
@@ -46,6 +50,10 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     /* Some coordinates needed for tests. */
     private static final Coord FAR_AWAY_LOCATION = new Coord(5000, 10_000);
+
+    /* Some constants needed for buffer management tests. */
+    private static final double[] SECONDS_IN_BUFFER = { 20, 5, 60, 150, 200, 5 };
+    private static final int[] HOP_COUNTS = { 2, 2, 10, 20, 1, 4 };
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
@@ -63,7 +71,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
     @Override
     public void setUp() throws Exception {
         DisasterRouterTestUtils.addDisasterRouterSettings(this.ts);
-        this.setRouterProto(new DisasterRouter(this.ts));
+        ts.putSetting(MessageRouter.B_SIZE_S, Integer.toString(BUFFER_SIZE));
+
+        setRouterProto(new DisasterRouter(this.ts));
         super.setUp();
     }
 
@@ -796,6 +806,161 @@ public class DisasterRouterTest extends AbstractRouterTest {
     }
 
     /**
+     * Checks that the cache handling non direct messages is recomputed in the correct interval.
+     */
+    public void testNonDirectMessagesAreRecomputedInMessageOrderingInterval() throws Exception {
+        // Set the message ordering interval.
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+        this.setUp();
+
+        // Make sure host has a message.
+        Message m = new Message(h1, h0, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to other host to see that the message gets sent.
+        h1.connect(h2);
+        this.mc.reset();
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, m.getId());
+
+        // Create new message.
+        Message newMessage = new Message(h1, h0, "M2", 0);
+        h1.createNewMessage(newMessage);
+
+        // Advance time to shortly before the message ordering interval.
+        this.clock.advance(NON_ZERO_MESSAGE_ORDERING_INTERVAL - SHORT_TIME_SPAN);
+
+        // Make sure new message does not get send.
+        this.mc.reset();
+        // Skip all information about old message.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastMsg().equals(m));
+        Assert.assertFalse("Message should not have been sent yet.", this.mc.next());
+
+        // Advance to the message ordering interval.
+        this.clock.advance(SHORT_TIME_SPAN);
+
+        // Make sure message does get send now.
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, newMessage.getId());
+    }
+
+    /**
+     * Checks that the cache handling non direct messages is recomputed once a new connection comes up.
+     */
+    public void testNonDirectMessagesAreRecomputedOnNewConnection() throws Exception {
+        // Set the message ordering interval.
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+        this.setUp();
+
+        // Make sure host has a message.
+        Message m = new Message(h1, h0, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to other host to see that the message gets sent.
+        h1.connect(h2);
+        this.mc.reset();
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, m.getId());
+
+        // Add new connection.
+        h1.connect(h3);
+
+        // Check that the message gets sent directly.
+        // Skip all information about old connection.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastTo().equals(h2));
+        Assert.assertEquals("Message should have been sent.", m.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals("Message should have been sent to newly connected host.", h3, this.mc.getLastTo());
+    }
+
+    /**
+     * Checks that buffer management works as expected by executing a small scenario.
+     */
+    public void testBufferManagement() {
+        this.clock.advance(MESSAGE_DELETION_TIME);
+
+        // Create messages.
+        Message a = new Message(h1, h2, "a", 1);
+        Message b = new Message(h1, h2, "b", 1);
+        Message c = new Message(h1, h4, "c", 1);
+        Message d = new Message(h1, h3, "d", 1);
+        Message e = new BroadcastMessage(h1, "e", 1);
+        Message f = new Message(h1, h2, "f", 1);
+        Message[] messages = {a, b, c, d, e, f};
+        for (Message m : messages) {
+            h1.createNewMessage(m);
+        }
+
+        // Change message properties:
+        // 1) Assign different time spans in which the messages have already been in buffer.
+        for (int i = 0; i < messages.length; i++) {
+            messages[i].setReceiveTime(MESSAGE_DELETION_TIME - SECONDS_IN_BUFFER[i]);
+        }
+
+        // 2) Give the messages different hop counts.
+        for (int i = 0; i < messages.length; i++) {
+            this.increaseHopCount(messages[i], HOP_COUNTS[i]);
+        }
+
+        // 3) Increase delivery predictabilities for messages C and D. D should have a higher delivery predictability.
+        d.getTo().connect(c.getTo());
+        h1.connect(d.getTo());
+        h1.connect(c.getTo());
+        disconnect(h1);
+        disconnect(d.getTo());
+
+        // 4) Increase replications density for message e.
+        h5.createNewMessage(e);
+        h1.connect(h5);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        this.updateAllNodes();
+        disconnect(h1);
+
+        // Then test the buffer management.
+        this.mc.reset();
+        h1.createNewMessage(new Message(h1, h5, "BIG", BUFFER_SIZE));
+        Message[] expectedDeletionOrder = { e,c,d,f,a,b };
+        for (int i = 0; i < expectedDeletionOrder.length; i++) {
+            this.mc.next();
+            assertEquals("Expected other message to be deleted first.",
+                    expectedDeletionOrder[i].getId(), this.mc.getLastMsg().getId());
+        }
+    }
+
+    /**
+     * Checks that buffer management will never delete a message that is being sent right now.
+     */
+    public void testSendingMessageIsNotDeleted() {
+        // Start sending a message.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.updateAllNodes();
+
+        // Check the transfer started.
+        this.mc.next();
+        this.checkTransferStart(h2, h3, m1.getId());
+
+        // Deletion should not work now.
+        Message largeMessage = new Message(h2, h1, "BIG", BUFFER_SIZE);
+        h2.createNewMessage(largeMessage);
+        assertTrue("Should not have been able to delete a message that is being sent.",
+                h2.getMessageCollection().contains(m1));
+
+        // Finish sending the message.
+        this.clock.advance(1);
+        this.updateAllNodes();
+
+        // We can now delete it.
+        h2.createNewMessage(largeMessage);
+        assertFalse("Should have been able to delete the existing message.",
+                h2.getMessageCollection().contains(m1));
+    }
+
+    /**
      * Creates a message between h1 and h3 known by h1 and h0.
      * Due to its replications density, neither h0 nor h1 will sent it if they are using utility choosers.
      * @return The created message.
@@ -810,5 +975,16 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.updateAllNodes();
 
         return popularMessage;
+    }
+
+    /**
+     * Increases the provided message's hop count by the provided value.
+     * @param m Message to increase the hop count for.
+     * @param increase The number of hops to add.
+     */
+    private void increaseHopCount(Message m, int increase) {
+        for (int i = 0; i < increase; i++) {
+            m.addNodeOnPath(this.utils.createHost());
+        }
     }
 }

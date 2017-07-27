@@ -6,6 +6,7 @@ import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
+import routing.util.DisasterBufferComparator;
 import routing.util.EncounterValueManager;
 import routing.util.EnergyModel;
 import routing.util.ReplicationsDensityManager;
@@ -43,6 +44,10 @@ public final class DisasterRouterTestUtils {
     static final double UTILITY_THRESHOLD = 0.2;
     static final double POWER_THRESHOLD = 0.1;
     static final double SHORT_TIMESPAN_THRESHOLD = 30 * 60;
+
+    /* Constants needed for buffer management. */
+    public static final int HOP_THRESHOLD = 5;
+    public static final double AGE_THRESHOLD = 100D;
 
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
@@ -102,5 +107,10 @@ public final class DisasterRouterTestUtils {
         s.putSetting(EnergyModel.TRANSMIT_ENERGY_S, "0");
         s.putSetting(EnergyModel.WARMUP_S, "0");
         s.putSetting(EnergyModel.SCAN_RSP_ENERGY_S, "0");
+
+        s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
+        s.putSetting(DisasterBufferComparator.AGE_THRESHOLD_S, Double.toString(AGE_THRESHOLD));
+        s.putSetting(DisasterBufferComparator.HOP_THRESHOLD_S, Integer.toString(HOP_THRESHOLD));
+        s.restoreNameSpace();
     }
 }

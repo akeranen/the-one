@@ -8,12 +8,13 @@ import core.DisasterData;
 import core.Group;
 import core.Message;
 import core.MulticastMessage;
+import core.SettingsError;
 import core.SimClock;
 import org.junit.Assert;
-import org.junit.Test;
 import routing.ActiveRouter;
 import routing.DisasterRouter;
 import routing.MessageRouter;
+import routing.PassiveRouter;
 import routing.util.EnergyModel;
 import util.Tuple;
 
@@ -29,6 +30,10 @@ import java.util.Collections;
 // because this class extends TestCase.
 @SuppressWarnings({"squid:S2187"})
 public class DisasterRouterTest extends AbstractRouterTest {
+    /* Some setting values needed for tests. */
+    private static final double NEGATIVE_VALUE = -0.1;
+    private static final double VALUE_ABOVE_ONE = 1.1;
+
     /* Some time (span)s needed for tests. */
     private static final double SHORT_TIME_SPAN = 0.1;
     private static final double FIRST_MEETING_TIME = 4;
@@ -65,10 +70,10 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
     @Override
     public void setUp() throws Exception {
-        DisasterRouterTestUtils.addDisasterRouterSettings(ts);
+        DisasterRouterTestUtils.addDisasterRouterSettings(this.ts);
         ts.putSetting(MessageRouter.B_SIZE_S, Integer.toString(BUFFER_SIZE));
 
-        setRouterProto(new DisasterRouter(ts));
+        setRouterProto(new DisasterRouter(this.ts));
         super.setUp();
     }
 
@@ -80,6 +85,84 @@ public class DisasterRouterTest extends AbstractRouterTest {
     protected void tearDown() throws Exception {
         super.tearDown();
         Group.clearGroups();
+    }
+
+    public void testCheckRouterIsDisasterRouterThrowsForNull() {
+        try {
+            DisasterRouter.checkRouterIsDisasterRouter(null);
+            fail();
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Expected different exception.", "Router is null!", e.getMessage());
+        }
+    }
+
+    public void testCheckRouterIsDisasterRouterThrowsForNonDisasterRouter() {
+        try {
+            DisasterRouter.checkRouterIsDisasterRouter(new PassiveRouter(new TestSettings()));
+            fail();
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Expected different exception.",
+                    "Cannot handle routers of type class routing.PassiveRouter!", e.getMessage());
+        }
+    }
+
+    public void testCheckRouterIsDisasterRouterDoesNotThrowForDisasterRouter() {
+        DisasterRouter.checkRouterIsDisasterRouter(new DisasterRouter(this.ts));
+    }
+
+    public void testConstructorThrowsForNegativePowerThreshold() {
+        try {
+            this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+            this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(NEGATIVE_VALUE));
+            this.ts.restoreNameSpace();
+
+            new DisasterRouter(this.ts);
+            fail();
+        } catch (SettingsError e) {
+            Assert.assertEquals("Expected different error.",
+                    "Power threshold should be in [0, 1], but is " + NEGATIVE_VALUE + "!", e.getMessage());
+        }
+    }
+
+    public void testConstructorCanHandlePowerThresholdZero() {
+        this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+        this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(0D));
+        this.ts.restoreNameSpace();
+        new DisasterRouter(this.ts);
+    }
+
+    public void testConstructorThrowsForPowerThresholdAbove1() {
+        try {
+            this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+            this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(VALUE_ABOVE_ONE));
+            this.ts.restoreNameSpace();
+
+            new DisasterRouter(this.ts);
+            fail();
+        } catch (SettingsError e) {
+            Assert.assertEquals("Expected different error.",
+                    "Power threshold should be in [0, 1], but is " + VALUE_ABOVE_ONE + "!", e.getMessage());
+        }
+    }
+
+    public void testConstructorCanHandlePowerThresholdOne() {
+        this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+        this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(1D));
+        this.ts.restoreNameSpace();
+        new DisasterRouter(this.ts);
+    }
+
+    public void testGetPowerThreshold() {
+        DisasterRouter router = (DisasterRouter)h1.getRouter();
+        Assert.assertEquals("Expected different power threshold.",
+                DisasterRouterTestUtils.POWER_THRESHOLD, router.getPowerThreshold(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    public void testReplicateCopiesPowerThreshold() {
+        DisasterRouter original = (DisasterRouter)h1.getRouter();
+        DisasterRouter copy = (DisasterRouter)original.replicate();
+        Assert.assertEquals("Expected different power threshold.",
+                copy.getPowerThreshold(), original.getPowerThreshold(), DOUBLE_COMPARISON_DELTA);
     }
 
     public void testEncounterValueIsComputedCorrectly() {
@@ -415,7 +498,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Add high utility data for data message.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
-        DatabaseApplication app = new DatabaseApplication(ts);
+        DatabaseApplication app = new DatabaseApplication(this.ts);
         h1.getRouter().addApplication(app);
         app.update(h1);
         app.disasterDataCreated(h1, data);
@@ -527,7 +610,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         Message newestMessage = new Message(h1, h3, "M5", 0, 0);
 
         // Install DB app on h1 for data messages.
-        DatabaseApplication app = new DatabaseApplication(ts);
+        DatabaseApplication app = new DatabaseApplication(this.ts);
         h1.getRouter().addApplication(app);
         app.update(h1);
 
@@ -586,7 +669,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
      */
     public void testNonDirectMessageChoosingPerMessage() {
         // Install DB app on h1 for data messages.
-        DatabaseApplication app = new DatabaseApplication(ts);
+        DatabaseApplication app = new DatabaseApplication(this.ts);
         h1.getRouter().addApplication(app);
         app.update(h1);
 
@@ -689,6 +772,53 @@ public class DisasterRouterTest extends AbstractRouterTest {
         Assert.assertFalse("Should not send to non-social neighbor with high power value.", this.mc.next());
     }
 
+    public void testRouterSwitchesToRescueModeOnLowEnergy() {
+        // Create message that will not be sent using utility chooser.
+        Message lowUtilityMessage = this.createMessageWithLowUtility();
+
+        // Check that's actually the case.
+        h1.connect(h2);
+        this.mc.reset();
+        h1.update(false);
+        Assert.assertFalse("Did not expect any additional message.", this.mc.next());
+
+        // Update h1's energy.
+        h1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, DisasterRouterTestUtils.POWER_THRESHOLD - 0.01);
+
+        // Check the message will now be sent, i.e. rescue mode was turned on.
+        h1.update(false);
+        this.checkTransferStart(h1, h2, lowUtilityMessage.getId());
+    }
+
+    public void testRouterExitsRescueModeOnHighEnergy() {
+        // Make router go into rescue mode.
+        h1.update(false);
+        h1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, DisasterRouterTestUtils.POWER_THRESHOLD - 0.01);
+        h1.update(false);
+
+        // Create message that will not be sent using utility chooser, but will be sent using rescue mode.
+        Message lowUtilityMessage = this.createMessageWithLowUtility();
+
+        // Check the message is sent right now.
+        h1.connect(h2);
+        this.mc.reset();
+        h1.update(false);
+        this.checkTransferStart(h1, h2, lowUtilityMessage.getId());
+
+        // Disconnect again.
+        disconnect(h1);
+        this.updateAllNodes();
+        this.mc.reset();
+
+        // Update h1's energy.
+        h1.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, DisasterRouterTestUtils.POWER_THRESHOLD);
+
+        // Check the message will now not be sent, i.e. utility mode was turned on.
+        h1.connect(h4);
+        h1.update(false);
+        Assert.assertFalse("Did not expect any additional message.", this.mc.next());
+    }
+
     /**
      * Checks that the cache handling non direct messages is recomputed in the correct interval.
      */
@@ -733,7 +863,6 @@ public class DisasterRouterTest extends AbstractRouterTest {
     /**
      * Checks that the cache handling non direct messages is recomputed once a new connection comes up.
      */
-    @Test
     public void testNonDirectMessagesAreRecomputedOnNewConnection() throws Exception {
         // Set the message ordering interval.
         ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
@@ -843,6 +972,23 @@ public class DisasterRouterTest extends AbstractRouterTest {
         h2.createNewMessage(largeMessage);
         assertFalse("Should have been able to delete the existing message.",
                 h2.getMessageCollection().contains(m1));
+    }
+
+    /**
+     * Creates a message between h1 and h3 known by h1 and h0.
+     * Due to its replications density, neither h0 nor h1 will sent it if they are using utility choosers.
+     * @return The created message.
+     */
+    private Message createMessageWithLowUtility() {
+        Message popularMessage = new Message(h1, h3, "M1", 0);
+        h1.createNewMessage(popularMessage);
+        h0.createNewMessage(popularMessage);
+        h1.connect(h0);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        disconnect(h0);
+        this.updateAllNodes();
+
+        return popularMessage;
     }
 
     /**

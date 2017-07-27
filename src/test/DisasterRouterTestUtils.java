@@ -1,5 +1,7 @@
 package test;
 
+import routing.DisasterRouter;
+import routing.choosers.RescueModeMessageChooser;
 import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
@@ -41,6 +43,7 @@ public final class DisasterRouterTestUtils {
     static final double ENCOUNTER_VALUE_WEIGHT = 0.1;
     static final double UTILITY_THRESHOLD = 0.2;
     static final double POWER_THRESHOLD = 0.1;
+    static final double SHORT_TIMESPAN_THRESHOLD = 30 * 60;
 
     /* Constants needed for buffer management. */
     public static final int HOP_THRESHOLD = 5;
@@ -54,6 +57,10 @@ public final class DisasterRouterTestUtils {
     }
 
     public static void addDisasterRouterSettings(TestSettings s) {
+        s.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+        s.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
+        s.restoreNameSpace();
+
         s.setNameSpace(DeliveryPredictabilityStorage.DELIVERY_PREDICTABILITY_STORAGE_NS);
         s.putSetting(DeliveryPredictabilityStorage.BETA_S, Double.toString(BETA));
         s.putSetting(DeliveryPredictabilityStorage.GAMMA_S, Double.toString(GAMMA));
@@ -85,6 +92,11 @@ public final class DisasterRouterTestUtils {
         s.putSetting(UtilityMessageChooser.ENCOUNTER_VALUE_WEIGHT, Double.toString(ENCOUNTER_VALUE_WEIGHT));
         s.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(UTILITY_THRESHOLD));
         s.putSetting(UtilityMessageChooser.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
+        s.restoreNameSpace();
+
+        s.setNameSpace(RescueModeMessageChooser.RESCUE_MODE_MESSAGE_CHOOSER_NS);
+        s.putSetting(RescueModeMessageChooser.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
+        s.putSetting(RescueModeMessageChooser.SHORT_TIMESPAN_THRESHOLD, Double.toString(SHORT_TIMESPAN_THRESHOLD));
         s.restoreNameSpace();
 
         DatabaseApplicationTest.addDatabaseApplicationSettings(s);

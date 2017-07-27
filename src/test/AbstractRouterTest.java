@@ -11,6 +11,7 @@ import core.Coord;
 import core.DTNHost;
 import core.MessageListener;
 import core.NetworkInterface;
+import core.Settings;
 import core.SimClock;
 import junit.framework.TestCase;
 import routing.MessageRouter;
@@ -22,7 +23,7 @@ import routing.MessageRouter;
 public abstract class AbstractRouterTest extends TestCase {
 	protected MessageChecker mc;
 	protected TestUtils utils;
-	protected static TestSettings ts = new TestSettings();
+	protected TestSettings ts = new TestSettings();
 
 	protected static final int BUFFER_SIZE = 100;
 	protected static final int TRANSMIT_SPEED = 10;
@@ -58,11 +59,11 @@ public abstract class AbstractRouterTest extends TestCase {
 		List<MessageListener> ml = new ArrayList<MessageListener>();
 		ml.add(mc);
 
-		ts.setNameSpace(TestUtils.IFACE_NS);
-		ts.putSetting(NetworkInterface.TRANSMIT_SPEED_S, ""+TRANSMIT_SPEED);
-		ts.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1");
+		this.ts.setNameSpace(TestUtils.IFACE_NS);
+		this.ts.putSetting(NetworkInterface.TRANSMIT_SPEED_S, ""+TRANSMIT_SPEED);
+		this.ts.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1");
 
-		this.utils = new TestUtils(null,ml,ts);
+		this.utils = new TestUtils(null,ml,this.ts);
 		this.utils.setMessageRouterProto(routerProto);
 		core.NetworkInterface.reset();
 		core.DTNHost.reset();
@@ -74,6 +75,16 @@ public abstract class AbstractRouterTest extends TestCase {
 		this.h5 = utils.createHost(c0, "h5");
 		this.h6 = utils.createHost(c0, "h6");
 	}
+
+    /**
+     * Tears down the fixture, for example, close a network connection.
+     * This method is called after a test is executed.
+     */
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        Settings.init(null);
+    }
 
 	protected void setRouterProto(MessageRouter r) {
 		this.routerProto = r;

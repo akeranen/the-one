@@ -253,15 +253,54 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             }
         }
 
+        // Then create data messages out of the data items.
+        return this.createDataMessagePrototypes(interestingData);
+    }
+
+    /**
+     * Creates database synchronization messages from existing useful data that has been modified recently.
+     *
+     * @param databaseOwner The DTNHost this instance of the application is attached to.
+     * @param maximumNumberSecondsSinceModification The maximum number of seconds since last modification.
+     * @return The created messages. They don't have a receiver yet, so {@link Message#getTo()} will return null.
+     */
+    public List<DataMessage> wrapRecentUsefulDataIntoMessages(
+            DTNHost databaseOwner, int maximumNumberSecondsSinceModification) {
+        // If we don't know who the application is attached to yet, use the new knowledge for initialization.
+        if (!this.isInitialized()) {
+            this.initialize(databaseOwner);
+        }
+
+        // Find all interesting data which has been modified recently.
+        List<Tuple<DisasterData, Double>> recentData = new ArrayList<>();
+        for (Tuple<DisasterData, Double> dataWithUtility :
+                this.database.getAllNonMapDataWithMinimumUtility(this.utilityThreshold)) {
+            if (SimClock.getTime() - dataWithUtility.getKey().getCreation() <= maximumNumberSecondsSinceModification) {
+                recentData.add(dataWithUtility);
+            }
+        }
+
+        // Then create data messages out of the data items.
+        return this.createDataMessagePrototypes(recentData);
+    }
+
+    /**
+     * Creates a {@link DataMessage} prototype out of every {@link #itemsPerMessage} data items, i.e. a data message
+     * without a receiver. The data items are sorted by utility to group them into messages.
+     *
+     * @param data The data to wrap.
+     * @return The created messages.
+     */
+    private List<DataMessage> createDataMessagePrototypes(List<Tuple<DisasterData, Double>> data) {
         // Sort data items by utility.
-        interestingData.sort(Comparator.comparingDouble(t -> (-1) * t.getValue()));
+        data.sort(Comparator.comparingDouble(t -> (-1) * t.getValue()));
 
         // Then create a message out of every x data items.
+        List<DataMessage> messages = new ArrayList<>(data.size());
         DTNHost unknownReceiver = null;
-        List<DataMessage> messages = new ArrayList<>(interestingData.size());
-        for (int i = 0; i < interestingData.size(); i += itemsPerMessage) {
-            int firstIndexNotToSent = Math.min(i + itemsPerMessage, interestingData.size());
-            List<Tuple<DisasterData, Double>> subsetToSent = interestingData.subList(i, firstIndexNotToSent);
+        for (int i = 0; i < data.size(); i += this.itemsPerMessage) {
+            int firstIndexNotToSent = Math.min(i + this.itemsPerMessage, data.size());
+            List<Tuple<DisasterData, Double>> subsetToSent = data.subList(i, firstIndexNotToSent);
             DataMessage message = new DataMessage(
                     this.host, unknownReceiver,
                     this.createMessageId(subsetToSent), subsetToSent,
@@ -269,8 +308,6 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             message.setAppID(APP_ID);
             messages.add(message);
         }
-
-        // And return all messages.
         return messages;
     }
 
@@ -427,5 +464,4 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
     public Map<DisasterData.DataType, Double> getRatioOfItemsPerDataType(){
         return database.getRatioOfItemsPerDataType();
     }
-
 }

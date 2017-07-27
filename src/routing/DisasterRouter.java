@@ -5,8 +5,9 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
+import core.SettingsError;
 import core.SimClock;
-import routing.choosers.EpidemicMessageChooser;
+import routing.choosers.RescueModeMessageChooser;
 import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.prioritizers.PrioritySorter;
@@ -30,6 +31,15 @@ import java.util.List;
  * Created by Britta Heymann on 19.05.2017.
  */
 public class DisasterRouter extends ActiveRouter {
+    /** Namespace for all general disaster router settings. */
+    public static final String DISASTER_ROUTER_NS = "DisasterRouter";
+
+    /**
+     * If the host's relative power is below this threshold, it will change into a rescue mode. -setting id ({@value}).
+     * In resuce mode, the host tries to save all its messages and recent data from deletion by sending them out.
+     */
+    public static final String POWER_THRESHOLD = "powerThreshold";
+
     /* Comparators to sort direct messages. */
     private Comparator<Message> directMessageComparator;
     private Comparator<Tuple<Message, Connection>> directMessageTupleComparator;
@@ -59,6 +69,12 @@ public class DisasterRouter extends ActiveRouter {
     private List<Tuple<Message, Connection>> cachedNonDirectMessages = new ArrayList<>();
 
     /**
+     * If the {@link DTNHost}'s relative power is below this threshold, it will change into a rescue mode in which
+     * it tries to save all its messages and recent data from deletion by sending them out.
+     */
+    private double powerThreshold;
+
+    /**
      * Initializes a new instance of the {@link DisasterRouter} class.
      * @param s Settings to use.
      */
@@ -78,6 +94,14 @@ public class DisasterRouter extends ActiveRouter {
         this.directMessageComparator = new PrioritySorter();
         this.directMessageTupleComparator = new PriorityTupleSorter();
         this.rankComparator = new DisasterBufferComparator(this);
+
+        // Read power threshold from settings.
+        s.setNameSpace(DISASTER_ROUTER_NS);
+        this.powerThreshold = s.getDouble(POWER_THRESHOLD);
+        if (this.powerThreshold < 0 || this.powerThreshold > 1) {
+            throw new SettingsError("Power threshold should be in [0, 1], but is " + this.powerThreshold + "!");
+        }
+        s.restoreNameSpace();
     }
 
     /**
@@ -99,6 +123,22 @@ public class DisasterRouter extends ActiveRouter {
         this.directMessageComparator = router.directMessageComparator;
         this.directMessageTupleComparator = router.directMessageTupleComparator;
         this.rankComparator = new DisasterBufferComparator(this);
+
+        // Copy power threshold.
+        this.powerThreshold = router.powerThreshold;
+    }
+
+    /**
+     * Checks if the router is a {@link DisasterRouter} and throws an {@link IllegalArgumentException} if it isn't.
+     * @param router Router to check
+     */
+    public static void checkRouterIsDisasterRouter(MessageRouter router) {
+        if (router == null) {
+            throw new IllegalArgumentException("Router is null!");
+        }
+        if (!(router instanceof DisasterRouter)) {
+            throw new IllegalArgumentException("Cannot handle routers of type " + router.getClass() + "!");
+        }
     }
 
     /**
@@ -172,6 +212,9 @@ public class DisasterRouter extends ActiveRouter {
     public void update() {
         super.update();
 
+        // Change strategies depending on remaining energy.
+        this.switchBetweenStrategiesDependingOnEnergy();
+
         // Update rating mechanisms.
         this.encounterValueManager.update();
         this.replicationsDensityManager.update();
@@ -189,6 +232,23 @@ public class DisasterRouter extends ActiveRouter {
 
         // If non are available, try to send other messages.
         this.tryOtherMessages();
+    }
+
+    /**
+     * Checks whether the current {@link #messageChooser} uses the correct strategy with reference to the
+     * {@link DTNHost}'s remaining power.
+     */
+    private void switchBetweenStrategiesDependingOnEnergy() {
+        boolean rescueModeRequired = this.remainingEnergyRatio() < this.powerThreshold;
+        boolean inRescueMode = this.messageChooser instanceof RescueModeMessageChooser;
+        if (rescueModeRequired && !inRescueMode) {
+            this.messageChooser = new RescueModeMessageChooser();
+            this.messageChooser.setAttachedHost(this.getHost());
+        }
+        if (!rescueModeRequired && inRescueMode) {
+            this.messageChooser = new UtilityMessageChooser(this);
+            this.messageChooser.setAttachedHost(this.getHost());
+        }
     }
 
     /**
@@ -345,5 +405,13 @@ public class DisasterRouter extends ActiveRouter {
         List<Message> messages = super.getSortedMessagesForConnected(connected);
         messages.sort(this.directMessageComparator);
         return messages;
+    }
+
+    /**
+     * Returns the power threshold.
+     * @return The power threshold.
+     */
+    public double getPowerThreshold() {
+        return this.powerThreshold;
     }
 }

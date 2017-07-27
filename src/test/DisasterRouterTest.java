@@ -124,6 +124,13 @@ public class DisasterRouterTest extends AbstractRouterTest {
         }
     }
 
+    public void testConstructorCanHandlePowerThresholdZero() {
+        this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+        this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(0D));
+        this.ts.restoreNameSpace();
+        new DisasterRouter(this.ts);
+    }
+
     public void testConstructorThrowsForPowerThresholdAbove1() {
         try {
             this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
@@ -136,6 +143,13 @@ public class DisasterRouterTest extends AbstractRouterTest {
             Assert.assertEquals("Expected different error.",
                     "Power threshold should be in [0, 1], but is " + VALUE_ABOVE_ONE + "!", e.getMessage());
         }
+    }
+
+    public void testConstructorCanHandlePowerThresholdOne() {
+        this.ts.setNameSpace(DisasterRouter.DISASTER_ROUTER_NS);
+        this.ts.putSetting(DisasterRouter.POWER_THRESHOLD, Double.toString(1D));
+        this.ts.restoreNameSpace();
+        new DisasterRouter(this.ts);
     }
 
     public void testGetPowerThreshold() {

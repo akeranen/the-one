@@ -21,8 +21,7 @@ UtilityMessageChooser.prophetPlusWeight = 0.5
 UtilityMessageChooser.rdWeight = 0.35
 UtilityMessageChooser.evWeight = 0.15
 UtilityMessageChooser.messageUtilityThreshold = 0.45
-# TODO: Comment in once implemented (v3)
-# UtilityMessageChooser.powerThreshold = 0.1
+UtilityMessageChooser.powerThreshold = 0.1
 
 # Parameters for prioritization
 DisasterPrioritization.headStartThreshold = 300

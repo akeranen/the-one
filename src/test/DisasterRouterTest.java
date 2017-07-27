@@ -516,7 +516,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         // Create messages to sort.
         DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
         Message usefulDataMessage = new DataMessage(
-                h1, h3, "D" + Arrays.asList(data).hashCode(), Collections.singleton(new Tuple<>(data, 0D)), 1);
+                h1, h3, "D" + Arrays.asList(data).hashCode(), Collections.singleton(new Tuple<>(data, 1D)), 0);
         Message highDeliveryPredictabilityMessage = new Message(h1, h4, "M1", 0, 0);
         Message lowReplicationsDensityMessage = new Message(h1, h3, "M2", 0, 0);
         Message highReplicationsDensityMessage = new Message(h1, h3, "M3", 0, 0);

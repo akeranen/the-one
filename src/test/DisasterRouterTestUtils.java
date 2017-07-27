@@ -40,6 +40,7 @@ public final class DisasterRouterTestUtils {
     static final double REPLICATIONS_DENSITY_WEIGHT = 0.25;
     static final double ENCOUNTER_VALUE_WEIGHT = 0.1;
     static final double UTILITY_THRESHOLD = 0.2;
+    static final double POWER_THRESHOLD = 0.1;
 
     /* Constants needed for buffer management. */
     public static final int HOP_THRESHOLD = 5;
@@ -75,7 +76,6 @@ public final class DisasterRouterTestUtils {
         s.putSetting(DisasterPrioritization.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DP_WEIGHT));
         s.restoreNameSpace();
 
-        DatabaseApplicationTest.addDatabaseApplicationSettings(s);
         s.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
         s.putSetting(
                 UtilityMessageChooser.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DELIVERY_PREDICTABILITY_WEIGHT));
@@ -84,7 +84,10 @@ public final class DisasterRouterTestUtils {
         s.putSetting(UtilityMessageChooser.REPLICATIONS_DENSITY_WEIGHT, Double.toString(REPLICATIONS_DENSITY_WEIGHT));
         s.putSetting(UtilityMessageChooser.ENCOUNTER_VALUE_WEIGHT, Double.toString(ENCOUNTER_VALUE_WEIGHT));
         s.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(UTILITY_THRESHOLD));
+        s.putSetting(UtilityMessageChooser.POWER_THRESHOLD, Double.toString(POWER_THRESHOLD));
         s.restoreNameSpace();
+
+        DatabaseApplicationTest.addDatabaseApplicationSettings(s);
 
         // Energy constants.
         s.putSetting(EnergyModel.INIT_ENERGY_S, "1");

@@ -11,8 +11,10 @@ import core.MulticastMessage;
 import core.SimClock;
 import org.junit.Assert;
 import org.junit.Test;
+import routing.ActiveRouter;
 import routing.DisasterRouter;
 import routing.MessageRouter;
+import routing.util.EnergyModel;
 import util.Tuple;
 
 import java.util.Arrays;
@@ -32,6 +34,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final double FIRST_MEETING_TIME = 4;
     private static final double SECOND_MEETING_TIME = 8;
     private static final double MESSAGE_DELETION_TIME = 200;
+    private static final double NON_ZERO_MESSAGE_ORDERING_INTERVAL = 2D;
+    private static final double TWELVE_WEEKS = 12 * 7 * 24 * 60 * 60D;
 
     /* Some priority values needed for tests. */
     private static final int PRIORITY = 5;
@@ -39,12 +43,18 @@ public class DisasterRouterTest extends AbstractRouterTest {
     private static final int HIGH_PRIORITY = 6;
     private static final int LOW_PRIORITY = 4;
 
+    /* Some coordinates needed for tests. */
+    private static final Coord FAR_AWAY_LOCATION = new Coord(5000, 10_000);
+
     /* Some constants needed for buffer management tests. */
     private static final double[] SECONDS_IN_BUFFER = { 20, 5, 60, 150, 200, 5 };
     private static final int[] HOP_COUNTS = { 2, 2, 10, 20, 1, 4 };
 
     /** Assumed replications densitiy if nothing is known about a message. */
     private static final double DEFAULT_REPLICATIONS_DENSITY = 0.5;
+
+    /** A value checked in a test. */
+    private static final double TWO_THIRDS = 2.0/3.0;
 
     private static final String EXPECTED_DIFFERENT_DELIVERY_PREDICTABILITY =
             "Expected different delivery predictability.";
@@ -114,6 +124,20 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 0, router.getEncounterValue(), DOUBLE_COMPARISON_DELTA);
     }
 
+    public void testEncounterValueRatioIsComputedCorrectly() {
+        // Make sure h2 has double the encounters of h1.
+        this.clock.setTime(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        h1.connect(h2);
+        h2.connect(h3);
+        this.updateAllNodes();
+
+        // Check encounter value ratio.
+        DisasterRouter router = (DisasterRouter)h1.getRouter();
+        Assert.assertEquals(
+                "Expected different encounter value ratio.",
+                TWO_THIRDS, router.computeEncounterValueRatio((DisasterRouter)h2.getRouter()),
+                DOUBLE_COMPARISON_DELTA);
+    }
     /**
      * Tests that the replications density is computed correctly if two nodes with the same message meet each other.
      */
@@ -490,10 +514,9 @@ public class DisasterRouterTest extends AbstractRouterTest {
      */
     public void testNonDirectMessageSorting() {
         // Create messages to sort.
-        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
-        Message vipDataMessages =
-                new DataMessage(h1, h3, "D1", Collections.singleton(new Tuple<>(data, 0D)), VERY_HIGH_PRIORITY);
-        Message usefulDataMessages = new DataMessage(h1, h3, "D2", Collections.singleton(new Tuple<>(data, 1D)), 0);
+        DisasterData data = new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        Message usefulDataMessage = new DataMessage(
+                h1, h3, "D" + Arrays.asList(data).hashCode(), Collections.singleton(new Tuple<>(data, 0D)), 1);
         Message highDeliveryPredictabilityMessage = new Message(h1, h4, "M1", 0, 0);
         Message lowReplicationsDensityMessage = new Message(h1, h3, "M2", 0, 0);
         Message highReplicationsDensityMessage = new Message(h1, h3, "M3", 0, 0);
@@ -503,23 +526,41 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.clock.advance(SHORT_TIME_SPAN);
         Message newestMessage = new Message(h1, h3, "M5", 0, 0);
 
-        // Make h1 know all of them.
+        // Install DB app on h1 for data messages.
+        DatabaseApplication app = new DatabaseApplication(ts);
+        h1.getRouter().addApplication(app);
+        app.update(h1);
+
+        // Make h1 know all messages.
         Message[] allMessages = {
-                vipDataMessages, usefulDataMessages, highDeliveryPredictabilityMessage, lowReplicationsDensityMessage,
+                usefulDataMessage, highDeliveryPredictabilityMessage, lowReplicationsDensityMessage,
                 highReplicationsDensityMessage, newMessage, newestMessage, vipMessage
         };
         for (Message m : allMessages) {
-            h1.createNewMessage(m);
+            if (!(m instanceof DataMessage)) {
+                h1.createNewMessage(m);
+            } else {
+                app.disasterDataCreated(h1, ((DataMessage)m).getData().get(0));
+            }
         }
 
         // Increase delivery predictability for message M1 by letting h2 meet its final recipient, h4.
         h2.connect(h4);
         disconnect(h4);
 
-        // Increase replications density for M3 by giving it to h5, then letting h1 notice that h5 has it.
+        // Increase replications density for M3 by giving it to h5, then letting h1 notice that h5 has it, but h4
+        // hasn't.
         h5.createNewMessage(highReplicationsDensityMessage);
         h1.connect(h5);
         disconnect(h5);
+        h1.connect(h4);
+        disconnect(h4);
+        this.updateAllNodes();
+
+        // Make sure h2 is more social than h1.
+        h2.connect(h6);
+        this.clock.advance(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        disconnect(h6);
         this.updateAllNodes();
 
         // Connect h1 to h2.
@@ -527,7 +568,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
 
         // Check order of messages.
         Message[] expectedOrder = {
-                vipDataMessages, newestMessage, newMessage, vipMessage, usefulDataMessages,
+                newestMessage, newMessage, vipMessage, usefulDataMessage,
                 highDeliveryPredictabilityMessage, lowReplicationsDensityMessage, highReplicationsDensityMessage
         };
         this.mc.reset();
@@ -538,6 +579,186 @@ public class DisasterRouterTest extends AbstractRouterTest {
             } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
             Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
         }
+    }
+
+    /**
+     * Tests that message choosing considers delivery predictability, replications density and utility (data messages).
+     */
+    public void testNonDirectMessageChoosingPerMessage() {
+        // Install DB app on h1 for data messages.
+        DatabaseApplication app = new DatabaseApplication(ts);
+        h1.getRouter().addApplication(app);
+        app.update(h1);
+
+        // Add data.
+        this.clock.advance(TWELVE_WEEKS);
+        h1.setLocation(FAR_AWAY_LOCATION);
+        DisasterData uselessData = new DisasterData(DisasterData.DataType.MARKER, 0, 0, new Coord(0, 0));
+        DisasterData usefulData =
+                new DisasterData(DisasterData.DataType.MARKER, 0, SimClock.getTime(), h1.getLocation());
+        app.disasterDataCreated(h1, uselessData);
+        app.disasterDataCreated(h1, usefulData);
+
+        // Add messages to buffer.
+        Message knownMessage = new Message(h1, h5, "M1", 0);
+        Message popularMessage = new Message(h1, h3, "M2", 0);
+        Message popularMessageWithHighDeliveryPred = new Message(h1, h4, "M3", 0);
+        Message unpopularMessage = new Message(h1, h6, "M4", 0);
+        h1.createNewMessage(knownMessage);
+        h1.createNewMessage(popularMessage);
+        h1.createNewMessage(popularMessageWithHighDeliveryPred);
+        h1.createNewMessage(unpopularMessage);
+
+        // Make sure h2 knows one of the messages.
+        h2.createNewMessage(knownMessage);
+
+        // Increase replications densities for M2 and M3 by giving it to h0, then letting h1 notice that h5 has it.
+        h0.createNewMessage(popularMessage);
+        h0.createNewMessage(popularMessageWithHighDeliveryPred);
+        h1.connect(h0);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        disconnect(h0);
+        this.updateAllNodes();
+
+        // Increase delivery predictability for message M3 by letting h2 meet its final recipient, h4.
+        h2.connect(h4);
+        disconnect(h4);
+
+        // Check which messages h1 sends to h2.
+        String[] expectedMessageIds = new String[] {
+                "D" + Arrays.asList(usefulData).hashCode(),
+                popularMessageWithHighDeliveryPred.getId(),
+                unpopularMessage.getId()
+        };
+        h1.connect(h2);
+        this.mc.reset();
+        for (String expectedMessageId : expectedMessageIds) {
+            h1.update(false);
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessageId, mc.getLastMsg().getId());
+        }
+        Assert.assertFalse("Did not expect any additional message.", this.mc.next());
+    }
+
+    /**
+     * Tests that message choosing considers a host's power and how social it is.
+     */
+    public void testNonDirectMessageChoosingPerConnection() {
+        // Make sure h1 has some encounters.
+        h1.connect(h5);
+        // Increase h2's and h3's encounter values by providing some encounters.
+        h2.connect(h5);
+        h3.connect(h5);
+        disconnect(h5);
+        this.clock.advance(DisasterRouterTestUtils.EV_WINDOW_LENGTH);
+        this.updateAllNodes();
+
+        // Make sure h2 has lower power.
+        h2.getComBus().updateProperty(EnergyModel.ENERGY_VALUE_ID, 0.1);
+
+        // Prepare message with medium replications density.
+        Message popularMessage = new Message(h1, h6, "M1", 0);
+        h1.createNewMessage(popularMessage);
+        h0.createNewMessage(popularMessage);
+        h1.connect(h0);
+        h1.connect(h5);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        disconnect(h1);
+        this.updateAllNodes();
+
+        // Check that we only send to the neighbor with high encounter value AND high power.
+        this.mc.reset();
+        h1.connect(h2);
+        this.updateAllNodes();
+        Assert.assertFalse("Should not send to social neighbor with low power value.", this.mc.next());
+        disconnect(h2);
+        this.updateAllNodes();
+
+        this.mc.reset();
+        h1.connect(h3);
+        this.updateAllNodes();
+        Assert.assertTrue("Should send to social neighbor with high power value.", this.mc.next());
+        disconnect(h3);
+        this.updateAllNodes();
+
+        this.mc.reset();
+        h1.connect(h4);
+        this.updateAllNodes();
+        Assert.assertFalse("Should not send to non-social neighbor with high power value.", this.mc.next());
+    }
+
+    /**
+     * Checks that the cache handling non direct messages is recomputed in the correct interval.
+     */
+    public void testNonDirectMessagesAreRecomputedInMessageOrderingInterval() throws Exception {
+        // Set the message ordering interval.
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+        this.setUp();
+
+        // Make sure host has a message.
+        Message m = new Message(h1, h0, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to other host to see that the message gets sent.
+        h1.connect(h2);
+        this.mc.reset();
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, m.getId());
+
+        // Create new message.
+        Message newMessage = new Message(h1, h0, "M2", 0);
+        h1.createNewMessage(newMessage);
+
+        // Advance time to shortly before the message ordering interval.
+        this.clock.advance(NON_ZERO_MESSAGE_ORDERING_INTERVAL - SHORT_TIME_SPAN);
+
+        // Make sure new message does not get send.
+        this.mc.reset();
+        // Skip all information about old message.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastMsg().equals(m));
+        Assert.assertFalse("Message should not have been sent yet.", this.mc.next());
+
+        // Advance to the message ordering interval.
+        this.clock.advance(SHORT_TIME_SPAN);
+
+        // Make sure message does get send now.
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, newMessage.getId());
+    }
+
+    /**
+     * Checks that the cache handling non direct messages is recomputed once a new connection comes up.
+     */
+    @Test
+    public void testNonDirectMessagesAreRecomputedOnNewConnection() throws Exception {
+        // Set the message ordering interval.
+        ts.putSetting(ActiveRouter.MESSAGE_ORDERING_INTERVAL_S, Double.toString(NON_ZERO_MESSAGE_ORDERING_INTERVAL));
+        this.setUp();
+
+        // Make sure host has a message.
+        Message m = new Message(h1, h0, "M1", 0);
+        h1.createNewMessage(m);
+
+        // Connect to other host to see that the message gets sent.
+        h1.connect(h2);
+        this.mc.reset();
+        this.updateAllNodes();
+        this.checkTransferStart(h1, h2, m.getId());
+
+        // Add new connection.
+        h1.connect(h3);
+
+        // Check that the message gets sent directly.
+        // Skip all information about old connection.
+        do {
+            this.updateAllNodes();
+        } while (this.mc.next() && this.mc.getLastTo().equals(h2));
+        Assert.assertEquals("Message should have been sent.", m.getId(), this.mc.getLastMsg().getId());
+        Assert.assertEquals("Message should have been sent to newly connected host.", h3, this.mc.getLastTo());
     }
 
     /**

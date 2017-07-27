@@ -5,7 +5,9 @@ import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.Settings;
+import core.SimClock;
 import routing.choosers.EpidemicMessageChooser;
+import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.prioritizers.PrioritySorter;
 import routing.prioritizers.PriorityTupleSorter;
@@ -16,8 +18,10 @@ import routing.util.EncounterValueManager;
 import routing.util.ReplicationsDensityManager;
 import util.Tuple;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -43,6 +47,18 @@ public class DisasterRouter extends ActiveRouter {
     private DeliveryPredictabilityStorage deliveryPredictabilityStorage;
 
     /**
+     * A cache for non-direct messages to all neighbors, sorted in the order in which they should be sent.
+     * The cache is recomputed every {@link #messageOrderingInterval} seconds or in the case that a new connection comes
+     * up. As soon as a connection breaks, the respective messages are removed from this cache.
+     *
+     * The introduction of this cache leads to higher memory usage, but more efficiency. It also has the downside that
+     * newly created or received messages are not directly sent to other hosts as they are not in the cache yet, while
+     * messages deleted from cache might still be sent. We can tolerate this as long as {@link #messageOrderingInterval}
+     * is not chosen too high.
+     */
+    private List<Tuple<Message, Connection>> cachedNonDirectMessages = new ArrayList<>();
+
+    /**
      * Initializes a new instance of the {@link DisasterRouter} class.
      * @param s Settings to use.
      */
@@ -53,6 +69,9 @@ public class DisasterRouter extends ActiveRouter {
         this.encounterValueManager = new EncounterValueManager();
         this.replicationsDensityManager = new ReplicationsDensityManager();
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage();
+
+        // Initialize message chooser.
+        this.messageChooser = new UtilityMessageChooser(this);
 
         // Initialize message orderers.
         this.messagePrioritizer = new DisasterPrioritizationStrategy(this);
@@ -71,6 +90,9 @@ public class DisasterRouter extends ActiveRouter {
         this.encounterValueManager = new EncounterValueManager(router.encounterValueManager);
         this.replicationsDensityManager = new ReplicationsDensityManager(router.replicationsDensityManager);
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(router.deliveryPredictabilityStorage);
+
+        // Copy message chooser.
+        this.messageChooser = router.messageChooser.replicate(this);
 
         // Copy message orderers.
         this.messagePrioritizer = router.messagePrioritizer.replicate(this);
@@ -91,7 +113,7 @@ public class DisasterRouter extends ActiveRouter {
         super.init(host, mListeners);
         this.deliveryPredictabilityStorage.setAttachedHost(host);
         this.messagePrioritizer.setAttachedHost(host);
-        this.messageChooser = new EpidemicMessageChooser(host);
+        this.messageChooser.setAttachedHost(host);
     }
 
     /**
@@ -130,6 +152,12 @@ public class DisasterRouter extends ActiveRouter {
                 DeliveryPredictabilityStorage.updatePredictabilitiesForBothHosts(
                         this.deliveryPredictabilityStorage, encounteredRouter.deliveryPredictabilityStorage);
             }
+
+            // Add messages to this new neighbor to message cache.
+            this.recomputeMessageCache();
+        } else {
+            // For broken connections, clean up message cache.
+            this.removeConnectionFromMessageCache(con);
         }
     }
 
@@ -177,10 +205,33 @@ public class DisasterRouter extends ActiveRouter {
      * Tries to send non-direct messages to connected hosts.
      */
     private void tryOtherMessages() {
+        if(SimClock.getTime() - this.lastMessageOrdering >= this.messageOrderingInterval){
+            this.recomputeMessageCache();
+        }
+        this.tryMessagesForConnected(this.cachedNonDirectMessages);
+    }
+
+    /**
+     * Recomputes messages that should be sent and the order in which they should be sent.
+     */
+    private void recomputeMessageCache() {
         Collection<Tuple<Message, Connection>> messages =
-                this.messageChooser.findOtherMessages(this.getMessageCollection(), this.getConnections());
-        List<Tuple<Message, Connection>> prioritizedMessages = this.messagePrioritizer.sortMessages(messages);
-        this.tryMessagesForConnected(prioritizedMessages);
+                this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
+        this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
+        this.lastMessageOrdering = SimClock.getTime();
+    }
+
+    /**
+     * Removes all message-connection pairs with the provided connection from {@link #cachedNonDirectMessages}.
+     * @param con Connection which should not get any messages anymore.
+     */
+    private void removeConnectionFromMessageCache(Connection con) {
+        Iterator<Tuple<Message,Connection>> it = this.cachedNonDirectMessages.listIterator();
+        while (it.hasNext()){
+            if (it.next().getValue().equals(con)){
+                it.remove();
+            }
+        }
     }
 
     /**
@@ -233,6 +284,18 @@ public class DisasterRouter extends ActiveRouter {
     protected Message removeFromMessages(String id) {
         this.replicationsDensityManager.removeMessage(id);
         return super.removeFromMessages(id);
+    }
+
+    /**
+     * Computes a ratio between the encounter value of this router and the one of the provided router.
+     * A ratio less than 0.5 signifies that the other host is less social than this one, a
+     * ratio higher than 0.5 signifies the opposite.
+     *
+     * @param otherRouter The router to compare this router to.
+     * @return A ratio between 0 and 1.
+     */
+    public double computeEncounterValueRatio(DisasterRouter otherRouter) {
+        return this.encounterValueManager.computeEncounterValueRatio(otherRouter.getEncounterValue());
     }
 
     /**

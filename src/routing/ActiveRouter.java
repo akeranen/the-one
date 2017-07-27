@@ -55,14 +55,42 @@ public abstract class ActiveRouter extends MessageRouter {
 	private MessageTransferAcceptPolicy policy;
 	private EnergyModel energy;
 
-	/** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
-	private double lastMessageOrdering = Double.NEGATIVE_INFINITY;
-	/** Ordered messages which are not final deliveries */
-    private List<Message> cachedMessages = new ArrayList<>();
-    /** When the messages (not for final delivery) were last ordered, initially Double.NEGATIVE_INFINITY */
-    private double lastMessageOrderingForConnected = Double.NEGATIVE_INFINITY;
-    /** Ordered messages which are final deliveries */
-    private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
+	/**
+	 * When the messages (not for final delivery) were last recomputed and ordered, initially
+	 * {@link Double#NEGATIVE_INFINITY}.
+	 */
+	protected double lastMessageOrdering = Double.NEGATIVE_INFINITY;
+	/**
+	 * A cache for non-direct messages, sorted in the order in which they should be sent.
+	 * The cache is recomputed every {@link #messageOrderingInterval} seconds.
+	 *
+	 * The introduction of this cache leads to higher memory usage, but more efficiency. It also has the downside that
+	 * newly created or received messages are not directly sent to other hosts as they are not in the cache yet, while
+	 * messages deleted from cache might still be sent. We can tolerate this as long as {@link #messageOrderingInterval}
+	 * is not chosen too high.
+	 */
+	private List<Message> cachedMessages = new ArrayList<>();
+	/**
+	 * When the messages (for final delivery) were last recomputed and ordered, initially
+	 * {@link Double#NEGATIVE_INFINITY}.
+	 */
+	private double lastMessageOrderingForConnected = Double.NEGATIVE_INFINITY;
+	/**
+	 * A cache for direct messages to all neighbors, sorted in the order in which they should be sent.
+	 * The cache is recomputed every {@link #messageOrderingInterval} seconds.
+	 * As soon as a connection breaks, the respective messages are removed from this cache.
+	 *
+	 * If a new connection comes up, the cache is not recomputed automatically; however, note that exchanging
+	 * deliverable messages is tried in both directions, and we only have a cache in one direction
+	 * (see {@link #exchangeDeliverableMessages()}, {@link #getSortedMessagesForConnected()} and
+	 * {@link #requestDeliverableMessages(Connection)}. Therefore, we still send deliverable messages to new connections.
+	 *
+	 * The introduction of this cache leads to higher memory usage, but more efficiency. It also has the downside that
+	 * newly created or received messages are not directly sent to other hosts as they are not in the cache yet, while
+	 * messages deleted from cache might still be sent. We can tolerate this as long as {@link #messageOrderingInterval}
+	 * is not chosen too high.
+	 */
+	private List<Tuple<Message, Connection>> cachedMessagesForConnected = new ArrayList<>();
 
 	/**
 	 * Constructor. Creates a new message router based on the settings in

@@ -45,7 +45,7 @@ public final class DatabaseApplicationUtil {
      * @param connections Connections to find data messages for.
      * @return The created messages and the connection they should be sent over.
      */
-    public static List<Tuple<Message, Connection>> createDataMessages(
+    public static List<Tuple<Message, Connection>> wrapUsefulDataIntoMessages(
             MessageRouter router, DTNHost host, List<Connection> connections) {
         // First find out if we even have a database application.
         DatabaseApplication application = DatabaseApplicationUtil.findDatabaseApplication(router);
@@ -54,7 +54,7 @@ public final class DatabaseApplicationUtil {
         }
 
         // Then fetch prototypes of the important messages ...
-        List<DataMessage> messagePrototypes = application.createDataMessages(host);
+        List<DataMessage> messagePrototypes = application.wrapUsefulDataIntoMessages(host);
 
         // ... and create real instances for each of them:
         List<Tuple<Message, Connection>> messages = new ArrayList<>(messagePrototypes.size() * connections.size());

@@ -28,8 +28,9 @@ public class TestUtils {
 	private List<DTNHost> allHosts;
 	private MessageRouter mr;
 
-	private ModuleCommunicationBus comBus;
 	private TestSettings settings;
+
+	private double transmitRange;
 
 	public static String IFACE_NS = "interface";
 
@@ -46,8 +47,6 @@ public class TestUtils {
 		this.allHosts = new ArrayList<DTNHost>();
 		this.settings = settings;
 		this.mr = new PassiveRouter(settings);
-
-		this.comBus = new ModuleCommunicationBus();
 	}
 
 	public void setMessageRouterProto(MessageRouter mr) {
@@ -79,7 +78,7 @@ public class TestUtils {
 	 * @param transmitRange the transmitRange to set
 	 */
 	public void setTransmitRange(double transmitRange) {
-		this.comBus.updateProperty(NetworkInterface.RANGE_ID, transmitRange);
+		this.transmitRange = transmitRange;
 	}
 
 	/**
@@ -110,6 +109,8 @@ public class TestUtils {
 		ni.setClisteners(conListeners);
 		List<NetworkInterface> li = new ArrayList<NetworkInterface>();
 		li.add(ni);
+		ModuleCommunicationBus comBus = new ModuleCommunicationBus();
+		comBus.updateProperty(NetworkInterface.RANGE_ID, this.transmitRange);
 		DTNHost host = new DTNHost(msgListeners, null, groupId,
 				li, comBus, mmProto, mr);
 		if (name != null) {

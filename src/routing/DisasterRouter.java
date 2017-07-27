@@ -7,7 +7,6 @@ import core.MessageListener;
 import core.Settings;
 import core.SettingsError;
 import core.SimClock;
-import routing.choosers.EpidemicMessageChooser;
 import routing.choosers.RescueModeMessageChooser;
 import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;

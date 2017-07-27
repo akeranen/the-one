@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import routing.MessageChoosingStrategy;
 import routing.MessageRouter;
-import routing.choosers.UtilityMessageChooser;
 import routing.util.DatabaseApplicationUtil;
 import util.Tuple;
 
@@ -32,6 +31,7 @@ import java.util.List;
 public abstract class AbstractMessageChoosingStrategyTest {
     /** Some values needed in tests. */
     protected static final int TWO_MESSAGES = 2;
+    protected static final double SMALL_POWER_DIFFERENCE = 0.01;
 
     /** Error messages. */
     protected static final String UNEXPECTED_NUMBER_OF_CHOSEN_MESSAGES =

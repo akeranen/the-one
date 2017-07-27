@@ -38,7 +38,6 @@ public class UtilityMessageChooserTest extends AbstractMessageChoosingStrategyTe
     private static final double MEDIUM_REPLICATIONS_DENSITY = 0.5;
     private static final double MEDIUM_ENERGY_VALUE = 0.5;
     private static final int ONE_HUNDRED_HOSTS = 100;
-    private static final double SMALL_POWER_DIFFERENCE = 0.01;
 
     /* Error messages. */
     private static final String UNEXPECTED_WEIGHT = "Expected different weight.";

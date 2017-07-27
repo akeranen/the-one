@@ -106,7 +106,7 @@ public class EncounterValueManager extends AbstractIntervalRatingMechanism {
 
     /**
      * Computes a ratio between the encounter value managed by this instance and the provided encounter value.
-     * A ratio less than 0.5 signifies that the other host is more social than the one this manager is attached to, a
+     * A ratio less than 0.5 signifies that the other host is less social than the one this manager is attached to, a
      * ratio higher than 0.5 signifies the opposite.
      *
      * @param otherEncounterValue The encounter value to compare the managed encounter value to.

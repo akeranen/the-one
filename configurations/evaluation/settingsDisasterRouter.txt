@@ -15,13 +15,13 @@ EncounterValue.windowLength = 120
 ReplicationsDensity.windowLength = 120
 
 # Parameters for message choosing
-# ! TODO: Uncommented this once message choosing is implemented !
-# UtilityMessageChooser.dpWeight = 0.95
-# UtilityMessageChooser.powerWeight = 0.05
-# UtilityMessageChooser.prophetPlusWeight = 0.65
-# UtilityMessageChooser.rdWeight = 0.25
-# UtilityMessageChooser.evWeight = 0.1
-# UtilityMessageChooser.messageUtilityThreshold = 0.45
+UtilityMessageChooser.dpWeight = 0.9
+UtilityMessageChooser.powerWeight = 0.1
+UtilityMessageChooser.prophetPlusWeight = 0.5
+UtilityMessageChooser.rdWeight = 0.35
+UtilityMessageChooser.evWeight = 0.15
+UtilityMessageChooser.messageUtilityThreshold = 0.45
+# TODO: Comment in once implemented (v3)
 # UtilityMessageChooser.powerThreshold = 0.1
 
 # Parameters for prioritization

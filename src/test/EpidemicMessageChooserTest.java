@@ -63,7 +63,8 @@ public class EpidemicMessageChooserTest {
         this.attachedHost.update(true);
 
         // Create message chooser.
-        this.messageChooser = new EpidemicMessageChooser(this.attachedHost);
+        this.messageChooser = new EpidemicMessageChooser();
+        this.messageChooser.setAttachedHost(this.attachedHost);
     }
 
     @After
@@ -155,13 +156,13 @@ public class EpidemicMessageChooserTest {
     }
 
     /**
-     * Calls {@link routing.MessageChoosingStrategy#findOtherMessages(Collection, List)} on the
+     * Calls {@link routing.MessageChoosingStrategy#chooseNonDirectMessages(Collection, List)} on the
      * {@link EpidemicMessageChooser}.
      *
      * @return The returned message-connection tuples.
      */
     private Collection<Tuple<Message, Connection>> chooseMessages() {
-        return this.messageChooser.findOtherMessages(
+        return this.messageChooser.chooseNonDirectMessages(
                 this.attachedHost.getMessageCollection(), this.attachedHost.getConnections());
     }
 

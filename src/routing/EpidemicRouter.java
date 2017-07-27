@@ -143,7 +143,7 @@ public class EpidemicRouter extends ActiveRouter {
         }
 
         // Else return current data messages from relevant existing data.
-        return dbApp.createDataMessages(this.getHost());
+        return dbApp.wrapUsefulDataIntoMessages(this.getHost());
     }
 
 	@Override

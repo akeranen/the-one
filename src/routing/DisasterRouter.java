@@ -7,6 +7,7 @@ import core.MessageListener;
 import core.Settings;
 import core.SimClock;
 import routing.choosers.EpidemicMessageChooser;
+import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.prioritizers.PrioritySorter;
 import routing.prioritizers.PriorityTupleSorter;
@@ -65,6 +66,9 @@ public class DisasterRouter extends ActiveRouter {
         this.replicationsDensityManager = new ReplicationsDensityManager();
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage();
 
+        // Initialize message chooser.
+        this.messageChooser = new UtilityMessageChooser(this);
+
         // Initialize message orderers.
         this.messagePrioritizer = new DisasterPrioritizationStrategy(this);
         this.directMessageComparator = new PrioritySorter();
@@ -81,6 +85,9 @@ public class DisasterRouter extends ActiveRouter {
         this.encounterValueManager = new EncounterValueManager(router.encounterValueManager);
         this.replicationsDensityManager = new ReplicationsDensityManager(router.replicationsDensityManager);
         this.deliveryPredictabilityStorage = new DeliveryPredictabilityStorage(router.deliveryPredictabilityStorage);
+
+        // Copy message chooser.
+        this.messageChooser = router.messageChooser.replicate(this);
 
         // Copy message orderers.
         this.messagePrioritizer = router.messagePrioritizer.replicate(this);
@@ -100,7 +107,7 @@ public class DisasterRouter extends ActiveRouter {
         super.init(host, mListeners);
         this.deliveryPredictabilityStorage.setAttachedHost(host);
         this.messagePrioritizer.setAttachedHost(host);
-        this.messageChooser = new EpidemicMessageChooser(host);
+        this.messageChooser.setAttachedHost(host);
     }
 
     /**
@@ -203,7 +210,7 @@ public class DisasterRouter extends ActiveRouter {
      */
     private void recomputeMessageCache() {
         Collection<Tuple<Message, Connection>> messages =
-                this.messageChooser.findOtherMessages(this.getMessageCollection(), this.getConnections());
+                this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
         this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
         this.lastMessageOrdering = SimClock.getTime();
     }
@@ -244,6 +251,18 @@ public class DisasterRouter extends ActiveRouter {
     protected Message removeFromMessages(String id) {
         this.replicationsDensityManager.removeMessage(id);
         return super.removeFromMessages(id);
+    }
+
+    /**
+     * Computes a ratio between the encounter value of this router and the one of the provided router.
+     * A ratio less than 0.5 signifies that the other host is less social than this one, a
+     * ratio higher than 0.5 signifies the opposite.
+     *
+     * @param otherRouter The router to compare this router to.
+     * @return A ratio between 0 and 1.
+     */
+    public double computeEncounterValueRatio(DisasterRouter otherRouter) {
+        return this.encounterValueManager.computeEncounterValueRatio(otherRouter.getEncounterValue());
     }
 
     /**

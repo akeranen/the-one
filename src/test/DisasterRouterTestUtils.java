@@ -1,9 +1,11 @@
 package test;
 
+import routing.choosers.UtilityMessageChooser;
 import routing.prioritizers.DisasterPrioritization;
 import routing.prioritizers.DisasterPrioritizationStrategy;
 import routing.util.DeliveryPredictabilityStorage;
 import routing.util.EncounterValueManager;
+import routing.util.EnergyModel;
 import routing.util.ReplicationsDensityManager;
 
 /**
@@ -29,6 +31,14 @@ public final class DisasterRouterTestUtils {
     public static final double HEAD_START_THRESHOLD = 30.4;
     public static final int PRIORITY_THRESHOLD = 4;
     public static final double DP_WEIGHT = 0.8;
+
+    /* Constants needed for message choosing. */
+    static final double DELIVERY_PREDICTABILITY_WEIGHT = 0.95;
+    static final double POWER_WEIGHT = 0.05;
+    static final double PROPHET_PLUS_WEIGHT = 0.65;
+    static final double REPLICATIONS_DENSITY_WEIGHT = 0.25;
+    static final double ENCOUNTER_VALUE_WEIGHT = 0.1;
+    static final double UTILITY_THRESHOLD = 0.2;
 
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
@@ -61,5 +71,21 @@ public final class DisasterRouterTestUtils {
         s.restoreNameSpace();
 
         DatabaseApplicationTest.addDatabaseApplicationSettings(s);
+        s.setNameSpace(UtilityMessageChooser.UTILITY_MESSAGE_CHOOSER_NS);
+        s.putSetting(
+                UtilityMessageChooser.DELIVERY_PREDICTABILITY_WEIGHT, Double.toString(DELIVERY_PREDICTABILITY_WEIGHT));
+        s.putSetting(UtilityMessageChooser.POWER_WEIGHT, Double.toString(POWER_WEIGHT));
+        s.putSetting(UtilityMessageChooser.PROPHET_PLUS_WEIGHT, Double.toString(PROPHET_PLUS_WEIGHT));
+        s.putSetting(UtilityMessageChooser.REPLICATIONS_DENSITY_WEIGHT, Double.toString(REPLICATIONS_DENSITY_WEIGHT));
+        s.putSetting(UtilityMessageChooser.ENCOUNTER_VALUE_WEIGHT, Double.toString(ENCOUNTER_VALUE_WEIGHT));
+        s.putSetting(UtilityMessageChooser.UTILITY_THRESHOLD, Double.toString(UTILITY_THRESHOLD));
+        s.restoreNameSpace();
+
+        // Energy constants.
+        s.putSetting(EnergyModel.INIT_ENERGY_S, "1");
+        s.putSetting(EnergyModel.SCAN_ENERGY_S, "0");
+        s.putSetting(EnergyModel.TRANSMIT_ENERGY_S, "0");
+        s.putSetting(EnergyModel.WARMUP_S, "0");
+        s.putSetting(EnergyModel.SCAN_RSP_ENERGY_S, "0");
     }
 }

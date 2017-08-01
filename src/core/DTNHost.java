@@ -6,6 +6,7 @@ package core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import movement.MovementModel;
@@ -34,6 +35,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	private List<MessageListener> msgListeners;
 	private List<MovementListener> movListeners;
 	private List<NetworkInterface> net;
+	private List<Connection> allConnections;
 	private ModuleCommunicationBus comBus;
 
 	static {
@@ -60,6 +62,7 @@ public class DTNHost implements Comparable<DTNHost> {
 		this.address = getNextAddress();
 		this.name = groupId+address;
 		this.net = new ArrayList<NetworkInterface>();
+		this.allConnections = new ArrayList<Connection>();
 
 		for (NetworkInterface i : interf) {
 			NetworkInterface ni = i.replicate();
@@ -165,25 +168,21 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param con  The connection object whose state changed
 	 */
 	public void connectionUp(Connection con) {
+		this.allConnections.add(con);
 		this.router.changedConnection(con);
 	}
 
 	public void connectionDown(Connection con) {
+		this.allConnections.remove(con);
 		this.router.changedConnection(con);
 	}
 
 	/**
-	 * Returns a copy of the list of connections this host has with other hosts
-	 * @return a copy of the list of connections this host has with other hosts
+	 * Returns an immutable list of connections this host has with other hosts
+	 * @return an immutable list of connections this host has with other hosts
 	 */
 	public List<Connection> getConnections() {
-		List<Connection> lc = new ArrayList<Connection>();
-
-		for (NetworkInterface i : net) {
-			lc.addAll(i.getConnections());
-		}
-
-		return lc;
+		return Collections.unmodifiableList(allConnections);
 	}
 
 	/**

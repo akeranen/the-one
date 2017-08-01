@@ -329,13 +329,11 @@ public abstract class MessageRouter {
 	 * than zero if the other node should try later (e.g. TRY_LATER_BUSY).
 	 */
 	public int receiveMessage(Message m, DTNHost from) {
-		Message newMessage = m.replicate();
-
-		this.putToIncomingBuffer(newMessage, from);
-		newMessage.addNodeOnPath(this.host);
+		this.putToIncomingBuffer(m, from);
+		m.addNodeOnPath(this.host);
 
 		for (MessageListener ml : this.mListeners) {
-			ml.messageTransferStarted(newMessage, from, getHost());
+			ml.messageTransferStarted(m, from, getHost());
 		}
 
 		return RCV_OK; // superclass always accepts messages

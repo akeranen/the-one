@@ -1,5 +1,10 @@
 package core;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+
 /**
  * Message which should be delivered to a certain group of nodes
  *
@@ -11,6 +16,11 @@ public class MulticastMessage extends Message {
      * the group this message is dedicated to
      */
     private Group group;
+
+    /**
+     * Recipients that have been reached on this message copy's path.
+     */
+    private HashSet<Integer> reachedRecipients = new HashSet<>();
 
     /**
      * Creates a new Message.
@@ -42,6 +52,7 @@ public class MulticastMessage extends Message {
                     " but host "+ from + " is not " + to);
         }
         this.group = to;
+        this.reachedRecipients.add(from.getAddress());
     }
 
     /**
@@ -64,6 +75,21 @@ public class MulticastMessage extends Message {
     }
 
     /**
+     * Gets the addresses of all group members that haven't been passed on this message copy's path so far.
+     *
+     * @return Addresses of all group members that haven't been reached so far.
+     */
+    public Collection<Integer> getRemainingRecipients() {
+        List<Integer> remainingRecipients = new ArrayList<>();
+        for (Integer address : this.group.getMembers()) {
+            if (!this.reachedRecipients.contains(address)) {
+                remainingRecipients.add(address);
+            }
+        }
+        return remainingRecipients;
+    }
+
+    /**
      * Determines whether the provided node is a final recipient of the message.
      * @param host Node to check.
      * @return Whether the node is a final recipient of the message.
@@ -80,7 +106,33 @@ public class MulticastMessage extends Message {
      */
     @Override
     public boolean completesDelivery(DTNHost receiver) {
-        return false;
+        // Check whether all hosts have already been reached.
+        int groupSize = this.group.getMembers().length;
+        if (this.reachedRecipients.size() == groupSize) {
+            return true;
+        }
+
+        // Then check if only the current receiver is missing.
+        return this.reachedRecipients.size() == groupSize - 1
+                && this.isFinalRecipient(receiver)
+                && !this.reachedRecipients.contains(receiver.getAddress());
+    }
+
+    /**
+     * Adds a new node on the list of nodes this message has passed
+     *
+     * @param node The node to add
+     */
+    @Override
+    public void addNodeOnPath(DTNHost node) {
+        super.addNodeOnPath(node);
+
+        // Only add a reached recipient if we are not in initialization.
+        // We cannot add reached recipients in initialization because the necessary fields are not yet set. However,
+        // adding the single host this message was created by is handled in constructor.
+        if (this.reachedRecipients != null && this.isFinalRecipient(node)) {
+            this.reachedRecipients.add(node.getAddress());
+        }
     }
 
     /**
@@ -111,6 +163,7 @@ public class MulticastMessage extends Message {
     public void copyFrom(MulticastMessage m){
         super.copyFrom(m);
         this.group = m.group;
+        this.reachedRecipients = new HashSet<>(m.reachedRecipients);
     }
 
     /**

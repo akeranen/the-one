@@ -44,7 +44,7 @@ my %msgToCurrCount = ();
 my %msgToCurrTimeIdx = ();
 
 # Matches a message line.
-my $messageLineMatcher = '^(\d+) \D+(\d+) (\d+)$';
+my $messageLineMatcher = '^(\d+) (\D+\d+) (\d+)$';
 # Matches the last report line, i.e. the total simulation time.
 my $simTimeLineMatcher = '^(\d+)$';
 

@@ -973,6 +973,96 @@ public class DisasterRouterTest extends AbstractRouterTest {
         assertFalse("Should have been able to delete the existing message.",
                 h2.getMessageCollection().contains(m1));
     }
+    
+    public void testMessagesAreAddedToHistory() {
+    	// Start sending a message.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.updateAllNodes();
+        
+        // Check the transfer started.
+        this.mc.next();
+        this.checkTransferStart(h2, h3, m1.getId());
+        
+        // Finish sending the message.
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        assertTrue("Message should have been added to the history!", 
+        		((DisasterRouter)h2.getRouter()).historyContainsMessageAndHost(m1, h3));
+    }
+    
+    public void testHistoryAcceptsOnlyALimitedNumberOfMessages() {
+    	// Start sending a message.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.updateAllNodes();
+
+        // Create as many messages as the history can contain
+        for (int i=0; i<((DisasterRouter)h2.getRouter()).getMessageNotSentTwiceCount() - 1; i++ ) {
+            this.clock.advance(1);
+            this.updateAllNodes();
+            h2.createNewMessage(new Message(h2, h3, "M" + (i+2), 1));
+        }
+        
+        // Check M1 is still contained
+        this.clock.advance(1);
+        this.updateAllNodes();
+        assertTrue("Message should still be contained in the history!", 
+        		((DisasterRouter)h2.getRouter()).historyContainsMessageAndHost(m1, h3));
+        
+        // Add one more message
+        h2.createNewMessage(new Message(h2, h3, "LastMessage", 1));
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        // Check M1 is not contained
+        assertFalse("Message should not be contained in the history any more!", 
+        		((DisasterRouter)h2.getRouter()).historyContainsMessageAndHost(m1, h3));
+    }
+    
+    public void testMessagesAreNotSentTwice() {
+    	
+    	this.mc.reset();
+    	// Send message M1
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        // Send message M2
+        Message m2 = new Message(h2, h3, "M2", 1);
+        h2.createNewMessage(m2);
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        // Try to send message M1 again
+        h2.createNewMessage(m1);
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        // Check last message
+        do {
+            // Nothing, progress is made in the while condition!
+        } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
+        
+        assertTrue("Expected message is M1!", this.mc.getLastMsg().getId().equals(m1.getId()));
+        
+        do {
+        	// Nothing, progress is made in the while condition!
+        } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
+        
+        assertTrue("Expected message is M2!", this.mc.getLastMsg().getId().equals(m2.getId()));
+        
+        do {
+        	// Nothing, progress is made in the while condition!
+        } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
+        
+        assertTrue("Expected message is M2!", this.mc.getLastMsg().getId().equals(m2.getId()));
+    }
 
     /**
      * Creates a message between h1 and h3 known by h1 and h0.

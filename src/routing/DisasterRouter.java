@@ -73,7 +73,17 @@ public class DisasterRouter extends ActiveRouter {
      * it tries to save all its messages and recent data from deletion by sending them out.
      */
     private double powerThreshold;
-
+    
+    /**
+     * Number of tuples of messages/hosts which are remembered, such that they are not sent again
+     */
+    private static final int messageNotSentTwiceCount = 1000;
+    
+    /**
+     * List storing the last x message IDs and host IDs that are not sent again. The size of the list is resticted to {@link #messageNotSentTwiceCount}. 
+     */
+    private List<Tuple<String, Integer>> messageSentToHostHistory = new ArrayList<>();
+    
     /**
      * Initializes a new instance of the {@link DisasterRouter} class.
      * @param s Settings to use.
@@ -251,6 +261,32 @@ public class DisasterRouter extends ActiveRouter {
         }
     }
 
+	/**
+	 * Tries to send messages for the connections that are mentioned
+	 * in the tuples in the order they are in the list until one of
+	 * the connections starts transferring or all tuples have been tried.
+	 * @param tuples The tuples to try
+	 * @return The tuple whose connection accepted the message or null if
+	 * none of the connections accepted the message that was meant for them.
+	 */
+    @Override
+	protected Tuple<Message, Connection> tryMessagesForConnected(
+			List<Tuple<Message, Connection>> tuples) {
+		if (tuples.isEmpty()) {
+			return null;
+		}
+
+		for (Tuple<Message, Connection> t : tuples) {
+			if (startTransfer(t.getKey(), t.getValue()) == RCV_OK) {
+				//add IDs to history
+				addMessageAndHostToHistory(t.getKey(), t.getValue().getOtherNode(this.getHost()));
+				return t;
+			}
+		}
+
+		return null;
+	}
+	
     /**
      * Checks whether this router has anything to send out.
      *
@@ -345,7 +381,48 @@ public class DisasterRouter extends ActiveRouter {
         this.replicationsDensityManager.removeMessage(id);
         return super.removeFromMessages(id);
     }
+    
+    /**
+     * Adds a message / host pair to the message history. Also deletes one if the list has reached its maximum size
+     * @param m Message to be added
+     * @param h Host to be added
+     */
+    private void addMessageAndHostToHistory(Message m, DTNHost h) {
+    	Tuple<String, Integer> t = new Tuple<>(m.getId(), h.getAddress());
+    	
+    	if (this.messageSentToHostHistory.size() < this.messageNotSentTwiceCount) {
+    		this.messageSentToHostHistory.add(0, t);
+    	}
+    	else if (this.messageSentToHostHistory.size() == this.messageNotSentTwiceCount) {
+    		this.messageSentToHostHistory.remove(this.messageNotSentTwiceCount - 1);
+    		this.messageSentToHostHistory.add(0, t);
+    	}
+    	else {
+    		throw new Error("In the message history of host " + this.getHost().getAddress() + ", there are more "
+    				+ "messages than expected!");
+    	}
+    }
+    
+    /**
+     * Returns true if the current message history contains a pair of message and host
+     * @param m Message that might be contained
+     * @param h Host that might me contained 
+     * @return True if the current message history contains a pair of m and h
+     */
+    public boolean historyContainsMessageAndHost(Message m, DTNHost h) {
+    	String messageID = m.getId();
+    	Integer hostID = h.getAddress();
+    	
+    	for (Tuple<String, Integer> t : messageSentToHostHistory) {
+    		if (t.getValue().equals(hostID) && t.getKey().equals(messageID)) {
+    			return true;
+    		}
+    	}
 
+    	return false;
+    }
+
+    
     /**
      * Computes a ratio between the encounter value of this router and the one of the provided router.
      * A ratio less than 0.5 signifies that the other host is less social than this one, a
@@ -403,6 +480,14 @@ public class DisasterRouter extends ActiveRouter {
     @Override
     protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
         List<Message> messages = super.getSortedMessagesForConnected(connected);
+        
+        // remove messages that already occur in the message history
+        for (Message m : messages) {
+        	Tuple<String, Integer> t = new Tuple<>(m.getId(), connected.getAddress());
+        	if (messageSentToHostHistory.contains(t)) {
+        		messages.remove(m);
+        	}
+        }
         messages.sort(this.directMessageComparator);
         return messages;
     }
@@ -413,5 +498,13 @@ public class DisasterRouter extends ActiveRouter {
      */
     public double getPowerThreshold() {
         return this.powerThreshold;
+    }
+    
+    public List<Tuple<String, Integer>> getMessageSentToHostHistory() {
+    	return messageSentToHostHistory;
+    }
+    
+    public int getMessageNotSentTwiceCount() {
+    	return messageNotSentTwiceCount;
     }
 }

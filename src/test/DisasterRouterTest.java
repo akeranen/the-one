@@ -1001,7 +1001,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.updateAllNodes();
 
         // Create as many messages as the history can contain
-        for (int i=0; i<((DisasterRouter)h2.getRouter()).getMessageHistorySize() - 1; i++ ) {
+        for (int i=0; i<DisasterRouter.getMessageHistorySize() - 1; i++ ) {
             this.clock.advance(1);
             this.updateAllNodes();
             h2.createNewMessage(new Message(h2, h3, "M" + (i+2), 1));

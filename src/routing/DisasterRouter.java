@@ -504,7 +504,7 @@ public class DisasterRouter extends ActiveRouter {
     	return messageSentToHostHistory;
     }
     
-    public int getMessageHistorySize() {
+    public static int getMessageHistorySize() {
     	return MESSAGE_HISTORY_SIZE;
     }
 }

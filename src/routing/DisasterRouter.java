@@ -77,7 +77,7 @@ public class DisasterRouter extends ActiveRouter {
     /**
      * Number of tuples of messages/hosts which are remembered, such that they are not sent again
      */
-    private static final int messageNotSentTwiceCount = 1000;
+    private static final int MESSAGE_HISTORY_SIZE = 1000;
     
     /**
      * List storing the last x message IDs and host IDs that are not sent again. The size of the list is resticted to {@link #messageNotSentTwiceCount}. 
@@ -390,11 +390,11 @@ public class DisasterRouter extends ActiveRouter {
     private void addMessageAndHostToHistory(Message m, DTNHost h) {
     	Tuple<String, Integer> t = new Tuple<>(m.getId(), h.getAddress());
     	
-    	if (this.messageSentToHostHistory.size() < this.messageNotSentTwiceCount) {
+    	if (this.messageSentToHostHistory.size() < this.MESSAGE_HISTORY_SIZE) {
     		this.messageSentToHostHistory.add(0, t);
     	}
-    	else if (this.messageSentToHostHistory.size() == this.messageNotSentTwiceCount) {
-    		this.messageSentToHostHistory.remove(this.messageNotSentTwiceCount - 1);
+    	else if (this.messageSentToHostHistory.size() == this.MESSAGE_HISTORY_SIZE) {
+    		this.messageSentToHostHistory.remove(this.MESSAGE_HISTORY_SIZE - 1);
     		this.messageSentToHostHistory.add(0, t);
     	}
     	else {
@@ -504,7 +504,7 @@ public class DisasterRouter extends ActiveRouter {
     	return messageSentToHostHistory;
     }
     
-    public int getMessageNotSentTwiceCount() {
-    	return messageNotSentTwiceCount;
+    public int getMessageHistorySize() {
+    	return MESSAGE_HISTORY_SIZE;
     }
 }

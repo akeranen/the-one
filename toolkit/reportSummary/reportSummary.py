@@ -1,5 +1,6 @@
 import sh
 
-with open('../../reports/messageDelayAnalysis.txt', 'wb', 0) as file:
-    sh.perl("../messageDelayAnalyzer.pl", "../../reports/realisticScenario_ImmediateMessageDelayReport.txt",
-            stdout=file)
+with open('../../reports/messageDelayAnalysis.txt', 'w', 1) as file:
+    sh.perl("../messageDelayAnalyzer.pl", "../../reports/realisticScenario_ImmediateMessageDelayReport.txt", "60",
+            _out=file)
+

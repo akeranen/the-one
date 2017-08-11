@@ -254,7 +254,7 @@ public class DeliveryPredictabilityStorage extends AbstractIntervalRatingMechani
                 return this.getDeliveryPredictability(message.getTo());
             case MULTICAST:
                 MulticastMessage multicast = (MulticastMessage)message;
-                return this.getMaximumDeliveryPredictability(multicast.getGroup().getMembers());
+                return this.getMaximumDeliveryPredictability(multicast.getRemainingRecipients());
             default:
                 throw new IllegalArgumentException(
                         "No delivery predictability for messages of type " + message.getType() + " defined!");
@@ -266,7 +266,7 @@ public class DeliveryPredictabilityStorage extends AbstractIntervalRatingMechani
      * @param addresses The addresses to check the delivery predictability for.
      * @return The maximum delivery predictability.
      */
-    private double getMaximumDeliveryPredictability(Integer[] addresses) {
+    private double getMaximumDeliveryPredictability(Collection<Integer> addresses) {
         double maxDeliveryPred = 0;
         for (int address : addresses) {
             maxDeliveryPred = Math.max(maxDeliveryPred, this.getDeliveryPredictability(address));

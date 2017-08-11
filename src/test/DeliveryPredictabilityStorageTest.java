@@ -356,7 +356,7 @@ public class DeliveryPredictabilityStorageTest {
     /**
      * Tests that {@link DeliveryPredictabilityStorage#getDeliveryPredictability(Message)} returns the same for a
      * multicast as the maximum {@link DeliveryPredictabilityStorage#getDeliveryPredictability(DTNHost)} returns for any
-     * of its recipients.
+     * of its remaining recipients.
      */
     @Test
     public void testGetDeliveryPredictabilityForMulticastMessages() {
@@ -366,6 +366,7 @@ public class DeliveryPredictabilityStorageTest {
         Group group = Group.createGroup(1);
         group.addHost(recipient);
         group.addHost(oftenMetRecipient);
+        group.addHost(this.attachedHost);
 
         // Make sure we know both hosts in the group, but know one better than the other.
         DeliveryPredictabilityStorage recipientStorage = createDeliveryPredictabilityStorage(recipient);
@@ -379,12 +380,29 @@ public class DeliveryPredictabilityStorageTest {
                         > this.dpStorage.getDeliveryPredictability(recipient));
 
         // Check delivery predictability of a multicast message.
-        Message multicast = new MulticastMessage(recipient, group, "M1", 0);
+        Message multicast = new MulticastMessage(this.attachedHost, group, "M1", 0);
         Assert.assertEquals(
-                "Multicast delivery predictability should equal the maximum recipient delivery predictability.",
+                "Multicast delivery predictability should equal the maximum remaining recipient delivery pred.",
                 this.dpStorage.getDeliveryPredictability(oftenMetRecipient),
                 this.dpStorage.getDeliveryPredictability(multicast),
                 DOUBLE_COMPARISON_DELTA);
+
+        // Add better known recipient to message path.
+        multicast.addNodeOnPath(oftenMetRecipient);
+
+        // Delivery predictability should have decreased.
+        Assert.assertEquals(
+                "Multicast delivery predictability should equal the maximum remaining recipient delivery pred.",
+                this.dpStorage.getDeliveryPredictability(recipient),
+                this.dpStorage.getDeliveryPredictability(multicast),
+                DOUBLE_COMPARISON_DELTA);
+
+        // Add other recipient to message path.
+        multicast.addNodeOnPath(recipient);
+
+        // Delivery predictability should now be 0.
+        Assert.assertEquals("Multicast delivery predictability should be zero if message has all recipients on path.",
+                0, this.dpStorage.getDeliveryPredictability(multicast), DOUBLE_COMPARISON_DELTA);
     }
 
     /**

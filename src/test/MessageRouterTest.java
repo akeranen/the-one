@@ -62,6 +62,7 @@ public class MessageRouterTest {
         this.sender = this.utils.createHost();
         Group g = Group.createGroup(0);
         g.addHost(sender);
+        g.addHost(this.utils.createHost());
 
         this.msg = new Message(sender, recipient, "M", DEFAULT_MESSAGE_SIZE);
         this.broadcast = new BroadcastMessage(sender, "B", DEFAULT_MESSAGE_SIZE);

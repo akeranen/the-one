@@ -390,11 +390,11 @@ public class DisasterRouter extends ActiveRouter {
     private void addMessageAndHostToHistory(Message m, DTNHost h) {
     	Tuple<String, Integer> t = new Tuple<>(m.getId(), h.getAddress());
     	
-    	if (this.messageSentToHostHistory.size() < this.MESSAGE_HISTORY_SIZE) {
+    	if (this.messageSentToHostHistory.size() < MESSAGE_HISTORY_SIZE) {
     		this.messageSentToHostHistory.add(0, t);
     	}
-    	else if (this.messageSentToHostHistory.size() == this.MESSAGE_HISTORY_SIZE) {
-    		this.messageSentToHostHistory.remove(this.MESSAGE_HISTORY_SIZE - 1);
+    	else if (this.messageSentToHostHistory.size() == MESSAGE_HISTORY_SIZE) {
+    		this.messageSentToHostHistory.remove(MESSAGE_HISTORY_SIZE - 1);
     		this.messageSentToHostHistory.add(0, t);
     	}
     	else {

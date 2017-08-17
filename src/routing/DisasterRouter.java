@@ -387,41 +387,20 @@ public class DisasterRouter extends ActiveRouter {
      * @param m Message to be added
      * @param h Host to be added
      */
-    private void addMessageAndHostToHistory(Message m, DTNHost h) {
-    	Tuple<String, Integer> t = new Tuple<>(m.getId(), h.getAddress());
+    private void addMessageAndHostToHistory(Message message, DTNHost host) {
+    	Tuple<String, Integer> historyItem = new Tuple<>(message.getId(), host.getAddress());
     	
     	if (this.messageSentToHostHistory.size() < MESSAGE_HISTORY_SIZE) {
-    		this.messageSentToHostHistory.add(0, t);
-    	}
-    	else if (this.messageSentToHostHistory.size() == MESSAGE_HISTORY_SIZE) {
-    		this.messageSentToHostHistory.remove(MESSAGE_HISTORY_SIZE - 1);
-    		this.messageSentToHostHistory.add(0, t);
+    		this.messageSentToHostHistory.add(0, historyItem);
     	}
     	else {
-    		throw new Error("In the message history of host " + this.getHost().getAddress() + ", there are more "
-    				+ "messages than expected!");
-    	}
-    }
-    
-    /**
-     * Returns true if the current message history contains a pair of message and host
-     * @param m Message that might be contained
-     * @param h Host that might me contained 
-     * @return True if the current message history contains a pair of m and h
-     */
-    public boolean historyContainsMessageAndHost(Message m, DTNHost h) {
-    	String messageID = m.getId();
-    	Integer hostID = h.getAddress();
-    	
-    	for (Tuple<String, Integer> t : messageSentToHostHistory) {
-    		if (t.getValue().equals(hostID) && t.getKey().equals(messageID)) {
-    			return true;
+    		while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
+    		  this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size());
     		}
+    		
+    		this.messageSentToHostHistory.add(0, historyItem);
     	}
-
-    	return false;
     }
-
     
     /**
      * Computes a ratio between the encounter value of this router and the one of the provided router.

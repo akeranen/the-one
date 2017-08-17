@@ -3,6 +3,7 @@ package test;
 import applications.DatabaseApplication;
 import core.BroadcastMessage;
 import core.Coord;
+import core.DTNHost;
 import core.DataMessage;
 import core.DisasterData;
 import core.Group;
@@ -20,6 +21,7 @@ import util.Tuple;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -990,7 +992,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.updateAllNodes();
         
         assertTrue("Message should have been added to the history!", 
-        		((DisasterRouter)h2.getRouter()).historyContainsMessageAndHost(m1, h3));
+        		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
     }
     
     public void testHistoryAcceptsOnlyALimitedNumberOfMessages() {
@@ -1011,7 +1013,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.clock.advance(1);
         this.updateAllNodes();
         assertTrue("Message should still be contained in the history!", 
-        		((DisasterRouter)h2.getRouter()).historyContainsMessageAndHost(m1, h3));
+        		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
         
         // Add one more message
         h2.createNewMessage(new Message(h2, h3, "LastMessage", 1));
@@ -1020,7 +1022,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         
         // Check M1 is not contained
         assertFalse("Message should not be contained in the history any more!", 
-        		((DisasterRouter)h2.getRouter()).historyContainsMessageAndHost(m1, h3));
+        		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
     }
     
     public void testMessagesAreNotSentTwice() {
@@ -1090,5 +1092,24 @@ public class DisasterRouterTest extends AbstractRouterTest {
         for (int i = 0; i < increase; i++) {
             m.addNodeOnPath(this.utils.createHost());
         }
+    }
+    
+    /**
+     * Returns true if the current message history contains a pair of message and host
+     * @param m Message that might be contained
+     * @param h Host that might me contained 
+     * @return True if the current message history contains a pair of m and h
+     */
+    public boolean historyContainsMessageAndHost(List<Tuple<String, Integer>> history, Message message, DTNHost host) {
+    	String messageID = message.getId();
+    	Integer hostID = host.getAddress();
+    	
+    	for (Tuple<String, Integer> t : history) {
+    		if (t.getValue().equals(hostID) && t.getKey().equals(messageID)) {
+    			return true;
+    		}
+    	}
+
+    	return false;
     }
 }

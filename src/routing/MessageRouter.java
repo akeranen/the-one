@@ -20,8 +20,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -231,7 +233,14 @@ public abstract class MessageRouter {
 	 * @return True if the router has message with this id, false if not
 	 */
 	public boolean hasMessage(String id) {
-		return this.messages.containsKey(id);
+	    if (this.messages.containsKey(id)){
+           if(getMessage(id).isTimeToLiveOver()){
+               removeFromMessages(id);
+               return false;
+           }
+           return true;
+        }
+        return false;
 	}
 
 	/**
@@ -268,6 +277,7 @@ public abstract class MessageRouter {
 	 * @return a reference to the messages of this router in collection
 	 */
 	public Collection<Message> getMessageCollection() {
+	    removeMessagesWhosTTLisOver();
 		return this.messages.values();
 	}
 
@@ -276,6 +286,7 @@ public abstract class MessageRouter {
 	 * @return How many messages this router has
 	 */
 	public int getNrofMessages() {
+	    removeMessagesWhosTTLisOver();
 		return this.messages.size();
 	}
 
@@ -284,6 +295,7 @@ public abstract class MessageRouter {
 	 * @return The size or Integer.MAX_VALUE if the size isn't defined.
 	 */
 	public long getBufferSize() {
+	    removeMessagesWhosTTLisOver();
 		return this.bufferSize;
 	}
 
@@ -300,6 +312,7 @@ public abstract class MessageRouter {
 			return Integer.MAX_VALUE;
 		}
 
+		removeMessagesWhosTTLisOver();
 		return this.getBufferSize() - occupancy;
 	}
 
@@ -454,6 +467,9 @@ public abstract class MessageRouter {
 	 * message, if false, nothing is informed.
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
+	    if (m.isTimeToLiveOver()){
+	        return;
+        }
 	    //Remove previous size of message from the occupancy if we already had the message
         Message oldMessage = messages.get(m.getId());
 	    if (oldMessage != null){
@@ -695,4 +711,14 @@ public abstract class MessageRouter {
 			this.getHost().toString() + " with " + getNrofMessages()
 			+ " messages";
 	}
+
+	public void removeMessagesWhosTTLisOver(){
+	    Iterator it = messages.entrySet().iterator();
+	    while (it.hasNext()){
+	        Map.Entry<String, Message> idAndMsg = (Map.Entry) it.next();
+	        if (idAndMsg.getValue().isTimeToLiveOver()){
+	            removeFromMessages(idAndMsg.getKey());
+            }
+        }
+    }
 }

@@ -80,7 +80,7 @@ public class DisasterRouter extends ActiveRouter {
     private static final int MESSAGE_HISTORY_SIZE = 1000;
     
     /**
-     * List storing the last x message IDs and host IDs that are not sent again. The size of the list is resticted to {@link #messageNotSentTwiceCount}. 
+     * List storing the last x message IDs and host IDs that are not sent again. The size of the list is restricted to {@link #MESSAGE_HISTORY_SIZE}. 
      */
     private List<Tuple<String, Integer>> messageSentToHostHistory = new ArrayList<>();
     

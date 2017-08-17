@@ -260,32 +260,16 @@ public class DisasterRouter extends ActiveRouter {
             this.messageChooser.setAttachedHost(this.getHost());
         }
     }
-
+	
 	/**
-	 * Tries to send messages for the connections that are mentioned
-	 * in the tuples in the order they are in the list until one of
-	 * the connections starts transferring or all tuples have been tried.
-	 * @param tuples The tuples to try
-	 * @return The tuple whose connection accepted the message or null if
-	 * none of the connections accepted the message that was meant for them.
+	 * Method is called just before a transfer is finalized
+	 * at {@link #update()}.
+	 * Subclasses that are interested of the event may want to override this.
+	 * @param con The connection whose transfer was finalized
 	 */
-    @Override
-	protected Tuple<Message, Connection> tryMessagesForConnected(
-			List<Tuple<Message, Connection>> tuples) {
-		if (tuples.isEmpty()) {
-			return null;
-		}
-
-		for (Tuple<Message, Connection> t : tuples) {
-			if (startTransfer(t.getKey(), t.getValue()) == RCV_OK) {
-				//add IDs to history
-				addMessageAndHostToHistory(t.getKey(), t.getValue().getOtherNode(this.getHost()));
-				return t;
-			}
-		}
-
-		return null;
-	}
+	protected void transferDone(Connection con) {
+		addMessageAndHostToHistory(con.getMessage(), con.getOtherNode(getHost()));
+    }
 	
     /**
      * Checks whether this router has anything to send out.
@@ -314,6 +298,9 @@ public class DisasterRouter extends ActiveRouter {
         Collection<Tuple<Message, Connection>> messages =
                 this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
         this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
+
+        this.cachedNonDirectMessages = removeDuplicateMessages(cachedNonDirectMessages);
+        
         this.lastMessageOrdering = SimClock.getTime();
     }
 
@@ -395,7 +382,7 @@ public class DisasterRouter extends ActiveRouter {
     	}
     	else {
     		while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
-    		  this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size());
+    		  this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
     		}
     		
     		this.messageSentToHostHistory.add(0, historyItem);
@@ -447,6 +434,8 @@ public class DisasterRouter extends ActiveRouter {
     @Override
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
         List<Tuple<Message, Connection>> messages = this.getMessagesForConnected();
+        messages = removeDuplicateMessages(messages);
+        
         messages.sort(this.directMessageTupleComparator);
         return messages;
     }
@@ -460,17 +449,47 @@ public class DisasterRouter extends ActiveRouter {
     protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
         List<Message> messages = super.getSortedMessagesForConnected(connected);
         
-        // remove messages that already occur in the message history
-        for (Message m : messages) {
-        	Tuple<String, Integer> t = new Tuple<>(m.getId(), connected.getAddress());
-        	if (messageSentToHostHistory.contains(t)) {
-        		messages.remove(m);
-        	}
-        }
+        messages = removeDuplicateMessages(messages, connected);
+        
         messages.sort(this.directMessageComparator);
         return messages;
     }
-
+    
+    /**
+     * Removes messages that already occur in the message history
+     * @param messages: 
+     * @return
+     */
+    private List<Tuple<Message, Connection>> removeDuplicateMessages(List<Tuple<Message, Connection>> messages) {
+    	
+        for (Tuple<Message, Connection> message : messages) {
+        	Tuple<String, Integer> t = new Tuple<>(message.getKey().getId(), 
+        			message.getValue().getOtherNode(getHost()).getAddress());
+        	if (messageSentToHostHistory.contains(t)) {
+        		messages.remove(message);
+        	}
+        }
+        
+        return messages;
+    }
+    
+    /**
+     * Removes messages that already occur in the message history
+     * @param messages: 
+     * @return
+     */
+    private List<Message> removeDuplicateMessages(List<Message> messages, DTNHost host) {
+    	
+        for (Message message : messages) {
+        	Tuple<String, Integer> t = new Tuple<>(message.getId(), host.getAddress());
+        	if (messageSentToHostHistory.contains(t)) {
+        		messages.remove(message);
+        	}
+        }
+        
+        return messages;
+    }
+    
     /**
      * Returns the power threshold.
      * @return The power threshold.

@@ -1000,23 +1000,28 @@ public class DisasterRouterTest extends AbstractRouterTest {
         h2.connect(h3);
         Message m1 = new Message(h2, h3, "M1", 1);
         h2.createNewMessage(m1);
+        this.clock.advance(1);
         this.updateAllNodes();
 
         // Create as many messages as the history can contain
         for (int i=0; i<DisasterRouter.getMessageHistorySize() - 1; i++ ) {
+            h2.createNewMessage(new Message(h2, h3, "M" + (i+2), 1));
             this.clock.advance(1);
             this.updateAllNodes();
-            h2.createNewMessage(new Message(h2, h3, "M" + (i+2), 1));
         }
         
-        // Check M1 is still contained
         this.clock.advance(1);
         this.updateAllNodes();
+        
+        // Check M1 is still contained
         assertTrue("Message should still be contained in the history!", 
         		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
         
         // Add one more message
         h2.createNewMessage(new Message(h2, h3, "LastMessage", 1));
+
+        this.clock.advance(1);
+        this.updateAllNodes();
         this.clock.advance(1);
         this.updateAllNodes();
         
@@ -1025,7 +1030,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
     }
     
-    public void testMessagesAreNotSentTwice() {
+    public void testDirectMessagesAreNotSentTwice() {
     	
     	this.mc.reset();
     	// Send message M1
@@ -1048,18 +1053,21 @@ public class DisasterRouterTest extends AbstractRouterTest {
         
         // Check last message
         do {
+        	this.updateAllNodes();
             // Nothing, progress is made in the while condition!
         } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
         
         assertTrue("Expected message is M1!", this.mc.getLastMsg().getId().equals(m1.getId()));
         
         do {
+        	this.updateAllNodes();
         	// Nothing, progress is made in the while condition!
         } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
         
         assertTrue("Expected message is M2!", this.mc.getLastMsg().getId().equals(m2.getId()));
         
         do {
+        	this.updateAllNodes();
         	// Nothing, progress is made in the while condition!
         } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
         

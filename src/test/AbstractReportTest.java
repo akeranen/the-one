@@ -31,6 +31,9 @@ public abstract class AbstractReportTest {
      */
     @Before
     public void setUp() throws IOException {
+        // Set locale for periods instead of commas in doubles.
+        java.util.Locale.setDefault(java.util.Locale.US);
+
         this.outputFile = File.createTempFile("reportTest", ".tmp");
 
         String reportName = this.getReportClass().getSimpleName();

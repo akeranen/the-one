@@ -7,7 +7,7 @@ package report;
 /**
  * Records the average buffer occupancy and its variance with format:
  * <p>
- * [Simulation time] [average buffer occupancy % [0..100] ] [variance]
+ * [Simulation time] [average buffer occupancy % [0..100] ] [variance] [min] [max]
  * </p>
  *
  * <p>
@@ -71,19 +71,23 @@ public class BufferOccupancyReport extends Report implements UpdateListener {
 	private void printLine(List<DTNHost> hosts) {
 		double bufferOccupancy = 0.0;
 		double bo2 = 0.0;
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
 
 		for (DTNHost h : hosts) {
 			double tmp = h.getBufferOccupancy();
 			tmp = (tmp<=100.0)?(tmp):(100.0);
 			bufferOccupancy += tmp;
 			bo2 += (tmp*tmp)/100.0;
+			min = Math.min(min, tmp);
+			max = Math.max(max, tmp);
 		}
 
 		double E_X = bufferOccupancy / hosts.size();
 		double Var_X = bo2 / hosts.size() - (E_X*E_X)/100.0;
 
 		String output = format(SimClock.getTime()) + " " + format(E_X) + " " +
-			format(Var_X);
+			format(Var_X) + " " + format(min) + " " + format(max);
 		write(output);
 	}
 

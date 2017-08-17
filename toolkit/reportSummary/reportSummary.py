@@ -1,10 +1,11 @@
-from subprocess import run
+import subprocess
 import sys
 import getopt
 
 #ReportSummary:
 #
-#Usage: reportSummary.py -r <reportDirectory>
+#Usage: reportSummary.py -r <reportDirectory> -s <seeds>\n'
+#       'e.g., -r /Simulator/reports/ -s 1,2,3
 #
 # 1. Calls all pre-processing perl script on a given report directory
 #    The shortened reports are placed within the reports directory
@@ -41,16 +42,16 @@ perlNames = [["messageDelayAnalyzer.pl", "realisticScenario_ImmediateMessageDela
 necessaryAnalyses = []
 if len(seeds) == 0:
     for (script, input, output) in perlNames:
-        necessaryAnalyses.append([script, reportDir+input+".txt", reportDir+output+".txt"])
+        necessaryAnalyses.append(["../"+script, reportDir+input+".txt", reportDir+output+".txt"])
 else:
     for seed in seeds:
         for (script, input, output) in perlNames:
-            necessaryAnalyses.append([script, reportDir+input+"_"+seed+".txt", reportDir+output+"_"+seed+".txt"])
+            necessaryAnalyses.append(["../"+script, reportDir+input+"_"+seed+".txt", reportDir+output+"_"+seed+".txt"])
 
-print(necessaryAnalyses)
-
-#Execute script with input and print to output
+#Execute script with input and write to output
 for (script, input, output) in necessaryAnalyses:
     with open(output, 'w', 1) as file:
-        run("perl "+ script + " "+ input + " " + granularity, stdout=file)
+        process = subprocess.run("perl "+ script + " "+ input + " " + granularity)
+        file.write(process.stdout)
+        print("Successfully created ", output)
 

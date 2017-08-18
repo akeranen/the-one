@@ -260,17 +260,17 @@ public class DisasterRouter extends ActiveRouter {
             this.messageChooser.setAttachedHost(this.getHost());
         }
     }
-	
-	/**
-	 * Method is called just before a transfer is finalized
-	 * at {@link #update()}.
-	 * Subclasses that are interested of the event may want to override this.
-	 * @param con The connection whose transfer was finalized
-	 */
-	protected void transferDone(Connection con) {
-		addMessageAndHostToHistory(con.getMessage(), con.getOtherNode(getHost()));
+    
+    /**
+     * Method is called just before a transfer is finalized
+     * at {@link #update()}.
+     * Subclasses that are interested of the event may want to override this.
+     * @param con The connection whose transfer was finalized
+     */
+    protected void transferDone(Connection con) {
+        addMessageAndHostToHistory(con.getMessage(), con.getOtherNode(getHost()));
     }
-	
+    
     /**
      * Checks whether this router has anything to send out.
      *
@@ -375,18 +375,18 @@ public class DisasterRouter extends ActiveRouter {
      * @param h Host to be added
      */
     private void addMessageAndHostToHistory(Message message, DTNHost host) {
-    	Tuple<String, Integer> historyItem = new Tuple<>(message.getId(), host.getAddress());
-    	
-    	if (this.messageSentToHostHistory.size() < MESSAGE_HISTORY_SIZE) {
-    		this.messageSentToHostHistory.add(0, historyItem);
-    	}
-    	else {
-    		while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
-    		  this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
-    		}
-    		
-    		this.messageSentToHostHistory.add(0, historyItem);
-    	}
+        Tuple<String, Integer> historyItem = new Tuple<>(message.getId(), host.getAddress());
+        
+        if (this.messageSentToHostHistory.size() < MESSAGE_HISTORY_SIZE) {
+            this.messageSentToHostHistory.add(0, historyItem);
+        }
+        else {
+            while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
+              this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
+            }
+            
+            this.messageSentToHostHistory.add(0, historyItem);
+        }
     }
     
     /**
@@ -461,18 +461,18 @@ public class DisasterRouter extends ActiveRouter {
      * @return
      */
     private void removeMessagesContainedInHistory(List<Tuple<Message, Connection>> messages) {
-    	
-    	Iterator<Tuple<Message, Connection>> iter = messages.iterator();
+        
+        Iterator<Tuple<Message, Connection>> iter = messages.iterator();
 
-    	while (iter.hasNext()) {
-    		Tuple<Message, Connection> t = iter.next();
-    		Tuple<String, Integer> historyEntry = new Tuple<>(t.getKey().getId(), 
-        			t.getValue().getOtherNode(getHost()).getAddress());
-    		
-    		if (messageSentToHostHistory.contains(historyEntry)) {
-        		iter.remove();
-        	}
-    	}
+        while (iter.hasNext()) {
+            Tuple<Message, Connection> t = iter.next();
+            Tuple<String, Integer> historyEntry = new Tuple<>(t.getKey().getId(), 
+                    t.getValue().getOtherNode(getHost()).getAddress());
+            
+            if (messageSentToHostHistory.contains(historyEntry)) {
+                iter.remove();
+            }
+        }
     }
     
     /**
@@ -481,17 +481,17 @@ public class DisasterRouter extends ActiveRouter {
      * @return
      */
     private List<Message> removeMessagesContainedInHistory(List<Message> messages, DTNHost host) {
-    	
-    	Iterator<Message> iter = messages.iterator();
-    	
-    	while (iter.hasNext()) {
-    		Message message = iter.next();
-    		Tuple<String, Integer> historyEntry = new Tuple<>(message.getId(), host.getAddress());
-    		
-    		if (messageSentToHostHistory.contains(historyEntry)) {
-        		iter.remove();
-        	}
-    	}
+        
+        Iterator<Message> iter = messages.iterator();
+        
+        while (iter.hasNext()) {
+            Message message = iter.next();
+            Tuple<String, Integer> historyEntry = new Tuple<>(message.getId(), host.getAddress());
+            
+            if (messageSentToHostHistory.contains(historyEntry)) {
+                iter.remove();
+            }
+        }
         
         return messages;
     }
@@ -505,10 +505,10 @@ public class DisasterRouter extends ActiveRouter {
     }
     
     public List<Tuple<String, Integer>> getMessageSentToHostHistory() {
-    	return messageSentToHostHistory;
+        return messageSentToHostHistory;
     }
     
     public static int getMessageHistorySize() {
-    	return MESSAGE_HISTORY_SIZE;
+        return MESSAGE_HISTORY_SIZE;
     }
 }

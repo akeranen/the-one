@@ -977,8 +977,11 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 h2.getMessageCollection().contains(m1));
     }
     
+    /**
+     * Tests whether sent messages are added to the history
+     */
     public void testMessagesAreAddedToHistory() {
-    	// Start sending a message.
+        // Start sending a message.
         h2.connect(h3);
         Message m1 = new Message(h2, h3, "M1", 1);
         h2.createNewMessage(m1);
@@ -993,11 +996,14 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.updateAllNodes();
         
         assertTrue("Message should have been added to the history!", 
-        		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
+                historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
     }
     
+    /**
+     * Tests whether the messages enter and leave the message history in the correct order
+     */
     public void testHistoryAcceptsOnlyALimitedNumberOfMessages() {
-    	// Start sending a message.
+        // Start sending a message.
         h2.connect(h3);
         Message m1 = new Message(h2, h3, "M1", 1);
         h2.createNewMessage(m1);
@@ -1016,7 +1022,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         
         // Check M1 is still contained
         assertTrue("Message should still be contained in the history!", 
-        		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
+                historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
         
         // Add one more message
         h2.createNewMessage(new Message(h2, h3, "LastMessage", 1));
@@ -1028,16 +1034,22 @@ public class DisasterRouterTest extends AbstractRouterTest {
         
         // Check M1 is not contained
         assertFalse("Message should not be contained in the history any more!", 
-        		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
+                historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
     }
     
+    /**
+     * Tries to send a message twice from one host to another and another message in between.
+     * The first message should not be sent a second time.
+     * @param m1: Message to be sent
+     * @param receiver: particular host that the message is sent to (important for broadcast and group messages)
+     */
     public void testMessageIsNotSentTwice(Message m1, DTNHost receiver) {
-    	
-    	DTNHost sender = m1.getFrom();
-    	List<Tuple<Message, DTNHost>> sentMessages = new ArrayList<>();
-    	
-    	this.mc.reset();
-    	// Send message M1
+        
+        DTNHost sender = m1.getFrom();
+        List<Tuple<Message, DTNHost>> sentMessages = new ArrayList<>();
+        
+        this.mc.reset();
+        // Send message M1
         sender.connect(receiver);
         sender.createNewMessage(m1);
         this.clock.advance(1);
@@ -1058,35 +1070,38 @@ public class DisasterRouterTest extends AbstractRouterTest {
         
         // Check that no message is sent twice
         while (this.mc.next()) {
-        	if (this.mc.getLastType().equals(this.mc.TYPE_START)) {
-        		Tuple<Message, DTNHost> messageTransfer = new Tuple<>(this.mc.getLastMsg(), (DTNHost)this.mc.getLastTo());
-        		assertFalse("Message was sent twice!", sentMessages.contains(messageTransfer));
-        		sentMessages.add(messageTransfer);
-        	}
+            if (this.mc.getLastType().equals(this.mc.TYPE_START)) {
+                Tuple<Message, DTNHost> messageTransfer = new Tuple<>(this.mc.getLastMsg(), (DTNHost)this.mc.getLastTo());
+                assertFalse("Message was sent twice!", sentMessages.contains(messageTransfer));
+                sentMessages.add(messageTransfer);
+            }
         }
         
         disconnect(receiver);
     }
-
+    
+    /**
+     * Creates a direct message, a group message and a broadcast message
+     */
     public void testMessagesAreNotSentTwice() {
-    	
-    	// Create groups for multicasts.
+        
+        // Create groups for multicasts.
         Group group = Group.createGroup(0);
         group.addHost(h1);
         group.addHost(h2);
         
         // Test direct messages
-    	Message directMessage = new Message(h2, h3, "directMessage", 1, PRIORITY);
-    	testMessageIsNotSentTwice(directMessage, h3);
-    	
-    	// Test group messages
-    	Message groupMessage = new MulticastMessage(h1, group, "groupMessage", 1, PRIORITY);
-    	testMessageIsNotSentTwice(groupMessage, h2);
-    	
-    	// Test broadcast messages
-    	Message broadcastMessage = new BroadcastMessage(h1, "broadcastMessage", 1, PRIORITY);
-    	testMessageIsNotSentTwice(broadcastMessage, h3);
-    	
+        Message directMessage = new Message(h2, h3, "directMessage", 1, PRIORITY);
+        testMessageIsNotSentTwice(directMessage, h3);
+        
+        // Test group messages
+        Message groupMessage = new MulticastMessage(h1, group, "groupMessage", 1, PRIORITY);
+        testMessageIsNotSentTwice(groupMessage, h2);
+        
+        // Test broadcast messages
+        Message broadcastMessage = new BroadcastMessage(h1, "broadcastMessage", 1, PRIORITY);
+        testMessageIsNotSentTwice(broadcastMessage, h3);
+        
     }
     
     /**
@@ -1124,15 +1139,15 @@ public class DisasterRouterTest extends AbstractRouterTest {
      * @return True if the current message history contains a pair of m and h
      */
     public boolean historyContainsMessageAndHost(List<Tuple<String, Integer>> history, Message message, DTNHost host) {
-    	String messageID = message.getId();
-    	Integer hostID = host.getAddress();
-    	
-    	for (Tuple<String, Integer> t : history) {
-    		if (t.getValue().equals(hostID) && t.getKey().equals(messageID)) {
-    			return true;
-    		}
-    	}
+        String messageID = message.getId();
+        Integer hostID = host.getAddress();
+        
+        for (Tuple<String, Integer> t : history) {
+            if (t.getValue().equals(hostID) && t.getKey().equals(messageID)) {
+                return true;
+            }
+        }
 
-    	return false;
+        return false;
     }
 }

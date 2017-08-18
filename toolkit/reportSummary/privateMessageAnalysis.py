@@ -34,8 +34,8 @@ delivered = getValueFromString(analysis[3])
 delivery_prob = getValueFromString(analysis[4])
 
 values=[delivery_prob, 1-delivery_prob]
-labels=["delivered:\n{p:2.1f}% ({t})".format(p=delivery_prob, t=delivered),
-        "not delivered:\n{p:2.1f}% ({t})".format(p=(1-delivery_prob), t=(created-delivered))]
+labels=["delivered:\n{p:.1f}% ({t})".format(p=delivery_prob*100, t=delivered),
+        "not delivered:\n{p:.1f}% ({t})".format(p=(1-delivery_prob)*100, t=(created-delivered))]
 
 # Create pie chart.
 fig1, ax1 = plt.subplots()

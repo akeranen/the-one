@@ -233,15 +233,15 @@ public abstract class MessageRouter {
 	 * @return True if the router has message with this id, false if not
 	 */
 	public boolean hasMessage(String id) {
-        if (this.messages.containsKey(id)) {
-            if (getMessage(id).isTimeToLiveOver()) {
-                removeFromMessages(id);
-                return false;
-            }
-            return true;
+	    if (this.messages.containsKey(id)){
+           if(getMessage(id).isTimeToLiveOver()){
+               removeFromMessages(id);
+               return false;
+           }
+           return true;
         }
         return false;
-    }
+	}
 
 	/**
 	 * Returns true if a full message with same ID as the given message has been
@@ -467,12 +467,12 @@ public abstract class MessageRouter {
 	 * message, if false, nothing is informed.
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
-        if (m.isTimeToLiveOver()){
-            return;
+	    if (m.isTimeToLiveOver()){
+	        return;
         }
 	    //Remove previous size of message from the occupancy if we already had the message
         Message oldMessage = messages.get(m.getId());
-        if (oldMessage != null){
+	    if (oldMessage != null){
 	        occupancy -= oldMessage.getSize();
         }
         //Add the current size of the message to the occupancy
@@ -712,12 +712,12 @@ public abstract class MessageRouter {
 			+ " messages";
 	}
 
-    private void removeMessagesWhosTTLisOver() {
-        Iterator it = messages.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Message> idAndMsg = (Map.Entry<String, Message>) it.next();
-            if (idAndMsg.getValue().isTimeToLiveOver()) {
-                removeFromMessages(idAndMsg.getKey());
+	public void removeMessagesWhosTTLisOver(){
+	    Iterator it = messages.entrySet().iterator();
+	    while (it.hasNext()){
+	        Map.Entry<String, Message> idAndMsg = (Map.Entry) it.next();
+	        if (idAndMsg.getValue().isTimeToLiveOver()){
+	            removeFromMessages(idAndMsg.getKey());
             }
         }
     }

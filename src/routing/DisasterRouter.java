@@ -299,7 +299,7 @@ public class DisasterRouter extends ActiveRouter {
                 this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
         this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
 
-        this.cachedNonDirectMessages = removeDuplicateMessages(cachedNonDirectMessages);
+        removeMessagesContainedInHistory(cachedNonDirectMessages);
         
         this.lastMessageOrdering = SimClock.getTime();
     }
@@ -434,7 +434,7 @@ public class DisasterRouter extends ActiveRouter {
     @Override
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
         List<Tuple<Message, Connection>> messages = this.getMessagesForConnected();
-        messages = removeDuplicateMessages(messages);
+        removeMessagesContainedInHistory(messages);
         
         messages.sort(this.directMessageTupleComparator);
         return messages;
@@ -449,7 +449,7 @@ public class DisasterRouter extends ActiveRouter {
     protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
         List<Message> messages = super.getSortedMessagesForConnected(connected);
         
-        messages = removeDuplicateMessages(messages, connected);
+        messages = removeMessagesContainedInHistory(messages, connected);
         
         messages.sort(this.directMessageComparator);
         return messages;
@@ -460,17 +460,19 @@ public class DisasterRouter extends ActiveRouter {
      * @param messages: 
      * @return
      */
-    private List<Tuple<Message, Connection>> removeDuplicateMessages(List<Tuple<Message, Connection>> messages) {
+    private void removeMessagesContainedInHistory(List<Tuple<Message, Connection>> messages) {
     	
-        for (Tuple<Message, Connection> message : messages) {
-        	Tuple<String, Integer> t = new Tuple<>(message.getKey().getId(), 
-        			message.getValue().getOtherNode(getHost()).getAddress());
-        	if (messageSentToHostHistory.contains(t)) {
-        		messages.remove(message);
+    	Iterator<Tuple<Message, Connection>> iter = messages.iterator();
+
+    	while (iter.hasNext()) {
+    		Tuple<Message, Connection> t = iter.next();
+    		Tuple<String, Integer> historyEntry = new Tuple<>(t.getKey().getId(), 
+        			t.getValue().getOtherNode(getHost()).getAddress());
+    		
+    		if (messageSentToHostHistory.contains(historyEntry)) {
+        		iter.remove();
         	}
-        }
-        
-        return messages;
+    	}
     }
     
     /**
@@ -478,14 +480,18 @@ public class DisasterRouter extends ActiveRouter {
      * @param messages: 
      * @return
      */
-    private List<Message> removeDuplicateMessages(List<Message> messages, DTNHost host) {
+    private List<Message> removeMessagesContainedInHistory(List<Message> messages, DTNHost host) {
     	
-        for (Message message : messages) {
-        	Tuple<String, Integer> t = new Tuple<>(message.getId(), host.getAddress());
-        	if (messageSentToHostHistory.contains(t)) {
-        		messages.remove(message);
+    	Iterator<Message> iter = messages.iterator();
+    	
+    	while (iter.hasNext()) {
+    		Message message = iter.next();
+    		Tuple<String, Integer> historyEntry = new Tuple<>(message.getId(), host.getAddress());
+    		
+    		if (messageSentToHostHistory.contains(historyEntry)) {
+        		iter.remove();
         	}
-        }
+    	}
         
         return messages;
     }

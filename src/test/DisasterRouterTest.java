@@ -19,6 +19,7 @@ import routing.PassiveRouter;
 import routing.util.EnergyModel;
 import util.Tuple;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -1030,50 +1031,64 @@ public class DisasterRouterTest extends AbstractRouterTest {
         		historyContainsMessageAndHost(((DisasterRouter)h2.getRouter()).getMessageSentToHostHistory(), m1, h3));
     }
     
-    public void testDirectMessagesAreNotSentTwice() {
+    public void testMessageIsNotSentTwice(Message m1, DTNHost receiver) {
+    	
+    	DTNHost sender = m1.getFrom();
+    	List<Tuple<Message, DTNHost>> sentMessages = new ArrayList<>();
     	
     	this.mc.reset();
     	// Send message M1
-        h2.connect(h3);
-        Message m1 = new Message(h2, h3, "M1", 1);
-        h2.createNewMessage(m1);
+        sender.connect(receiver);
+        sender.createNewMessage(m1);
         this.clock.advance(1);
         this.updateAllNodes();
         
-        // Send message M2
-        Message m2 = new Message(h2, h3, "M2", 1);
-        h2.createNewMessage(m2);
+        // Send another message 
+        Message m2 = new Message(sender, receiver, "M2", 1);
+        sender.createNewMessage(m2);
         this.clock.advance(1);
         this.updateAllNodes();
         
         // Try to send message M1 again
-        h2.createNewMessage(m1);
+        sender.createNewMessage(m1);
+        this.clock.advance(1);
+        this.updateAllNodes();
         this.clock.advance(1);
         this.updateAllNodes();
         
-        // Check last message
-        do {
-        	this.updateAllNodes();
-            // Nothing, progress is made in the while condition!
-        } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
+        // Check that no message is sent twice
+        while (this.mc.next()) {
+        	if (this.mc.getLastType().equals(this.mc.TYPE_START)) {
+        		Tuple<Message, DTNHost> messageTransfer = new Tuple<>(this.mc.getLastMsg(), (DTNHost)this.mc.getLastTo());
+        		assertFalse("Message was sent twice!", sentMessages.contains(messageTransfer));
+        		sentMessages.add(messageTransfer);
+        	}
+        }
         
-        assertTrue("Expected message is M1!", this.mc.getLastMsg().getId().equals(m1.getId()));
-        
-        do {
-        	this.updateAllNodes();
-        	// Nothing, progress is made in the while condition!
-        } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
-        
-        assertTrue("Expected message is M2!", this.mc.getLastMsg().getId().equals(m2.getId()));
-        
-        do {
-        	this.updateAllNodes();
-        	// Nothing, progress is made in the while condition!
-        } while (this.mc.next() && !this.mc.TYPE_START.equals(this.mc.getLastType()));
-        
-        assertTrue("Expected message is M2!", this.mc.getLastMsg().getId().equals(m2.getId()));
+        disconnect(receiver);
     }
 
+    public void testMessagesAreNotSentTwice() {
+    	
+    	// Create groups for multicasts.
+        Group group = Group.createGroup(0);
+        group.addHost(h1);
+        group.addHost(h2);
+        
+        // Test direct messages
+    	Message directMessage = new Message(h2, h3, "directMessage", 1, PRIORITY);
+    	testMessageIsNotSentTwice(directMessage, h3);
+    	
+    	// Test group messages
+    	Message groupMessage = new MulticastMessage(h1, group, "groupMessage", 1, PRIORITY);
+    	testMessageIsNotSentTwice(groupMessage, h2);
+    	
+    	// Test broadcast messages
+    	Message broadcastMessage = new BroadcastMessage(h1, "broadcastMessage", 1, PRIORITY);
+    	testMessageIsNotSentTwice(broadcastMessage, h3);
+    	
+    }
+    
     /**
      * Creates a message between h1 and h3 known by h1 and h0.
      * Due to its replications density, neither h0 nor h1 will sent it if they are using utility choosers.

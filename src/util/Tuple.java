@@ -44,4 +44,20 @@ public class Tuple<K,V>  {
 	public String toString() {
 		return key.toString() + ":" + value.toString();
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		// self check
+	    if (this == o)
+	        return true;
+	    // null check
+	    if (o == null)
+	        return false;
+	    // type check and cast
+	    if (getClass() != o.getClass())
+	        return false;
+		Tuple<K,V> t2 = (Tuple<K,V>)o;
+		
+		return this.key.equals(t2.key) && this.value.equals(t2.value);
+	}
 }

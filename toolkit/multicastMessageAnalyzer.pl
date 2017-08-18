@@ -41,7 +41,7 @@ my %msgToMaxInterval = ();
 
 
 # Matches a message line.
-my $messageLineMatcher = '^\D+(\d+) (\d+) (\d+) (\d+([.]\d+)?)$';
+my $messageLineMatcher = '^(\D+\d+) (\d+) (\d+) (\d+([.]\d+)?)$';
 # Matches the last report line, i.e. the total simulation time.
 my $simTimeLineMatcher = '^(\d+([.]\d+)?)$';
 

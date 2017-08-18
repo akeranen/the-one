@@ -536,7 +536,7 @@ public class Message implements Comparable<Message> {
 
     public boolean isTimeToLiveOver(){
         final int ONE_MIN_IN_S = 60;
-        return (timeCreated + initTtl*ONE_MIN_IN_S < SimClock.getIntTime());
+        return timeCreated + initTtl*ONE_MIN_IN_S < SimClock.getIntTime();
     }
 
 }

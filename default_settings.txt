@@ -22,7 +22,7 @@ Group.bufferSize = 50M
 Group.nrofInterfaces = 1
 Group.interface1 = wInterface
 Group.net.scanInterval = 30
-#After which time messages get dropped (in seconds)
+#After which time messages get dropped (in minutes)
 #360 minutes = 6 hours
 Group.msgTtl = 360
 #How often nodes in the group will reorder the messages in their buffer

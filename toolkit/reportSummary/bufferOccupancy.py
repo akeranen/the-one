@@ -18,6 +18,7 @@ times = []
 avgOccupancies = []
 minima = []
 maxima = []
+variances = []
 
 for line in analysis:
     match = re.match("(\d+\.\d+\s)(\d+\.\d+\s)(\d+\.\d+\s)(\d+\.\d+\s)(\d+\.\d+)", line)
@@ -33,14 +34,20 @@ for line in analysis:
     avgOccupancies.append(avgOccupancy)
     minima.append(min)
     maxima.append(max)
+    variances.append(variance)
 
 #Turn resulution high enough for high quality image
-plt.style.use('ggplot')
 plt.rcParams['savefig.dpi'] = 300
-
-plt.plot(times, avgOccupancies)
-plt.xlabel('Buffer Occupancy')
-plt.ylabel('Cumulative percentage')
 plt.grid(True)
+
+plt.plot(times, maxima, label="max")
+plt.plot(times, avgOccupancies, label="avg")
+plt.plot(times, minima, label="min")
+plt.plot(times, variances, label="var")
+
+plt.xlabel('Time in minutes')
+plt.ylabel('Percentage of buffer that is occupied')
+plt.legend(loc='upper left')
+plt.title('Buffer occupancy')
 
 plt.savefig(sys.argv[2])

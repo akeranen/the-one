@@ -37,7 +37,7 @@ for opt, arg in opts:
 granularity = "300"
 perlNames = [["messageDelayAnalyzer.pl", "realisticScenario_ImmediateMessageDelayReport", "messageDelayAnalysis"],
              ["broadcastMessageAnalyzer.pl", "realisticScenario_BroadcastDeliveryReport", "broadcastMessageAnalysis"],
-             ["multicastMessageAnalyzer.pl", "realisticScenario_ImmediateMessageDelayReport", "multicastMessageAnalysis"]]
+             ["multicastMessageAnalyzer.pl", "realisticScenario_MulticastMessageDeliveryReport", "multicastMessageAnalysis"]]
 
 necessaryAnalyses = []
 if len(seeds) == 0:

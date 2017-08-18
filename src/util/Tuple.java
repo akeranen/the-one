@@ -66,4 +66,9 @@ public class Tuple<K,V>  {
 		
 		return this.key.equals(t2.key) && this.value.equals(t2.value);
 	}
+	
+	@Override
+	public int hashCode() {
+		return key.hashCode() * value.hashCode() % Integer.MAX_VALUE;
+	}
 }

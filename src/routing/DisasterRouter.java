@@ -379,8 +379,7 @@ public class DisasterRouter extends ActiveRouter {
         
         if (this.messageSentToHostHistory.size() < MESSAGE_HISTORY_SIZE) {
             this.messageSentToHostHistory.add(0, historyItem);
-        }
-        else {
+        } else {
             while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
               this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
             }

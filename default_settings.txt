@@ -23,8 +23,8 @@ Group.nrofInterfaces = 1
 Group.interface1 = wInterface
 Group.net.scanInterval = 30
 #After which time messages get dropped (in seconds)
-#21600s = 6h
-Group.msgTtl = 21600
+#360 minutes = 6 hours
+Group.msgTtl = 360
 #How often nodes in the group will reorder the messages in their buffer
 Group.MessageOrderingInterval=2.0
 # Time the node will help at a disaster site (in seconds)

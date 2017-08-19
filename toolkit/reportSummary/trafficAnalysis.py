@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import sys
 import re
-from decimal import Decimal
+import humanize
 
 # Script that translates traffic analysis into a pie chart graphic.
 # Takes as arguments
@@ -16,11 +16,11 @@ from decimal import Decimal
 # MULTICAST: 72.41% (5871786867604 Bytes)
 # DATA:  5.21% (422070252724 Bytes)
 
-# Formatting the pie chart legend. Labels are in the form 23.4% (240), where 240 is the total value.
-# First argument is the value, second the total value sum of all categories.
-def create_label(value, total_value_sum):
+# Formatting the pie chart legend. Labels are in the form '23.4% (240KB) category', where 240,000 is the total value.
+# First argument is the value, second the total value sum of all categories, and third one is the category name.
+def create_label(value, total_value_sum, category_name):
     percentage = (float(value) / total_value_sum) * 100
-    return '{p:5.1f}% ({v:5.2E})'.format(p=percentage, v=Decimal(value))
+    return '{p:4.1f}% \t ({v:>10}) \t {n}'.format(p=percentage, v=humanize.naturalsize(value), n=category_name).expandtabs()
 
 # Plots a pie chart out of the provided categories and labels.
 # All labels & percentages are placed inside a legend to prevent overlapping.
@@ -29,11 +29,11 @@ def create_pie_chart(categories, values):
     ax1.pie(values)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     total = sum(values)
-    plt.legend( loc = 'lower left', labels=['%s %s' % (create_label(size, total), l) for l, size in zip(categories, values)])
+    plt.legend( loc = 'lower left', labels=[create_label(size, total, category) for category, size in zip(categories, values)])
 
 # Adds a line in the plot for the total value sum.
 def add_total_sum(values):
-    plt.figtext(0.7, 0.05, 'Total: {v:.2E}'.format(v = Decimal(sum(sizes))))
+    plt.figtext(0.7, 0.05, 'Total: {}'.format(humanize.naturalsize(sum(sizes))))
 
 # Read traffic analysis from file
 with open(sys.argv[1]) as file_name:

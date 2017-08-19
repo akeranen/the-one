@@ -75,6 +75,8 @@ plt.title('Delay distribution of delivered {} messages\nPriority {}'.format(sys.
 plt.bar(bins, vals)
 plt.ylabel('Percentage of messages\n falling into class')
 plt.grid(True)
+axes = plt.gca()
+axes.set_xlim(xmin = 0)
 
 # Directly below, plot cumulative chart
 plt.subplot(2,1,2)
@@ -82,6 +84,9 @@ plt.plot(bins, [cumulative[bin] for bin in bins])
 plt.xlabel('Maximum delay in minutes in delay class')
 plt.ylabel('Cumulative percentage')
 plt.grid(True)
+axes = plt.gca()
+axes.set_xlim(xmin = 0)
+axes.set_ylim(ymin = 0)
 
 # Save to file
-plt.savefig(sys.argv[4])
+plt.savefig(sys.argv[4], dpi = 300)

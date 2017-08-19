@@ -78,7 +78,7 @@ plt.grid(True)
 
 # Directly below, plot cumulative chart
 plt.subplot(2,1,2)
-plt.plot(bins, [cumulative[year] for year in bins])
+plt.plot(bins, [cumulative[bin] for bin in bins])
 plt.xlabel('Maximum delay in minutes in delay class')
 plt.ylabel('Cumulative percentage')
 plt.grid(True)

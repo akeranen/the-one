@@ -24,26 +24,33 @@ def drawPlots(x, y_minimum, y_average):
     plt.plot(x, y_average, '.-',  label='Average')
     plt.legend(loc='upper left')
 
-# Read multicast analysis from file
-with open(sys.argv[1]) as file_name:
-    analysis = file_name.readlines()
-# Skip first line which only contains explanation.
-analysis = analysis[1:]
+# Main function of the script. See script description at the top of the file for further information.
+def main(analysisFileName, graphicFileName):
+    # Read multicast analysis from file
+    with open(analysisFileName) as analysis_file:
+        analysis = analysis_file.readlines()
+    # Skip first line which only contains explanation.
+    analysis = analysis[1:]
 
-# Interpret lines to find minimum and average delivery rates over time
-timePoints = []
-minimum = []
-average = []
-for line in analysis:
-    match = re.match("(\d+)\s+(\d+.\d+)\s+(\d+(?:.\d*)?)", line)
-    if match is None:
-        continue
-    timePoints.append(float(match.group(1)) / 60)
-    minimum.append(float(match.group(2)))
-    average.append(float(match.group(3)))
+    # Interpret lines to find minimum and average delivery rates over time
+    timePoints = []
+    minimum = []
+    average = []
+    for line in analysis:
+        match = re.match("(\d+)\s+(\d+.\d+)\s+(\d+(?:.\d*)?)", line)
+        if match is None:
+            continue
+        timePoints.append(float(match.group(1)) / 60)
+        minimum.append(float(match.group(2)))
+        average.append(float(match.group(3)))
 
-# Draw plots.
-drawPlots(timePoints, minimum, average)
+    # Draw plots.
+    drawPlots(timePoints, minimum, average)
 
-# Save to file
-plt.savefig(sys.argv[2])
+    # Save to file
+    plt.savefig(graphicFileName)
+    plt.close()
+
+# Make sure script can be called from command line.
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])

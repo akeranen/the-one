@@ -22,98 +22,108 @@ import matplotlib.ticker as ticker
 # avg_ratio_map: 0.00%, avg_ratio_marker: 23.64%, avg_ratio_skill: 32.73%, avg_ratio_res: 43.64%
 # ...
 
-# Read data sync report from file
-with open(sys.argv[1]) as file_name:
-    report = file_name.readlines()
+def main(analysisFileName, graphicFileName):
+    # Read data sync report from file
+    with open(analysisFileName) as analysis_file:
+        report = analysis_file.readlines()
 
-# Interpret lines to find memory consumption, data utility, data distance and data age metrics over time
-timePoints = []
-averageMemoryConsumption = []
-maximumMemoryConsumption = []
-medianAverageDataUtility = []
-averageAverageDataUtility = []
-medianAverageDataAge = []
-averageAverageDataAge = []
-medianMaximumDataAge = []
-medianAverageDataDistance = []
-averageAverageDataDistance = []
-medianMaximumDataDistance = []
-nextTimePoint = 0
-for line in report:
-    match = re.match("sim_time: (\d+.\d+), "
-                     "avg_used_mem: (\d+.\d+)%, ""max_used_mem: (\d+.\d+)%, "
-                     "med_avg_data_util: (\d+.\d+), avg_data_util: (\d+.\d+), "
-                     "med_avg_data_age: (\d+.\d+), avg_data_age: (\d+.\d+), med_max_data_age: (\d+.\d+), "
-                     "med_avg_data_dist: (\d+.\d+), avg_data_dist: (\d+.\d+), med_max_data_dist: (\d+.\d+)", line)
-    # Skip lines not detailing desired metrics
-    if match is None:
-        continue
-    # Only check every 10 minutes
-    timePoint = float(match.group(1)) / 60
-    if (timePoint < nextTimePoint):
-        continue
-    nextTimePoint = timePoint + 10
-    # Make sure to use correct unit (minutes, kilometres)
-    timePoints.append(timePoint)
-    averageMemoryConsumption.append(float(match.group(2)))
-    maximumMemoryConsumption.append(float(match.group(3)))
-    medianAverageDataUtility.append(float(match.group(4)))
-    averageAverageDataUtility.append(float(match.group(5)))
-    medianAverageDataAge.append(float(match.group(6)) / 60)
-    averageAverageDataAge.append(float(match.group(7)) / 60)
-    medianMaximumDataAge.append(float(match.group(8)) / 60)
-    medianAverageDataDistance.append(float(match.group(9)) / 1000)
-    averageAverageDataDistance.append(float(match.group(10)) / 1000)
-    medianMaximumDataDistance.append(float(match.group(11)) / 1000)
+    # Interpret lines to find memory consumption, data utility, data distance and data age metrics over time
+    timePoints = []
+    averageMemoryConsumption = []
+    maximumMemoryConsumption = []
+    medianAverageDataUtility = []
+    averageAverageDataUtility = []
+    medianAverageDataAge = []
+    averageAverageDataAge = []
+    medianMaximumDataAge = []
+    medianAverageDataDistance = []
+    averageAverageDataDistance = []
+    medianMaximumDataDistance = []
+    nextTimePoint = 0
+    for line in report:
+        match = re.match("sim_time: (\d+.\d+), "
+                         "avg_used_mem: (\d+.\d+)%, ""max_used_mem: (\d+.\d+)%, "
+                         "med_avg_data_util: (\d+.\d+), avg_data_util: (\d+.\d+), "
+                         "med_avg_data_age: (\d+.\d+), avg_data_age: (\d+.\d+), med_max_data_age: (\d+.\d+), "
+                         "med_avg_data_dist: (\d+.\d+), avg_data_dist: (\d+.\d+), med_max_data_dist: (\d+.\d+)", line)
+        # Skip lines not detailing desired metrics
+        if match is None:
+            continue
+        # Only check every 10 minutes
+        timePoint = float(match.group(1)) / 60
+        if (timePoint < nextTimePoint):
+            continue
+        nextTimePoint = timePoint + 10
+        # Make sure to use correct unit (minutes, kilometres)
+        timePoints.append(timePoint)
+        averageMemoryConsumption.append(float(match.group(2)))
+        maximumMemoryConsumption.append(float(match.group(3)))
+        medianAverageDataUtility.append(float(match.group(4)))
+        averageAverageDataUtility.append(float(match.group(5)))
+        medianAverageDataAge.append(float(match.group(6)) / 60)
+        averageAverageDataAge.append(float(match.group(7)) / 60)
+        medianMaximumDataAge.append(float(match.group(8)) / 60)
+        medianAverageDataDistance.append(float(match.group(9)) / 1000)
+        averageAverageDataDistance.append(float(match.group(10)) / 1000)
+        medianMaximumDataDistance.append(float(match.group(11)) / 1000)
 
-# Create four graphics over time: one each for memory consumption, data utility, data distance and data age
-fig = plt.figure(figsize=(12,12))
+    # Create four graphics over time: one each for memory consumption, data utility, data distance and data age
+    fig = plt.figure(figsize=(12,12))
 
-# Adds a subplot over time at the specified index.
-# Title, label of y axis and plots (in the form of values and a label) can be provided.
-def addSubplot(atIndex, title, ylabel, plots):
-    fig.add_subplot(3, 2, atIndex)
-    plt.title(title)
-    plt.xlabel('Minutes in simulation')
-    plt.ylabel(ylabel)
-    for (values, label) in plots:
-        plt.plot(timePoints, values, '.-', label=label)
-    plt.legend(loc='upper left')
-    plt.grid(True)
+    # Adds a subplot over time at the specified index.
+    # Title, label of y axis and plots (in the form of values and a label) can be provided.
+    def addSubplot(atIndex, title, ylabel, plots):
+        fig.add_subplot(3, 2, atIndex)
+        plt.title(title)
+        plt.xlabel('Minutes in simulation')
+        plt.ylabel(ylabel)
+        for (values, label) in plots:
+            plt.plot(timePoints, values, '.-', label=label)
+        plt.legend(loc='upper left')
+        plt.grid(True)
+        axes = plt.gca()
+        axes.set_xlim(xmin=0)
+        axes.set_ylim(ymin=0)
+        axes.xaxis.set_major_locator(ticker.IndexLocator(base=60, offset=-1))
+
+    addSubplot(3, title='Memory Consumption',
+               ylabel='Used memory',
+               plots=[(averageMemoryConsumption, 'Average'), (maximumMemoryConsumption, 'Maximum')])
+    addSubplot(2, title='Average Data Utility in Local Database',
+               ylabel='Average data utility',
+               plots=[(medianAverageDataUtility, 'Median'), (averageAverageDataUtility, 'Average')])
+    addSubplot(4, title='Data Distance',
+               ylabel='Distance in km',
+               plots=[(averageAverageDataDistance, 'Average Average'),
+                      (medianAverageDataDistance, 'Median Average'),
+                      (medianMaximumDataDistance, 'Median Maximum')])
+    addSubplot(6, title='Data Age',
+               ylabel='Age in minutes',
+               plots=[(averageAverageDataAge, 'Average Average'),
+                      (medianAverageDataAge, 'Median Average'),
+                      (medianMaximumDataAge, 'Median Maximum')])
     axes = plt.gca()
-    axes.set_xlim(xmin=0)
-    axes.set_ylim(ymin=0)
-    axes.xaxis.set_major_locator(ticker.IndexLocator(base=60, offset=-1))
+    axes.yaxis.set_major_locator(ticker.IndexLocator(base=60, offset=-0.4))
 
-addSubplot(3, title='Memory Consumption',
-           ylabel='Used memory',
-           plots=[(averageMemoryConsumption, 'Average'), (maximumMemoryConsumption, 'Maximum')])
-addSubplot(2, title='Average Data Utility in Local Database',
-           ylabel='Average data utility',
-           plots=[(medianAverageDataUtility, 'Median'), (averageAverageDataUtility, 'Average')])
-addSubplot(4, title='Data Distance',
-           ylabel='Distance in km',
-           plots=[(averageAverageDataDistance, 'Average Average'), (medianAverageDataDistance, 'Median Average'), (medianMaximumDataDistance, 'Median Maximum')])
-addSubplot(6, title='Data Age',
-           ylabel='Age in minutes',
-           plots=[(averageAverageDataAge, 'Average Average'), (medianAverageDataAge, 'Median Average'), (medianMaximumDataAge, 'Median Maximum')])
-axes = plt.gca()
-axes.yaxis.set_major_locator(ticker.IndexLocator(base=60, offset=-0.4))
+    # Add information about data distribution
+    # Get information
+    match = re.match("avg_ratio_map: (\d+.\d+)%, avg_ratio_marker: (\d+.\d+)%, avg_ratio_skill: (\d+.\d+)%, avg_ratio_res: (\d+.\d+)%",
+                     report[-2])
+    labels = ['Marker', 'Skill', 'Resource']
+    values = [float(match.group(2)), float(match.group(3)), float(match.group(4))]
+    fig.add_subplot(3, 2, 1)
+    # Create pie chart
+    plt.title('Average final distribution in local database')
+    plt.pie(values)
+    plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.legend(loc = 'lower left',
+               labels=['{p:4.1f}% \t {n}'.format(p=value, n=label).expandtabs() for label, value in zip(labels, values)])
 
-# Add information about data distribution
-# Get information
-match = re.match("avg_ratio_map: (\d+.\d+)%, avg_ratio_marker: (\d+.\d+)%, avg_ratio_skill: (\d+.\d+)%, avg_ratio_res: (\d+.\d+)%",
-                 report[-2])
-labels = ['Marker', 'Skill', 'Resource']
-values = [float(match.group(2)), float(match.group(3)), float(match.group(4))]
-fig.add_subplot(3, 2, 1)
-# Create pie chart
-plt.title('Average final distribution in local database')
-plt.pie(values)
-plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-plt.legend(loc = 'lower left',
-           labels=['{p:4.1f}% \t {n}'.format(p=value, n=label).expandtabs() for label, value in zip(labels, values)])
+    # Save to file
+    plt.tight_layout()
+    plt.savefig(graphicFileName, dpi = 300)
+    plt.close()
 
-# Save to file
-plt.tight_layout()
-plt.savefig(sys.argv[2], dpi = 300)
+# Make sure script can be called from command line.
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])

@@ -71,13 +71,10 @@ public class AdjencySnapshotReport extends SnapshotReport implements ConnectionL
 	@Override
 	protected void createSnapshot(List<DTNHost> hosts) {
 		write ("[" + (int)getSimTime() + "]");
-		setPrefix("\t"); // indent following lines by one tab
 
 		for (ConnectionInfo ci : cons.values()) {
 			write(ci.h1 + " " + ci.h2);
 		}
-
-		setPrefix(""); // don't indent anymore
 	}
 
 	/**

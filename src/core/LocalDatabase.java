@@ -100,6 +100,13 @@ public class LocalDatabase {
                 dataIterator.remove();
             }
         }
+
+        // Make sure to set used size to 0 if database is empty. Without this check, an empty database could use up a
+        // positive amount of size due to rounding errors.
+        // This behavior is important when (indirectly) using this field to check whether the database is empty.
+        if (this.data.isEmpty()) {
+            this.usedSize = 0;
+        }
     }
 
     /**

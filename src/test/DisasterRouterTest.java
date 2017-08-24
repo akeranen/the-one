@@ -1055,14 +1055,14 @@ public class DisasterRouterTest extends AbstractRouterTest {
         sender.createNewMessage(m1);
         this.clock.advance(1);
         this.updateAllNodes();
-        router.removeFromMessages(m1.getId());
+        router.deleteMessage(m1.getId(), false);
         
         // Send another message 
         Message m2 = new Message(sender, receiver, "M2", 1);
         sender.createNewMessage(m2);
         this.clock.advance(1);
         this.updateAllNodes();
-        router.removeFromMessages(m2.getId());
+        router.deleteMessage(m2.getId(), false);
         
         // Try to send message M1 again
         sender.createNewMessage(m1);
@@ -1070,7 +1070,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.updateAllNodes();
         this.clock.advance(1);
         this.updateAllNodes();
-        router.removeFromMessages(m1.getId());
+        router.deleteMessage(m1.getId(), false);
         
         // Check that no message is sent twice
         while (this.mc.next()) {
@@ -1097,7 +1097,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
      * Creates a group message, ensures that it is not sent twice
      */
     public void testGroupMessagesAreNotSentTwice() {
-    	// Create groups for multicasts.
+        // Create groups for multicasts.
         Group group = Group.createGroup(0);
         group.addHost(h1);
         group.addHost(h2);
@@ -1111,7 +1111,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
      * Creates a broadcast message, ensures that it is not sent twice
      */
     public void testBroadcastMessagesAreNotSentTwice() {
-    	// Test broadcast messages
+        // Test broadcast messages
         Message broadcastMessage = new BroadcastMessage(h1, "broadcastMessage", 1, PRIORITY);
         testMessageIsNotSentTwice(broadcastMessage, h3);
     }
@@ -1152,8 +1152,8 @@ public class DisasterRouterTest extends AbstractRouterTest {
      * @return True if the current message history contains a pair of m and h
      */
     public boolean historyContainsMessageAndHost(DTNHost hostFrom, Message message, DTNHost hostTo) {
-    	
-    	List<Tuple<String, Integer>> history = ((DisasterRouter)hostFrom.getRouter()).getMessageSentToHostHistory();
+        
+        List<Tuple<String, Integer>> history = ((DisasterRouter)hostFrom.getRouter()).getMessageSentToHostHistory();
       
         return history.contains(new Tuple<>(message.getId(), hostTo.getAddress()));
     }

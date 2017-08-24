@@ -82,7 +82,7 @@ public class DisasterRouter extends ActiveRouter {
     /**
      * Constant indicating that a message is not sent because it is contained in the history
      */
-    private static final int DENIED_IN_HISTORY = -100;
+    private static final int DENIED_IN_HISTORY = -110;
     /**
      * List storing the last x message IDs and host IDs that are not sent again. The size of the list is restricted to {@link #MESSAGE_HISTORY_SIZE}. 
      */
@@ -301,9 +301,7 @@ public class DisasterRouter extends ActiveRouter {
     private void recomputeMessageCache() {
         Collection<Tuple<Message, Connection>> messages =
                 this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
-        
         this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
-        
         this.lastMessageOrdering = SimClock.getTime();
     }
 
@@ -367,7 +365,7 @@ public class DisasterRouter extends ActiveRouter {
      * @return The removed message or null if message for the ID wasn't found
      */
     @Override
-    public Message removeFromMessages(String id) {
+    protected Message removeFromMessages(String id) {
         this.replicationsDensityManager.removeMessage(id);
         return super.removeFromMessages(id);
     }
@@ -381,7 +379,7 @@ public class DisasterRouter extends ActiveRouter {
         Tuple<String, Integer> historyItem = new Tuple<>(message.getId(), host.getAddress());
         
         while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
-          this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
+            this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
         }
             
         this.messageSentToHostHistory.add(0, historyItem);
@@ -452,7 +450,8 @@ public class DisasterRouter extends ActiveRouter {
     
     @Override
     protected int startTransfer(Message m, Connection con) {
-        if (messageSentToHostHistory.contains(new Tuple<String, Integer>(m.getId(), con.getOtherNode(getHost()).getAddress()))) {
+        if (messageSentToHostHistory.contains(new Tuple<String, Integer>(m.getId(), 
+                con.getOtherNode(getHost()).getAddress()))) {
             return DENIED_IN_HISTORY;
         }
         
@@ -468,11 +467,11 @@ public class DisasterRouter extends ActiveRouter {
     }
     
     /**
-     * Returns the messages that were already sent to this host
+     * Returns the last {@link #MESSAGE_HISTORY_SIZE} messages that were already sent by this host
      * @return message history
      */
     public List<Tuple<String, Integer>> getMessageSentToHostHistory() {
-        return messageSentToHostHistory;
+        return new ArrayList<>(messageSentToHostHistory);
     }
     
     /**

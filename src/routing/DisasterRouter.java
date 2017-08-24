@@ -297,9 +297,9 @@ public class DisasterRouter extends ActiveRouter {
     private void recomputeMessageCache() {
         Collection<Tuple<Message, Connection>> messages =
                 this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
-        this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
-
+        
         removeMessagesContainedInHistory(cachedNonDirectMessages);
+        this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
         
         this.lastMessageOrdering = SimClock.getTime();
     }
@@ -370,22 +370,18 @@ public class DisasterRouter extends ActiveRouter {
     }
     
     /**
-     * Adds a message / host pair to the message history. Also deletes one if the list has reached its maximum size
-     * @param m Message to be added
-     * @param h Host to be added
+     * Adds a message / host pair to the message history. Also deletes messages until the list has reached its maximum size
+     * @param message: Message to be added
+     * @param host: Host to be added
      */
     private void addMessageAndHostToHistory(Message message, DTNHost host) {
         Tuple<String, Integer> historyItem = new Tuple<>(message.getId(), host.getAddress());
         
-        if (this.messageSentToHostHistory.size() < MESSAGE_HISTORY_SIZE) {
-            this.messageSentToHostHistory.add(0, historyItem);
-        } else {
-            while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
-              this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
-            }
-            
-            this.messageSentToHostHistory.add(0, historyItem);
+        while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
+          this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
         }
+            
+        this.messageSentToHostHistory.add(0, historyItem);
     }
     
     /**
@@ -456,8 +452,7 @@ public class DisasterRouter extends ActiveRouter {
     
     /**
      * Removes messages that already occur in the message history
-     * @param messages: 
-     * @return
+     * @param messages: list of message/connection tuples to be tested
      */
     private void removeMessagesContainedInHistory(List<Tuple<Message, Connection>> messages) {
         
@@ -476,8 +471,7 @@ public class DisasterRouter extends ActiveRouter {
     
     /**
      * Removes messages that already occur in the message history
-     * @param messages: 
-     * @return
+     * @param messages: list of message/connection tuples to be tested
      */
     private List<Message> removeMessagesContainedInHistory(List<Message> messages, DTNHost host) {
         
@@ -491,7 +485,6 @@ public class DisasterRouter extends ActiveRouter {
                 iter.remove();
             }
         }
-        
         return messages;
     }
     
@@ -503,10 +496,18 @@ public class DisasterRouter extends ActiveRouter {
         return this.powerThreshold;
     }
     
+    /**
+     * Returns the messages that were already sent to this host
+     * @return message history
+     */
     public List<Tuple<String, Integer>> getMessageSentToHostHistory() {
         return messageSentToHostHistory;
     }
     
+    /**
+     * Returns the number of messages in the history
+     * @return size of the history
+     */
     public static int getMessageHistorySize() {
         return MESSAGE_HISTORY_SIZE;
     }

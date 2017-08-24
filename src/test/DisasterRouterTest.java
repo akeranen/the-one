@@ -1047,6 +1047,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         
         DTNHost sender = m1.getFrom();
         List<Tuple<Message, DTNHost>> sentMessages = new ArrayList<>();
+        DisasterRouter router = (DisasterRouter)sender.getRouter();
         
         this.mc.reset();
         // Send message M1
@@ -1054,12 +1055,14 @@ public class DisasterRouterTest extends AbstractRouterTest {
         sender.createNewMessage(m1);
         this.clock.advance(1);
         this.updateAllNodes();
+        router.removeFromMessages(m1.getId());
         
         // Send another message 
         Message m2 = new Message(sender, receiver, "M2", 1);
         sender.createNewMessage(m2);
         this.clock.advance(1);
         this.updateAllNodes();
+        router.removeFromMessages(m2.getId());
         
         // Try to send message M1 again
         sender.createNewMessage(m1);
@@ -1067,6 +1070,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.updateAllNodes();
         this.clock.advance(1);
         this.updateAllNodes();
+        router.removeFromMessages(m1.getId());
         
         // Check that no message is sent twice
         while (this.mc.next()) {
@@ -1150,17 +1154,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     public boolean historyContainsMessageAndHost(DTNHost hostFrom, Message message, DTNHost hostTo) {
     	
     	List<Tuple<String, Integer>> history = ((DisasterRouter)hostFrom.getRouter()).getMessageSentToHostHistory();
-        //String messageID = message.getId();
-        //Integer hostID = hostTo.getAddress();
-        
+      
         return history.contains(new Tuple<>(message.getId(), hostTo.getAddress()));
-        		
-        /*for (Tuple<String, Integer> t : history) {
-            if (t.getValue().equals(hostID) && t.getKey().equals(messageID)) {
-                return true;
-            }
-        }*/
-
-        //return false;
     }
 }

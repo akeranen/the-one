@@ -80,6 +80,10 @@ public class DisasterRouter extends ActiveRouter {
     private static final int MESSAGE_HISTORY_SIZE = 1000;
     
     /**
+     * Constant indicating that a message is not sent because it is contained in the history
+     */
+    private static final int DENIED_IN_HISTORY = -100;
+    /**
      * List storing the last x message IDs and host IDs that are not sent again. The size of the list is restricted to {@link #MESSAGE_HISTORY_SIZE}. 
      */
     private List<Tuple<String, Integer>> messageSentToHostHistory = new ArrayList<>();
@@ -298,7 +302,6 @@ public class DisasterRouter extends ActiveRouter {
         Collection<Tuple<Message, Connection>> messages =
                 this.messageChooser.chooseNonDirectMessages(this.getMessageCollection(), this.getConnections());
         
-        removeMessagesContainedInHistory(cachedNonDirectMessages);
         this.cachedNonDirectMessages = this.messagePrioritizer.sortMessages(messages);
         
         this.lastMessageOrdering = SimClock.getTime();
@@ -364,7 +367,7 @@ public class DisasterRouter extends ActiveRouter {
      * @return The removed message or null if message for the ID wasn't found
      */
     @Override
-    protected Message removeFromMessages(String id) {
+    public Message removeFromMessages(String id) {
         this.replicationsDensityManager.removeMessage(id);
         return super.removeFromMessages(id);
     }
@@ -429,7 +432,6 @@ public class DisasterRouter extends ActiveRouter {
     @Override
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
         List<Tuple<Message, Connection>> messages = this.getMessagesForConnected();
-        removeMessagesContainedInHistory(messages);
         
         messages.sort(this.directMessageTupleComparator);
         return messages;
@@ -444,48 +446,17 @@ public class DisasterRouter extends ActiveRouter {
     protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
         List<Message> messages = super.getSortedMessagesForConnected(connected);
         
-        messages = removeMessagesContainedInHistory(messages, connected);
-        
         messages.sort(this.directMessageComparator);
         return messages;
     }
     
-    /**
-     * Removes messages that already occur in the message history
-     * @param messages: list of message/connection tuples to be tested
-     */
-    private void removeMessagesContainedInHistory(List<Tuple<Message, Connection>> messages) {
-        
-        Iterator<Tuple<Message, Connection>> iter = messages.iterator();
-
-        while (iter.hasNext()) {
-            Tuple<Message, Connection> t = iter.next();
-            Tuple<String, Integer> historyEntry = new Tuple<>(t.getKey().getId(), 
-                    t.getValue().getOtherNode(getHost()).getAddress());
-            
-            if (messageSentToHostHistory.contains(historyEntry)) {
-                iter.remove();
-            }
+    @Override
+    protected int startTransfer(Message m, Connection con) {
+        if (messageSentToHostHistory.contains(new Tuple<String, Integer>(m.getId(), con.getOtherNode(getHost()).getAddress()))) {
+            return DENIED_IN_HISTORY;
         }
-    }
-    
-    /**
-     * Removes messages that already occur in the message history
-     * @param messages: list of message/connection tuples to be tested
-     */
-    private List<Message> removeMessagesContainedInHistory(List<Message> messages, DTNHost host) {
         
-        Iterator<Message> iter = messages.iterator();
-        
-        while (iter.hasNext()) {
-            Message message = iter.next();
-            Tuple<String, Integer> historyEntry = new Tuple<>(message.getId(), host.getAddress());
-            
-            if (messageSentToHostHistory.contains(historyEntry)) {
-                iter.remove();
-            }
-        }
-        return messages;
+        return super.startTransfer(m, con);
     }
     
     /**

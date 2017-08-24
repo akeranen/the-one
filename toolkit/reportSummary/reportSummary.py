@@ -23,8 +23,7 @@ seeds = []
 try:
     opts, args = getopt.getopt(relevantOptions,"r:s:")
 except getopt.GetoptError:
-    print('Usage: reportSummary.py -r <reportDirectory> -s <seeds>\n'
-          'e.g., -r /Simulator/reports/ -s 1,2,3')
+    print('Usage: reportSummary.py -r <reportDirectory> -s <seeds> \n e.g., -r /Simulator/reports/ -s 1,2,3')
     sys.exit(2)
 for opt, arg in opts:
     if opt == "-r":

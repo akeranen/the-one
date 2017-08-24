@@ -42,7 +42,7 @@ public class Message implements Comparable<Message> {
     private double timeReceived;
     /** The time when this message was created */
     private double timeCreated;
-    /** Initial TTL of the message */
+    /** Initial TTL of the message in minutes */
     private int initTtl;
 
     /**

@@ -17,8 +17,8 @@ import readFileUtilities
 # ReportSummary:
 #
 # Usage:
-# reportSummary.py -r <reportDirectory> -s <seeds>
-# e.g., -r /Simulator/reports/ -s 1,2,3
+# reportSummary.py -r <reportDirectory>
+# e.g., -r /Simulator/reports/
 #
 # 1. Calls all pre-processing perl script on a given report directory
 #    The shortened reports are placed within the reports directory
@@ -31,34 +31,26 @@ import readFileUtilities
 relevantOptions = sys.argv[1:]
 # Default values for options
 reportDir = 'reports/'
-seeds = []
+
 # Try to retrieve command line parameters
 try:
-    opts, args = getopt.getopt(relevantOptions,"r:s:")
+    opts, args = getopt.getopt(relevantOptions,"r:")
 except getopt.GetoptError:
-    print('Usage: reportSummary.py -r <reportDirectory> -s <seeds> \n e.g., -r /Simulator/reports/ -s 1,2,3')
+    print('Usage: reportSummary.py -r <reportDirectory> \n e.g., -r /Simulator/reports/')
     sys.exit(2)
 for opt, arg in opts:
     if opt == "-r":
         reportDir = arg
-    elif opt == "-s":
-        seeds = arg.split(',')
 
 ## Call perl scripts for report pre-processing
-#Find out what runs you need to do depending on seeds
 granularity = "300"
 perlNames = [["messageDelayAnalyzer.pl", "realisticScenario_ImmediateMessageDelayReport", "messageDelayAnalysis"],
              ["broadcastMessageAnalyzer.pl", "realisticScenario_BroadcastDeliveryReport", "broadcastMessageAnalysis"],
              ["multicastMessageAnalyzer.pl", "realisticScenario_MulticastMessageDeliveryReport", "multicastMessageAnalysis"]]
 
 necessaryAnalyses = []
-if len(seeds) == 0:
-    for (script, input, output) in perlNames:
-        necessaryAnalyses.append(["../"+script, reportDir+input+".txt", reportDir+output+".txt"])
-else:
-    for seed in seeds:
-        for (script, input, output) in perlNames:
-            necessaryAnalyses.append(["../"+script, reportDir+input+"_"+seed+".txt", reportDir+output+"_"+seed+".txt"])
+for (script, input, output) in perlNames:
+    necessaryAnalyses.append(["../"+script, reportDir+input+".txt", reportDir+output+".txt"])
 
 #Execute script with input and write to output
 print("You are running", sys.platform)
@@ -69,13 +61,12 @@ for (script, input, output) in necessaryAnalyses:
             file.write(process.stdout)
         print("Successfully created ", output)
 
-# Create images/ directory in reports/ if it does not exist yet
+# Create images/ directory in reports directory if it does not exist yet
 imageDirectoryName = reportDir + 'images/'
 if not os.path.exists(imageDirectoryName):
     os.makedirs(imageDirectoryName)
 print("Made sure directory exists: ", imageDirectoryName)
 
-# TODO: Seeds!
 # Call all visualization scripts
 trafficAnalysis.main(
     analysisFileName=reportDir+"realisticScenario_TrafficReport.txt",

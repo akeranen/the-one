@@ -2,10 +2,11 @@ import subprocess
 import sys
 import getopt
 
-#ReportSummary:
+# ReportSummary:
 #
-#Usage: reportSummary.py -r <reportDirectory> -s <seeds>\n'
-#       'e.g., -r /Simulator/reports/ -s 1,2,3
+# Usage:
+# reportSummary.py -r <reportDirectory> -s <seeds>
+# e.g., -r /Simulator/reports/ -s 1,2,3
 #
 # 1. Calls all pre-processing perl script on a given report directory
 #    The shortened reports are placed within the reports directory
@@ -14,9 +15,9 @@ import getopt
 # 3. TODO: Outputs all images into pdf in consistent order (calls another script that does)
 
 
-## Retrieve command line options
+# Retrieve command line options
 relevantOptions = sys.argv[1:]
-#Default values for options
+# Default values for options
 reportDir = 'reports/'
 seeds = []
 # Try to retrieve command line parameters

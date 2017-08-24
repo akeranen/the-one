@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import sys
 import re
 
-# Script that translates one-to-one message deliver into a pie chart
+# Script that translates one-to-one message delivery ratio into a pie chart
 # Takes as arguments
 # (1) a delivery probability report
 # (2) path to save the graphic to.
@@ -16,6 +16,7 @@ import re
 # delivery_prob: 0.1196
 
 def getValueFromString(string):
+    """Return the value contained in the string as an int or float depending on whether its an integer number."""
     match = re.match("(\D+)(\d+(\.\d+)?)", string)
     if match is None:
         print("Formatting problem")
@@ -46,6 +47,7 @@ def main(analysisFileName, graphicFileName):
 
     #Add total sum
     plt.figtext(0.6, 0.05, 'Total created messages: %d' % created)
+    plt.title("Message delivery ratio for one-to-one messages")
 
     # Save to file
     plt.savefig(graphicFileName)

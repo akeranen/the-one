@@ -4,6 +4,7 @@ import getopt
 import os
 
 import trafficAnalysis
+import bufferOccupancy
 import privateMessageAnalysis
 import delayDistributionAnalysis
 import broadcastAnalysis
@@ -74,10 +75,14 @@ if not os.path.exists(imageDirectoryName):
     os.makedirs(imageDirectoryName)
 print("Made sure directory exists: ", imageDirectoryName)
 
+# TODO: Seeds!
 # Call all visualization scripts
 trafficAnalysis.main(
     analysisFileName=reportDir+"realisticScenario_TrafficReport.txt",
     graphicFileName=readFileUtilities.getAbsoluteTrafficAnalysisPath(imageDirectoryName))
+bufferOccupancy.main(
+    analysisFileName=reportDir+"realisticScenario_BufferOccupancyReport.txt",
+    graphicFileName=readFileUtilities.getAbsoluteBufferOccupancyAnalysisPath(imageDirectoryName))
 privateMessageAnalysis.main(
     analysisFileName=reportDir+"realisticScenario_DeliveryProbabilityReport.txt",
     graphicFileName=readFileUtilities.getAbsoluteDeliveryRatePath(imageDirectoryName))

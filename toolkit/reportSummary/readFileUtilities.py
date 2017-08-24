@@ -12,6 +12,9 @@ def findNextLineContaining(lines, startIdx, phrase):
 def getAbsoluteTrafficAnalysisPath(folder):
     return folder + "TrafficAnalysis.png"
 
+def getAbsoluteBufferOccupancyAnalysisPath(folder):
+    return folder + "BufferOccupancy.png"
+
 # Returns the path to the one to one message delivery rate analysis graphic saved / to be saved in the provided folder.
 def getAbsoluteDeliveryRatePath(folder):
     return folder + "DeliveryProbability.png"

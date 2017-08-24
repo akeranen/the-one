@@ -4,6 +4,7 @@ import readFileUtilities
 
 # Script that translates a graphics folder containing images with names
 # - TrafficAnalysis.png,
+# - BufferOccupancy.png
 # - DeliveryProbability.png,
 # - PrivateMessageDelay.png,
 # - BroadcastAnalysis.png,
@@ -19,6 +20,7 @@ def main(imageFolderPath):
     pdf = FPDF()
     pdf.add_page()
     pdf.image(readFileUtilities.getAbsoluteTrafficAnalysisPath(imageFolderPath), h=132)
+    pdf.image(readFileUtilities.getAbsoluteBufferOccupancyAnalysisPath(imageFolderPath), h=132)
     pdf.add_page()
     pdf.image(readFileUtilities.getAbsoluteDeliveryRatePath(imageFolderPath), h=132)
     pdf.image(readFileUtilities.getAbsoluteOneToOneMessageDelayPath(imageFolderPath), h=132)

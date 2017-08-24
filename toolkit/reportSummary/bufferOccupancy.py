@@ -36,10 +36,7 @@ for line in analysis:
     maxima.append(max)
     variances.append(variance)
 
-#Turn resulution high enough for high quality image
-plt.rcParams['savefig.dpi'] = 300
 plt.grid(True)
-
 plt.plot(times, maxima, label="maximum")
 plt.plot(times, avgOccupancies, label="mean")
 plt.plot(times, minima, label="minimum")
@@ -47,7 +44,7 @@ plt.plot(times, variances, label="variance")
 
 plt.xlabel('Time in minutes')
 plt.ylabel('Percentage of buffer that is occupied')
-plt.legend(loc='upper left')
+plt.legend(loc='right')
 plt.title('Buffer occupancy')
 
-plt.savefig(sys.argv[2])
+plt.savefig(sys.argv[2], dpi=300)

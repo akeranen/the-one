@@ -16,6 +16,7 @@ import re
 # delivery_prob: 0.1196
 
 def getValueFromString(string):
+    """Return the value contained in the string as an int or float depending on whether its an integer number."""
     match = re.match("(\D+)(\d+(\.\d+)?)", string)
     if match is None:
         print("Formatting problem")

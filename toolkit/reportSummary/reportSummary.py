@@ -51,7 +51,7 @@ else:
 #Execute script with input and write to output
 for (script, input, output) in necessaryAnalyses:
     with open(output, 'w', 1) as file:
-        process = subprocess.run("perl "+ script + " "+ input + " " + granularity)
+        process = subprocess.run("perl "+ script + " "+ input + " " + granularity, stdout=file)
         file.write(process.stdout)
         print("Successfully created ", output)
 

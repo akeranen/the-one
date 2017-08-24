@@ -40,10 +40,10 @@ for line in analysis:
 plt.rcParams['savefig.dpi'] = 300
 plt.grid(True)
 
-plt.plot(times, maxima, label="max")
-plt.plot(times, avgOccupancies, label="avg")
-plt.plot(times, minima, label="min")
-plt.plot(times, variances, label="var")
+plt.plot(times, maxima, label="maximum")
+plt.plot(times, avgOccupancies, label="mean")
+plt.plot(times, minima, label="minimum")
+plt.plot(times, variances, label="variance")
 
 plt.xlabel('Time in minutes')
 plt.ylabel('Percentage of buffer that is occupied')

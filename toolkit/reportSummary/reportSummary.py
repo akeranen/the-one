@@ -49,9 +49,11 @@ else:
             necessaryAnalyses.append(["../"+script, reportDir+input+"_"+seed+".txt", reportDir+output+"_"+seed+".txt"])
 
 #Execute script with input and write to output
+print("You are running", sys.platform)
 for (script, input, output) in necessaryAnalyses:
     with open(output, 'w', 1) as file:
         process = subprocess.run("perl "+ script + " "+ input + " " + granularity, stdout=file)
-        file.write(process.stdout)
+        if (sys.platform == "linux"):
+            file.write(process.stdout)
         print("Successfully created ", output)
 

@@ -371,7 +371,8 @@ public class DisasterRouter extends ActiveRouter {
     }
     
     /**
-     * Adds a message / host pair to the message history. Also deletes messages until the list has reached its maximum size
+     * Adds a message / host pair to the message history. Also deletes messages until the list has reached its 
+     * maximum size
      * @param message: Message to be added
      * @param host: Host to be added
      */
@@ -430,7 +431,6 @@ public class DisasterRouter extends ActiveRouter {
     @Override
     protected List<Tuple<Message, Connection>> getSortedMessagesForConnected() {
         List<Tuple<Message, Connection>> messages = this.getMessagesForConnected();
-        
         messages.sort(this.directMessageTupleComparator);
         return messages;
     }
@@ -443,7 +443,6 @@ public class DisasterRouter extends ActiveRouter {
     @Override
     protected List<Message> getSortedMessagesForConnected(DTNHost connected) {
         List<Message> messages = super.getSortedMessagesForConnected(connected);
-        
         messages.sort(this.directMessageComparator);
         return messages;
     }

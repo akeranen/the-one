@@ -73,7 +73,21 @@ public class DisasterRouter extends ActiveRouter {
      * it tries to save all its messages and recent data from deletion by sending them out.
      */
     private double powerThreshold;
-
+    
+    /**
+     * Number of tuples of messages/hosts which are remembered, such that they are not sent again
+     */
+    private static final int MESSAGE_HISTORY_SIZE = 1000;
+    
+    /**
+     * Constant indicating that a message is not sent because it is contained in the history
+     */
+    private static final int DENIED_IN_HISTORY = -110;
+    /**
+     * List storing the last x message IDs and host IDs that are not sent again. The size of the list is restricted to {@link #MESSAGE_HISTORY_SIZE}. 
+     */
+    private List<Tuple<String, Integer>> messageSentToHostHistory = new ArrayList<>();
+    
     /**
      * Initializes a new instance of the {@link DisasterRouter} class.
      * @param s Settings to use.
@@ -250,7 +264,17 @@ public class DisasterRouter extends ActiveRouter {
             this.messageChooser.setAttachedHost(this.getHost());
         }
     }
-
+    
+    /**
+     * Method is called just before a transfer is finalized
+     * at {@link #update()}.
+     * Subclasses that are interested of the event may want to override this.
+     * @param con The connection whose transfer was finalized
+     */
+    protected void transferDone(Connection con) {
+        addMessageAndHostToHistory(con.getMessage(), con.getOtherNode(getHost()));
+    }
+    
     /**
      * Checks whether this router has anything to send out.
      *
@@ -345,7 +369,23 @@ public class DisasterRouter extends ActiveRouter {
         this.replicationsDensityManager.removeMessage(id);
         return super.removeFromMessages(id);
     }
-
+    
+    /**
+     * Adds a message / host pair to the message history. Also deletes messages until the list has reached its 
+     * maximum size
+     * @param message: Message to be added
+     * @param host: Host to be added
+     */
+    private void addMessageAndHostToHistory(Message message, DTNHost host) {
+        Tuple<String, Integer> historyItem = new Tuple<>(message.getId(), host.getAddress());
+        
+        while (this.messageSentToHostHistory.size() >= MESSAGE_HISTORY_SIZE) {
+            this.messageSentToHostHistory.remove(this.messageSentToHostHistory.size() - 1);
+        }
+            
+        this.messageSentToHostHistory.add(0, historyItem);
+    }
+    
     /**
      * Computes a ratio between the encounter value of this router and the one of the provided router.
      * A ratio less than 0.5 signifies that the other host is less social than this one, a
@@ -406,12 +446,38 @@ public class DisasterRouter extends ActiveRouter {
         messages.sort(this.directMessageComparator);
         return messages;
     }
-
+    
+    @Override
+    protected int startTransfer(Message m, Connection con) {
+        if (messageSentToHostHistory.contains(new Tuple<String, Integer>(m.getId(), 
+                con.getOtherNode(getHost()).getAddress()))) {
+            return DENIED_IN_HISTORY;
+        }
+        
+        return super.startTransfer(m, con);
+    }
+    
     /**
      * Returns the power threshold.
      * @return The power threshold.
      */
     public double getPowerThreshold() {
         return this.powerThreshold;
+    }
+    
+    /**
+     * Returns the last {@link #MESSAGE_HISTORY_SIZE} messages that were already sent by this host
+     * @return message history
+     */
+    public List<Tuple<String, Integer>> getMessageSentToHostHistory() {
+        return new ArrayList<>(messageSentToHostHistory);
+    }
+    
+    /**
+     * Returns the number of messages in the history
+     * @return size of the history
+     */
+    public static int getMessageHistorySize() {
+        return MESSAGE_HISTORY_SIZE;
     }
 }

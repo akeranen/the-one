@@ -3,6 +3,7 @@ package test;
 import applications.DatabaseApplication;
 import core.BroadcastMessage;
 import core.Coord;
+import core.DTNHost;
 import core.DataMessage;
 import core.DisasterData;
 import core.Group;
@@ -18,8 +19,10 @@ import routing.PassiveRouter;
 import routing.util.EnergyModel;
 import util.Tuple;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Contains tests for the {@link DisasterRouter} class.
@@ -973,7 +976,146 @@ public class DisasterRouterTest extends AbstractRouterTest {
         assertFalse("Should have been able to delete the existing message.",
                 h2.getMessageCollection().contains(m1));
     }
+    
+    /**
+     * Tests whether sent messages are added to the history
+     */
+    public void testMessagesAreAddedToHistory() {
+        // Start sending a message.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.updateAllNodes();
+        
+        // Check the transfer started.
+        this.mc.next();
+        this.checkTransferStart(h2, h3, m1.getId());
+        
+        // Finish sending the message.
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        assertTrue("Message should have been added to the history!", 
+                historyContainsMessageAndHost(h2, m1, h3));
+    }
+    
+    /**
+     * Tests whether the messages enter and leave the message history in the correct order
+     */
+    public void testHistoryAcceptsOnlyALimitedNumberOfMessages() {
+        // Start sending a message.
+        h2.connect(h3);
+        Message m1 = new Message(h2, h3, "M1", 1);
+        h2.createNewMessage(m1);
+        this.clock.advance(1);
+        this.updateAllNodes();
 
+        // Create as many messages as the history can contain
+        for (int i=0; i<DisasterRouter.getMessageHistorySize() - 1; i++ ) {
+            h2.createNewMessage(new Message(h2, h3, "M" + (i+2), 1));
+            this.clock.advance(1);
+            this.updateAllNodes();
+        }
+        
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        // Check M1 is still contained
+        assertTrue("Message should still be contained in the history!", 
+                historyContainsMessageAndHost(h2, m1, h3));
+        
+        // Add one more message
+        h2.createNewMessage(new Message(h2, h3, "LastMessage", 1));
+
+        this.clock.advance(1);
+        this.updateAllNodes();
+        this.clock.advance(1);
+        this.updateAllNodes();
+        
+        // Check M1 is not contained
+        assertFalse("Message should not be contained in the history any more!", 
+                historyContainsMessageAndHost(h2, m1, h3));
+    }
+    
+    /**
+     * Tries to send a message twice from one host to another and another message in between.
+     * The first message should not be sent a second time.
+     * @param m1: Message to be sent
+     * @param receiver: particular host that the message is sent to (important for broadcast and group messages)
+     */
+    private void testMessageIsNotSentTwice(Message m1, DTNHost receiver) {
+        
+        DTNHost sender = m1.getFrom();
+        List<Tuple<Message, DTNHost>> sentMessages = new ArrayList<>();
+        DisasterRouter router = (DisasterRouter)sender.getRouter();
+        
+        this.mc.reset();
+        // Send message M1
+        sender.connect(receiver);
+        sender.createNewMessage(m1);
+        this.clock.advance(1);
+        this.updateAllNodes();
+        router.deleteMessage(m1.getId(), false);
+        
+        // Send another message 
+        Message m2 = new Message(sender, receiver, "M2", 1);
+        sender.createNewMessage(m2);
+        this.clock.advance(1);
+        this.updateAllNodes();
+        router.deleteMessage(m2.getId(), false);
+        
+        // Try to send message M1 again
+        sender.createNewMessage(m1);
+        this.clock.advance(1);
+        this.updateAllNodes();
+        this.clock.advance(1);
+        this.updateAllNodes();
+        router.deleteMessage(m1.getId(), false);
+        
+        // Check that no message is sent twice
+        while (this.mc.next()) {
+            if (this.mc.getLastType().equals(this.mc.TYPE_START)) {
+                Tuple<Message, DTNHost> messageTransfer = new Tuple<>(this.mc.getLastMsg(), (DTNHost)this.mc.getLastTo());
+                assertFalse("Message was sent twice!", sentMessages.contains(messageTransfer));
+                sentMessages.add(messageTransfer);
+            }
+        }
+        
+        disconnect(receiver);
+    }
+    
+    /**
+     * Creates a direct message, ensures that it is not sent twice
+     */
+    public void testDirectMessagesAreNotSentTwice() {
+        // Test direct messages
+        Message directMessage = new Message(h2, h3, "directMessage", 1, PRIORITY);
+        testMessageIsNotSentTwice(directMessage, h3);
+    }
+    
+    /**
+     * Creates a group message, ensures that it is not sent twice
+     */
+    public void testGroupMessagesAreNotSentTwice() {
+        // Create groups for multicasts.
+        Group group = Group.createGroup(0);
+        group.addHost(h1);
+        group.addHost(h2);
+        
+        // Test group messages
+        Message groupMessage = new MulticastMessage(h1, group, "groupMessage", 1, PRIORITY);
+        testMessageIsNotSentTwice(groupMessage, h2);
+    }
+    
+    /**
+     * Creates a broadcast message, ensures that it is not sent twice
+     */
+    public void testBroadcastMessagesAreNotSentTwice() {
+        // Test broadcast messages
+        Message broadcastMessage = new BroadcastMessage(h1, "broadcastMessage", 1, PRIORITY);
+        testMessageIsNotSentTwice(broadcastMessage, h3);
+    }
+    
     /**
      * Creates a message between h1 and h3 known by h1 and h0.
      * Due to its replications density, neither h0 nor h1 will sent it if they are using utility choosers.
@@ -1000,5 +1142,19 @@ public class DisasterRouterTest extends AbstractRouterTest {
         for (int i = 0; i < increase; i++) {
             m.addNodeOnPath(this.utils.createHost());
         }
+    }
+    
+    /**
+     * Returns true if the current message history contains a pair of message and host
+     * @param hostFrom: Host of which the history is investigated
+     * @param message: Message that might be contained
+     * @param hostTo: Host that might me contained 
+     * @return True if the current message history contains a pair of m and h
+     */
+    public boolean historyContainsMessageAndHost(DTNHost hostFrom, Message message, DTNHost hostTo) {
+        
+        List<Tuple<String, Integer>> history = ((DisasterRouter)hostFrom.getRouter()).getMessageSentToHostHistory();
+      
+        return history.contains(new Tuple<>(message.getId(), hostTo.getAddress()));
     }
 }

@@ -33,27 +33,34 @@ def create_pie_chart(categories, values):
 
 # Adds a line in the plot for the total value sum.
 def add_total_sum(values):
-    plt.figtext(0.7, 0.05, 'Total: {}'.format(humanize.naturalsize(sum(sizes))))
+    plt.figtext(0.7, 0.05, 'Total: {}'.format(humanize.naturalsize(sum(values))))
 
-# Read traffic analysis from file
-with open(sys.argv[1]) as file_name:
-    analysis = file_name.readlines()
-# Skip first line which only contains explanation.
-analysis = analysis[1:]
+# Main function of the script. See script description at the top of the file for further information.
+def main(analysisFileName, graphicFileName):
+    # Read traffic analysis from file
+    with open(analysisFileName) as analysis_file:
+        analysis = analysis_file.readlines()
+    # Skip first line which only contains explanation.
+    analysis = analysis[1:]
 
-# Interpret lines to find traffic categories and traffic size
-labels = []
-sizes = []
-for line in analysis:
-    match = re.match("(\w+):.*\((\d+) Bytes\)", line)
-    if match is None:
-        continue
-    labels.append(match.group(1))
-    sizes.append(int(match.group(2)))
+    # Interpret lines to find traffic categories and traffic size
+    labels = []
+    sizes = []
+    for line in analysis:
+        match = re.match("(\w+):.*\((\d+) Bytes\)", line)
+        if match is None:
+            continue
+        labels.append(match.group(1))
+        sizes.append(int(match.group(2)))
 
-# Create pie chart.
-create_pie_chart(labels, sizes)
-add_total_sum(sizes)
+    # Create pie chart.
+    create_pie_chart(labels, sizes)
+    add_total_sum(sizes)
 
-# Save to file
-plt.savefig(sys.argv[2])
+    # Save to file
+    plt.savefig(graphicFileName)
+    plt.close()
+
+# Make sure script can be called form command line.
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])

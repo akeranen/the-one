@@ -63,21 +63,28 @@ def plotAnalysis(lines, priority, figure, plotNumber):
     figure.add_subplot(1, 3, plotNumber)
     drawPlots(timePoints, minimum, average, priority)
 
-# Read broadcast analysis from file
-with open(sys.argv[1]) as file_name:
-    analysis = file_name.readlines()
+# Main function of the script. See script description at the top of the file for further information.
+def main(analysisFileName, graphicFileName):
+    # Read broadcast analysis from file
+    with open(analysisFileName) as analysis_file:
+        analysis = analysis_file.readlines()
 
-# Only look at priorities 2, 5 and 9
-prio2Analysis = findLinesConcerningPriority(analysis, 2)
-prio5Analysis = findLinesConcerningPriority(analysis, 5)
-prio9Analysis = findLinesConcerningPriority(analysis, 9)
+    # Only look at priorities 2, 5 and 9
+    prio2Analysis = findLinesConcerningPriority(analysis, 2)
+    prio5Analysis = findLinesConcerningPriority(analysis, 5)
+    prio9Analysis = findLinesConcerningPriority(analysis, 9)
 
-# Draw plots for all those priorities.
-fig = plt.figure(figsize=(16, 4))
-plotAnalysis(prio2Analysis, 2, fig, 1)
-plotAnalysis(prio5Analysis, 5, fig, 2)
-plotAnalysis(prio9Analysis, 9, fig, 3)
+    # Draw plots for all those priorities.
+    fig = plt.figure(figsize=(16, 4))
+    plotAnalysis(prio2Analysis, 2, fig, 1)
+    plotAnalysis(prio5Analysis, 5, fig, 2)
+    plotAnalysis(prio9Analysis, 9, fig, 3)
 
-# Save to file
-plt.tight_layout()
-plt.savefig(sys.argv[2])
+    # Save to file
+    plt.tight_layout()
+    plt.savefig(graphicFileName)
+    plt.close()
+
+# Make sure script can be called from command line.
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])

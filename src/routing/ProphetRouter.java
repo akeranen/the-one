@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import core.DataMessage;
 import core.MulticastMessage;
 import core.SimScenario;
 import core.World;
@@ -266,6 +267,7 @@ public class ProphetRouter extends ActiveRouter {
 
 		/* for all connected hosts collect all messages that have a higher
 		   probability of delivery by the other host */
+		List<Connection> availableConnections = new ArrayList<>();
 		for (Connection con : getConnections()) {
 			DTNHost other = con.getOtherNode(getHost());
 			ProphetRouter othRouter = (ProphetRouter)other.getRouter();
@@ -273,6 +275,7 @@ public class ProphetRouter extends ActiveRouter {
 			if (othRouter.isTransferring()) {
 				continue; // skip hosts that are transferring
 			}
+			availableConnections.add(con);
 
 			for (Message m : msgCollection) {
 				if (othRouter.hasMessage(m.getId())) {
@@ -285,6 +288,10 @@ public class ProphetRouter extends ActiveRouter {
 			}
 		}
 
+		/* For all available connections, add useful data messages. */
+		messages.addAll(DatabaseApplicationUtil.wrapUsefulDataIntoMessages(
+		        this, this.getHost(), availableConnections));
+
 		if (messages.size() == 0) {
 			return null;
 		}
@@ -295,36 +302,47 @@ public class ProphetRouter extends ActiveRouter {
 	}
 
 	/**
-	 * Comparator for Message-Connection-Tuples that orders the tuples by
-	 * their delivery probability by the host on the other side of the
-	 * connection (GRTRMax)
+	 * Comparator for Message-Connection-Tuples that orders the tuples by the utility computed by
+     * {@link #computeUtility(Tuple)}, higher utilities first.
 	 */
 	private class TupleComparator implements Comparator
 		<Tuple<Message, Connection>> {
 
 		public int compare(Tuple<Message, Connection> tuple1,
 				Tuple<Message, Connection> tuple2) {
-			// delivery probability of tuple1's message with tuple1's connection
-			double p1 = ((ProphetRouter)tuple1.getValue().
-					getOtherNode(getHost()).getRouter()).getPredFor(
-					tuple1.getKey());
-			// -"- tuple2...
-			double p2 = ((ProphetRouter)tuple2.getValue().
-					getOtherNode(getHost()).getRouter()).getPredFor(
-					tuple2.getKey());
+            double utility1 = this.computeUtility(tuple1);
+            double utility2 = this.computeUtility(tuple2);
 
-			// bigger probability should come first
-			if (p2-p1 == 0) {
-				/* equal probabilities -> let queue mode decide */
+            // bigger utility should come first
+            if (utility2-utility1 == 0) {
+                /* equal utilities -> let queue mode decide */
 				return compareByQueueMode(tuple1.getKey(), tuple2.getKey());
 			}
-			else if (p2-p1 < 0) {
+			else if (utility2-utility1 < 0) {
 				return -1;
 			}
 			else {
 				return 1;
 			}
 		}
+
+        /**
+         * Computes a utility value for a Message-Connection tuple. This is
+         * - either the delivery probability by the host on the other side of the connection (GRTRMax) if the message is
+         *   not a data message, or
+         * - the data message's utility.
+         * @param tuple Tuple to compute utility for.
+         * @return The tuple's utility.
+         */
+		private double computeUtility(Tuple<Message, Connection> tuple) {
+            Message message = tuple.getKey();
+            if (message instanceof DataMessage) {
+                return ((DataMessage) message).getUtility();
+            }
+
+            DTNHost neighbor = tuple.getValue().getOtherNode(getHost());
+            return ((ProphetRouter)neighbor.getRouter()).getPredFor(message);
+        }
 	}
 
 	@Override

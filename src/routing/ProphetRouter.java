@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import core.MulticastMessage;
+import core.SimScenario;
+import core.World;
 import routing.util.DatabaseApplicationUtil;
 import routing.util.RoutingInfo;
 
@@ -118,6 +121,39 @@ public class ProphetRouter extends ActiveRouter {
 		double newValue = oldValue + (1 - oldValue) * P_INIT;
 		preds.put(host, newValue);
 	}
+
+    /**
+     * Returns the current prediction (P) value for a message or 0 if no entry for any recipient exists.
+     * @param message Message to find P for. Either a one-to-one message or a multicast.
+     * @return The current P value. In case of multicast, the maximum P value of remaining recipients.
+     */
+    private double getPredFor(Message message) {
+        switch (message.getType()) {
+            case ONE_TO_ONE:
+                return this.getPredFor(message.getTo());
+            case MULTICAST:
+                MulticastMessage multicast = (MulticastMessage)message;
+                return this.getMaxPredFor(multicast.getRemainingRecipients());
+            default:
+                throw new IllegalArgumentException(
+                        "No delivery predictability for messages of type " + message.getType() + " defined!");
+        }
+    }
+
+    /**
+     * Returns the maximum prediction (P) value for all hosts matching the provided addresses. If no such P values
+     * exist, returns 0.
+     * @param addresses The addresses to check.
+     * @return The maximum P value.
+     */
+    private double getMaxPredFor(Collection<Integer> addresses) {
+        World world = SimScenario.getInstance().getWorld();
+        double maxPred = 0;
+        for (int address : addresses) {
+            maxPred = Math.max(maxPred, this.getPredFor(world.getNodeByAddress(address)));
+        }
+        return maxPred;
+    }
 
 	/**
 	 * Returns the current prediction (P) value for a host or 0 if entry for
@@ -242,7 +278,7 @@ public class ProphetRouter extends ActiveRouter {
 				if (othRouter.hasMessage(m.getId())) {
 					continue; // skip messages that the other one has
 				}
-				if (othRouter.getPredFor(m.getTo()) > getPredFor(m.getTo())) {
+				if (othRouter.getPredFor(m) > getPredFor(m)) {
 					// the other node has higher probability of delivery
 					messages.add(new Tuple<Message, Connection>(m,con));
 				}
@@ -271,11 +307,11 @@ public class ProphetRouter extends ActiveRouter {
 			// delivery probability of tuple1's message with tuple1's connection
 			double p1 = ((ProphetRouter)tuple1.getValue().
 					getOtherNode(getHost()).getRouter()).getPredFor(
-					tuple1.getKey().getTo());
+					tuple1.getKey());
 			// -"- tuple2...
 			double p2 = ((ProphetRouter)tuple2.getValue().
 					getOtherNode(getHost()).getRouter()).getPredFor(
-					tuple2.getKey().getTo());
+					tuple2.getKey());
 
 			// bigger probability should come first
 			if (p2-p1 == 0) {

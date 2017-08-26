@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import routing.util.DatabaseApplicationUtil;
 import routing.util.RoutingInfo;
 
 import util.Tuple;
@@ -204,6 +205,16 @@ public class ProphetRouter extends ActiveRouter {
 		}
 
 		tryOtherMessages();
+	}
+
+    /**
+     * Checks whether this router has anything to send out.
+     *
+     * @return Whether or not the router has anything to send out.
+     */
+    @Override
+    protected boolean hasNothingToSend() {
+        return DatabaseApplicationUtil.hasNoMessagesToSend(this);
 	}
 
 	/**

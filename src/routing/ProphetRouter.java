@@ -14,8 +14,6 @@ import java.util.Map;
 
 import core.DataMessage;
 import core.MulticastMessage;
-import core.SimScenario;
-import core.World;
 import routing.util.DatabaseApplicationUtil;
 import routing.util.RoutingInfo;
 
@@ -60,7 +58,7 @@ public class ProphetRouter extends ActiveRouter {
 	private double beta;
 
 	/** delivery predictabilities */
-	private Map<DTNHost, Double> preds;
+	private Map<Integer, Double> preds;
 	/** last delivery predictability update (sim)time */
 	private double lastAgeUpdate;
 
@@ -98,7 +96,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * Initializes predictability hash
 	 */
 	private void initPreds() {
-		this.preds = new HashMap<DTNHost, Double>();
+        this.preds = new HashMap<>();
 	}
 
 	@Override
@@ -120,7 +118,7 @@ public class ProphetRouter extends ActiveRouter {
 	private void updateDeliveryPredFor(DTNHost host) {
 		double oldValue = getPredFor(host);
 		double newValue = oldValue + (1 - oldValue) * P_INIT;
-		preds.put(host, newValue);
+		preds.put(host.getAddress(), newValue);
 	}
 
     /**
@@ -148,10 +146,9 @@ public class ProphetRouter extends ActiveRouter {
      * @return The maximum P value.
      */
     private double getMaxPredFor(Collection<Integer> addresses) {
-        World world = SimScenario.getInstance().getWorld();
         double maxPred = 0;
         for (int address : addresses) {
-            maxPred = Math.max(maxPred, this.getPredFor(world.getNodeByAddress(address)));
+            maxPred = Math.max(maxPred, this.getPredFor(address));
         }
         return maxPred;
     }
@@ -163,14 +160,20 @@ public class ProphetRouter extends ActiveRouter {
 	 * @return the current P value
 	 */
 	public double getPredFor(DTNHost host) {
-		ageDeliveryPreds(); // make sure preds are updated before getting
-		if (preds.containsKey(host)) {
-			return preds.get(host);
-		}
-		else {
-			return 0;
-		}
+        return this.getPredFor(host.getAddress());
 	}
+
+    /**
+     * Returns the current prediction (P) value for a host address or 0 if entry for
+     * the host doesn't exist.
+     * @param address The host address to look the P for
+     * @return the current P value
+     */
+    private double getPredFor(Integer address) {
+        // make sure preds are updated before getting
+        this.ageDeliveryPreds();
+        return preds.getOrDefault(address, 0D);
+    }
 
 	/**
 	 * Updates transitive (A->B->C) delivery predictions.
@@ -184,11 +187,11 @@ public class ProphetRouter extends ActiveRouter {
 			" with other routers of same type";
 
 		double pForHost = getPredFor(host); // P(a,b)
-		Map<DTNHost, Double> othersPreds =
+		Map<Integer, Double> othersPreds =
 			((ProphetRouter)otherRouter).getDeliveryPreds();
 
-		for (Map.Entry<DTNHost, Double> e : othersPreds.entrySet()) {
-			if (e.getKey() == getHost()) {
+		for (Map.Entry<Integer, Double> e : othersPreds.entrySet()) {
+			if (e.getKey().equals(getHost().getAddress())) {
 				continue; // don't add yourself
 			}
 
@@ -213,7 +216,7 @@ public class ProphetRouter extends ActiveRouter {
 		}
 
 		double mult = Math.pow(GAMMA, timeDiff);
-		for (Map.Entry<DTNHost, Double> e : preds.entrySet()) {
+		for (Map.Entry<Integer, Double> e : preds.entrySet()) {
 			e.setValue(e.getValue()*mult);
 		}
 
@@ -224,7 +227,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * Returns a map of this router's delivery predictions
 	 * @return a map of this router's delivery predictions
 	 */
-	private Map<DTNHost, Double> getDeliveryPreds() {
+	private Map<Integer, Double> getDeliveryPreds() {
 		ageDeliveryPreds(); // make sure the aging is done
 		return this.preds;
 	}
@@ -352,12 +355,12 @@ public class ProphetRouter extends ActiveRouter {
 		RoutingInfo ri = new RoutingInfo(preds.size() +
 				" delivery prediction(s)");
 
-		for (Map.Entry<DTNHost, Double> e : preds.entrySet()) {
-			DTNHost host = e.getKey();
+		for (Map.Entry<Integer, Double> e : preds.entrySet()) {
+			Integer hostAddress = e.getKey();
 			Double value = e.getValue();
 
 			ri.addMoreInfo(new RoutingInfo(String.format("%s : %.6f",
-					host, value)));
+					hostAddress, value)));
 		}
 
 		top.addMoreInfo(ri);

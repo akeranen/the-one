@@ -4,10 +4,18 @@
  */
 package test;
 
+import applications.DatabaseApplication;
+import core.BroadcastMessage;
+import core.DisasterData;
+import core.Group;
+import core.MulticastMessage;
+import org.junit.Assert;
 import org.junit.Test;
 import routing.MessageRouter;
 import routing.ProphetRouter;
 import core.Message;
+
+import java.util.Arrays;
 
 /**
  * Tests for PRoPHET router
@@ -22,10 +30,21 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		ts.putSetting(ProphetRouter.PROPHET_NS + "." +
 				ProphetRouter.SECONDS_IN_UNIT_S , SECONDS_IN_TIME_UNIT+"");
 		setRouterProto(new ProphetRouter(ts));
+        DatabaseApplicationTest.addDatabaseApplicationSettings(ts);
 		super.setUp();
 	}
 
-	/**
+    /**
+     * Tears down the fixture, for example, close a network connection.
+     * This method is called after a test is executed.
+     */
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        Group.clearGroups();
+    }
+
+    /**
 	 * Tests normal routing
 	 */
 	@Test
@@ -121,6 +140,81 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		assertFalse(mc.next());
 
 	}
+
+    /**
+     * Checks that {@link ProphetRouter} correctly sorts direct messages, broadcasts, non-direct one-to-one messages,
+     * direct and non-direct multicasts, and data messages.
+     */
+    @Test
+    public void testPrioritization() {
+        // Create groups for multicasts.
+        Group directGroup = Group.createGroup(0);
+        directGroup.addHost(h1);
+        directGroup.addHost(h2);
+        Group indirectGroup = Group.createGroup(1);
+        indirectGroup.addHost(h1);
+        indirectGroup.addHost(h3);
+        indirectGroup.addHost(h4);
+
+        // Create all kinds of messages.
+        Message broadcast = new BroadcastMessage(this.h1, "B1", 0);
+        Message directMessage = new Message(this.h1, this.h2, "M1", 0);
+        Message nonDirectMessage = new Message(this.h1, this.h3, "M2", 0);
+        Message nonDirectMessage2 = new Message(this.h1, this.h5, "M3", 0);
+        Message directMulticast = new MulticastMessage(this.h1, directGroup, "m1", 0);
+        Message indirectMulticast = new MulticastMessage(this.h1, indirectGroup, "m2", 0);
+        this.h1.createNewMessage(broadcast);
+        this.h1.createNewMessage(directMessage);
+        this.h1.createNewMessage(nonDirectMessage);
+        this.h1.createNewMessage(nonDirectMessage2);
+        this.h1.createNewMessage(directMulticast);
+        this.h1.createNewMessage(indirectMulticast);
+
+        // Add data for data message.
+        this.clock.advance(24 * 60 * 60);
+        DisasterData data =
+                new DisasterData(DisasterData.DataType.MARKER, 0, 0, this.h1.getLocation());
+        DatabaseApplication app = new DatabaseApplication(this.ts);
+        this.h1.getRouter().addApplication(app);
+        app.update(this.h1);
+        app.disasterDataCreated(h1, data);
+
+        // Modify utilities for testing:
+        // First, increase delivery predictability H2 --> H5, then advance clock to lower it again.
+        this.h2.connect(this.h5);
+        this.clock.advance(3600);
+        // Then, do the same for delivery predictability H2 --> H4.
+        this.h2.connect(this.h4);
+        this.clock.advance(3600);
+        // Finally, make sure the delivery predictability H2 --> H3 is high
+        this.h2.connect(this.h3);
+        disconnect(this.h2);
+        // And ensure that the multicast message was already delivered to H3.
+        for (Message m : this.h1.getMessageCollection()) {
+            if (m.getId().equals(indirectMulticast.getId())) {
+                m.addNodeOnPath(this.h3);
+            }
+        }
+
+        // Connect h1 to h2.
+        this.h1.connect(this.h2);
+
+        // Check order of messages: First direct messages, then sorted by predictability / data utility
+        // Direct messages are pseudo-randomly sorted, so you might have to change the order if changing the clock.
+        String dataMessageId = "D" + Arrays.asList(data).hashCode();
+        String[] idsInExpectedOrder = {
+                broadcast.getId(), directMessage.getId(), directMulticast.getId(),
+                nonDirectMessage.getId(), dataMessageId, indirectMulticast.getId(), nonDirectMessage2.getId()
+        };
+        this.mc.reset();
+        for (String expectedId : idsInExpectedOrder) {
+            h1.update(true);
+            do {
+                this.mc.next();
+            } while (!this.mc.TYPE_START.equals(this.mc.getLastType()));
+            Assert.assertEquals("Expected different message.", expectedId, mc.getLastMsg().getId());
+        }
+    }
 
 	private void doRelay() {
 		clock.advance(10);

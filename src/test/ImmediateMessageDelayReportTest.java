@@ -86,11 +86,12 @@ public class ImmediateMessageDelayReportTest extends AbstractReportTest {
     }
 
     /**
-     * Resets the clock to 0.
+     * Resets the clock to 0 and clears all groups.
      */
     @After
-    public void resetClock() {
+    public void tearDown() {
         this.clock.setTime(0);
+        Group.clearGroups();
     }
 
     /***

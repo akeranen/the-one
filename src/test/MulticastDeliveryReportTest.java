@@ -68,8 +68,6 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
         // Let base do the basic report setup.
         super.setUp();
 
-        Group.clearGroups();
-
         // Set clock to 0.
         this.clock.setTime(0);
 
@@ -84,8 +82,9 @@ public class MulticastDeliveryReportTest extends AbstractReportTest {
     }
 
     @After
-    public void resetClock(){
+    public void tearDown(){
         clock.setTime(0);
+        Group.clearGroups();
     }
 
     @Test

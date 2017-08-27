@@ -1,5 +1,6 @@
 package test;
 
+import core.Group;
 import core.SimClock;
 import org.junit.After;
 import org.junit.Before;
@@ -51,6 +52,11 @@ public abstract class AbstractReportTest {
     @After
     public void deleteFile() {
         this.outputFile.delete();
+    }
+
+    @After
+    public void resetGroups() {
+        Group.clearGroups();
     }
 
     /**

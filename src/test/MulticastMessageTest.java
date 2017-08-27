@@ -7,6 +7,7 @@ import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
 import core.SimError;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,11 +48,15 @@ public class MulticastMessageTest {
 
     @Before
     public void setUp()  {
-        Group.clearGroups();
         this.group1 = Group.createGroup(GROUP_ADDRESS_1);
         this.group1.addHost(from);
         msg = new MulticastMessage(from, this.group1, "M", MESSAGE_SIZE);
         msgPrio = new MulticastMessage(from, this.group1, "N", MESSAGE_SIZE, PRIORITY);
+    }
+
+    @After
+    public void tearDown() {
+        Group.clearGroups();
     }
 
     @Test(expected = java.lang.UnsupportedOperationException.class)

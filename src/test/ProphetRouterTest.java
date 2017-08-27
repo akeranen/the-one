@@ -269,7 +269,7 @@ public class ProphetRouterTest extends AbstractRouterTest {
         this.h1.connect(this.h2);
 
         // Check that only half of the messages are transferred
-        String[] idsInExpectedOrder = { newMulticast.getId(), messageToH4.getId() };
+        String[] idsInExpectedOrder = { messageToH4.getId(), newMulticast.getId() };
         this.checkMessagesAreSentInOrder(idsInExpectedOrder);
         this.mc.reset();
         this.h1.update(true);

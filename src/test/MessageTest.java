@@ -48,6 +48,12 @@ public class MessageTest extends TestCase {
         msg.setTtl(10);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        SimClock.reset();
+    }
+
     @Test
     public void testGetTtl() {
         assertEquals(10, msg.getTtl());

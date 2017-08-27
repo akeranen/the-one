@@ -72,6 +72,12 @@ public class ContactTimesReportTest extends TestCase {
 
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
+	}
+
 	private void generateConnections(TestUtils utils) {
 		Coord c1 = new Coord(0,0);
 		Coord c2 = new Coord(1,0);

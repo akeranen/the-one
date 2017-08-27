@@ -79,6 +79,12 @@ public class ExternalMovementTest extends TestCase {
 		clock.setTime(0);
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
+	}
+
 	public void testMovement() throws Exception {
 		setUpUsing(INPUT);
 

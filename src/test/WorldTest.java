@@ -35,7 +35,6 @@ public class WorldTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		SimClock.reset();
 		TestSettings testSettings = new TestSettings();
 		testSettings.setNameSpace(TestUtils.IFACE_NS);
 		testSettings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
@@ -57,6 +56,12 @@ public class WorldTest extends TestCase {
 				ts.getWorldSizeY(),ts.getUpdateInterval(),
 				ts.getUpdateListeners(), ts.simulateConnections(),
 				ts.getExternalEvents() );
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
 	}
 
 	public void testUpdate() {

@@ -59,6 +59,11 @@ public abstract class AbstractReportTest {
         Group.clearGroups();
     }
 
+    @After
+    public void resetSimClock() {
+        SimClock.reset();
+    }
+
     /**
      * Checks that the report correctly handles the warm up time as set by the {@link Report#WARMUP_S} setting.
      */

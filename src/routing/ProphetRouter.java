@@ -317,16 +317,12 @@ public class ProphetRouter extends ActiveRouter {
             double utility2 = this.computeUtility(tuple2);
 
             // bigger utility should come first
-            if (utility2-utility1 == 0) {
+            int utilityComparison = (-1) * Double.compare(utility1, utility2);
+            if (utilityComparison == 0) {
                 /* equal utilities -> let queue mode decide */
 				return compareByQueueMode(tuple1.getKey(), tuple2.getKey());
 			}
-			else if (utility2-utility1 < 0) {
-				return -1;
-			}
-			else {
-				return 1;
-			}
+            return utilityComparison;
 		}
 
         /**
@@ -337,7 +333,7 @@ public class ProphetRouter extends ActiveRouter {
          * @param tuple Tuple to compute utility for.
          * @return The tuple's utility.
          */
-		private double computeUtility(Tuple<Message, Connection> tuple) {
+        private double computeUtility(Tuple<Message, Connection> tuple) {
             Message message = tuple.getKey();
             if (message instanceof DataMessage) {
                 return ((DataMessage) message).getUtility();
@@ -346,7 +342,7 @@ public class ProphetRouter extends ActiveRouter {
             DTNHost neighbor = tuple.getValue().getOtherNode(getHost());
             return ((ProphetRouter)neighbor.getRouter()).getPredFor(message);
         }
-	}
+    }
 
 	@Override
 	public RoutingInfo getRoutingInfo() {

@@ -1,8 +1,11 @@
 package test;
 
 import core.DTNHost;
+import core.Group;
 import core.ModuleCommunicationBus;
+import core.MulticastMessage;
 import core.NetworkInterface;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import routing.ActiveRouter;
@@ -24,6 +27,12 @@ public class ActiveRouterTest {
      * Acceptable delta when comparing doubles for equality.
      */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
+
+    @After
+    public void tearDown() {
+        Group.clearGroups();
+        DTNHost.reset();
+    }
 
     /**
      * Checks that {@link ActiveRouter#remainingEnergyRatio()} returns 1 if energy is not modelled.
@@ -59,5 +68,39 @@ public class ActiveRouterTest {
         // Test remaining energy ratio.
         Assert.assertEquals("Expected different energy ratio.",
                 SOME_ENERGY_LEVEL / EnergyModelTest.MAX_ENERGY, router.remainingEnergyRatio(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    /**
+     * Checks that the successful transfer of a {@link core.MulticastMessage} to one of its recipients removes that one
+     * from remaining recipients.
+     */
+    @Test
+    public void successfulMulticastTransferChangesRemainingRecipients() {
+        // Create three hosts.
+        TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
+        utils.setMessageRouterProto(new EpidemicRouter(new TestSettings()));
+        DTNHost sender = utils.createHost();
+        DTNHost receiver = utils.createHost();
+        DTNHost remainingRecipient = utils.createHost();
+
+        // Create a multicast between them.
+        Group multicastGroup = Group.createGroup(0);
+        multicastGroup.addHost(sender);
+        multicastGroup.addHost(receiver);
+        multicastGroup.addHost(remainingRecipient);
+        MulticastMessage message = new MulticastMessage(sender, multicastGroup, "M1", 0);
+        sender.createNewMessage(message);
+
+        // Send multicast.
+        sender.connect(receiver);
+        sender.update(true);
+        receiver.update(true);
+        sender.update(true);
+
+        // Message should have been transferred.
+        Assert.assertTrue("Message should have been transferred.", !receiver.getMessageCollection().isEmpty());
+        Assert.assertEquals("Only one recipient should be remaining.", 1, message.getRemainingRecipients().size());
+        Assert.assertTrue("Other recipient should be remaining.",
+                message.getRemainingRecipients().contains(remainingRecipient.getAddress()));
     }
 }

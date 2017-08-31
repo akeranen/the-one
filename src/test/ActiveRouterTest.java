@@ -75,7 +75,7 @@ public class ActiveRouterTest {
      * from remaining recipients.
      */
     @Test
-    public void successfulMulticastTransferChangesRemainingRecipients() {
+    public void testSuccessfulMulticastTransferChangesRemainingRecipients() {
         // Create three hosts.
         TestUtils utils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
         utils.setMessageRouterProto(new EpidemicRouter(new TestSettings()));

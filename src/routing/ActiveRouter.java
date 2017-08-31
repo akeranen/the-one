@@ -738,8 +738,9 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @param con The connection whose transfer was finalized
 	 */
 	protected void transferDone(Connection con) {
-        if (con.getMessage() instanceof MulticastMessage) {
-            MulticastMessage message = (MulticastMessage)con.getMessage();
+        Message transferredMessage = con.getMessage();
+        if (transferredMessage instanceof MulticastMessage && this.hasMessage(transferredMessage.getId())) {
+            MulticastMessage message = (MulticastMessage)this.getMessage(transferredMessage.getId());
             DTNHost reachedHost = con.getOtherNode(this.getHost());
             message.addReachedHost(reachedHost);
         }

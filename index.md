@@ -36,6 +36,7 @@ If you have used the ONE simulator in your research, please use the SIMUTools pa
 
 The users of the ONE simulator have created many helpful resources:
 
+* [Connection Trace Analysis tool by Juliano Fischer Naves](https://github.com/julianofischer/traceanalysis)
 * [Delay-Tolerant Blogging by Juliano Fischer Naves](http://www.delaytolerantnetworks.com/)
 * [Barun Saha's Knowledge Base for the ONE](https://theonekb-barunsaha.rhcloud.com/)
 * [The ONE Simulator for Beginners](http://one-simuator-for-beginners.blogspot.in/2013/08/one-simulator-introduction.html)

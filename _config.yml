@@ -1,0 +1,8 @@
+title: The ONE
+description: The Opportunistic Network Environment simulator
+google_analytics: UA-69364613-1
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions

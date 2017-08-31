@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import core.MulticastMessage;
 import routing.util.EnergyModel;
 import routing.util.MessageTransferAcceptPolicy;
 import routing.util.RoutingInfo;
@@ -737,6 +738,11 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @param con The connection whose transfer was finalized
 	 */
 	protected void transferDone(Connection con) {
+        if (con.getMessage() instanceof MulticastMessage) {
+            MulticastMessage message = (MulticastMessage)con.getMessage();
+            DTNHost reachedHost = con.getOtherNode(this.getHost());
+            message.addReachedHost(reachedHost);
+        }
     }
 
 	@Override

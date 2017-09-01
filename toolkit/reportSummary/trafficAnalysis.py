@@ -58,6 +58,7 @@ def main(analysisFileName, graphicFileName):
     add_total_sum(sizes)
 
     # Save to file
+    plt.title("Traffic distribution by message type")
     plt.savefig(graphicFileName)
     plt.close()
 

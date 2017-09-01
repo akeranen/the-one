@@ -194,7 +194,7 @@ MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
 MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt
 
 ## Reports - all report names have to be valid report classes
-Report.nrofReports = 8
+Report.nrofReports = 10
 Report.reportDir = reports/
 # length of the warm up period (simulated seconds)
 Report.warmup = 0
@@ -209,6 +209,8 @@ Report.report7 = EnergyLevelReport
 EnergyLevelReport.granularity = 600
 Report.report8 = BufferOccupancyReport
 BufferOccupancyReport.occupancyInterval = 300
+Report.report9 = InterContactTimesReport
+Report.report10 = ContactTimesReport
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

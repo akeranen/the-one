@@ -210,7 +210,9 @@ EnergyLevelReport.granularity = 600
 Report.report8 = BufferOccupancyReport
 BufferOccupancyReport.occupancyInterval = 300
 Report.report9 = InterContactTimesReport
+InterContactTimesReport.granularity = 5
 Report.report10 = ContactTimesReport
+ContactTimesReport.granularity = 5
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

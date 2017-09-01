@@ -407,7 +407,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         h1.connect(h2);
 
         // Try to send a non-empty message.
-        Message m1 = new Message(h1, h2, "M1", 1);
+        Message m1 = new Message(h1, h3, "M1", 1);
         h1.createNewMessage(m1);
         this.updateAllNodes();
 
@@ -416,7 +416,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.checkTransferStart(h1, h2, m1.getId());
 
         // Create a new message and update routers again.
-        Message m2 = new Message(h1, h2, "M2", 0);
+        Message m2 = new Message(h1, h3, "M2", 0);
         h1.createNewMessage(m2);
         this.updateAllNodes();
 
@@ -441,7 +441,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
     public void testNoMessagesAreReceivedWhenAlreadyTransferring() {
         // Let h2 be transferring.
         h2.connect(h3);
-        Message m1 = new Message(h2, h3, "M1", 1);
+        Message m1 = new Message(h2, h4, "M1", 1);
         h2.createNewMessage(m1);
         this.updateAllNodes();
 
@@ -450,7 +450,7 @@ public class DisasterRouterTest extends AbstractRouterTest {
         this.checkTransferStart(h2, h3, m1.getId());
 
         // Let h1 try to send a message to h2 now.
-        Message m2 = new Message(h1, h2, "M2", 0);
+        Message m2 = new Message(h1, h4, "M2", 0);
         h1.createNewMessage(m2);
         h1.connect(h2);
         this.updateAllNodes();
@@ -587,9 +587,6 @@ public class DisasterRouterTest extends AbstractRouterTest {
                 this.mc.next();
             }
             Assert.assertEquals(EXPECTED_DIFFERENT_MESSAGE, expectedMessage.getId(), mc.getLastMsg().getId());
-
-            // Don't send it again even if transfer was not completed.
-            h2.deleteMessage(mc.getLastMsg().getId(), true);
         }
     }
 
@@ -1115,7 +1112,67 @@ public class DisasterRouterTest extends AbstractRouterTest {
         Message broadcastMessage = new BroadcastMessage(h1, "broadcastMessage", 1, PRIORITY);
         testMessageIsNotSentTwice(broadcastMessage, h3);
     }
-    
+
+    /**
+     * Checks that a transferred message gets dropped if and only if it was delivered to its last destination.
+     */
+    public void testMessagesAreDroppedWhenDeliveryCompleted() {
+        // Create group for multicasts.
+        Group group = Group.createGroup(0);
+        group.addHost(h1);
+        group.addHost(h2);
+        group.addHost(h3);
+
+        // Create messages - some will be delivered to their last final recipient, some won't.
+        Message broadcast = new BroadcastMessage(this.h1, "B", 0);
+        Message deliverableOneToOne = new Message(this.h1, this.h2, "M1", 0);
+        Message relayableOneToOne = new Message(this.h1, this.h3, "M2", 0);
+        Message newMulticast = new MulticastMessage(this.h1, group, "G1", 0);
+        Message alreadyDeliveredMulticast = new MulticastMessage(this.h1, group, "G2", 0);
+        alreadyDeliveredMulticast.addNodeOnPath(this.h3);
+        Message[] messages =
+                { broadcast, deliverableOneToOne, relayableOneToOne, newMulticast, alreadyDeliveredMulticast };
+        for (Message m : messages) {
+            this.h1.createNewMessage(m);
+        }
+
+        // Transfer all messages.
+        this.h1.connect(this.h2);
+        for (Message m : messages) {
+            this.updateAllNodes();
+        }
+
+        // Check that all messages which were sent to their last destination have been dropped.
+        for (Message m : messages) {
+            boolean stillInBuffer =
+                    this.h1.getMessageCollection().stream().anyMatch(inBuffer -> inBuffer.getId().equals(m.getId()));
+            Assert.assertEquals(
+                    "Message " + m.getId() + " should have been dropped if and only if it was sent to last receiver.",
+                    m.completesDelivery(this.h2),
+                    !stillInBuffer);
+        }
+    }
+
+    /**
+     * Checks that messages whose transfer was cancelled do not get dropped even if delivered to last destination.
+     */
+    public void testMessagesAreNotDroppedWhenDeliveryWasCancelled() {
+        // Create new direct message.
+        Message deliverableOneToOne = new Message(this.h1, this.h2, "M1", 1);
+        this.h1.createNewMessage(deliverableOneToOne);
+        this.mc.reset();
+
+        // Start transfer, but cancel it.
+        this.h1.connect(this.h2);
+        this.updateAllNodes();
+        this.checkTransferStart(this.h1, this.h2, deliverableOneToOne.getId());
+        disconnect(this.h1);
+
+        // Make sure message was neither delivered nor dropped.
+        Assert.assertTrue("No message transfer should have happened.", this.h2.getMessageCollection().isEmpty());
+        Assert.assertEquals("H1 should not have dropped message.", 1, this.h1.getNrofMessages());
+    }
+
     /**
      * Creates a message between h1 and h3 known by h1 and h0.
      * Due to its replications density, neither h0 nor h1 will sent it if they are using utility choosers.

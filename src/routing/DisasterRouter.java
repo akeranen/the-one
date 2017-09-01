@@ -273,6 +273,12 @@ public class DisasterRouter extends ActiveRouter {
      */
     protected void transferDone(Connection con) {
         addMessageAndHostToHistory(con.getMessage(), con.getOtherNode(getHost()));
+
+        /* was the message delivered to the final recipient? */
+        Message ownCopy = this.getMessage(con.getMessage().getId());
+        if (ownCopy != null && ownCopy.completesDelivery(con.getOtherNode(getHost()))) {
+            this.deleteMessage(ownCopy.getId(), false);
+        }
     }
     
     /**

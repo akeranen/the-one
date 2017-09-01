@@ -48,6 +48,7 @@ public final class DisasterRouterTestUtils {
     /* Constants needed for buffer management. */
     public static final int HOP_THRESHOLD = 5;
     public static final double AGE_THRESHOLD = 100D;
+    public static final double ONLY_DELIVERY_PREDICTABILITY = 1;
 
     /**
      * Private constructor to hide the implicit public one (this is a utility class!).
@@ -111,6 +112,8 @@ public final class DisasterRouterTestUtils {
         s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
         s.putSetting(DisasterBufferComparator.AGE_THRESHOLD_S, Double.toString(AGE_THRESHOLD));
         s.putSetting(DisasterBufferComparator.HOP_THRESHOLD_S, Integer.toString(HOP_THRESHOLD));
+        s.putSetting(DisasterBufferComparator.DELIVERY_PREDICTABILITY_WEIGHT_S,
+                Double.toString(ONLY_DELIVERY_PREDICTABILITY));
         s.restoreNameSpace();
     }
 }

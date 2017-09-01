@@ -3,6 +3,7 @@ package routing.util;
 import core.BroadcastMessage;
 import core.Message;
 import core.Settings;
+import core.SettingsError;
 import core.SimClock;
 import routing.DisasterRouter;
 import routing.MessageRouter;
@@ -37,6 +38,12 @@ public class DisasterBufferComparator implements Comparator<Message> {
     public static final String AGE_THRESHOLD_S = "ageThreshold";
 
     /**
+     * Delivery predictability weight in rank computation -setting id ({@value}).
+     * Weight of delivery predictability (vs replications density) when computing the buffer rank of a low rank message.
+     */
+    public static final String DELIVERY_PREDICTABILITY_WEIGHT_S = "dpWeight";
+
+    /**
      * Exclusive maximum number of hops for which a message may be assigned a high rank.
      * Messages which meet this threshold and the age threshold {@link #ageThreshold} are deleted only after the
      * messages not meeting one of these two thresholds.
@@ -49,6 +56,11 @@ public class DisasterBufferComparator implements Comparator<Message> {
      * messages not meeting one of these two thresholds.
      */
     private double ageThreshold;
+
+    /**
+     * Weight of delivery predictability (vs replications density) when computing the buffer rank of a low rank message.
+     */
+    private double deliveryPredictabilityWeight;
 
     /**
      * The router handling this buffer.
@@ -84,6 +96,11 @@ public class DisasterBufferComparator implements Comparator<Message> {
         Settings s = new Settings(DISASTER_BUFFER_NS);
         this.hopThreshold = s.getInt(HOP_THRESHOLD_S);
         this.ageThreshold = s.getDouble(AGE_THRESHOLD_S);
+        this.deliveryPredictabilityWeight = s.getDouble(DELIVERY_PREDICTABILITY_WEIGHT_S);
+
+        if (this.deliveryPredictabilityWeight < 0 || this.deliveryPredictabilityWeight > 1) {
+            throw new SettingsError("DP weight must be in [0, 1], but is " + this.deliveryPredictabilityWeight + "!");
+        }
 
         DisasterBufferComparator.checkRouterIsDisasterRouter(attachedRouter);
         this.attachedRouter = (DisasterRouter)attachedRouter;
@@ -164,10 +181,13 @@ public class DisasterBufferComparator implements Comparator<Message> {
 
         // Else: Compute the value...
         Double deletionRank;
+        double inverseReplicationsDensity = 1 - this.attachedRouter.getReplicationsDensity(m);
         if (m instanceof BroadcastMessage) {
-            deletionRank = 1 - this.attachedRouter.getReplicationsDensity(m);
+            deletionRank = inverseReplicationsDensity;
         } else {
-            deletionRank = this.attachedRouter.getDeliveryPredictability(m);
+            deletionRank =
+                    this.deliveryPredictabilityWeight * this.attachedRouter.getDeliveryPredictability(m)
+                    + (1 - this.deliveryPredictabilityWeight) * inverseReplicationsDensity;
         }
 
         // ...and cache it before returning.
@@ -200,5 +220,13 @@ public class DisasterBufferComparator implements Comparator<Message> {
      */
     public double getAgeThreshold() {
         return ageThreshold;
+    }
+
+    /**
+     * Returns the delivery predictability weight.
+     * @return The delivery predictability weight.
+     */
+    public double getDeliveryPredictabilityWeight() {
+        return this.deliveryPredictabilityWeight;
     }
 }

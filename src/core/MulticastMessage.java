@@ -75,7 +75,8 @@ public class MulticastMessage extends Message {
     }
 
     /**
-     * Gets the addresses of all group members that haven't been passed on this message copy's path so far.
+     * Gets the addresses of all group members that neither have been passed on this message copy's path before nor
+     * have received a direct copy of this message copy.
      *
      * @return Addresses of all group members that haven't been reached so far.
      */
@@ -87,6 +88,16 @@ public class MulticastMessage extends Message {
             }
         }
         return remainingRecipients;
+    }
+
+    /**
+     * Adds a {@link DTNHost} to reached recipients if it is a final recipient of the message.
+     * @param host {@link DTNHost} to add.
+     */
+    public void addReachedHost(DTNHost host) {
+        if (this.isFinalRecipient(host)) {
+            this.reachedRecipients.add(host.getAddress());
+        }
     }
 
     /**

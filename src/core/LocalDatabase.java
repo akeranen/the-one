@@ -20,7 +20,9 @@ import java.util.stream.Collectors;
  * Created by melanie on 07.04.17.
  */
 public class LocalDatabase {
-    private static final int CUBIC = 3;
+    /** Utility threshold for deletion is computed using (used db percentage)^{THRESHOLD_EXPONENT}.*/
+    private static final int THRESHOLD_EXPONENT = 21;
+
     private static final int METERS_IN_KILOMETER = 1000;
     private static final int SECONDS_IN_HOUR = 3600;
 
@@ -115,7 +117,7 @@ public class LocalDatabase {
      * @return A threshold between 0 and 1 that is 0 for empty memory and 1 for full memory.
      */
     private double computeDeletionThreshold() {
-        return Math.pow(getUsedMemoryPercentage(), CUBIC);
+        return Math.pow(getUsedMemoryPercentage(), THRESHOLD_EXPONENT);
     }
 
     /**

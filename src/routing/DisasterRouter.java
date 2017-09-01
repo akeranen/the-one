@@ -272,6 +272,7 @@ public class DisasterRouter extends ActiveRouter {
      * @param con The connection whose transfer was finalized
      */
     protected void transferDone(Connection con) {
+        super.transferDone(con);
         addMessageAndHostToHistory(con.getMessage(), con.getOtherNode(getHost()));
     }
     

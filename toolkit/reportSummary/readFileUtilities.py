@@ -42,3 +42,7 @@ def getAbsoluteMulticastDelayPath(folder):
 # Returns the path to the data sync analysis graphic saved / to be saved in the provided folder.
 def getAbsoluteDataAnalysisPath(folder):
     return folder + "dataSyncAnalysis.png"
+
+# Returns the path to the energy analysis graphic saved / to be saved in the provided folder.
+def getAbsoluteEnergyAnalysisPath(folder):
+    return folder + "energyAnalysis.png"

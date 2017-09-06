@@ -10,6 +10,8 @@ import core.World;
  * Created by Britta Heymann on 15.02.2017.
  */
 public class BroadcastCreateEvent extends MessageEvent {
+    private static final long serialVersionUID = 1;
+    
     private int size;
     private int responseSize;
 

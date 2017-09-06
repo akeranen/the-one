@@ -303,7 +303,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
             List<Tuple<DisasterData, Double>> subsetToSent = data.subList(i, firstIndexNotToSent);
             DataMessage message = new DataMessage(
                     this.host, unknownReceiver,
-                    this.createMessageId(subsetToSent), subsetToSent,
+                    DatabaseApplication.createMessageId(subsetToSent), subsetToSent,
                     DATA_MESSAGE_PRIORITY);
             message.setAppID(APP_ID);
             messages.add(message);
@@ -311,7 +311,7 @@ public class DatabaseApplication extends Application implements DisasterDataCrea
         return messages;
     }
 
-    private String createMessageId(List<Tuple<DisasterData, Double>> subsetToSent) {
+    private static String createMessageId(List<Tuple<DisasterData, Double>> subsetToSent) {
         List<DisasterData> dataList = new ArrayList<>(subsetToSent.size());
         for (Tuple<DisasterData, Double> item : subsetToSent) {
             dataList.add(item.getKey());

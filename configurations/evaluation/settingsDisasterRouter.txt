@@ -35,3 +35,4 @@ DisasterPrioritization.dpWeight = 0.5
 # Parameters for buffer management
 DisasterBufferComparator.hopThreshold = 6
 DisasterBufferComparator.ageThreshold = 300
+DisasterBufferComparator.dpWeight = 1

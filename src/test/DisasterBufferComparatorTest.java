@@ -23,12 +23,16 @@ public class DisasterBufferComparatorTest {
     private static final double AGE_BELOW_THRESHOLD = DisasterRouterTestUtils.AGE_THRESHOLD - 0.1;
     private static final int HOP_COUNT_BELOW_THRESHOLD = DisasterRouterTestUtils.HOP_THRESHOLD - 1;
 
+    private static final double NEGATIVE_VALUE = -0.1;
+    private static final double VALUE_ABOVE_ONE = 1.1;
+
     /** The allowed delta when comparing doubles for equality. */
     private static final double DOUBLE_COMPARISON_DELTA = 0.0001;
 
     private static final String UNEXPECTED_COMPARISON_RESULT = "Expected different comparison result.";
 
-    private TestUtils testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), new TestSettings());
+    private TestSettings testSettings = new TestSettings();
+    private TestUtils testUtils = new TestUtils(new ArrayList<>(), new ArrayList<>(), this.testSettings);
     private SimClock clock = SimClock.getInstance();
 
     private DTNHost host;
@@ -42,9 +46,8 @@ public class DisasterBufferComparatorTest {
 
     @Before
     public void setUp() {
-        TestSettings s = new TestSettings();
-        DisasterRouterTestUtils.addDisasterRouterSettings(s);
-        this.testUtils.setMessageRouterProto(new DisasterRouter(s));
+        DisasterRouterTestUtils.addDisasterRouterSettings(this.testSettings);
+        this.testUtils.setMessageRouterProto(new DisasterRouter(this.testSettings));
         this.host = this.testUtils.createHost();
         this.neighbor = this.testUtils.createHost();
         this.comparator = new DisasterBufferComparator(this.host.getRouter());
@@ -61,6 +64,8 @@ public class DisasterBufferComparatorTest {
         TestSettings s = new TestSettings();
         s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
         s.putSetting(DisasterBufferComparator.HOP_THRESHOLD_S, Integer.toString(DisasterRouterTestUtils.HOP_THRESHOLD));
+        s.putSetting(DisasterBufferComparator.DELIVERY_PREDICTABILITY_WEIGHT_S,
+                Double.toString(DisasterRouterTestUtils.ONLY_DELIVERY_PREDICTABILITY));
         s.restoreNameSpace();
         new DisasterBufferComparator(this.host.getRouter());
     }
@@ -70,7 +75,28 @@ public class DisasterBufferComparatorTest {
         TestSettings s = new TestSettings();
         s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
         s.putSetting(DisasterBufferComparator.AGE_THRESHOLD_S, Double.toString(DisasterRouterTestUtils.AGE_THRESHOLD));
+        s.putSetting(DisasterBufferComparator.DELIVERY_PREDICTABILITY_WEIGHT_S,
+                Double.toString(DisasterRouterTestUtils.ONLY_DELIVERY_PREDICTABILITY));
         new DisasterBufferComparator(this.host.getRouter());
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsOnMissingDeliveryPredictabilityWeight() {
+        TestSettings s = new TestSettings();
+        s.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
+        s.putSetting(DisasterBufferComparator.AGE_THRESHOLD_S, Double.toString(DisasterRouterTestUtils.AGE_THRESHOLD));
+        s.putSetting(DisasterBufferComparator.HOP_THRESHOLD_S, Double.toString(DisasterRouterTestUtils.HOP_THRESHOLD));
+        new DisasterBufferComparator(this.host.getRouter());
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsOnNegativeDeliveryPredictabilityWeight() {
+        this.recreateScenarioWithDeliveryPredictabilityWeight(NEGATIVE_VALUE);
+    }
+
+    @Test(expected = SettingsError.class)
+    public void testConstructorThrowsOnDeliveryPredictabilityWeighAtAbove1() {
+        this.recreateScenarioWithDeliveryPredictabilityWeight(VALUE_ABOVE_ONE);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -88,6 +114,13 @@ public class DisasterBufferComparatorTest {
     public void testGetHopThreshold() {
         Assert.assertEquals("Expected different hop threshold.",
                 DisasterRouterTestUtils.HOP_THRESHOLD, this.comparator.getHopThreshold(), DOUBLE_COMPARISON_DELTA);
+    }
+
+    @Test
+    public void testGetDeliveryPredictabilityWeight() {
+        Assert.assertEquals("Expected different delivery predictability.",
+                DisasterRouterTestUtils.ONLY_DELIVERY_PREDICTABILITY, this.comparator.getDeliveryPredictabilityWeight(),
+                DOUBLE_COMPARISON_DELTA);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -231,6 +264,52 @@ public class DisasterBufferComparatorTest {
     }
 
     /**
+     * Checks that if two low rank messages are given to a buffer comparator which uses replications density:
+     * - M1 with age in buffer 0, hop count {@link DisasterRouterTestUtils#HOP_THRESHOLD} and replications density ~0.68,
+     *   and
+     * - M2 with age in buffer {@link DisasterRouterTestUtils#AGE_THRESHOLD}, hop count
+     *   {@link DisasterRouterTestUtils#HOP_THRESHOLD} and replications density 0,
+     * the one with higher replications density (= M1) should be deleted first.
+     */
+    @Test
+    public void testLowRankMessagesMayBeSortedByReplicationsDensity() {
+        // Ignore delivery predictability.
+        this.recreateScenarioWithDeliveryPredictabilityWeight(0);
+
+        this.clock.setTime(DisasterRouterTestUtils.AGE_THRESHOLD);
+
+        // Create two messages.
+        Message messageWithHighReplicationsDensity = new Message(this.host, this.neighbor, "M1", 0);
+        Message messageWithLowReplicationsDensity = new Message(this.host, this.neighbor, "M2", 0);
+        this.host.createNewMessage(messageWithHighReplicationsDensity);
+        this.host.createNewMessage(messageWithLowReplicationsDensity);
+
+        // Update replications density of one of the message: 1 in 3 should have it.
+        DTNHost hostWithMessage = this.testUtils.createHost();
+        hostWithMessage.createNewMessage(messageWithHighReplicationsDensity);
+        this.host.forceConnection(this.testUtils.createHost(), null, true);
+        this.host.forceConnection(hostWithMessage, null, true);
+        this.host.forceConnection(this.neighbor, null, true);
+        this.clock.advance(DisasterRouterTestUtils.RD_WINDOW_LENGTH);
+        this.host.update(true);
+
+        // Set the hop counts s.t. both messages are low rank.
+        this.increaseHopCount(messageWithLowReplicationsDensity, DisasterRouterTestUtils.HOP_THRESHOLD);
+        this.increaseHopCount(messageWithHighReplicationsDensity, DisasterRouterTestUtils.HOP_THRESHOLD);
+
+        // The message with lower replications density should have been in buffer for a longer time.
+        messageWithLowReplicationsDensity.setReceiveTime(0);
+
+        // Check comparison values: Message with higher replications density should be deleted first.
+        Assert.assertTrue(
+                UNEXPECTED_COMPARISON_RESULT,
+                this.comparator.compare(messageWithHighReplicationsDensity, messageWithLowReplicationsDensity) < 0);
+        Assert.assertTrue(
+                UNEXPECTED_COMPARISON_RESULT,
+                this.comparator.compare(messageWithLowReplicationsDensity, messageWithHighReplicationsDensity) > 0);
+    }
+
+    /**
      * Checks that a low rank broadcast message with a replications density of ~0.33 is sorted between two low rank
      * one to one messages with replications densities ~0.68 and 0.
      */
@@ -325,5 +404,25 @@ public class DisasterBufferComparatorTest {
         for (int i = 0; i < increase; i++) {
             m.addNodeOnPath(this.testUtils.createHost());
         }
+    }
+
+    /**
+     * Recreates complete scenario with a {@link DisasterBufferComparator} which has the provided delivery
+     * predictability weight.
+     *
+     * @param weight Delivery predictability weight in rank computations.
+     */
+    private void recreateScenarioWithDeliveryPredictabilityWeight(double weight) {
+        this.cleanUp();
+
+        this.testSettings.setNameSpace(DisasterBufferComparator.DISASTER_BUFFER_NS);
+        this.testSettings.putSetting(
+                DisasterBufferComparator.DELIVERY_PREDICTABILITY_WEIGHT_S, Double.toString(weight));
+        this.testSettings.restoreNameSpace();
+
+        this.testUtils.setMessageRouterProto(new DisasterRouter(this.testSettings));
+        this.host = this.testUtils.createHost();
+        this.neighbor = this.testUtils.createHost();
+        this.comparator = new DisasterBufferComparator(this.host.getRouter());
     }
 }

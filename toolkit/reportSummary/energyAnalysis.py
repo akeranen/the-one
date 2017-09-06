@@ -78,11 +78,15 @@ def main(analysisFileName, graphicFileName):
     for line in analysis:
         timeMatch = re.match("\[(\d+)\]", line)
         energyMatch = re.match("\d+,\D+\d+,(\d+.\d+)", line)
+        # If the line looks like "[600]", i.e. the report changes to the next time frame, we have to finalize the
+        # data we collected for the last time point (if there was such) and then reset our counters.
         if timeMatch is not None:
             if data.currentTimePoint is not 0:
                 data.updateData()
             data.currentTimePoint = float(timeMatch.group(1)) / 60
             data.resetCounters()
+        # Otherwise, if the line looks like '600,p0,0.8116', it is another data point for the current time and we
+        # should update our counters using the logged energy.
         if energyMatch is not None:
             data.updateCounters(energyLevel=float(energyMatch.group(1)))
 

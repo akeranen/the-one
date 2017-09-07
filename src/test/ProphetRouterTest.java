@@ -19,6 +19,7 @@ import routing.ProphetRouter;
 import core.Message;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Tests for PRoPHET router
@@ -41,9 +42,6 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		setRouterProto(new ProphetRouter(ts));
         DatabaseApplicationTest.addDatabaseApplicationSettings(ts);
 		super.setUp();
-
-		// Reset of message class needed to prevent flaky tests
-		Message.reset();
 	}
 
     /**
@@ -272,12 +270,15 @@ public class ProphetRouterTest extends AbstractRouterTest {
         this.h1.connect(this.h2);
 
         // Check that only half of the messages are transferred
-        String[] idsInExpectedOrder = { messageToH4.getId(), newMulticast.getId() };
-        this.checkMessagesAreSentInOrder(idsInExpectedOrder);
+        HashSet<String> sentIds = new HashSet<>();
         this.mc.reset();
         this.h1.update(true);
-        this.mc.next();
-        assertFalse("No further messages should have been sent.", mc.next());
+        while (this.mc.next()) {
+            sentIds.add(this.mc.getLastMsg().getId());
+            this.h1.update(true);
+        }
+        String[] expectedIds = { messageToH4.getId(), newMulticast.getId() };
+        assertTrue("Expected different message set to be sent.", Arrays.equals(sentIds.toArray(), expectedIds));
     }
 
     /**

@@ -60,14 +60,13 @@ class EnergyData:
         self.currentTotalHosts += 1
         if energyLevel < 0.1:
             self.currentHostsThatEverReachedLowEnergyLimit.add(host)
-            if(energyLevel == 0 ):
-                # Draws two functions over the same x values.
+            if energyLevel == 0:
                 self.currentHostsThatEverReachedZeroEnergy.add(host)
                 self.currentZeroEnergyHosts += 1
             else:
                 self.currentLowEnergyHosts += 1
 
-# Draws two functions over the same x values.
+# Draws the four functions over the same x values.
 # Labels are selected as appropriate for energy analysis.
 # In the end saves the plot
 def drawAndSafePlots(x, y_lowEnergy, y_noEnergy, y_totalLowEnergy, y_totalNoEnergy, graphicFileName):

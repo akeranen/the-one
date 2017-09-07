@@ -277,8 +277,10 @@ public class ProphetRouterTest extends AbstractRouterTest {
             sentIds.add(this.mc.getLastMsg().getId());
             this.h1.update(true);
         }
-        String[] expectedIds = { messageToH4.getId(), newMulticast.getId() };
-        assertTrue("Expected different message set to be sent.", Arrays.equals(sentIds.toArray(), expectedIds));
+        HashSet<String> expectedIds = new HashSet<>(2);
+        expectedIds.add(messageToH4.getId());
+        expectedIds.add(newMulticast.getId());
+        assertEquals("Expected different message set to be sent.", sentIds, expectedIds);
     }
 
     /**

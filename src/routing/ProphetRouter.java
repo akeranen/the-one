@@ -146,9 +146,13 @@ public class ProphetRouter extends ActiveRouter {
      * @return The maximum P value.
      */
     private double getMaxPredFor(Collection<Integer> addresses) {
+        // Make sure preds are updated once before getting.
+        this.ageDeliveryPreds();
+
         double maxPred = 0;
         for (int address : addresses) {
-            maxPred = Math.max(maxPred, this.getPredFor(address));
+            double predForAddress = this.preds.getOrDefault(address, 0D);
+            maxPred = Math.max(maxPred, predForAddress);
         }
         return maxPred;
     }

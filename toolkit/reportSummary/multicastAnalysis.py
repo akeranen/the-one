@@ -23,6 +23,7 @@ def drawPlots(x, y_minimum, y_average):
     plt.plot(x, y_minimum, '.-', label='Minimum')
     plt.plot(x, y_average, '.-',  label='Average')
     plt.legend(loc='upper left')
+    plt.grid(True)
 
 # Main function of the script. See script description at the top of the file for further information.
 def main(analysisFileName, graphicFileName):

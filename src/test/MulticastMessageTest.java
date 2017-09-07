@@ -8,6 +8,7 @@ import core.MessageListener;
 import core.MulticastMessage;
 import core.SimError;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -206,6 +207,23 @@ public class MulticastMessageTest {
         assertEquals("Expected one remaining recipient for group member.", 1, m3.getRemainingRecipients().size());
         assertTrue("Expected third member to still be set as recipient.",
                 m3.getRemainingRecipients().contains(member3.getAddress()));
+    }
+
+    /**
+     * Checks that {@link MulticastMessage#addReachedHost(DTNHost)} removes recipients from remaining recipients.
+     */
+    @Test
+    public void testAddReachedHost() {
+        // Use message to group with two members.
+        DTNHost member2 = this.utils.createHost();
+        this.group1.addHost(member2);
+
+        // Call function with recipient.
+        this.msg.addReachedHost(member2);
+
+        // Check it was added.
+        Assert.assertFalse("Should have added member to reached recipients.",
+                this.msg.getRemainingRecipients().contains(member2.getAddress()));
     }
 
     @Test(expected = SimError.class)

@@ -84,6 +84,7 @@ public abstract class AbstractRouterTest extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         Settings.init(null);
+        SimClock.reset();
     }
 
 	protected void setRouterProto(MessageRouter r) {

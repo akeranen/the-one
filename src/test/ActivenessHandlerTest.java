@@ -24,6 +24,11 @@ public class ActivenessHandlerTest extends TestCase {
 				moreTimes);
 		ah = new ActivenessHandler(ts);
 		clock = SimClock.getInstance();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
 		SimClock.reset();
 	}
 

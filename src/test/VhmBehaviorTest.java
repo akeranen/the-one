@@ -9,6 +9,7 @@ import movement.CarMovement;
 import movement.PanicMovement;
 import movement.ShortestPathMapBasedMovement;
 import movement.VoluntaryHelperMovement;
+import org.junit.After;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -41,6 +42,11 @@ public class VhmBehaviorTest {
         host.setLocation(new Coord(0,0));
         VhmTestHelper.addMinimalSettingsForVoluntaryHelperMovement(testSettings);
         vhm = VhmTestHelper.createMinimalVhm(testSettings,host);
+    }
+
+    @After
+    public void tearDown() {
+        SimClock.reset();
     }
 
     @Test

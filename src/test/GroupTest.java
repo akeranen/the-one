@@ -5,7 +5,7 @@ import core.DTNHost;
 import core.Group;
 import core.MessageListener;
 import junit.framework.TestCase;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ public class GroupTest {
     private TestUtils utils = new TestUtils(new ArrayList<ConnectionListener>(),
             new ArrayList<MessageListener>(), new TestSettings());
 
-    @Before
-    public void setUp(){
+    @After
+    public void tearDown(){
         Group.clearGroups();
         DTNHost.reset();
     }

@@ -8,6 +8,7 @@ import core.SimScenario;
 import input.AbstractMessageEventGenerator;
 import input.MulticastCreateEvent;
 import input.MulticastEventGenerator;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,7 +35,6 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
     public void init(){
         super.init();
         SimScenario.reset();
-        Group.clearGroups();
         DTNHost.reset();
         TestSettings.addSettingsToEnableSimScenario(this.settings);
 
@@ -50,6 +50,11 @@ public class MulticastEventGeneratorTest extends AbstractMessageEventGeneratorTe
 
         settings.putSetting(MulticastEventGenerator.GROUP_COUNT_RANGE_S,MIN_GROUP_COUNT+", "+MAX_GROUP_COUNT);
         settings.putSetting(MulticastEventGenerator.GROUP_SIZE_RANGE_S,MIN_GROUP_SIZE+", "+MAX_GROUP_SIZE);
+    }
+
+    @After
+    public void tearDown() {
+        Group.clearGroups();
     }
 
     @Test

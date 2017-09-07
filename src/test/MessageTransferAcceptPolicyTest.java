@@ -8,6 +8,7 @@ import core.DisasterData;
 import core.Group;
 import core.Message;
 import core.MulticastMessage;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import routing.util.MessageTransferAcceptPolicy;
@@ -53,7 +54,6 @@ public class MessageTransferAcceptPolicyTest {
 
     @Before
     public void init() {
-        Group.clearGroups();
         DTNHost.reset();
         this.settings = new TestSettings();
         TestUtils utils = new TestUtils(
@@ -81,6 +81,11 @@ public class MessageTransferAcceptPolicyTest {
         this.settings.putSetting(MessageTransferAcceptPolicy.MTA_POLICY_NS, POLICY_NS);
         this.setAcceptableSenderAddress(this.sender.getAddress());
         this.setAcceptableRecipientAddress(this.recipient.getAddress());
+    }
+
+    @After
+    public void tearDown() {
+        Group.clearGroups();
     }
 
     @Test

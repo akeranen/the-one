@@ -36,7 +36,6 @@ public class TotalContactTimeReportTest extends TestCase {
 	protected void setUp() throws Exception {
 		java.util.Locale.setDefault(java.util.Locale.US);
 		super.setUp();
-		SimClock.reset();
 		outFile = File.createTempFile("cttest", ".tmp");
 		outFile.deleteOnExit();
 
@@ -59,6 +58,12 @@ public class TotalContactTimeReportTest extends TestCase {
 		h1 = utils.createHost(c1);
 		h2 = utils.createHost(c2);
 		h3 = utils.createHost(c3);
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
 	}
 
 	private void done() throws Exception {

@@ -1,0 +1,4 @@
+# Add this file as argument if you want to use ProphetRouter
+
+Group.router = ProphetRouter
+ProphetRouter.secondsInTimeUnit = 30

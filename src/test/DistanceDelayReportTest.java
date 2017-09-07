@@ -44,6 +44,12 @@ public class DistanceDelayReportTest extends TestCase {
 		this.utils = new TestUtils(null, ml, ts);
 	}
 
+	@Override
+	protected void tearDown() throws Exception{
+		super.tearDown();
+		SimClock.reset();
+	}
+
 	@Test
 	public void testMessageTransferred() throws IOException {
 		DTNHost h1 = utils.createHost(new Coord(0,0));

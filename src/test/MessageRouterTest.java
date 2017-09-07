@@ -8,6 +8,7 @@ import core.Group;
 import core.Message;
 import core.MessageListener;
 import core.MulticastMessage;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +48,6 @@ public class MessageRouterTest {
 
     @Before
     public void setUp() {
-        Group.clearGroups();
         TestSettings ts = new TestSettings();
         ts.putSetting(MessageRouter.B_SIZE_S, ""+BUFFER_SIZE);
         List<MessageListener> mListener = new ArrayList<>(1);
@@ -67,6 +67,11 @@ public class MessageRouterTest {
         this.msg = new Message(sender, recipient, "M", DEFAULT_MESSAGE_SIZE);
         this.broadcast = new BroadcastMessage(sender, "B", DEFAULT_MESSAGE_SIZE);
         this.multicast = new MulticastMessage(sender, g,"G",DEFAULT_MESSAGE_SIZE);
+    }
+
+    @After
+    public void tearDown() {
+        Group.clearGroups();
     }
 
     @Test

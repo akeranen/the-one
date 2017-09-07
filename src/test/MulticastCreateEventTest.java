@@ -6,6 +6,7 @@ import core.Message;
 import core.MulticastMessage;
 import input.ExternalEvent;
 import input.MulticastCreateEvent;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,9 +21,13 @@ public class MulticastCreateEventTest extends AbstractMessageCreateEventTest {
     
     @Before
     public void createGroup(){
-        Group.clearGroups();
         Group g = Group.createGroup(0);
         g.addHost(creator);
+    }
+
+    @After
+    public void tearDown() {
+        Group.clearGroups();
     }
 
     @Test

@@ -41,7 +41,6 @@ public class MessageStatsReportTest {
     public void init() throws IOException{
         SimScenario.reset();
         DTNHost.reset();
-        Group.clearGroups();
         Settings.init(null);
         java.util.Locale.setDefault(java.util.Locale.US);
 
@@ -68,6 +67,7 @@ public class MessageStatsReportTest {
         // Cleanup to make further tests with other settings possible.
         SimScenario.reset();
         DTNHost.reset();
+        Group.clearGroups();
     }
 
     private void playScenario() {

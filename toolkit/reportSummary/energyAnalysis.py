@@ -25,8 +25,8 @@ class EnergyData:
     timePoints = []
     zeroEnergyHosts = []
     lowEnergyHosts = []
-    nodesThatEverReachedLowEnergyLimit = []
-    nodesThatEverReachedZeroEnergy = []
+    hostsThatEverReachedLowEnergyLimit = []
+    hostsThatEverReachedZeroEnergy = []
 
     # Current counters
     currentTimePoint = 0
@@ -34,20 +34,19 @@ class EnergyData:
     currentZeroEnergyHosts = 0
     currentLowEnergyHosts = 0
 
-    # Sets of nodes that ever reached the limit
-    currentNodesThatEverReachedLowEnergyLimit = set()
-    currentNodesThatEverReachedZeroEnergy = set()
-    allNodesInTheSimulation = set()
+    # Sets of hosts that ever reached the limit
+    currentHostsThatEverReachedLowEnergyLimit = set()
+    currentHostsThatEverReachedZeroEnergy = set()
 
     # Transfers current counters into new elements of the summarizing data vectors.
     def updateData(self):
         self.timePoints.append(self.currentTimePoint)
         self.zeroEnergyHosts.append(self.currentZeroEnergyHosts / self.currentTotalHosts)
         self.lowEnergyHosts.append(self.currentLowEnergyHosts / self.currentTotalHosts)
-        self.nodesThatEverReachedLowEnergyLimit\
-            .append(len(self.currentNodesThatEverReachedLowEnergyLimit) / len(self.allNodesInTheSimulation))
-        self.nodesThatEverReachedZeroEnergy \
-            .append(len(self.currentNodesThatEverReachedZeroEnergy) / len(self.allNodesInTheSimulation))
+        self.hostsThatEverReachedLowEnergyLimit \
+            .append(len(self.currentHostsThatEverReachedLowEnergyLimit) / self.currentTotalHosts)
+        self.hostsThatEverReachedZeroEnergy \
+            .append(len(self.currentHostsThatEverReachedZeroEnergy) / self.currentTotalHosts)
 
     # Resets current counters to 0.
     def resetCounters(self):
@@ -55,31 +54,30 @@ class EnergyData:
         self.currentZeroEnergyHosts = 0
         self.currentLowEnergyHosts = 0
 
-    # Updates counters with a new energy level at the current time point.
-    def updateCounters(self, energyLevel):
+    # Updates counters with a new energy level at the current time point and adds the host to the energy sets according
+    # to the remaining energy.
+    def updateCountersAndHostSets(self, host, energyLevel):
         self.currentTotalHosts += 1
-        if energyLevel == 0:
-            self.currentZeroEnergyHosts += 1
-        elif energyLevel < 0.1:
-            self.currentLowEnergyHosts += 1
-
-    def updateNodeSets(self, node, energyLevel):
-        self.allNodesInTheSimulation.add(node)
         if energyLevel < 0.1:
-            self.currentNodesThatEverReachedLowEnergyLimit.add(node)
-            if energyLevel == 0:
-                self.currentNodesThatEverReachedZeroEnergy.add(node)
+            self.currentHostsThatEverReachedLowEnergyLimit.add(host)
+            if(energyLevel == 0 ):
+                # Draws two functions over the same x values.
+                self.currentHostsThatEverReachedZeroEnergy.add(host)
+                self.currentZeroEnergyHosts += 1
+            else:
+                self.currentLowEnergyHosts += 1
 
 # Draws two functions over the same x values.
 # Labels are selected as appropriate for energy analysis.
-def drawPlots(x, y_lowEnergy, y_noEnergy, y_totalLowEnergy, y_totalNoEnergy, graphicFileName):
+# In the end saves the plot
+def drawAndSafePlots(x, y_lowEnergy, y_noEnergy, y_totalLowEnergy, y_totalNoEnergy, graphicFileName):
     plt.title('Battery power distribution')
     plt.xlabel('Minutes in simulation')
     plt.ylabel('Percentage of hosts')
-    plt.plot(x, y_lowEnergy, '.-', label='Current nodes with battery 0% < x < 10%')
-    plt.plot(x, y_totalLowEnergy, '.-', label='Total nodes that reached battery 0% < x < 10%')
-    plt.plot(x, y_noEnergy, '.-',  label='Current nodes with no battery left')
-    plt.plot(x, y_totalNoEnergy, '.-',  label='Total nodes that had no battery left')
+    plt.plot(x, y_lowEnergy, '.-', label='Current hosts with battery 0% < x < 10%')
+    plt.plot(x, y_totalLowEnergy, '.-', label='Total hosts that reached battery 0% < x < 10%')
+    plt.plot(x, y_noEnergy, '.-',  label='Current hosts with no battery left')
+    plt.plot(x, y_totalNoEnergy, '.-',  label='Total hosts that had no battery left')
     legend = plt.legend(bbox_to_anchor=(0.1, -0.15), loc=2, borderaxespad=0.)
     plt.grid(True)
     axes = plt.gca()
@@ -111,14 +109,13 @@ def main(analysisFileName, graphicFileName):
         # Otherwise, if the line looks like '600,p0,0.8116', it is another data point for the current time and we
         # should update our counters using the logged energy.
         if energyMatch is not None:
-            data.updateCounters(energyLevel=float(energyMatch.group(2)))
-            data.updateNodeSets(energyLevel=float(energyMatch.group(2)), node=energyMatch.group(1))
+            data.updateCountersAndHostSets(energyLevel=float(energyMatch.group(2)), host=energyMatch.group(1))
 
-    drawPlots(x=data.timePoints,
-              y_lowEnergy=data.lowEnergyHosts,
-              y_noEnergy=data.zeroEnergyHosts,
-              y_totalLowEnergy=data.nodesThatEverReachedLowEnergyLimit,
-              y_totalNoEnergy=data.nodesThatEverReachedZeroEnergy, graphicFileName=graphicFileName)
+    drawAndSafePlots(x=data.timePoints,
+                     y_lowEnergy=data.lowEnergyHosts,
+                     y_noEnergy=data.zeroEnergyHosts,
+                     y_totalLowEnergy=data.hostsThatEverReachedLowEnergyLimit,
+                     y_totalNoEnergy=data.hostsThatEverReachedZeroEnergy, graphicFileName=graphicFileName)
 
 # Make sure script can be called from command line.
 if __name__ == "__main__":

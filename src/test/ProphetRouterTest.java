@@ -41,6 +41,9 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		setRouterProto(new ProphetRouter(ts));
         DatabaseApplicationTest.addDatabaseApplicationSettings(ts);
 		super.setUp();
+
+		// Reset of message class needed to prevent flaky tests
+		Message.reset();
 	}
 
     /**

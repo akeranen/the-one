@@ -13,14 +13,16 @@ import readFileUtilities
 # - BroadcastMessageDelay9.png,
 # - MulticastMessageAnalysis.png,
 # - MulticastMessageDelay.png, and
-# - dataSyncAnalysis.png
+# - dataSyncAnalysis.png, and
+# - energyAnalysis.png
 # into a single pdf in that folder with name allGraphics.pdf.
 
 def main(imageFolderPath):
     pdf = FPDF()
     pdf.add_page()
-    pdf.image(readFileUtilities.getAbsoluteTrafficAnalysisPath(imageFolderPath), h=132)
-    pdf.image(readFileUtilities.getAbsoluteBufferOccupancyAnalysisPath(imageFolderPath), h=132)
+    pdf.image(readFileUtilities.getAbsoluteTrafficAnalysisPath(imageFolderPath), h=80)
+    pdf.image(readFileUtilities.getAbsoluteBufferOccupancyAnalysisPath(imageFolderPath), h=92)
+    pdf.image(readFileUtilities.getAbsoluteEnergyAnalysisPath(imageFolderPath), h=92)
     pdf.add_page()
     pdf.image(readFileUtilities.getAbsoluteDeliveryRatePath(imageFolderPath), h=132)
     pdf.image(readFileUtilities.getAbsoluteOneToOneMessageDelayPath(imageFolderPath), h=132)

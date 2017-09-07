@@ -10,6 +10,7 @@ import delayDistributionAnalysis
 import broadcastAnalysis
 import multicastAnalysis
 import dataSyncAnalysis
+import energyAnalysis
 import reportSummaryPdf
 
 import readFileUtilities
@@ -103,6 +104,9 @@ delayDistributionAnalysis.main(
 dataSyncAnalysis.main(
     analysisFileName=reportDir+"realisticScenario_DataSyncReport.txt",
     graphicFileName=readFileUtilities.getAbsoluteDataAnalysisPath(imageDirectoryName))
+energyAnalysis.main(
+    analysisFileName=reportDir+"realisticScenario_EnergyLevelReport.txt",
+    graphicFileName=readFileUtilities.getAbsoluteEnergyAnalysisPath(imageDirectoryName))
 
 print("Successfully created all graphics. Creating pdf...")
 

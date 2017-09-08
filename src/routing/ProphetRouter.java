@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import core.BroadcastMessage;
 import core.DataMessage;
 import core.MulticastMessage;
 import routing.util.DatabaseApplicationUtil;
@@ -285,8 +286,12 @@ public class ProphetRouter extends ActiveRouter {
 			availableConnections.add(con);
 
 			for (Message m : msgCollection) {
-				if (othRouter.hasMessage(m.getId())) {
-					continue; // skip messages that the other one has
+				if (othRouter.hasMessage(m.getId()) || m instanceof BroadcastMessage) {
+					// Ignore both messages that the other one has and all broadcast messages.
+					// (Broadcasts should be sent via exchangeDeliverableMessages.)
+					// The latter check may not be caught by the former because of caching (direct messages may be
+					// sent belatedly; see explanation at ActiveRouter#cachedMessagesForConnected.).
+					continue;
 				}
 				if (othRouter.getPredFor(m) > getPredFor(m)) {
 					// the other node has higher probability of delivery

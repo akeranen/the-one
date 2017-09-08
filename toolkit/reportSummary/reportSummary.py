@@ -1,6 +1,5 @@
 import subprocess
 import sys
-import getopt
 import os
 
 import trafficAnalysis
@@ -18,8 +17,8 @@ import readFileUtilities
 # ReportSummary:
 #
 # Usage:
-# reportSummary.py -r <reportDirectory>
-# e.g., -r /Simulator/reports/
+# reportSummary.py <reportDirectory>
+# e.g., /Simulator/reports/
 #
 # 1. Calls all pre-processing perl script on a given report directory
 #    The shortened reports are placed within the reports directory
@@ -28,20 +27,11 @@ import readFileUtilities
 # 3. Outputs all images into pdf in consistent order (calls another script that does)
 
 
-# Retrieve command line options
-relevantOptions = sys.argv[1:]
-# Default values for options
-reportDir = 'reports/'
-
-# Try to retrieve command line parameters
-try:
-    opts, args = getopt.getopt(relevantOptions,"r:")
-except getopt.GetoptError:
-    print('Usage: reportSummary.py -r <reportDirectory> \n e.g., -r /Simulator/reports/')
-    sys.exit(2)
-for opt, arg in opts:
-    if opt == "-r":
-        reportDir = arg
+# Get directory containing reports and check if it really exists
+reportDir = sys.argv[1]
+if not os.path.isdir(reportDir):
+    print("Report directory not found.")
+    print("Usage: reportSummary.py <reportDirectory> \n e.g., /Simulator/reports/")
 
 ## Call perl scripts for report pre-processing
 granularity = "300"

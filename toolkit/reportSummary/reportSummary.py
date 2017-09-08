@@ -29,7 +29,7 @@ import readFileUtilities
 
 # Get directory containing reports and check if it really exists
 reportDir = sys.argv[1]
-if not os.path.isdir(reportDir):
+if not os.path.exists(reportDir):
     print("Report directory not found.")
     print("Usage: reportSummary.py <reportDirectory> \n e.g., /Simulator/reports/")
 

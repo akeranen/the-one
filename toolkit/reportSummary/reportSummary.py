@@ -31,7 +31,8 @@ import readFileUtilities
 reportDir = sys.argv[1]
 if not os.path.exists(reportDir):
     print("Report directory not found.")
-    print("Usage: reportSummary.py <reportDirectory> \n e.g., /Simulator/reports/")
+    print("Usage: reportSummary.py <reportDirectory> e.g., /Simulator/reports/")
+    exit()
 
 ## Call perl scripts for report pre-processing
 granularity = "300"

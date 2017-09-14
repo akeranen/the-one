@@ -77,7 +77,7 @@ close(INFILE);
 #Map, that stores the last delivery ratio for every message
 my %msgToLastRatio = ();
 
-print "#timeAfterMessageCreation	MinRatio	AvgRatio\n";
+print "#timeAfterMessageCreation	MinRatio	AvgRatio   MinRationForAll AvgRatioForAll\n";
 
 my $lastInterval = 0;
 #Sort intervals numerically and process every interval step by step
@@ -114,28 +114,39 @@ sub getHighestInterval{
 sub printInterval{
     my $interval = shift;
     my $ratioSum = 0;
+    my $ratioSumForAll = 0;
     my $nextMin = 2;
+    my $nextMinForAll = 2;
     my $msgCount = 0;
+    my $msgCountForAll = 0;
     #check every message
     foreach my $msg (keys %msgToLastRatio){
-        #ignore it, if it didn't exist anymore during the current interval
-        if ($msgToMaxInterval{$msg} < $interval){
-            next;
+        #calculate these metrics only for message that still exist during the current interval
+        if ($msgToMaxInterval{$msg} >= $interval){
+            #add it to the min and avg calculation for the current interval
+            $msgCount++;
+            my $msgRatio = $msgToLastRatio{$msg};
+            $ratioSum += $msgRatio;
+            if ($nextMin > $msgRatio){
+                $nextMin = $msgRatio;
+            }
         }
-        #add it to the min and avg calculation for the current interval
-        $msgCount++;
+        #calculate these metrics for all messages ever created
+        $msgCountForAll++;
         my $msgRatio = $msgToLastRatio{$msg};
-        $ratioSum += $msgRatio;
-        if ($nextMin > $msgRatio){
-            $nextMin = $msgRatio;
+        $ratioSumForAll += $msgRatio;
+        if ($nextMinForAll > $msgRatio){
+            $nextMinForAll = $msgRatio;
         }
+
     }
     if ($msgCount > 0) {
         #calculate average
         my $nextAvg = $ratioSum / $msgCount;
+        my $nextAvgForAll = $ratioSumForAll / $msgCountForAll;
         #convert the interval into simulation seconds
         my $seconds = $interval * $timeStep;
-        print "$seconds	$nextMin	$nextAvg\n";
+        print "$seconds	$nextMin	$nextAvg   $nextMinForAll $nextAvgForAll\n";
     }
 }
 
@@ -146,5 +157,4 @@ sub calculateMaxIntervalForAllMsgs {
     foreach my $msgId (keys %msgToCreateTime){
         $msgToMaxInterval{$msgId} = int(($simTime - $msgToCreateTime{$msgId}) / $timeStep );
     }
-
 }

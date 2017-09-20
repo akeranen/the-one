@@ -35,30 +35,30 @@ public class DataSyncReportTest extends AbstractReportTest{
     private static final long SMALLEST_DB_SIZE = 200L;
 
     /* String arrays containing all the expected metrics and ratios to check whether everything necessary is contained*/
-    private static final String[] EXPECTED_METRICS = new String[]{"avg_used_mem", "max_used_mem", "med_avg_data_util",
-            "avg_data_util", "med_avg_data_age", "avg_data_age", "med_max_data_age", "med_avg_data_dist",
-            "avg_data_dist", "med_max_data_dist"};
+    private static final String[] EXPECTED_METRICS = new String[]{"avg_used_mem", "min_used_mem", "max_used_mem",
+            "med_avg_data_util", "avg_data_util", "med_avg_data_age", "avg_data_age", "med_max_data_age",
+            "med_avg_data_dist", "avg_data_dist", "med_max_data_dist"};
     private static final String[] EXPECTED_RATIOS= new String[]{"avg_ratio_map", "avg_ratio_marker",
             "avg_ratio_skill", "avg_ratio_res"};
 
     /* Expected lines */
     private static final String EXPECTED_FIRST_LINE="Data sync stats for scenario TEST-Scenario";
     private static final String[] EXPECTED_OUTPUTS= new String []{
-            "sim_time: 51.0, avg_used_mem: 0.0%, max_used_mem: 0.0%, med_avg_data_util: NaN, avg_data_util: NaN, " +
-                    "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: NaN, " +
-                    "avg_data_dist: NaN, med_max_data_dist: NaN",
+            "sim_time: 51.0, avg_used_mem: 0.0%, min_used_mem: 0.0%, max_used_mem: 0.0%, med_avg_data_util: NaN, " +
+                    "avg_data_util: NaN, med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, " +
+                    "med_avg_data_dist: NaN, avg_data_dist: NaN, med_max_data_dist: NaN",
             "avg_ratio_map: NaN%, avg_ratio_marker: NaN%, avg_ratio_skill: NaN%, avg_ratio_res: NaN%",
-            "sim_time: 81.0, avg_used_mem: 3.7%, max_used_mem: 7.3%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
-                    "med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, med_avg_data_dist: 0.0, " +
-                    "avg_data_dist: 0.0, med_max_data_dist: 0.0",
+            "sim_time: 81.0, avg_used_mem: 3.7%, min_used_mem: 0.0%, max_used_mem: 7.3%, med_avg_data_util: 1.0, " +
+                    "avg_data_util: 1.0, med_avg_data_age: NaN, avg_data_age: NaN, med_max_data_age: NaN, " +
+                    "med_avg_data_dist: 0.0, avg_data_dist: 0.0, med_max_data_dist: 0.0",
             "avg_ratio_map: 100.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 0.0%, avg_ratio_res: 0.0%",
-            "sim_time: 111.0, avg_used_mem: 8.1%, max_used_mem: 8.8%, med_avg_data_util: 1.0, avg_data_util: 1.0, " +
-                    "med_avg_data_age: 91.0, avg_data_age: 91.0, med_max_data_age: 91.0, med_avg_data_dist: 565.7, " +
-                    "avg_data_dist: 282.8, med_max_data_dist: 565.7",
+            "sim_time: 111.0, avg_used_mem: 8.1%, min_used_mem: 7.3%, max_used_mem: 8.8%, med_avg_data_util: 1.0, " +
+                    "avg_data_util: 1.0, med_avg_data_age: 91.0, avg_data_age: 91.0, med_max_data_age: 91.0, " +
+                    "med_avg_data_dist: 565.7, avg_data_dist: 282.8, med_max_data_dist: 565.7",
             "avg_ratio_map: 50.0%, avg_ratio_marker: 0.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%",
-            "sim_time: 141.0, avg_used_mem: 22.7%, max_used_mem: 30.8%, med_avg_data_util: 1.0, avg_data_util: 0.9, " +
-                    "med_avg_data_age: 121.0, avg_data_age: 90.8, med_max_data_age: 121.0, med_avg_data_dist: 848.5, " +
-                    "avg_data_dist: 565.7, med_max_data_dist: 1131.4",
+            "sim_time: 141.0, avg_used_mem: 22.7%, min_used_mem: 14.7%, max_used_mem: 30.8%, med_avg_data_util: 1.0, " +
+                    "avg_data_util: 0.9, med_avg_data_age: 121.0, avg_data_age: 90.8, med_max_data_age: 121.0, " +
+                    "med_avg_data_dist: 848.5, avg_data_dist: 565.7, med_max_data_dist: 1131.4",
             "avg_ratio_map: 25.0%, avg_ratio_marker: 25.0%, avg_ratio_skill: 50.0%, avg_ratio_res: 0.0%"
     };
 

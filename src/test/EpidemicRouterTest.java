@@ -27,10 +27,10 @@ import java.util.List;
 public class EpidemicRouterTest extends AbstractRouterTest {
 
 	private static int TTL = 300;
-	private static final int NINE_HOURS = 9 * 60 * 60;
+	private static final int THREE_HOURS = 10_800;
 
 	/* Data base item sizes needed for tests. */
-	private static final int DB_SIZE = 100;
+	private static final int DB_SIZE = 50;
 	private static final int SMALL_SIZE_DIFFERENCE = 2;
 
 	private static final String EXPECTED_DATA_MESSAGE = "Data message should have been sent.";
@@ -330,7 +330,7 @@ public class EpidemicRouterTest extends AbstractRouterTest {
         assertEquals("Expected other data item to be sent.", data, message.getData().get(0));
 
         // Add another, large one to replace the original object. It is more useful so it stays in the database.
-        this.clock.advance(NINE_HOURS);
+        this.clock.advance(THREE_HOURS);
         DisasterData newData = new DisasterData(
                 DisasterData.DataType.SKILL, DB_SIZE - SMALL_SIZE_DIFFERENCE, SimClock.getTime(), h1.getLocation());
         this.setUpAsDataCarrier(h1, newData);

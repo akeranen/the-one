@@ -20,7 +20,7 @@ import java.util.List;
  * Created by Britta Heymann on 09.04.2017.
  */
 public class LocalDatabaseTest {
-    private static final int DB_SIZE = 1000;
+    private static final int DB_SIZE = 100;
 
     /* Used locations for all DB operations. */
     private static final Coord CURR_LOCATION = new Coord(300, 400);

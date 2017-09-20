@@ -36,8 +36,8 @@ public class DatabaseStatisticsTest {
     private static final double HALF_AN_HOUR_LATER =3600;
 
     /* Used locations for all DB operations. */
-    private static final Coord CURR_LOCATION = new Coord(3000, 4000);
-    private static final Coord CLOSE_TO_CURR_LOCATION = new Coord(4000, 4000);
+    private static final Coord CURR_LOCATION = new Coord(300, 400);
+    private static final Coord CLOSE_TO_CURR_LOCATION = new Coord(400, 400);
     private static final Coord ORIGIN = new Coord(0,0);
 
     /* Sizes for data items */

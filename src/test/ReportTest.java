@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 public class ReportTest {
 
     private static final String WRONG_MAXIMUM = "The maximum was computed or formatted incorrectly.";
+    private static final String WRONG_MINIMUM = "The minimum was computed or formatted incorrectly.";
 
     private File outputFile;
     private Report report;
@@ -71,6 +72,24 @@ public class ReportTest {
         assertEquals(WRONG_MAXIMUM, "100.3000", report.getMaximum(valuesWithSameNumberTwice));
         final  List<Double> valuesWithMaxTwice = Arrays.asList(30.0, -1.2, 100.0, 100.3, -0.07, 100.3);
         assertEquals(WRONG_MAXIMUM, "100.3000", report.getMaximum(valuesWithMaxTwice));
+    }
+
+    @Test
+    public void testGetMinimumReturnsNaNForEmptyList(){
+        List<Double> values = new ArrayList<>();
+        assertEquals("For empty lists, NaN should be returned", "NaN", report.getMinimum(values));
+    }
+
+    @Test
+    public void testGetMinimumReturnsMinimum(){
+        final List<Double> values = Arrays.asList(3.0, -1.2, 100.0, 100.3, 0.07);
+        assertEquals(WRONG_MINIMUM, "-1.2000", report.getMinimum(values));
+        final List<Double> valuesWithNegativeMin = Arrays.asList(-3.0, -1.2, -100.0, -100.3, -0.07);
+        assertEquals(WRONG_MINIMUM, "-100.3000", report.getMinimum(valuesWithNegativeMin));
+        final List<Double> valuesWithSameNumberTwice = Arrays.asList(30.0, -1.2, 100.0, 100.3, -0.07, 100.0);
+        assertEquals(WRONG_MINIMUM, "-1.2000", report.getMinimum(valuesWithSameNumberTwice));
+        final  List<Double> valuesWithMinTwice = Arrays.asList(30.0, 1.2, 100.0, 100.3, 0.07, 100.3, 0.07);
+        assertEquals(WRONG_MINIMUM, "0.0700", report.getMinimum(valuesWithMinTwice));
     }
 
     @After

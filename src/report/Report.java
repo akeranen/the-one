@@ -414,6 +414,21 @@ public abstract class Report {
         return format(max);
     }
 
+    /**
+     * Returns the minimum of the values in the list
+     * as a formatted string with the given numerical precision.
+     * Return "NaN" for empty lists.
+     *
+     * @param values the list to search the minimum in
+     * @return a formatted string of the minimum in the list
+     */
+    public String getMinimum(List<Double> values){
+        if (values.isEmpty()){
+            return NAN;
+        }
+        double min = Collections.min(values);
+        return format(min);
+    }
 	/**
 	 * Returns the variance of the values in the List.
 	 *

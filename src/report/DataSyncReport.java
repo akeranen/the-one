@@ -127,6 +127,7 @@ public class DataSyncReport extends SamplingReport{
         //Write out statistics gathered over all hosts with database
         write("sim_time: " + format(getSimTime()) +", "+
                 "avg_used_mem: " + getAverage(usedDataBasePercentage) +"%, "+
+                "min_used_mem: " + getMinimum(usedDataBasePercentage) +"%, "+
                 "max_used_mem: " + getMaximum(usedDataBasePercentage) +"%, "+
                 "med_avg_data_util: " + getMedian(averageDataUtility)+ ", "+
                 "avg_data_util: " + getAverage(averageDataUtility) + ", "+

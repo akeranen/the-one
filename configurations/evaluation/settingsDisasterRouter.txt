@@ -11,16 +11,16 @@ DeliveryPredictabilityStorage.dpBeta = 0.25
 DeliveryPredictabilityStorage.windowLength = 30
 
 EncounterValue.agingFactor = 0.85
-EncounterValue.windowLength = 120
+EncounterValue.windowLength = 360
 
-ReplicationsDensity.windowLength = 120
+ReplicationsDensity.windowLength = 360
 
 # Parameters for message choosing
 UtilityMessageChooser.dpWeight = 0.9
 UtilityMessageChooser.powerWeight = 0.1
 UtilityMessageChooser.prophetPlusWeight = 0.5
-UtilityMessageChooser.rdWeight = 0.35
-UtilityMessageChooser.evWeight = 0.15
+UtilityMessageChooser.rdWeight = 0.2
+UtilityMessageChooser.evWeight = 0.3
 UtilityMessageChooser.messageUtilityThreshold = 0.45
 UtilityMessageChooser.powerThreshold = 0.1
 

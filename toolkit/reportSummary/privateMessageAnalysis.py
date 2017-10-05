@@ -26,16 +26,21 @@ def getValueFromString(string):
         return float(match.group(2))
     return int(match.group(2))
 
-# Main function of the script. See script description at the top of the file for further information.
-def main(analysisFileName, graphicFileName):
-    # Read delivery probability from file
-    with open(analysisFileName) as analysis_file:
+def parseDeliveryProbabilityReport(fileName):
+    """Parses a delivery probability report file and returns (in that order) the number of created messages,
+    the number of delivered messages, and the delivery probability.
+    """
+    with open(fileName) as analysis_file:
         analysis = analysis_file.readlines()
 
     created = getValueFromString(analysis[2])
     delivered = getValueFromString(analysis[3])
     delivery_prob = getValueFromString(analysis[4])
 
+    return created, delivered, delivery_prob
+
+def createDeliveryPieChart(created, delivered, delivery_prob):
+    """Creates a graphical presentation of delivery probability."""
     values=[delivery_prob, 1-delivery_prob]
     labels=["delivered:\n{p:.1f}% ({t})".format(p=delivery_prob*100, t=delivered),
             "not delivered:\n{p:.1f}% ({t})".format(p=(1-delivery_prob)*100, t=(created-delivered))]
@@ -48,6 +53,11 @@ def main(analysisFileName, graphicFileName):
     #Add total sum
     plt.figtext(0.6, 0.05, 'Total created messages: %d' % created)
     plt.title("Message delivery ratio for one-to-one messages")
+
+# Main function of the script. See script description at the top of the file for further information.
+def main(analysisFileName, graphicFileName):
+    created, delivered, delivery_prob = parseDeliveryProbabilityReport(analysisFileName)
+    createDeliveryPieChart(created, delivered, delivery_prob)
 
     # Save to file
     plt.savefig(graphicFileName)

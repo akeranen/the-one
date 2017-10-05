@@ -32,7 +32,7 @@ def findLinesConcerningPriority(all_lines, priority):
 
 def parseBroadcastAnalysis(filename, priority):
     """Parses a broadcast analysis file for the specified priority and returns (in that order) the time points, the
-    average number of reached people, and the minimum number of reached people.
+    minimum number of reached people, and the average number of reached people.
     """
     # Read broadcast analysis from file
     with open(filename) as analysis_file:
@@ -51,7 +51,7 @@ def parseBroadcastAnalysis(filename, priority):
         average.append(float(match.group(2)))
         minimum.append(int(match.group(3)))
 
-    return timePoints, average, minimum
+    return timePoints, minimum, average
 
 # Draws two functions over the same x values.
 # Labels are selected as appropriate for broadcast analysis.
@@ -76,7 +76,7 @@ def main(analysisFileName, graphicFileName):
     # Draw plots for all those priorities.
     fig = plt.figure(figsize=(16, 4))
     for idx, priority in enumerate(priorities):
-        timePoints, average, minimum = parseBroadcastAnalysis(analysisFileName, priority)
+        timePoints, minimum, average = parseBroadcastAnalysis(analysisFileName, priority)
         fig.add_subplot(1, 3, idx + 1)
         drawPlots(timePoints, minimum, average, priority)
 

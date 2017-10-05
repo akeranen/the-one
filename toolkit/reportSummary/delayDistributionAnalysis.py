@@ -51,7 +51,7 @@ def parseDelayAnalysis(fileName, messageType, messagePrio):
     # Find data both for bar chart and cumulative chart
     delayClasses = []
     percentageDelivered = []
-    cumulativePercentages = {}
+    cumulativePercentages = []
     sumOfPercentages = 0
     for line in analysis:
         match = re.match(".*<\s*(\d+):\s*(\d+.\d+)%", line)
@@ -62,7 +62,7 @@ def parseDelayAnalysis(fileName, messageType, messagePrio):
         delayClasses.append(maxDelay)
         percentageDelivered.append(percentage)
         sumOfPercentages += percentage
-        cumulativePercentages[maxDelay] = sumOfPercentages
+        cumulativePercentages.append(sumOfPercentages)
 
     return delayClasses, percentageDelivered, cumulativePercentages
 
@@ -77,7 +77,7 @@ def plotDelayDistribution(title, delayClasses, percentageDelivered):
 
 def plotCumulativeDelay(delayClasses, cumulativePercentages):
     """Plots a cumulative delay chart."""
-    plt.plot(delayClasses, [cumulativePercentages[delayClass] for delayClass in delayClasses])
+    plt.plot(delayClasses, cumulativePercentages)
     plt.xlabel('Delay in minutes')
     plt.ylabel('Cumulative percentage')
     plt.grid(True)
@@ -85,24 +85,26 @@ def plotCumulativeDelay(delayClasses, cumulativePercentages):
     axes.set_xlim(xmin = 0)
     axes.set_ylim(ymin = 0)
 
-# Main function of the script. See script description at the top of the file for further information.
-def main(analysisFileName, messageType, messagePrio, graphicFileName):
-    delayClasses, percentageDelivered, cumulativePercentages = parseDelayAnalysis(analysisFileName, messageType, messagePrio)
-
+def createDelayGraphicInFile(delayClasses, percentageDelivered, cumulativePercentages, title, fileName):
     # Plot bar chart
     plt.subplot(2,1,1)
-    plotDelayDistribution(
-        title='Delay distribution of delivered {} messages\nPriority {}'.format(messageType, messagePrio),
-        delayClasses=delayClasses,
-        percentageDelivered=percentageDelivered)
+    plotDelayDistribution(title, delayClasses, percentageDelivered)
 
     # Directly below, plot cumulative chart
     plt.subplot(2,1,2)
     plotCumulativeDelay(delayClasses, cumulativePercentages)
 
     # Save to file
-    plt.savefig(graphicFileName, dpi = 300)
+    plt.savefig(fileName, dpi = 300)
     plt.close()
+
+# Main function of the script. See script description at the top of the file for further information.
+def main(analysisFileName, messageType, messagePrio, graphicFileName):
+    delayClasses, percentageDelivered, cumulativePercentages = parseDelayAnalysis(analysisFileName, messageType, messagePrio)
+    createDelayGraphicInFile(
+        delayClasses, percentageDelivered, cumulativePercentages,
+        title='Delay distribution of delivered {} messages\nPriority {}'.format(messageType, messagePrio),
+        fileName=graphicFileName)
 
 # Make sure script can be called from command line.
 if __name__ == "__main__":

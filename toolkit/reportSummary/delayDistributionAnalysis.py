@@ -64,7 +64,7 @@ def main(analysisFileName, messageType, messagePrio, graphicFileName):
     # Plot bar chart
     plt.subplot(2,1,1)
     plt.title('Delay distribution of delivered {} messages\nPriority {}'.format(messageType, messagePrio))
-    plt.bar(bins, vals)
+    plt.bar(bins, vals, color='#003a80')
     plt.ylabel('Percentage of messages')
     plt.grid(True)
     axes = plt.gca()
@@ -72,7 +72,7 @@ def main(analysisFileName, messageType, messagePrio, graphicFileName):
 
     # Directly below, plot cumulative chart
     plt.subplot(2,1,2)
-    plt.plot(bins, [cumulative[bin] for bin in bins])
+    plt.plot(bins, [cumulative[bin] for bin in bins], color='#003a80')
     plt.xlabel('Delay in minutes')
     plt.ylabel('Cumulative percentage')
     plt.grid(True)

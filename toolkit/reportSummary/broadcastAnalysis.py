@@ -30,6 +30,29 @@ def findLinesConcerningPriority(all_lines, priority):
     nextPriorityLine = findNextLineContaining(all_lines, correctPriorityLine + 1, "prio")
     return all_lines[correctPriorityLine:nextPriorityLine]
 
+def parseBroadcastAnalysis(filename, priority):
+    """Parses a broadcast analysis file for the specified priority and returns (in that order) the time points, the
+    minimum number of reached people, and the average number of reached people.
+    """
+    # Read broadcast analysis from file
+    with open(filename) as analysis_file:
+        analysis = analysis_file.readlines()
+    relevantLines = findLinesConcerningPriority(analysis, priority)
+
+    # Interpret lines to find minimum and average number of reached people over time
+    timePoints = []
+    minimum = []
+    average = []
+    for line in relevantLines:
+        match = re.match("(\d+)\s+(\d+.\d+)\s+(\d+)", line)
+        if match is None:
+            continue
+        timePoints.append(float(match.group(1)) / 60)
+        average.append(float(match.group(2)))
+        minimum.append(int(match.group(3)))
+
+    return timePoints, minimum, average
+
 # Draws two functions over the same x values.
 # Labels are selected as appropriate for broadcast analysis.
 def drawPlots(x, y_minimum, y_average, priority):
@@ -45,40 +68,17 @@ def drawPlots(x, y_minimum, y_average, priority):
     axes.set_ylim(ymin = 0)
     axes.xaxis.set_major_locator(ticker.IndexLocator(base=60, offset=-5))
 
-
-def plotAnalysis(lines, priority, figure, plotNumber):
-    # Interpret lines to find minimum and average number of reached people over time
-    timePoints = []
-    minimum = []
-    average = []
-    for line in lines:
-        match = re.match("(\d+)\s+(\d+.\d+)\s+(\d+)", line)
-        if match is None:
-            continue
-        timePoints.append(float(match.group(1)) / 60)
-        average.append(float(match.group(2)))
-        minimum.append(int(match.group(3)))
-
-    # Draw plots.
-    figure.add_subplot(1, 3, plotNumber)
-    drawPlots(timePoints, minimum, average, priority)
-
 # Main function of the script. See script description at the top of the file for further information.
 def main(analysisFileName, graphicFileName):
-    # Read broadcast analysis from file
-    with open(analysisFileName) as analysis_file:
-        analysis = analysis_file.readlines()
-
     # Only look at priorities 2, 5 and 9
-    prio2Analysis = findLinesConcerningPriority(analysis, 2)
-    prio5Analysis = findLinesConcerningPriority(analysis, 5)
-    prio9Analysis = findLinesConcerningPriority(analysis, 9)
+    priorities = [2, 5, 9]
 
     # Draw plots for all those priorities.
     fig = plt.figure(figsize=(16, 4))
-    plotAnalysis(prio2Analysis, 2, fig, 1)
-    plotAnalysis(prio5Analysis, 5, fig, 2)
-    plotAnalysis(prio9Analysis, 9, fig, 3)
+    for idx, priority in enumerate(priorities):
+        timePoints, minimum, average = parseBroadcastAnalysis(analysisFileName, priority)
+        fig.add_subplot(1, 3, idx + 1)
+        drawPlots(timePoints, minimum, average, priority)
 
     # Save to file
     plt.tight_layout()

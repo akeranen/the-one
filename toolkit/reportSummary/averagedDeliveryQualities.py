@@ -11,7 +11,16 @@ import readFileUtilities
 
 # Script responsible for averaging multiple runs and outputting graphics for average delivery rates and delay
 # distribution for all message types.
-# Assumes perl scripts have already been called, e.g. by reportSummary.py.
+#
+# Assumes perl scripts
+# * messageDelayAnalyzer.pl,
+# * broadcastMessageAnalyzer.pl and
+# * multicastMessageAnalyzer.pl
+# have already been called and their results stored in messageDelayAnalysis.txt, broadcastMessageAnalysis.txt and
+# multicastMessageAnalysis.txt respectively.
+# Also assumes that realisticScenario_DeliveryProbabilityReport.txt exists.
+#
+# An easy way to call these perl scripts is by running reportSummary.py.
 
 def averageLists(tuples):
     """Averages a list of tuples. Each tuple is expected to consist of multiple lists that all have the same length.

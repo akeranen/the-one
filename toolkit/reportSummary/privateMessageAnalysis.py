@@ -42,12 +42,12 @@ def parseDeliveryProbabilityReport(fileName):
 def createDeliveryPieChart(created, delivered, delivery_prob):
     """Creates a graphical presentation of delivery probability."""
     values=[delivery_prob, 1-delivery_prob]
-    labels=["delivered:\n{p:.1f}% ({t})".format(p=delivery_prob*100, t=delivered),
-            "not delivered:\n{p:.1f}% ({t})".format(p=(1-delivery_prob)*100, t=(created-delivered))]
+    labels=["delivered:\n{p:.1f}% ({t:.1f})".format(p=delivery_prob*100, t=delivered),
+            "not delivered:\n{p:.1f}% ({t:.1f})".format(p=(1-delivery_prob)*100, t=(created-delivered))]
 
     # Create pie chart.
     fig1, ax1 = plt.subplots()
-    _, texts = ax1.pie(values, labels=labels, shadow=True, explode=(0.1, 0), labeldistance=0.3)
+    _, texts = ax1.pie(values, labels=labels, shadow=True, explode=(0.1, 0), labeldistance=0.2)
     for text in texts:
         text.set_fontsize(12)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.

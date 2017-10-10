@@ -69,7 +69,7 @@ def parseDelayAnalysis(fileName, messageType, messagePrio):
 def plotDelayDistribution(title, delayClasses, percentageDelivered):
     """Plots a delay distribution as a bar chart."""
     plt.title(title)
-    plt.bar(delayClasses, percentageDelivered)
+    plt.bar(delayClasses, percentageDelivered, color='#003a80')
     plt.ylabel('Percentage of messages')
     plt.grid(True)
     axes = plt.gca()
@@ -77,7 +77,7 @@ def plotDelayDistribution(title, delayClasses, percentageDelivered):
 
 def plotCumulativeDelay(delayClasses, cumulativePercentages):
     """Plots a cumulative delay chart."""
-    plt.plot(delayClasses, cumulativePercentages)
+    plt.plot(delayClasses, cumulativePercentages, color='#003a80')
     plt.xlabel('Delay in minutes')
     plt.ylabel('Cumulative percentage')
     plt.grid(True)

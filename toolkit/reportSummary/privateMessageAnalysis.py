@@ -47,7 +47,9 @@ def createDeliveryPieChart(created, delivered, delivery_prob):
 
     # Create pie chart.
     fig1, ax1 = plt.subplots()
-    ax1.pie(values, labels=labels, shadow=True, explode=(0.1, 0), labeldistance=0.3)
+    _, texts = ax1.pie(values, labels=labels, shadow=True, explode=(0.1, 0), labeldistance=0.3)
+    for text in texts:
+        text.set_fontsize(12)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     #Add total sum

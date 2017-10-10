@@ -42,61 +42,61 @@ perlNames = [["messageDelayAnalyzer.pl", "realisticScenario_ImmediateMessageDela
 
 necessaryAnalyses = []
 for (script, input, output) in perlNames:
-    necessaryAnalyses.append(["../"+script, reportDir+input+".txt", reportDir+output+".txt"])
+    necessaryAnalyses.append(["../"+script, os.path.join(reportDir, input+".txt"), os.path.join(reportDir, output+".txt")])
 
 #Execute script with input and write to output
 print("You are running", sys.platform)
 for (script, input, output) in necessaryAnalyses:
     with open(output, 'w', 1) as file:
-        process = subprocess.run("perl "+ script + " "+ input + " " + granularity, stdout=file)
+        process = subprocess.run("perl "+ script + ' "' + input + '" ' + granularity, stdout=file)
         if (sys.platform == "linux"):
             file.write(process.stdout)
         print("Successfully created ", output)
 
 # Create images/ directory in reports directory if it does not exist yet
-imageDirectoryName = reportDir + 'images/'
+imageDirectoryName = os.path.join(reportDir, 'images/')
 if not os.path.exists(imageDirectoryName):
     os.makedirs(imageDirectoryName)
 print("Made sure directory exists: ", imageDirectoryName)
 
 # Call all visualization scripts
 trafficAnalysis.main(
-    analysisFileName=reportDir+"realisticScenario_TrafficReport.txt",
+    analysisFileName=os.path.join(reportDir, "realisticScenario_TrafficReport.txt"),
     graphicFileName=readFileUtilities.getAbsoluteTrafficAnalysisPath(imageDirectoryName))
 bufferOccupancy.main(
-    analysisFileName=reportDir+"realisticScenario_BufferOccupancyReport.txt",
+    analysisFileName=os.path.join(reportDir, "realisticScenario_BufferOccupancyReport.txt"),
     graphicFileName=readFileUtilities.getAbsoluteBufferOccupancyAnalysisPath(imageDirectoryName))
 privateMessageAnalysis.main(
-    analysisFileName=reportDir+"realisticScenario_DeliveryProbabilityReport.txt",
+    analysisFileName=os.path.join(reportDir, "realisticScenario_DeliveryProbabilityReport.txt"),
     graphicFileName=readFileUtilities.getAbsoluteDeliveryRatePath(imageDirectoryName))
 delayDistributionAnalysis.main(
-    analysisFileName=reportDir+"messageDelayAnalysis.txt",
+    analysisFileName=os.path.join(reportDir, "messageDelayAnalysis.txt"),
     messageType="ONE_TO_ONE",
     messagePrio=0,
     graphicFileName=readFileUtilities.getAbsoluteOneToOneMessageDelayPath(imageDirectoryName))
 broadcastAnalysis.main(
-    analysisFileName=reportDir+"broadcastMessageAnalysis.txt",
+    analysisFileName=os.path.join(reportDir, "broadcastMessageAnalysis.txt"),
     graphicFileName=readFileUtilities.getAbsoluteBroadcastAnalysisPath(imageDirectoryName))
 relevantPriorities = [2, 5, 9]
 for prio in relevantPriorities:
     delayDistributionAnalysis.main(
-        analysisFileName=reportDir+"messageDelayAnalysis.txt",
+        analysisFileName=os.path.join(reportDir, "messageDelayAnalysis.txt"),
         messageType="BROADCAST",
         messagePrio=prio,
         graphicFileName=readFileUtilities.getAbsoluteBroadcastDelayPath(imageDirectoryName, prio))
 multicastAnalysis.main(
-    analysisFileName=reportDir+"multicastMessageAnalysis.txt",
+    analysisFileName=os.path.join(reportDir, "multicastMessageAnalysis.txt"),
     graphicFileName=readFileUtilities.getAbsoluteMulticastAnalysisPath(imageDirectoryName))
 delayDistributionAnalysis.main(
-    analysisFileName=reportDir+"messageDelayAnalysis.txt",
+    analysisFileName=os.path.join(reportDir, "messageDelayAnalysis.txt"),
     messageType="MULTICAST",
     messagePrio=1,
     graphicFileName=readFileUtilities.getAbsoluteMulticastDelayPath(imageDirectoryName))
 dataSyncAnalysis.main(
-    analysisFileName=reportDir+"realisticScenario_DataSyncReport.txt",
+    analysisFileName=os.path.join(reportDir, "realisticScenario_DataSyncReport.txt"),
     graphicFileName=readFileUtilities.getAbsoluteDataAnalysisPath(imageDirectoryName))
 energyAnalysis.main(
-    analysisFileName=reportDir+"realisticScenario_EnergyLevelReport.txt",
+    analysisFileName=os.path.join(reportDir, "realisticScenario_EnergyLevelReport.txt"),
     graphicFileName=readFileUtilities.getAbsoluteEnergyAnalysisPath(imageDirectoryName))
 
 print("Successfully created all graphics. Creating pdf...")

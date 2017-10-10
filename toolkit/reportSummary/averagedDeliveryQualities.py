@@ -187,10 +187,10 @@ def averageFiles(reportsDirectory, seeds):
             delayDistributionAnalysis.parseDelayAnalysis(delayAnalysis, messageType="BROADCAST", messagePrio=5))
 
     # Make sure all time points exist for all seeds
-    unifyTimePoints(oneToOneDelayDistributions)
-    unifyTimePoints(multicastDelayDistributions)
-    unifyTimePoints(broadcastDeliveryNumbers)
-    unifyTimePoints(broadcastDelayDistributions)
+    oneToOneDelayDistributions = unifyTimePoints(oneToOneDelayDistributions)
+    multicastDelayDistributions = unifyTimePoints(multicastDelayDistributions)
+    broadcastDeliveryNumbers = unifyTimePoints(broadcastDeliveryNumbers)
+    broadcastDelayDistributions = unifyTimePoints(broadcastDelayDistributions)
 
     # Add missing values for delay distributions.
     padByZeros(oneToOneDelayDistributions, [1])

@@ -27,11 +27,9 @@ public class EnergyModel implements ModuleCommunicationListener {
 	 * ({@value}). */
 	public static final String SCAN_RSP_ENERGY_S = "scanResponseEnergy";
 
-	/** Energy usage per second when sending -setting id ({@value}). */
+	/** Energy usage per second when transferring data 
+	 * -setting id ({@value}). */
 	public static final String TRANSMIT_ENERGY_S = "transmitEnergy";
-
-	/** Base energy usage per second -setting id ({@value}). */
-	public static final String BASE_ENERGY_S = "baseEnergy";
 
 	/** Energy update warmup period -setting id ({@value}). Defines the
 	 * simulation time after which the energy level starts to decrease due to

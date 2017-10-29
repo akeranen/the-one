@@ -90,15 +90,8 @@ public abstract class DTNSimUI {
 
 		try {
 			settings = new Settings();
-			this.scen = SimScenario.getInstance();
-
-			// add reports
-			for (int i=1, n = settings.getInt(NROF_REPORT_S); i<=n; i++){
-				String reportClass = settings.getSetting(REPORT_S + i);
-				addReport((Report)settings.createObject(REPORT_PAC +
-						reportClass));
-			}
-
+			
+			// set time before instantiate scenario
 			double warmupTime = 0;
 			if (settings.contains(MM_WARMUP_S)) {
 				warmupTime = settings.getDouble(MM_WARMUP_S);
@@ -106,6 +99,15 @@ public abstract class DTNSimUI {
 					SimClock c = SimClock.getInstance();
 					c.setTime(-warmupTime);
 				}
+			}
+			
+			this.scen = SimScenario.getInstance();
+
+			// add reports
+			for (int i=1, n = settings.getInt(NROF_REPORT_S); i<=n; i++){
+				String reportClass = settings.getSetting(REPORT_S + i);
+				addReport((Report)settings.createObject(REPORT_PAC +
+						reportClass));
 			}
 
 			this.world = this.scen.getWorld();

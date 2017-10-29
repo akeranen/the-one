@@ -376,7 +376,6 @@ public class ProphetRouterWithEstimation extends ActiveRouter {
 	 * Ages all entries in the delivery predictions.
 	 * <CODE>P(a,b) = P(a,b)_old * (GAMMA ^ k)</CODE>, where k is number of
 	 * time units that have elapsed since the last time the metric was aged.
-	 * @see #SECONDS_IN_UNIT_S
 	 */
 	private void ageDeliveryPreds() {
 		double timeDiff = (SimClock.getTime() - this.lastAgeUpdate);

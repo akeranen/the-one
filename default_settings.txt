@@ -7,7 +7,6 @@ Scenario.name = default_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
 # 43200s == 12h
-Scenario.endTime = 10000000
 Scenario.endTime = 43200
 
 ## Interface-specific settings:
@@ -26,7 +25,7 @@ btInterface.transmitRange = 10
 # High speed, long range, interface for group 4
 highspeedInterface.type = SimpleBroadcastInterface
 highspeedInterface.transmitSpeed = 10M
-highspeedInterface.transmitRange = 10
+highspeedInterface.transmitRange = 1000
 
 # Define 6 different node groups
 Scenario.nrofHostGroups = 6
@@ -122,7 +121,7 @@ Events1.interval = 25,35
 # Message sizes (500kB - 1MB)
 Events1.size = 500k,1M
 # range of message source/destination addresses
-Events1.hosts = 0,125
+Events1.hosts = 0,126
 # Message ID prefix
 Events1.prefix = M
 
@@ -152,8 +151,8 @@ Report.warmup = 0
 # default directory of reports (can be overridden per Report with output setting)
 Report.reportDir = reports/
 # Report classes to load
-Report.report1 = ContactTimesReport
-Report.report2 = ConnectivityONEReport
+Report.report1 = MessageStatsReport
+Report.report2 = ContactTimesReport
 
 ## Default settings for some routers settings
 ProphetRouter.secondsInTimeUnit = 30

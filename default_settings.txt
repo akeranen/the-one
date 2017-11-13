@@ -9,7 +9,6 @@ Scenario.endTime = 5000
 Scenario.updateInterval = 0.1
 Scenario.simulateConnections = false
 Scenario.nrofHostGroups = 1
-MovementModel.worldSize = 500,500
 Events.nrof = 0
 
 ## Communication Interface:
@@ -21,17 +20,25 @@ myInterface.transmitSpeed = 0
 ## Group-specific settings:
 
 Group1.groupID = n
-Group1.nrofHosts = 3
+Group1.nrofHosts = 5
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 Group1.movementModel = MapRouteMovement
+Group1.router = EpidemicRouter
 Group1.routeFile = data/TUM/tum.wkt
 Group1.routeType = 1
-Group1.router = EpidemicRouter
 
-## Map based movement -movement model specific settings
+## Map based movement  model specific settings
 MapBasedMovement.nrofMapFiles = 1
 MapBasedMovement.mapFile1 = data/TUM/tum.wkt
+MovementModel.worldSize = 500,500
+MapBasedMovement.nrofRooms = 6
+MapBasedMovement.room1 = POINT (0.0 0.0)
+MapBasedMovement.room2 = POINT (0.0 0.0)
+MapBasedMovement.room3 = POINT (0.0 0.0)
+MapBasedMovement.room4 = POINT (0.0 0.0)
+MapBasedMovement.room5 = POINT (0.0 0.0)
+MapBasedMovement.room6 = POINT (0.0 0.0)
 
 ## Reports
 Report.nrofReports = 0
@@ -39,9 +46,9 @@ Report.nrofReports = 0
 ## GUI settings
 
 # GUI underlay image settings
-GUI.UnderlayImage.fileName = data/tum/tumMap.png
+GUI.UnderlayImage.fileName = data/TUM/map.png
 # Image offset in pixels (x, y)
-GUI.UnderlayImage.offset = 15, -5
+GUI.UnderlayImage.offset = 0, 0
 # Scaling factor for the image
 GUI.UnderlayImage.scale = 0.2
 # Image rotation (radians)

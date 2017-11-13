@@ -1,6 +1,8 @@
 # The ONE
 
 The Opportunistic Network Environment simulator.
+Group Assignment of Joan Disho, Marius Momemu, and 
+Atakan Yenel.
 
 For introduction and releases, see [the ONE homepage at GitHub](http://akeranen.github.io/the-one/).
 

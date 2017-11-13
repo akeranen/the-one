@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<JCSDataFile xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/2000/10/XMLSchema-instance" >
+<JCSGMLInputTemplate>
+<CollectionElement>featureCollection</CollectionElement> 
+<FeatureElement>feature</FeatureElement>
+<GeometryElement>geometry</GeometryElement>
+<ColumnDefinitions>
+</ColumnDefinitions>
+</JCSGMLInputTemplate>
+
+<featureCollection>
+     <feature> 
+          <geometry>
+                <gml:Polygon>
+                  <gml:outerBoundaryIs>
+                  <gml:LinearRing>
+                    <gml:coordinates>109.70981543720607,161.59501088352118 
+                      109.70981543720607,164.24529666861798 
+                      115.45889690949299,164.24529666861798 
+                      115.45889690949299,161.59501088352118 
+                      109.70981543720607,161.59501088352118 </gml:coordinates>
+                  </gml:LinearRing>
+                  </gml:outerBoundaryIs>
+                </gml:Polygon>
+          </geometry>
+     </feature>
+
+     </featureCollection>
+</JCSDataFile>

@@ -154,21 +154,21 @@ public class MapRoomMovement extends MapRouteMovement implements SwitchableMovem
             point.translate(xOffset, yOffset);
         }
 
-        HashMap<Coord, MapNode> roomMapNode = new HashMap<>();
+        HashMap<Coord, MapNode> roomNodes = new HashMap<>();
         for (MapRoute route : tempRoutes) {
             for (MapNode node : route.getStops()) {
                 for (Coord point : points) {
                     if (node.getLocation().equals(point)) {
-                        roomMapNode.put(point, node);
+                        roomNodes.put(point, node);
                     }
                 }
             }
         }
 
-        for (MapNode nOutside : roomMapNode.values()){
-            for (MapNode nInside : roomMapNode.values()){
-                if (!nOutside.equals(nInside)) {
-                    routes.add(new MapRoute(type, pathFinder.getShortestPath(nOutside, nInside)));
+        for (MapNode i : roomNodes.values()){
+            for (MapNode j : roomNodes.values()){
+                if (!i.equals(j)) {
+                    routes.add(new MapRoute(type, pathFinder.getShortestPath(i, j)));
                 }
             }
         }

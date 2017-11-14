@@ -1,55 +1,33 @@
-#
-# Settings for the simulation
-#
+# Settings for map route based movement in a triangle.
 
-## Scenario settings:
-
-Scenario.name = FMI-Simulation
-Scenario.endTime = 5000
-Scenario.updateInterval = 0.1
+Scenario.name = MapRouteMovement
+Scenario.endTime = 6000
+Scenario.updateInterval = 0.05
 Scenario.simulateConnections = false
-Scenario.nrofHostGroups = 1
+MovementModel.worldSize = 1000,1000
 Events.nrof = 0
 
-## Communication Interface:
-
+# Communication Interface
 myInterface.type = SimpleBroadcastInterface
 myInterface.transmitRange = 0
 myInterface.transmitSpeed = 0
 
-## Group-specific settings:
+# Groups
+Scenario.nrofHostGroups = 1
 
 Group1.groupID = n
-Group1.nrofHosts = 5
+Group1.nrofHosts = 2
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
-Group1.movementModel = MapRouteMovement
-Group1.router = EpidemicRouter
+Group1.movementModel = MapRoomMovement
 Group1.routeFile = data/TUM/tum.wkt
 Group1.routeType = 1
+Group1.router = PassiveRouter
 
-## Map based movement  model specific settings
+## Map based movement -movement model specific settings
 MapBasedMovement.nrofMapFiles = 1
 MapBasedMovement.mapFile1 = data/TUM/tum.wkt
-MovementModel.worldSize = 500,500
-MapBasedMovement.nrofRooms = 6
-MapBasedMovement.room1 = POINT (0.0 0.0)
-MapBasedMovement.room2 = POINT (0.0 0.0)
-MapBasedMovement.room3 = POINT (0.0 0.0)
-MapBasedMovement.room4 = POINT (0.0 0.0)
-MapBasedMovement.room5 = POINT (0.0 0.0)
-MapBasedMovement.room6 = POINT (0.0 0.0)
+MapBasedMovement.nrofRooms = 4
 
-## Reports
+# Reports
 Report.nrofReports = 0
-
-## GUI settings
-
-# GUI underlay image settings
-GUI.UnderlayImage.fileName = data/TUM/map.png
-# Image offset in pixels (x, y)
-GUI.UnderlayImage.offset = 0, 0
-# Scaling factor for the image
-GUI.UnderlayImage.scale = 0.2
-# Image rotation (radians)
-GUI.UnderlayImage.rotate = 0.000

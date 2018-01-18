@@ -10,17 +10,27 @@ import core.SimClock;
  * Simple text-based user interface.
  */
 public class DTNSimTextUI extends DTNSimUI {
+	/** runtime object, used to gather information on memory usage **/
+    private Runtime runtime = Runtime.getRuntime();
+	// as the runtime returns memory information in bytes,
+	// we need to divide by 1024*1024 = 1048576 to receive megabytes
+	/** constant for the conversion from bytes to megabytes **/
+    private static final int BYTES_PER_MEGABYTE = 1_048_576;
 	private long lastUpdateRt;	// real time of last ui update
 	private long startTime; // simulation start time
 	/** How often the UI view is updated (milliseconds) */
 	public static final long UI_UP_INTERVAL = 60000;
 
+	@Override
 	protected void runSim() {
 		double simTime = SimClock.getTime();
 		double endTime = scen.getEndTime();
 
 		print("Running simulation '" + scen.getName()+"'");
-
+		//description of output format/meaning
+		print("output description:");
+        print("elapsed_real_seconds simulated_seconds current_simulation_rate " +
+              "used_memory free_memory allocated_memory maximum_allocatable_memory");
 		startTime = System.currentTimeMillis();
 		lastUpdateRt = startTime;
 
@@ -59,8 +69,14 @@ public class DTNSimTextUI extends DTNSimUI {
 		if (forced || (diff > UI_UP_INTERVAL)) {
 			// simulated seconds/second calc
 			double ssps = ((SimClock.getTime() - lastUpdate)*1000) / diff;
-			print(String.format("%.1f %d: %.2f 1/s", dur,
-					SimClock.getIntTime(),ssps));
+			// print out debug data in a format that is usable in a csv file
+			// columns: elapsed real seconds, simulated seconds, current simulation rate,
+			// used memory, free memory, allocated memory, maximum allocatable memory
+			print(dur + " " + SimClock.getTime() + " " + ssps + " "
+					+ (runtime.totalMemory() - runtime.freeMemory()) / BYTES_PER_MEGABYTE + " "
+					+ runtime.freeMemory() / BYTES_PER_MEGABYTE + " "
+					+ runtime.totalMemory() / BYTES_PER_MEGABYTE + " "
+					+ runtime.maxMemory() / BYTES_PER_MEGABYTE);
 
 			this.lastUpdateRt = System.currentTimeMillis();
 			this.lastUpdate = SimClock.getTime();

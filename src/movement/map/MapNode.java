@@ -16,7 +16,7 @@ import core.SettingsError;
  */
 public class MapNode implements Comparable<MapNode> {
 	/** Smallest valid type of a node: {@value}*/
-	public static final int MIN_TYPE = 1;
+	public static final int MIN_TYPE = 0;
 	/** Biggest valid type of a node: {@value} */
 	public static final int MAX_TYPE = 31;
 

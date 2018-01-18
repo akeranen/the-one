@@ -1,0 +1,80 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.2.1"
+     }
+}
+
+plugins {
+    id "org.sonarqube" version "2.2.1"
+}
+
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: "org.sonarqube"
+
+
+repositories {
+    jcenter()
+	flatDir {
+        dirs 'lib'
+	}
+}
+	
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/applications", "src/core", "src/gui", "src/input", "src/interfaces", "src/main", "src/movement", "src/report", "src/routing", "src/ui", "src/util"]
+        }
+        output.resourcesDir = 'target'
+        output.classesDir   = 'target'
+    }
+    test {
+        java {
+            srcDirs = ["src/test"]
+        }
+    }
+}
+
+jar {
+    destinationDir = new File('lib')
+    manifest {
+        attributes 'Main-Class': 'core.DTNSim'
+        attributes 'Class-Path': "ECLA.jar DTNConsoleConnection.jar ../target"
+    }
+}
+
+dependencies {
+    // The production code uses Guava
+    compile 'com.google.guava:guava:20.0'
+	
+    //JSON framework
+    compile group: 'org.glassfish', name: 'javax.json', version: '1.0.4'
+
+    // Use JUnit test framework
+    testCompile 'junit:junit:4.12'
+    testCompile "org.mockito:mockito-core:2.+"
+	
+	compile name: 'DTNConsoleConnection'
+	
+	compile name: 'ECLA'
+}
+
+test {
+    //make gradle run tests one after the other to prevent tests with static variables from influencing each other
+    forkEvery=1
+}
+
+task copyGui(type: Copy){
+    from 'src/gui/buttonGraphics'
+    into 'target/gui/buttonGraphics'
+}
+
+clean.doFirst{
+    delete 'target'
+}

@@ -49,6 +49,11 @@ public class Settings {
 	 * @see #valueFillString(String) */
 	public static final String FILL_DELIMITER = "%%";
 
+	/**
+	 * The number of expected values for a setting describing a range, e.g. "Events1.hosts = 0,17".
+	 */
+	public static final int EXPECTED_VALUE_NUMBER_FOR_RANGE = 2;
+
 	/** Stream where all read settings are written to */
 	private static PrintStream out = null;
 	private static Set<String> writtenSettings = new HashSet<String>();
@@ -120,6 +125,29 @@ public class Settings {
 					" first value should be smaller or equal to second value");
 		}
 	}
+	
+    /**
+     * Checks that the given double array contains a valid range. I.e., the
+     * length of the array must be two and
+     * <code>first_value <= second_value</code>.
+     * 
+     * @param range
+     *            The range array
+     * @param sname
+     *            Name of the setting (for error messages)
+     * @throws SettingsError
+     *             If the given array didn't qualify as a range
+     */
+    public void assertValidRange(double[] range, String sname) throws SettingsError {
+        if (range.length != EXPECTED_VALUE_NUMBER_FOR_RANGE) {
+            throw new SettingsError("Range setting " + getFullPropertyName(sname)
+                    + " should contain only two comma separated double values");
+        }
+        if (range[0] > range[1]) {
+            throw new SettingsError("Range setting's " + getFullPropertyName(sname)
+                    + " first value should be smaller or equal to second value");
+        }
+    }
 
 	/**
 	 * Makes sure that the given settings value is positive
@@ -686,6 +714,17 @@ public class Settings {
 		return convertToInts(getCsvDoubles(name), name);
 	}
 
+    /**
+     * Returns an array of CSV setting long values.
+     * @param name Name of the setting
+     * @param expectedCount how many values are expected
+     * @return Array of values that were comma-separated
+     * @see #getCsvSetting(String, int)
+     */
+    public long[] getCsvLongs(String name, int expectedCount) {
+        return convertToLongs(getCsvDoubles(name, expectedCount), name);
+    }
+
 	/**
 	 * Returns comma-separated ranges (e.g., "3-5, 17-20, 15")
 	 * @param name Name of the setting
@@ -757,6 +796,22 @@ public class Settings {
 		return number;
 	}
 
+    /**
+     * Converts a double value that is supposedly equal to a long value to a long value.
+     * @param doubleValue The double value to convert.
+     * @param name Name of the setting where this value is from (for SettingsError)
+     * @return The long value
+     * @throws SettingsError if the double value was not equal to any long value
+     */
+    private static long convertToLong(double doubleValue, String name) {
+        long longValue = (long)doubleValue;
+
+        if (longValue != doubleValue) {
+            throw new SettingsError("Expected long value for setting '" + name + "', got '" + doubleValue + "'.");
+        }
+        return longValue;
+    }
+
 	/**
 	 * Converts an array of double values to int values using
 	 * {@link #convertToInt(double, String)}.
@@ -773,6 +828,21 @@ public class Settings {
 		}
 		return values;
 	}
+
+    /**
+     * Converts an array of double values to long values using {@link #convertToLong(double, String)}.
+     * @param doubleValues The double valued array.
+     * @param name Name of the setting where this value is from (for SettingsError)
+     * @return Array of long values
+     * @see #convertToLong(double, String)
+     */
+    private static long[] convertToLongs(double[] doubleValues, String name) {
+        long[] longValues = new long[doubleValues.length];
+        for (int i = 0; i < longValues.length; i++) {
+            longValues[i] = convertToLong(doubleValues[i], name);
+        }
+        return longValues;
+    }
 
 	/**
 	 * Returns a boolean-valued setting

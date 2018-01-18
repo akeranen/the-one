@@ -4,27 +4,26 @@
  */
 package gui;
 
+import core.Settings;
+import core.SettingsError;
 import gui.nodefilter.NodeMessageFilter;
-import gui.playfield.PlayField;
 import gui.playfield.NodeGraphic;
+import gui.playfield.PlayField;
+import gui.playfield.VhmEventGraphic;
 
+import javax.imageio.ImageIO;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JMenu;
+import javax.swing.Box;
+import javax.swing.JOptionPane;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
-import javax.swing.Box;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-
-import core.Settings;
-import core.SettingsError;
 
 /**
  * Menu bar of the simulator GUI
@@ -54,6 +53,9 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	private JCheckBoxMenuItem showNodeConnections;
 	private JCheckBoxMenuItem showBuffer;
 
+	private JCheckBoxMenuItem showEventAllRanges;
+	private JCheckBoxMenuItem showEventName;
+
 	private JCheckBoxMenuItem enableMapGraphic;
 	private JCheckBoxMenuItem autoClearOverlay;
 	private JCheckBoxMenuItem focusOnClick;
@@ -78,6 +80,10 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	public static final String FOCUS_ON_CLICK_S = "focusOnClick";
 	/** The namespace where underlay image -related settings are found */
 	public static final String UNDERLAY_NS = "GUI.UnderlayImage";
+
+	public static final String SHOW_EVENT_ALL_RANGES = "showEventAllRanges";
+
+	public static final String SHOW_EVENT_NAME = "showEventName";
 
 	public SimMenuBar(PlayField field, NodeChooser nodeChooser) {
 		this.field = field;
@@ -106,6 +112,12 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				"Show node radio coverages", true, SHOW_RADIO_COVERAGES_S);
 		showNodeConnections = createCheckItem(pfMenu,
 				"Show node connections", true, SHOW_CONNECTIONS_S);
+
+		showEventAllRanges = createCheckItem(pfMenu,"Show all VHM event ranges",
+				true,SHOW_EVENT_ALL_RANGES);
+
+		showEventName = createCheckItem(pfMenu,"Show VHM event names",true,SHOW_EVENT_NAME);
+
 		showBuffer = createCheckItem(pfMenu,
 				"Show message buffer", true, SHOW_BUFFER_S);
 		focusOnClick = createCheckItem(pfMenu,
@@ -169,6 +181,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 
 
 	private void updatePlayfieldSettings() {
+		VhmEventGraphic.setDrawAllRanges(showEventAllRanges.isSelected());
+		VhmEventGraphic.setDrawEventName(showEventName.isSelected());
 		NodeGraphic.setDrawNodeName(showNodeName.isSelected());
 		NodeGraphic.setDrawCoverage(showNodeCoverage.isSelected());
 		NodeGraphic.setDrawConnections(showNodeConnections.isSelected());
@@ -194,7 +208,9 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				source == this.enableMapGraphic ||
 				source == this.autoClearOverlay ||
 				source == this.showBuffer ||
-				source == this.focusOnClick) {
+				source == this.focusOnClick ||
+				source == this.showEventAllRanges ||
+				source == this.showEventName) {
 			updatePlayfieldSettings();
 		}
 
@@ -255,5 +271,23 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		JOptionPane.showMessageDialog(null, txt, "warning",
 				JOptionPane.WARNING_MESSAGE);
 	}
+
+    /**
+    * Return the check box item used to control the visibility of event names.
+    * Used for testing purposes.
+    * @return the check box item used to control the visibility of event names
+    */
+    public JCheckBoxMenuItem getShowEventName(){
+        return showEventName;
+    }
+
+    /**
+    * Return the check box item used to control the visibility of event ranges.
+    * Used for testing purposes.
+    * @return the check box item used to control the visibility of event ranges
+    */
+    public JCheckBoxMenuItem getShowEventAllRanges(){
+        return showEventAllRanges;
+    }
 
 }

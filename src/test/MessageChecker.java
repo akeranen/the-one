@@ -4,11 +4,13 @@
  */
 package test;
 
-import java.util.ArrayList;
-
+import core.Addressable;
 import core.DTNHost;
 import core.Message;
 import core.MessageListener;
+import core.MulticastMessage;
+
+import java.util.ArrayList;
 
 /**
  * Message event checker for tests.
@@ -16,7 +18,7 @@ import core.MessageListener;
 public class MessageChecker implements MessageListener {
 	private Message lastMsg;
 	private DTNHost lastFrom;
-	private DTNHost lastTo;
+	private Addressable lastTo;
 	private Boolean lastDropped;
 	private Boolean lastFirstDelivery;
 	private String lastType;
@@ -57,7 +59,23 @@ public class MessageChecker implements MessageListener {
 	}
 
 	public void newMessage(Message m) {
-		this.add(m, m.getFrom(), m.getTo(), TYPE_CREATE, null, null);
+		Addressable recipient;
+		switch (m.getType()) {
+			case ONE_TO_ONE:
+            case DATA:
+				recipient = m.getTo();
+				break;
+			case BROADCAST:
+				recipient = null;
+				break;
+			case MULTICAST:
+				recipient = ((MulticastMessage)m).getGroup();
+				break;
+			default:
+				throw new UnsupportedOperationException("No implementation for message type " + m.getType());
+		}
+
+		this.add(m, m.getFrom(), recipient, TYPE_CREATE, null, null);
 	}
 
 
@@ -82,7 +100,7 @@ public class MessageChecker implements MessageListener {
 
 	}
 
-	private void add(Message m, DTNHost from, DTNHost to, String type, Boolean
+	private void add(Message m, DTNHost from, Addressable to, String type, Boolean
 			dropped, Boolean delivered) {
 		this.queue.add(new MsgCheckerEvent(m,from,to,type,dropped,delivered));
 	}
@@ -118,7 +136,7 @@ public class MessageChecker implements MessageListener {
 	/**
 	 * @return the lastTo
 	 */
-	public DTNHost getLastTo() {
+	public Addressable getLastTo() {
 		return lastTo;
 	}
 
@@ -136,12 +154,12 @@ public class MessageChecker implements MessageListener {
 	private class MsgCheckerEvent {
 		private Message msg;
 		private DTNHost from;
-		private DTNHost to;
+		private Addressable to;
 		private Boolean dropped;
 		private Boolean delivered;
 		private String type;
 
-		public MsgCheckerEvent(Message m, DTNHost from, DTNHost to,
+		public MsgCheckerEvent(Message m, DTNHost from, Addressable to,
 				String type, Boolean dropped, Boolean delivered) {
 			this.msg = m;
 			this.from = from;

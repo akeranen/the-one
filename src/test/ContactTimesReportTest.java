@@ -10,14 +10,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
+import org.junit.Test;
+
+import core.ConnectionListener;
+import core.Coord;
+import core.DTNHost;
+import core.Settings;
+import core.SimClock;
 import junit.framework.TestCase;
 import report.ContactTimesReport;
 import report.InterContactTimesReport;
 import report.Report;
-import core.ConnectionListener;
-import core.Coord;
-import core.DTNHost;
-import core.SimClock;
 
 /**
  * Test cases for ContactTimes & InterContactTimesReports.
@@ -31,6 +34,7 @@ public class ContactTimesReportTest extends TestCase {
 	private final static String I_SET_PREFIX = "InterContactTimesReport.";
 
 	private void setUpWithGranularity(double gran) throws IOException {
+		Settings.init(null);
 		ContactTimesReport ctr;
 		InterContactTimesReport ictr;
 		TestSettings ts = new TestSettings();
@@ -68,6 +72,12 @@ public class ContactTimesReportTest extends TestCase {
 
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
+	}
+
 	private void generateConnections(TestUtils utils) {
 		Coord c1 = new Coord(0,0);
 		Coord c2 = new Coord(1,0);
@@ -103,6 +113,7 @@ public class ContactTimesReportTest extends TestCase {
 		h1.update(true); // disconnect 6 sec connection
 	}
 
+	@Test
 	public void testReport() throws IOException {
 		String[] ctValues = {"0.0 0", "1.0 0", "2.0 1", "3.0 2", "4.0 0",
 				"5.0 0", "6.0 1", "7.0 0"};
@@ -126,6 +137,7 @@ public class ContactTimesReportTest extends TestCase {
 		assertEquals(null,ictReader.readLine());
 	}
 
+	@Test
 	public void testGranularity2() throws IOException {
 		String[] ctValues = {"0.0 0", "2.0 3", "4.0 0",
 				"6.0 1", "8.0 0"};
@@ -135,7 +147,7 @@ public class ContactTimesReportTest extends TestCase {
 		checkValues(ctValues, ictValues);
 	}
 
-
+	@Test
 	public void testGranularity10() throws IOException {
 		this.setUpWithGranularity(10.0);
 
@@ -144,6 +156,7 @@ public class ContactTimesReportTest extends TestCase {
 		assertEquals(null,ctReader.readLine());
 	}
 
+	@Test
 	public void testGanularity05() throws IOException {
 		String[] ctValues = {"0.0 0", "0.5 0", "1.0 0", "1.5 0",
 				"2.0 1", "2.5 0", "3.0 1", "3.5 1", "4.0 0",

@@ -4,17 +4,16 @@ import core.Coord;
 import core.DTNHost;
 import core.MovementListener;
 import core.Settings;
-import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import report.MovementListenerTestReport;
 import report.Report;
 import ui.DTNSimUI;
 
-import java.io.StringBufferInputStream;
-import java.net.URLClassLoader;
+import java.io.ByteArrayInputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author teemuk
@@ -72,7 +71,7 @@ public class MovementListenerTest {
 
 		// Setup the settings
 		Settings.initFromStream(
-				new StringBufferInputStream(INITIAL_LOC_TEST_SETTINGS));
+				new ByteArrayInputStream(INITIAL_LOC_TEST_SETTINGS.getBytes("UTF-8")));
 		final DTNSimUI ui = new DTNSimUI() {
 			@Override
 			protected void runSim() {

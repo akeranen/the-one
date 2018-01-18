@@ -1,182 +1,223 @@
-#
-# Default settings for the simulation
-#
-
+## Default settings for all the scenarios we want to use for our evaluation
+## For running this simulation with different seeds for the pseudo-random generators, change the prefixes of
+## the different Message Generators. For the movement model the MovementModel.rngSeed can be changed
+## These seeds should then be pluged-in with run indexing
 ## Scenario settings
-Scenario.name = default_scenario
-Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
-# 43200s == 12h
-Scenario.endTime = 43200
+Scenario.simulateConnections = true
+# Define 3 different node groups
+Scenario.nrofHostGroups = 3
 
-## Interface-specific settings:
-# type : which interface class the interface belongs to
-# For different types, the sub-parameters are interface-specific
-# For SimpleBroadcastInterface, the parameters are:
-# transmitSpeed : transmit speed of the interface (bytes per second)
-# transmitRange : range of the interface (meters)
-
-# "Bluetooth" interface for all nodes
-btInterface.type = SimpleBroadcastInterface
-# Transmit speed of 2 Mbps = 250kBps
-btInterface.transmitSpeed = 250k
-btInterface.transmitRange = 10
-
-# High speed, long range, interface for group 4
-highspeedInterface.type = SimpleBroadcastInterface
-highspeedInterface.transmitSpeed = 10M
-highspeedInterface.transmitRange = 1000
-
-# Define 6 different node groups
-Scenario.nrofHostGroups = 6
-
-## Group-specific settings:
-# groupID : Group's identifier. Used as the prefix of host names
-# nrofHosts: number of hosts in the group
-# movementModel: movement model of the hosts (valid class name from movement package)
-# waitTime: minimum and maximum wait times (seconds) after reaching destination
-# speed: minimum and maximum speeds (m/s) when moving on a path
-# bufferSize: size of the message buffer (bytes)
-# router: router used to route messages (valid class name from routing package)
-# activeTimes: Time intervals when the nodes in the group are active (start1, end1, start2, end2, ...)
-# msgTtl : TTL (minutes) of the messages created by this host group, default=infinite
-
-## Group and movement model specific settings
-# pois: Points Of Interest indexes and probabilities (poiIndex1, poiProb1, poiIndex2, poiProb2, ... )
-#       for ShortestPathMapBasedMovement
-# okMaps : which map nodes are OK for the group (map file indexes), default=all
-#          for all MapBasedMovent models
-# routeFile: route's file path - for MapRouteMovement
-# routeType: route's type - for MapRouteMovement
-
+# "WiFi" interface for all nodes
+wInterface.type = InterferenceLimitedInterface
+# Transmit speed of 50 Mbps = 6250kBps
+wInterface.transmitSpeed = 6250k
+wInterface.transmitRange = 60
 
 # Common settings for all groups
-Group.movementModel = ShortestPathMapBasedMovement
+Group.movementModel = VoluntaryHelperMovement
 Group.router = EpidemicRouter
-Group.bufferSize = 5M
-Group.waitTime = 0, 120
-# All nodes have the bluetooth interface
+# Buffer size of 50 MB
+Group.bufferSize = 50M
 Group.nrofInterfaces = 1
-Group.interface1 = btInterface
-# Walking speeds
-Group.speed = 0.5, 1.5
-# Message TTL of 300 minutes (5 hours)
-Group.msgTtl = 300
+Group.interface1 = wInterface
+Group.net.scanInterval = 30
+#After which time messages get dropped (in minutes)
+#360 minutes = 6 hours
+Group.msgTtl = 360
+#How often nodes in the group will reorder the messages in their buffer
+Group.MessageOrderingInterval=2.0
+# Time the node will help at a disaster site (in seconds)
+Group.helpTime = 7200
+# Probability that a node gets injured if an event happens to close to it [0, 1]
+Group.injuryProbability = 0.1
+# Time the node will stay at the hospital after transporting someone to it (in seconds)
+Group.hospitalWaitTime = 900
+# Probability that a node stays at the hospital after transporting someone to it [0, 1]
+Group.hospitalWaitProbability = 0.1
+# Weight of a disasters intensity for determining if a node will help at the disaster site [0, 1]
+Group.intensityWeight = 0.7
+# Specifies how much energy the hosts have at the beginning of the simulation
+Group.initialEnergy = 0.3,1
+# Specifies how much energy is used for scanning
+Group.scanEnergy = 0.00001
+# Specifies how much energy is used for transmitting
+Group.transmitEnergy = 0.0001
+# energy starts to decrease from the beginning of the simulation
+Group.energyWarmup = 0.0
+# Specifies how much energy is used per device discovery response
+Group.scanResponseEnergy = 0.00001
+# Specifies the range of possible number of seconds before an empty battery is recharged
+# 2-6h: 7200 - 21600 seconds
+Group.rechargeWait = 7200,21600
 
-Group.nrofHosts = 40
+# Add database application
+dbApp.type = DatabaseApplication
+dbApp.utility_threshold = 0.25
+dbApp.db_size = 50M, 150M
+dbApp.mapSendingInterval = -1
+dbApp.itemsPerMessage = 10
+dbApp.seed = 0
+Group.nrofApplications = 1
+Group.application1 = dbApp
 
-# group1 (pedestrians) specific settings
+# group1 (locally helping pedestrians) specific settings
 Group1.groupID = p
+Group1.isLocalHelper = true
+Group1.speed = 1,2
+Group1.nrofHosts = 2565
+Group1.okMaps = 1,2
 
-# group2 specific settings
-Group2.groupID = c
-# cars can drive only on roads
-Group2.okMaps = 1
-# 10-50 km/h
-Group2.speed = 2.7, 13.9
+# group2 (transporting pedestrians) specific settings
+Group2.groupID = t
+Group2.isLocalHelper = false
+Group2.speed = 1,2
+Group2.nrofHosts = 135
+Group2.okMaps = 1,2
 
-# another group of pedestrians
-Group3.groupID = w
-
-# The Tram groups
-Group4.groupID = t
-Group4.bufferSize = 50M
-Group4.movementModel = MapRouteMovement
-Group4.routeFile = data/tram3.wkt
-Group4.routeType = 1
-Group4.waitTime = 10, 30
-Group4.speed = 7, 10
-Group4.nrofHosts = 2
-Group4.nrofInterfaces = 2
-Group4.interface1 = btInterface
-Group4.interface2 = highspeedInterface
-
-Group5.groupID = t
-Group5.bufferSize = 50M
-Group5.movementModel = MapRouteMovement
-Group5.routeFile = data/tram4.wkt
-Group5.routeType = 2
-Group5.waitTime = 10, 30
-Group5.speed = 7, 10
-Group5.nrofHosts = 2
-
-Group6.groupID = t
-Group6.bufferSize = 50M
-Group6.movementModel = MapRouteMovement
-Group6.routeFile = data/tram10.wkt
-Group6.routeType = 2
-Group6.waitTime = 10, 30
-Group6.speed = 7, 10
-Group6.nrofHosts = 2
+# group3 (cars) specific settings
+Group3.groupID = c
+Group3.isLocalHelper = false
+Group3.speed = 8,14
+Group3.nrofHosts = 300
+Group3.okMaps = 2,3
 
 
-## Message creation parameters
 # How many event generators
-Events.nrof = 1
-# Class of the first event generator
-Events1.class = MessageEventGenerator
-# (following settings are specific for the MessageEventGenerator class)
-# Creation interval in seconds (one new message every 25 to 35 seconds)
-Events1.interval = 25,35
-# Message sizes (500kB - 1MB)
-Events1.size = 500k,1M
-# range of message source/destination addresses
-Events1.hosts = 0,126
-# Message ID prefix
-Events1.prefix = M
+Events.nrof = 8
 
+# Class for first message type (Broadcasts without photo)
+Events2.class = BroadcastEventGenerator
+# Creation interval in seconds (one new message every 200 to 1000 seconds)
+Events2.interval = 200,1000
+# Message sizes (0.1KB - 1KB)
+Events2.size = 0.1k,1k
+# range of message source/destination addresses
+Events2.hosts = 0,3000
+# Message ID prefix
+Events2.prefix = b
+# Message priorities (2,10)
+Events2.priorities = 2,10
+
+# Class for second message type (Broadcasts with photo)
+Events3.class = BroadcastEventGenerator
+# Creation interval in seconds (one new message every 200 to 400 seconds)
+Events3.interval = 200,400
+# Message sizes (500KB - 4MB)
+Events3.size = 500k,4M
+# range of message source/destination addresses
+Events3.hosts = 0,3000
+# Message ID prefix
+Events3.prefix = B
+# Message priorities (2,10)
+Events3.priorities = 2,10
+
+# Class for third message type (Multicasts small)
+Events4.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 0.33 to 10 seconds)
+Events4.interval = 0.33,10
+# Message sizes (0.1KB - 1KB)
+Events4.size = 0.1k,1k
+# range of message source/destination addresses
+Events4.hosts = 0,3000
+# Message ID prefix
+Events4.prefix = m
+# Message priority 1
+Events4.priorities = 1,1
+# Total number of multicast groups across all groups
+Events4.group_count = 300,1500
+# Size of multicast groups
+Events4.group_size = 3,30
+
+# Class for fourth message type (Multicasts large)
+Events5.class = MulticastEventGenerator
+# Creation interval in seconds (one new message every 30 to 100 seconds)
+Events5.interval = 30,100
+# Message sizes (500KB - 4MB)
+Events5.size = 500k,4M
+# range of message source/destination addresses
+Events5.hosts = 0,3000
+# Message ID prefix
+Events5.prefix = M
+# Message priority 1
+Events5.priorities = 1,1
+# Total number of multicast groups across all groups
+Events5.group_count = 300,1500
+# Size of multicast groups
+Events5.group_size = 3,30
+
+# Class for fifth message type (1-to-1 messages small)
+Events6.class = MessageEventGenerator
+# Creation interval in seconds (one new message every 1.66 to 50 seconds)
+Events6.interval = 1.66,50
+# Message sizes (0.1KB - 1KB)
+Events6.size = 0.1k,1k
+# range of message source/destination addresses
+Events6.hosts = 0,3000
+# Message ID prefix
+Events6.prefix = p
+# Message priority 0
+Events6.priorities = 0,0
+
+# Class for sixth message type (1-to-1 messages large)
+Events7.class = MessageEventGenerator
+# Creation interval in seconds (one new message every 167 to 500 seconds)
+Events7.interval = 167,500
+# Message sizes (500KB - 4MB)
+Events7.size = 500k,4M
+# range of message source/destination addresses
+Events7.hosts = 0,3000
+# Message ID prefix
+Events7.prefix = P
+# Message priority 0
+Events7.priorities = 0,0
+
+# Class for disaster data
+Events8.class = DisasterDataGenerator
+# Data sizes ( 50B - 1kB )
+Events8.size = 50,1k
+# range of message source/destination addresses
+Events8.hosts = 0,2999
+# seed for the pseudo random generator
+Events8.seed = 0
+# data location offset for the distance between created data item and the creator
+Events8.location_offset = 0,100
+# Creation interval in seconds (one new message every 3 to 10 seconds)
+Events8.interval = 3,10
 
 ## Movement model settings
-# seed for movement models' pseudo random number generator (default = 0)
-MovementModel.rngSeed = 1
 # World's size for Movement Models without implicit size (width, height; meters)
-MovementModel.worldSize = 4500, 3400
-# How long time to move hosts in the world before real simulation
-MovementModel.warmup = 1000
-
-## Map based movement -movement model specific settings
-MapBasedMovement.nrofMapFiles = 4
-
-MapBasedMovement.mapFile1 = data/roads.wkt
-MapBasedMovement.mapFile2 = data/main_roads.wkt
-MapBasedMovement.mapFile3 = data/pedestrian_paths.wkt
-MapBasedMovement.mapFile4 = data/shops.wkt
+MovementModel.worldSize = 25000,25000
+MapBasedMovement.nrofMapFiles = 3
+MapBasedMovement.mapFile1 = data/paderborn_pedestrians_only.wkt
+MapBasedMovement.mapFile2 = data/paderborn_pedestrians_and_cars.wkt
+MapBasedMovement.mapFile3 = data/paderborn_cars_only.wkt
 
 ## Reports - all report names have to be valid report classes
-
-# how many reports to load
-Report.nrofReports = 2
+Report.nrofReports = 10
+Report.reportDir = reports/
 # length of the warm up period (simulated seconds)
 Report.warmup = 0
-# default directory of reports (can be overridden per Report with output setting)
-Report.reportDir = reports/
-# Report classes to load
-Report.report1 = MessageStatsReport
-Report.report2 = ContactTimesReport
-
-## Default settings for some routers settings
-ProphetRouter.secondsInTimeUnit = 30
-SprayAndWaitRouter.nrofCopies = 6
-SprayAndWaitRouter.binaryMode = true
+Report.report1 = ImmediateMessageDelayReport
+Report.report2 = DeliveryProbabilityReport
+Report.report3 = BroadcastDeliveryReport
+Report.report4 = MulticastMessageDeliveryReport
+Report.report5 = TrafficReport
+Report.report6 = DataSyncReport
+DataSyncReport.precision=2
+Report.report7 = EnergyLevelReport
+EnergyLevelReport.granularity = 600
+Report.report8 = BufferOccupancyReport
+BufferOccupancyReport.occupancyInterval = 300
+Report.report9 = InterContactTimesReport
+InterContactTimesReport.granularity = 5
+Report.report10 = ContactTimesReport
+ContactTimesReport.granularity = 5
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.
-Optimization.cellSizeMult = 5
+Optimization.cellSizeMult = 1
 Optimization.randomizeUpdateOrder = true
-
-
-## GUI settings
-
-# GUI underlay image settings
-GUI.UnderlayImage.fileName = data/helsinki_underlay.png
-# Image offset in pixels (x, y)
-GUI.UnderlayImage.offset = 64, 20
-# Scaling factor for the image
-GUI.UnderlayImage.scale = 4.75
-# Image rotation (radians)
-GUI.UnderlayImage.rotate = -0.015
-
-# how many events to show in the log panel (default = 30)
-GUI.EventLogPanel.nrofEvents = 100
-# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
-#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$
+# Define whether you need the full message path or just hop count is sufficient
+# If you do not store the full message path some reports might fail
+Optimization.storeFullMessagePath = false

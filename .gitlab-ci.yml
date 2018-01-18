@@ -1,0 +1,101 @@
+image: openjdk:8-jdk
+
+# Make the gradle wrapper executable. This essentially downloads a copy of
+# Gradle to build the project with.
+# https://docs.gradle.org/current/userguide/gradle_wrapper.html
+# It is expected that any modern gradle project has a wrapper
+before_script:
+    - chmod +x gradlew
+
+# We redirect the gradle user home using -g so that it caches the
+# wrapper and dependencies.
+# https://docs.gradle.org/current/userguide/gradle_command_line.html
+#
+# Unfortunately it also caches the build output so
+# cleaning removes reminants of any cached builds.
+# The assemble task actually builds the project.
+# If it fails here, the tests can't run.
+stages:
+  - analyze
+  - build
+  - test
+   
+sonarqube:
+  stage: analyze
+  only:
+    - master
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew clean test jacoco sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.projectVersion=$CI_BUILD_REF
+  tags:
+    - shared
+
+sonarqube_manual:
+  stage: analyze
+  except:
+    - master
+  when: manual
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew clean test jacoco sonarqube -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.branch=$CI_BUILD_REF_NAME -Dsonar.projectVersion=$CI_BUILD_REF -Dsonar.profile=ANDI_Simulator
+  tags:
+    - shared
+
+sonarqube_preview:
+  stage: analyze
+  variables:
+    GIT_STRATEGY: clone
+  script:
+    - ./gradlew sonarqube -Dsonar.analysis.mode=preview -Dsonar.login=cd4b5ee1fc6a8dfe089c350184fdd715d6cfb28b -Dsonar.gitlab.project_id=$CI_PROJECT_ID -Dsonar.issuesReport.console.enable=true -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref=$CI_BUILD_REF_NAME -x test
+  allow_failure: true
+  tags:
+    - shared
+
+build:
+  stage: build
+  script:
+    - ./gradlew -g /cache/.gradle clean assemble copyGui
+  artifacts:
+    paths:
+    - lib/
+    - target/
+    - data/
+    - ee/
+    - example_settings/
+    - toolkit/
+    - wdm_settings/
+    - one.bat
+    - one.sh
+    - LICENSE.txt
+    - README.md
+    - README.txt
+    - default_settings.txt
+    - CONTRIBUTING.md
+    - HISTORY.txt
+    
+  allow_failure: false
+  tags:
+    - shared
+
+# Use the generated build output to run the tests.
+test:
+  stage: test
+  script:
+    - ./gradlew -g /cache/.gradle check jacoco
+  artifacts:
+    when: always
+    paths:
+    - build/reports/
+  tags:
+    - shared
+
+perl_test:
+  stage: test
+  image: perl:5.24.1
+  before_script:
+    - cpan IPC::System::Simple
+  script: prove -v toolkit/tests
+  tags:
+    - shared

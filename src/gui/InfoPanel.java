@@ -47,6 +47,10 @@ public class InfoPanel extends JPanel implements ActionListener{
 	 * Show information about a host
 	 * @param host Host to show the information of
 	 */
+	//suppressing the unchecked warnings is necessary here,
+	//as otherwise compiling the simulator with the compile.sh or compile.bat scripts is not possible.
+	//The only other possible solutions are hacky (eg. inserting a Message instead of a string into the msgChooser).
+	@SuppressWarnings("unchecked")
 	public void showInfo(DTNHost host) {
 		Vector<Message> messages =
 			new Vector<Message>(host.getMessageCollection());
@@ -56,7 +60,7 @@ public class InfoPanel extends JPanel implements ActionListener{
 		String text = (host.isMovementActive() ? "" : "INACTIVE ") + host +
 			" at " + host.getLocation();
 
-		msgChooser = new JComboBox(messages);
+		msgChooser = new JComboBox<>(messages);
 		msgChooser.insertItemAt(messages.size() + " messages", 0);
 		msgChooser.setSelectedIndex(0);
 		msgChooser.addActionListener(this);
@@ -83,7 +87,7 @@ public class InfoPanel extends JPanel implements ActionListener{
 
 	private void setMessageInfo(Message m) {
 		int ttl = m.getTtl();
-		String txt = " [" + m.getFrom() + "->" + m.getTo() + "] " +
+		String txt = " [" + m.getFrom() + "->" + m.recipientsToString() + "] " +
 				"size:" + m.getSize() + ", UI:" + m.getUniqueId() +
 				", received @ " + String.format("%.2f", m.getReceiveTime());
 		if (ttl != Integer.MAX_VALUE) {

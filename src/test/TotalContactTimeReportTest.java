@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Vector;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 import report.Report;
 import report.TotalContactTimeReport;
@@ -32,8 +34,8 @@ public class TotalContactTimeReportTest extends TestCase {
 	private final String SET_PREFIX = "TotalContactTimeReport.";
 
 	protected void setUp() throws Exception {
+		java.util.Locale.setDefault(java.util.Locale.US);
 		super.setUp();
-		SimClock.reset();
 		outFile = File.createTempFile("cttest", ".tmp");
 		outFile.deleteOnExit();
 
@@ -58,11 +60,18 @@ public class TotalContactTimeReportTest extends TestCase {
 		h3 = utils.createHost(c3);
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
+	}
+
 	private void done() throws Exception {
 		ctr.done();
 		ctReader = new BufferedReader(new FileReader(outFile));
 	}
 
+	@Test
 	public void testReport() throws Exception {
 		clock.advance(5);
 		h1.connect(h2);
@@ -78,6 +87,7 @@ public class TotalContactTimeReportTest extends TestCase {
 		checkValues(new String[] {"15.0 10.0", "20.0 15.0"});
 	}
 
+	@Test
 	public void testMultipleTimes() throws Exception {
 		clock.advance(10);
 		h1.connect(h2);
@@ -91,6 +101,7 @@ public class TotalContactTimeReportTest extends TestCase {
 		checkValues(new String[] {"20.0 10.0", "25.0 15.0"});
 	}
 
+	@Test
 	public void testOverlappingTimes() throws Exception {
 		clock.advance(5);
 		h1.connect(h2);

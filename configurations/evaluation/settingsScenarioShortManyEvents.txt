@@ -1,0 +1,12 @@
+## Scenarios with duration of 6 hours and with many events
+## Scenario used for the evaluation of the different routing protocols
+## Scenario settings
+# 21600s = 6h
+Scenario.endTime = 21600
+Scenario.name = 6_h_many_events
+
+#Settings for the disaster and hospital events
+# max number of external events to preload
+Events1.nrofPreload = 24
+# path to external events file 
+Events1.filePath = ee/VhmEvents/eventsScenarioManyShortDuration.json

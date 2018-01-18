@@ -4,13 +4,6 @@
  */
 package routing;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
 import core.Application;
 import core.Connection;
 import core.DTNHost;
@@ -22,6 +15,14 @@ import core.SimClock;
 import core.SimError;
 import routing.util.RoutingInfo;
 import util.Tuple;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Superclass for message routers.
@@ -43,6 +44,7 @@ public abstract class MessageRouter {
 	 * <UL>
 	 * <LI/> 1 : random (message order is randomized every time; default option)
 	 * <LI/> 2 : FIFO (most recently received messages are sent last)
+     * <LI/> 3 : Prio (highest priority first)
 	 * </UL>
 	 */
 	public static final String SEND_QUEUE_MODE_S = "sendQueue";
@@ -51,11 +53,19 @@ public abstract class MessageRouter {
 	public static final int Q_MODE_RANDOM = 1;
 	/** Setting value for FIFO queue mode */
 	public static final int Q_MODE_FIFO = 2;
+    /** Setting value for priority queue mode */
+    public static final int Q_MODE_PRIO = 3;
+
 
 	/** Setting string for random queue mode */
 	public static final String STR_Q_MODE_RANDOM = "RANDOM";
 	/** Setting string for FIFO queue mode */
 	public static final String STR_Q_MODE_FIFO = "FIFO";
+	/** Setting string for priority queue mode */
+	public static final String STR_Q_MODE_PRIO ="PRIO";
+
+	/** Error message when encountering an unkown queue mode */
+	public static final String UNKOWN_QUEUE_MODE = "Unknown queue mode ";
 
 	/* Return values when asking to start a transmission:
 	 * RCV_OK (0) means that the host accepts the message and transfer started,
@@ -95,6 +105,8 @@ public abstract class MessageRouter {
 	private DTNHost host;
 	/** size of the buffer */
 	private long bufferSize;
+    /** Amount of buffer that is occupied by messages */
+    private long occupancy;
 	/** TTL for all messages */
 	protected int msgTtl;
 	/** Queue mode for sending messages */
@@ -121,27 +133,36 @@ public abstract class MessageRouter {
 		if (s.contains(MSG_TTL_S)) {
 			this.msgTtl = s.getInt(MSG_TTL_S);
 		}
-
-		if (s.contains(SEND_QUEUE_MODE_S)) {
-
-			String mode = s.getSetting(SEND_QUEUE_MODE_S);
-
-			if (mode.trim().toUpperCase().equals(STR_Q_MODE_FIFO)) {
-				this.sendQueueMode = Q_MODE_FIFO;
-			} else if (mode.trim().toUpperCase().equals(STR_Q_MODE_RANDOM)){
-				this.sendQueueMode = Q_MODE_RANDOM;
-			} else {
-				this.sendQueueMode = s.getInt(SEND_QUEUE_MODE_S);
-				if (sendQueueMode < 1 || sendQueueMode > 2) {
-					throw new SettingsError("Invalid value for " +
-							s.getFullPropertyName(SEND_QUEUE_MODE_S));
-				}
-			}
-		}
-		else {
-			sendQueueMode = Q_MODE_RANDOM;
-		}
+        setSendQueueMode(s);
 	}
+
+	private void setSendQueueMode(Settings s){
+        if (s.contains(SEND_QUEUE_MODE_S)) {
+
+            String mode = s.getSetting(SEND_QUEUE_MODE_S);
+            mode = mode.trim().toUpperCase();
+
+            switch (mode) {
+                case STR_Q_MODE_RANDOM:
+                case "1":
+                    this.sendQueueMode = Q_MODE_RANDOM;
+                    break;
+                case STR_Q_MODE_FIFO:
+                case "2":
+                    this.sendQueueMode = Q_MODE_FIFO;
+                    break;
+                case STR_Q_MODE_PRIO:
+                case "3":
+                    this.sendQueueMode = Q_MODE_PRIO;
+                    break;
+                default:
+                    throw new SettingsError("Invalid value for " +
+                            s.getFullPropertyName(SEND_QUEUE_MODE_S));
+            }
+        } else {
+            sendQueueMode = Q_MODE_RANDOM;
+        }
+    }
 
 	/**
 	 * Initializes the router; i.e. sets the host this router is in and
@@ -221,7 +242,7 @@ public abstract class MessageRouter {
 	 * @return true if a message with the same ID has been received by
 	 * this host as the final recipient.
 	 */
-	protected boolean isDeliveredMessage(Message m) {
+	public boolean isDeliveredMessage(Message m) {
 		return (this.deliveredMessages.containsKey(m.getId()));
 	}
 
@@ -274,14 +295,9 @@ public abstract class MessageRouter {
 	 * size isn't defined)
 	 */
 	public long getFreeBufferSize() {
-		long occupancy = 0;
 
 		if (this.getBufferSize() == Integer.MAX_VALUE) {
 			return Integer.MAX_VALUE;
-		}
-
-		for (Message m : getMessageCollection()) {
-			occupancy += m.getSize();
 		}
 
 		return this.getBufferSize() - occupancy;
@@ -374,15 +390,16 @@ public abstract class MessageRouter {
 		Message aMessage = (outgoing==null)?(incoming):(outgoing);
 		// If the application re-targets the message (changes 'to')
 		// then the message is not considered as 'delivered' to this host.
-		isFinalRecipient = aMessage.getTo() == this.host;
-		isFirstDelivery = isFinalRecipient &&
-		!isDeliveredMessage(aMessage);
+        isFinalRecipient = aMessage.isFinalRecipient(this.host);
+        isFirstDelivery = isFinalRecipient && !isDeliveredMessage(aMessage);
 
-		if (!isFinalRecipient && outgoing!=null) {
-			// not the final recipient and app doesn't want to drop the message
+        if (!aMessage.completesDelivery(this.host) && outgoing!=null) {
+            // not the (last) final recipient and app doesn't want to drop the message
 			// -> put to buffer
 			addToMessages(aMessage, false);
-		} else if (isFirstDelivery) {
+		}
+
+		if (isFirstDelivery) {
 			this.deliveredMessages.put(id, aMessage);
 		} else if (outgoing == null) {
 			// Blacklist messages that an app wants to drop.
@@ -437,12 +454,25 @@ public abstract class MessageRouter {
 	 * message, if false, nothing is informed.
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
+	    //Remove previous size of message from the occupancy if we already had the message
+        Message oldMessage = messages.get(m.getId());
+	    if (oldMessage != null){
+	        occupancy -= oldMessage.getSize();
+        }
+        //Add the current size of the message to the occupancy
+        occupancy += m.getSize();
 		this.messages.put(m.getId(), m);
 
 		if (newMessage) {
 			for (MessageListener ml : this.mListeners) {
 				ml.newMessage(m);
 			}
+            /*add multicast or broadcast message to received messages for the sender
+            to prevent it from being handled as new message
+            */
+            if (m.getType() == Message.MessageType.BROADCAST || m.getType() == Message.MessageType.MULTICAST){
+                this.deliveredMessages.put(m.getId(),m);
+            }
 		}
 	}
 
@@ -453,6 +483,7 @@ public abstract class MessageRouter {
 	 */
 	protected Message removeFromMessages(String id) {
 		Message m = this.messages.remove(id);
+		occupancy-=m.getSize();
 		return m;
 	}
 
@@ -508,51 +539,50 @@ public abstract class MessageRouter {
 
 	/**
 	 * Sorts/shuffles the given list according to the current sending queue
-	 * mode. The list can contain either Message or Tuple<Message, Connection>
-	 * objects. Other objects cause error.
+	 * mode.
 	 * @param list The list to sort or shuffle
 	 * @return The sorted/shuffled list
 	 */
-	@SuppressWarnings(value = "unchecked") /* ugly way to make this generic */
-	protected List sortByQueueMode(List list) {
+
+	protected List<Message> sortListByQueueMode(List<Message> list) {
 		switch (sendQueueMode) {
-		case Q_MODE_RANDOM:
-			Collections.shuffle(list, new Random(SimClock.getIntTime()));
-			break;
-		case Q_MODE_FIFO:
-			Collections.sort(list,
-					new Comparator() {
-				/** Compares two tuples by their messages' receiving time */
-				public int compare(Object o1, Object o2) {
-					double diff;
-					Message m1, m2;
-
-					if (o1 instanceof Tuple) {
-						m1 = ((Tuple<Message, Connection>)o1).getKey();
-						m2 = ((Tuple<Message, Connection>)o2).getKey();
-					}
-					else if (o1 instanceof Message) {
-						m1 = (Message)o1;
-						m2 = (Message)o2;
-					}
-					else {
-						throw new SimError("Invalid type of objects in " +
-								"the list");
-					}
-
-					diff = m1.getReceiveTime() - m2.getReceiveTime();
-					if (diff == 0) {
-						return 0;
-					}
-					return (diff < 0 ? -1 : 1);
-				}
-			});
-			break;
-		/* add more queue modes here */
-		default:
-			throw new SimError("Unknown queue mode " + sendQueueMode);
+		     case Q_MODE_RANDOM:
+			     Collections.shuffle(list, new Random(SimClock.getIntTime()));
+			     break;
+		     case Q_MODE_FIFO:
+                list.sort(Comparator.comparing(Message::getReceiveTime));
+                break;
+            case Q_MODE_PRIO:
+                list.sort(Comparator.comparing(Message::getPriority).reversed());
+                break;
+		      /* add more queue modes here */
+             default:
+                throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
+		return list;
+	}
 
+	/**
+	 * Sorts/shuffles the given list according to the current sending queue
+	 * mode.
+	 * @param list The list to sort or shuffle
+	 * @return The sorted/shuffled list
+	 */
+	protected List<Tuple<Message, Connection>> sortTupleListByQueueMode(List<Tuple<Message, Connection>> list) {
+		switch (sendQueueMode) {
+		    case Q_MODE_RANDOM:
+                Collections.shuffle(list, new Random(SimClock.getIntTime()));
+                break;
+			case Q_MODE_FIFO:
+                list.sort((t1,t2) -> ((Double)t1.getKey().getReceiveTime()).compareTo(t2.getKey().getReceiveTime()));
+                break;
+            case Q_MODE_PRIO:
+                list.sort((t1,t2) -> ((Integer)t2.getKey().getPriority()).compareTo(t1.getKey().getPriority()));
+                break;
+            /* add more queue modes here */
+			default:
+                throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
+		}
 		return list;
 	}
 
@@ -565,23 +595,17 @@ public abstract class MessageRouter {
 	 *          message should come first, or 0 if the ordering isn't defined
 	 */
 	protected int compareByQueueMode(Message m1, Message m2) {
-		switch (sendQueueMode) {
-		case Q_MODE_RANDOM:
-			/* return randomly (enough) but consistently -1, 0 or 1 */
-			int hash_diff = m1.hashCode() - m2.hashCode();
-			if (hash_diff == 0) {
-				return 0;
-			}
-			return (hash_diff < 0 ? -1 : 1);
-		case Q_MODE_FIFO:
-			double diff = m1.getReceiveTime() - m2.getReceiveTime();
-			if (diff == 0) {
-				return 0;
-			}
-			return (diff < 0 ? -1 : 1);
-		/* add more queue modes here */
-		default:
-			throw new SimError("Unknown queue mode " + sendQueueMode);
+        switch (sendQueueMode) {
+            case Q_MODE_RANDOM:
+                /* return randomly (enough) but consistently -1, 0 or 1 */
+                return ((Integer)m1.hashCode()).compareTo(m2.hashCode());
+            case Q_MODE_FIFO:
+                return ((Double)m1.getReceiveTime()).compareTo(m2.getReceiveTime());
+            case Q_MODE_PRIO:
+                return ((Integer)m2.getPriority()).compareTo(m1.getPriority());
+            /* add more queue modes here */
+            default:
+                throw new SimError(UNKOWN_QUEUE_MODE + sendQueueMode);
 		}
 	}
 

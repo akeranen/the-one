@@ -50,6 +50,7 @@ public class ExternalMovementTest extends TestCase {
 
 	protected void setUpUsing(String[] input) throws Exception {
 		super.setUp();
+		java.util.Locale.setDefault(java.util.Locale.US);
 		ExternalMovement.reset();
 		TestSettings ts = new TestSettings();
 		ts.putSetting(MovementModel.MOVEMENT_MODEL_NS + "." +
@@ -76,6 +77,12 @@ public class ExternalMovementTest extends TestCase {
 		h3 = utils.createHost(emProto, "h3");
 		clock = SimClock.getInstance();
 		clock.setTime(0);
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
 	}
 
 	public void testMovement() throws Exception {

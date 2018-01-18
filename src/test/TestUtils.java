@@ -7,15 +7,15 @@ package test;
 import java.util.ArrayList;
 import java.util.List;
 
-import movement.MovementModel;
-import routing.MessageRouter;
-import routing.PassiveRouter;
 import core.ConnectionListener;
 import core.Coord;
 import core.DTNHost;
 import core.MessageListener;
 import core.ModuleCommunicationBus;
 import core.NetworkInterface;
+import movement.MovementModel;
+import routing.MessageRouter;
+import routing.PassiveRouter;
 
 /**
  * Generic convenience methods for tests.
@@ -28,8 +28,9 @@ public class TestUtils {
 	private List<DTNHost> allHosts;
 	private MessageRouter mr;
 
-	private ModuleCommunicationBus comBus;
 	private TestSettings settings;
+
+	private double transmitRange;
 
 	public static String IFACE_NS = "interface";
 
@@ -46,8 +47,6 @@ public class TestUtils {
 		this.allHosts = new ArrayList<DTNHost>();
 		this.settings = settings;
 		this.mr = new PassiveRouter(settings);
-
-		this.comBus = new ModuleCommunicationBus();
 	}
 
 	public void setMessageRouterProto(MessageRouter mr) {
@@ -79,7 +78,7 @@ public class TestUtils {
 	 * @param transmitRange the transmitRange to set
 	 */
 	public void setTransmitRange(double transmitRange) {
-		this.comBus.updateProperty(NetworkInterface.RANGE_ID, transmitRange);
+		this.transmitRange = transmitRange;
 	}
 
 	/**
@@ -101,24 +100,26 @@ public class TestUtils {
 	 * @return the host
 	 */
 	public DTNHost createHost(MovementModel mmProto, String name) {
-		if (settings.getNameSpace() == null) {
-			settings.setNameSpace(IFACE_NS);
-		}
-		if (!this.settings.contains(NetworkInterface.TRANSMIT_RANGE_S)) {
-			settings.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
-			settings.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
-		}
+        if (settings.getNameSpace() == null) {
+            settings.setNameSpace(IFACE_NS);
+        }
+        addTransmitRangeAndSpeedSettings(this.settings);
 
 		NetworkInterface ni = new TestInterface(settings);
 		ni.setClisteners(conListeners);
 		List<NetworkInterface> li = new ArrayList<NetworkInterface>();
 		li.add(ni);
+		ModuleCommunicationBus comBus = new ModuleCommunicationBus();
+		comBus.updateProperty(NetworkInterface.RANGE_ID, this.transmitRange);
 		DTNHost host = new DTNHost(msgListeners, null, groupId,
 				li, comBus, mmProto, mr);
 		if (name != null) {
 			host.setName(name);
 		}
 
+		if (settings.getNameSpace() == IFACE_NS) {
+			settings.restoreNameSpace();
+		}
 		this.allHosts.add(host);
 		return host;
 	}
@@ -142,7 +143,29 @@ public class TestUtils {
 		return this.createHost(new Coord(0,0));
 	}
 
+	/**
+	 * Creates a host to location (0,0) with stationary movement model
+	 * and the defined name.
+	 * @param name The name for the host
+	 * @return The new host
+	 */
+	public DTNHost createHost(String name) {
+		return this.createHost(new Coord(0,0), name);
+	}
+
 	public List<DTNHost> getAllHosts() {
 		return this.allHosts;
 	}
+
+    /**
+     * Adds default test values for transmit range and transmit speed to {@link TestSettings} if the settings do not
+     * contain a range setting yet.
+     * @param s The settings to which transmit range and speed settings should be added
+     */
+	public void addTransmitRangeAndSpeedSettings(TestSettings s){
+        if (!s.contains(NetworkInterface.TRANSMIT_RANGE_S)) {
+            s.putSetting(NetworkInterface.TRANSMIT_RANGE_S, "1.0");
+            s.putSetting(NetworkInterface.TRANSMIT_SPEED_S, "1");
+        }
+    }
 }

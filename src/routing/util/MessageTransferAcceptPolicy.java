@@ -4,17 +4,17 @@
  */
 package routing.util;
 
-import java.util.ArrayList;
-
-import util.Range;
-import util.Tuple;
-
 import core.ArithmeticCondition;
 import core.Connection;
 import core.DTNHost;
 import core.Message;
 import core.ModuleCommunicationBus;
+import core.MulticastMessage;
 import core.Settings;
+import util.Range;
+import util.Tuple;
+
+import java.util.ArrayList;
 
 /**
  * <P> Message transfer accepting policy module. Can be used to decide whether
@@ -114,8 +114,6 @@ public class MessageTransferAcceptPolicy {
 
 	private Range[] toSendPolicy = null;
 	private Range[] fromSendPolicy = null;
-	private Range[] toReceivePolicy = null;
-	private Range[] fromReceivePolicy = null;
 	private ArithmeticCondition hopCountSendPolicy = null;
 	private ArithmeticCondition hopCountReceivePolicy = null;
 
@@ -134,12 +132,6 @@ public class MessageTransferAcceptPolicy {
 		}
 		if (s.contains(FROM_SPOLICY_S)) {
 			this.fromSendPolicy = s.getCsvRanges(FROM_SPOLICY_S);
-		}
-		if (s.contains(TO_RPOLICY_S)) {
-			this.toReceivePolicy = s.getCsvRanges(TO_RPOLICY_S);
-		}
-		if (s.contains(FROM_RPOLICY_S)) {
-			this.fromReceivePolicy = s.getCsvRanges(FROM_RPOLICY_S);
 		}
 		if (s.contains(HOPCOUNT_SPOLICY_S)) {
 			hopCountSendPolicy = s.getCondition(HOPCOUNT_SPOLICY_S);
@@ -199,7 +191,7 @@ public class MessageTransferAcceptPolicy {
 	 * @return true if all conditions evaluated to true
 	 */
 	private boolean checkMcbConditions(ModuleCommunicationBus mcb,
-			boolean receiving) {
+									   boolean receiving) {
 		ArrayList<Tuple<String,ArithmeticCondition>> list =
 			(receiving ? this.recvConditions : this.sendConditions);
 
@@ -219,31 +211,73 @@ public class MessageTransferAcceptPolicy {
 		return true;
 	}
 
+    /**
+     * Checks both recipient and sender simple policy conditions and returns false
+     * if at least one of the two failed.
+     * @param m The message to sent.
+     * @param ownAddress The node's own address.
+     * @return true if both conditions evaluated to true
+     */
+    private boolean checkSimplePolicy(Message m, int ownAddress) {
+        boolean checkRecipients;
+    	switch (m.getType()){
+            case MULTICAST:
+                checkRecipients = checkSimplePolicyForGroupMembers((MulticastMessage)m,ownAddress);
+                break;
+            case BROADCAST:
+                checkRecipients = true;
+                break;
+			case ONE_TO_ONE:
+			case DATA:
+                checkRecipients = checkSimplePolicy(m.getTo().getAddress(), this.toSendPolicy, ownAddress);
+                break;
+            default:
+                throw new UnsupportedOperationException("No implementation for message type " + m.getType() + ".");
+        }
+        return checkRecipients && checkSimplePolicy(m.getFrom().getAddress(), this.fromSendPolicy, ownAddress);
+    }
+
+    /**
+     * Checks the simple policy for every member of the group a multicast message is dedicated to.
+     *
+     * @param m the multicast message to check the policy for
+     * @param ownAddress the nodes' own address
+     * @return true, if the policy holds for at least one of the group members
+     */
+    private boolean checkSimplePolicyForGroupMembers(MulticastMessage m, int ownAddress){
+        boolean checkRecipients = false;
+        for (int address : m.getGroup().getMembers()){
+            if (checkSimplePolicy(address,this.toSendPolicy,ownAddress)){
+                checkRecipients = true;
+                break;
+            }
+        }
+        return checkRecipients;
+    }
+
 	/**
 	 * Checks if the host's address is contained in the policy list
 	 * (or {@value #TO_ME_VALUE} is contained and the address matches to
 	 * thisHost parameter)
-	 * @param host The hosts whose address to check
+	 * @param hostAddress The address to check
 	 * @param policy The list of accepted addresses
 	 * @param thisHost The address of this host
 	 * @return True if the address was in the policy list, or the policy list
 	 * was null
 	 */
-	private boolean checkSimplePolicy(DTNHost host, Range [] policy,
-			int thisHost) {
-		int address;
+	private boolean checkSimplePolicy(int hostAddress, Range [] policy,
+									  int thisHost) {
 
 		if (policy == null) {
 			return true;
 		}
 
-		address = host.getAddress();
 
 		for (Range r : policy) {
-			if (r.isInRange(TO_ME_VALUE) && address == thisHost) {
+            if (r.isInRange(TO_ME_VALUE) && hostAddress == thisHost) {
 				return true;
 			}
-			 else if (r.isInRange(address)) {
+			 else if (r.isInRange(hostAddress)) {
 				return true;
 			}
 		}
@@ -281,14 +315,11 @@ public class MessageTransferAcceptPolicy {
 			return false;
 		}
 
-		int myAddr = from.getAddress();
-		if (! (checkSimplePolicy(m.getTo(), this.toSendPolicy, myAddr) &&
-			checkSimplePolicy(m.getFrom(), this.fromSendPolicy,	myAddr)) ) {
+		if (!checkSimplePolicy (m, from.getAddress())) {
 			return false;
 		}
 
-		if (m.getTo() != to &&
-				!checkHopCountPolicy(m, this.hopCountSendPolicy)){
+		if (!m.isFinalRecipient(to) && !checkHopCountPolicy(m, this.hopCountSendPolicy)){
 			return false;
 		}
 
@@ -308,14 +339,11 @@ public class MessageTransferAcceptPolicy {
 			return false;
 		}
 
-		int myAddr = to.getAddress();
-		if (! (checkSimplePolicy(m.getTo(), this.toReceivePolicy,myAddr) &&
-			checkSimplePolicy(m.getFrom(), this.fromReceivePolicy, myAddr)) ) {
+		if (!checkSimplePolicy (m, to.getAddress())) {
 			return false;
 		}
 
-		if (m.getTo() != to &&
-				!checkHopCountPolicy(m, this.hopCountReceivePolicy)) {
+		if (!m.isFinalRecipient(to) && !checkHopCountPolicy(m, this.hopCountReceivePolicy)) {
 			return false;
 		}
 

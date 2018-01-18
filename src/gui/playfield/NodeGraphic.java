@@ -93,7 +93,13 @@ public class NodeGraphic extends PlayFieldGraphic {
 			// create a copy to prevent concurrent modification exceptions
 			conList.addAll(node.getConnections());
 			for (Connection c : conList) {
-				DTNHost otherNode = c.getOtherNode(node);
+				DTNHost otherNode = null;
+				if(c != null) {
+					otherNode = c.getOtherNode(node);
+				}
+				else {
+					continue; /* disconnected before drawn */
+				}
 				Coord c2;
 
 				if (otherNode == null) {
@@ -105,6 +111,12 @@ public class NodeGraphic extends PlayFieldGraphic {
 			}
 		}
 
+		if (drawNodeName) {
+			g2.setColor(hostNameColor);
+			// Draw node's address next to it
+			g2.drawString(node.toString(), scale(loc.getX()),
+					scale(loc.getY()));
+		}
 
 		/* draw node rectangle */
 		g2.setColor(hostColor);
@@ -114,13 +126,6 @@ public class NodeGraphic extends PlayFieldGraphic {
 		if (isHighlighted()) {
 			g2.setColor(highlightedNodeColor);
 			g2.fillRect(scale(loc.getX()) - 3 ,scale(loc.getY()) - 3, 6, 6);
-		}
-
-		if (drawNodeName) {
-			g2.setColor(hostNameColor);
-			// Draw node's address next to it
-			g2.drawString(node.toString(), scale(loc.getX()),
-					scale(loc.getY()));
 		}
 	}
 

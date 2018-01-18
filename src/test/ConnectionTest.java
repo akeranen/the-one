@@ -32,7 +32,6 @@ public class ConnectionTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		SimClock.reset();
 		clock.setTime(START_TIME);
 		TestSettings testSettings = new TestSettings();
 		testSettings.setNameSpace(TestUtils.IFACE_NS);
@@ -63,6 +62,12 @@ public class ConnectionTest extends TestCase {
 		c[1].startTransfer(h[0], m[1]);
 		c[2].startTransfer(h[1], m[2]);
 		conCount = 3;
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
 	}
 
 	private void con(DTNHost from, DTNHost to) {

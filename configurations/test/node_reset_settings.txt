@@ -1,0 +1,31 @@
+Scenario.name = Node_Reset_Test
+
+# Use less hosts
+Scenario.nrofHostGroups = 1
+Group1.nrofHosts = 3
+Events2.hosts = 0,3
+Events3.hosts = 0,3
+Events4.hosts = 0,3
+Events5.hosts = 0,3
+Events6.hosts = 0,3
+Events7.hosts = 0,3
+Events8.hosts = 0,2
+Events9.hosts = 0,2
+
+# Total number of multicast groups across all groups
+Events4.group_count = 1,1
+# Size of multicast groups
+Events4.group_size = 2,2
+# Total number of multicast groups across all groups
+Events5.group_count = 1,1
+# Size of multicast groups
+Events5.group_size = 2,2
+
+# Specifies how much energy is used for scanning
+Group1.scanEnergy = 0.1
+# Specifies how much energy is used for transmitting
+Group1.transmitEnergy = 0.2
+# Specifies how much energy is used per device discovery response
+Group1.scanResponseEnergy = 0.1
+# Specifies the range of possible number of seconds before an empty battery is recharged
+Group.rechargeWait = 10,200

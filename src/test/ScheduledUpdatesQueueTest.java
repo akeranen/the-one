@@ -18,8 +18,13 @@ public class ScheduledUpdatesQueueTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		SimClock.reset();
 		suq = new ScheduledUpdatesQueue();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		SimClock.reset();
 	}
 
 	public void testUpdates() {

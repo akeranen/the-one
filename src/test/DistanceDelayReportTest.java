@@ -10,13 +10,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import junit.framework.TestCase;
-import report.DistanceDelayReport;
+import org.junit.Test;
+
 import core.Coord;
 import core.DTNHost;
 import core.Message;
 import core.MessageListener;
 import core.SimClock;
+import junit.framework.TestCase;
+import report.DistanceDelayReport;
 
 public class DistanceDelayReportTest extends TestCase {
 	private SimClock clock;
@@ -27,6 +29,7 @@ public class DistanceDelayReportTest extends TestCase {
 	private TestUtils utils;
 
 	public void setUp() throws IOException {
+		java.util.Locale.setDefault(java.util.Locale.US);
 		final String NS = "DistanceDelayReport.";
 		TestSettings ts = new TestSettings();
 		outFile = File.createTempFile("ddrtest", ".tmp");
@@ -41,7 +44,13 @@ public class DistanceDelayReportTest extends TestCase {
 		this.utils = new TestUtils(null, ml, ts);
 	}
 
+	@Override
+	protected void tearDown() throws Exception{
+		super.tearDown();
+		SimClock.reset();
+	}
 
+	@Test
 	public void testMessageTransferred() throws IOException {
 		DTNHost h1 = utils.createHost(new Coord(0,0));
 		DTNHost h2 = utils.createHost(new Coord(2,0));
@@ -70,6 +79,7 @@ public class DistanceDelayReportTest extends TestCase {
 
 		r.done();
 
+
 		reader = new BufferedReader(new FileReader(outFile));
 
 		reader.readLine(); // skip headers
@@ -78,7 +88,9 @@ public class DistanceDelayReportTest extends TestCase {
 		assertEquals("2.0 0.5 1 tst2",reader.readLine());
 		assertEquals("5.0 1.0 2 tst3",reader.readLine());
 
-		reader.close();
+        reader.close();
+
+
 	}
 
 

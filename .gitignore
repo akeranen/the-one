@@ -15,3 +15,11 @@ doc/package-list
 .project
 /target/
 .settings/org.eclipse.*
+.idea/
+.gradle/
+build/
+target/
+lib/Simulator.jar
+
+/bin/
+out/

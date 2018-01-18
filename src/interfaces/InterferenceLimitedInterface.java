@@ -5,6 +5,7 @@
 package interfaces;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import core.Connection;
 import core.NetworkInterface;
@@ -59,11 +60,11 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	 * @param anotherInterface The host to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning()
-				&& anotherInterface.getHost().isRadioActive()
-				&& isWithinRange(anotherInterface)
-				&& !isConnected(anotherInterface)
-				&& (this != anotherInterface)) {
+        if (this != anotherInterface
+                && !isConnected(anotherInterface)
+				&& anotherInterface.isActive()
+				&& isWithinRange(anotherInterface)) {
+
 			// new contact within range
 
 			Connection con = new VBRConnection(this.host, this,
@@ -81,57 +82,68 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 			return; /* nothing to do */
 		}
 
-		// First break the old ones
-		optimizer.updateLocation(this);
-		for (int i=0; i<this.connections.size(); ) {
-			Connection con = this.connections.get(i);
-			NetworkInterface anotherInterface = con.getOtherInterface(this);
+        optimizer.updateLocation(this);
 
-			// all connections should be up at this stage
-			assert con.isUp() : "Connection " + con + " was down!";
+		breakOldConnections();
 
-			if (!isWithinRange(anotherInterface)) {
-				disconnect(con,anotherInterface);
-				connections.remove(i);
-			} else {
-				i++;
-			}
-		}
-		// Then find new possible connections
-		Collection<NetworkInterface> interfaces =
-			optimizer.getNearInterfaces(this);
-		for (NetworkInterface i : interfaces)
-			connect(i);
+		findNewConnections();
 
-		// Find the current number of transmissions
-		// (to calculate the current transmission speed
-		numberOfTransmissions = 0;
-		int numberOfActive = 1;
-		for (Connection con : this.connections) {
-			if (con.getMessage() != null) {
-				numberOfTransmissions++;
-			}
-			if (((InterferenceLimitedInterface)con.getOtherInterface(this)).
-					isTransferring() == true) {
-				numberOfActive++;
-			}
-		}
-
-		int ntrans = numberOfTransmissions;
-		if ( numberOfTransmissions < 1) ntrans = 1;
-		if ( numberOfActive <2 ) numberOfActive = 2;
-
-		// Based on the equation of Gupta and Kumar - and the transmission speed
-		// is divided equally to all the ongoing transmissions
-		currentTransmitSpeed = (int)Math.floor((double)transmitSpeed /
-				(Math.sqrt((1.0*numberOfActive) *
-						Math.log(1.0*numberOfActive))) /
-							ntrans );
-
-		for (Connection con : getConnections()) {
+        recalculateTransmissionSpeed();
+		for (Connection con : connections) {
 			con.update();
 		}
 	}
+
+    private void findNewConnections() {
+        if (isScanning()) {
+            // Then find new possible connections
+            Collection<NetworkInterface> interfaces = optimizer.getNearInterfaces(this);
+            for (NetworkInterface i : interfaces){
+                connect(i);
+            }
+        }
+    }
+
+    private void breakOldConnections() {
+        Iterator<Connection> it = connections.iterator();
+        while (it.hasNext()) {
+            Connection con = it.next();
+            NetworkInterface anotherInterface = con.getOtherInterface(this);
+
+            // all connections should be up at this stage
+            assert con.isUp() : "Connection " + con + " was down!";
+
+            if (!isWithinRange(anotherInterface)) {
+                disconnect(con,anotherInterface);
+                it.remove();
+            }
+        }
+    }
+
+    private void recalculateTransmissionSpeed(){
+        // Find the current number of transmissions
+        // (to calculate the current transmission speed
+        numberOfTransmissions = 0;
+        int numberOfActive = 1;
+        for (Connection con : this.connections) {
+            if (con.getMessage() != null) {
+                numberOfTransmissions++;
+            }
+            if (((InterferenceLimitedInterface)con.getOtherInterface(this)).isTransferring()) {
+                numberOfActive++;
+            }
+        }
+
+        int ntrans = numberOfTransmissions;
+        if ( numberOfTransmissions < 1) ntrans = 1;
+        if ( numberOfActive <2 ) numberOfActive = 2;
+
+        // Based on the equation of Gupta and Kumar - and the transmission speed
+        // is divided equally to all the ongoing transmissions
+        currentTransmitSpeed = (int)((double)transmitSpeed /
+                (Math.sqrt((1.0*numberOfActive) *
+                        Math.log(1.0*numberOfActive))) / ntrans );
+    }
 
 	/**
 	 * Creates a connection to another host. This method does not do any checks

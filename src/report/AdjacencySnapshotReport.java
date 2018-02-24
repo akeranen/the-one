@@ -18,7 +18,7 @@ import core.DTNHost;
  * every configurable-amount-of-seconds (see {@link SnapshotReport#GRANULARITY}).
  * Based on SnapshotReport, AdjencyGraphvizReport and LocationSnapshotReport.
  */
-public class AdjencySnapshotReport extends SnapshotReport implements ConnectionListener {
+public class AdjacencySnapshotReport extends SnapshotReport implements ConnectionListener {
 
 	private String HOST_DELIM = "<->"; // used in toString()
 	private HashMap<String, ConnectionInfo> cons;
@@ -64,7 +64,7 @@ public class AdjencySnapshotReport extends SnapshotReport implements ConnectionL
 	}
 
 	// Do nothing. We're interested in the edges, not the nodes.
-	@Override 
+	@Override
 	protected void writeSnapshot(DTNHost host) {}
 
 	// Outputs the list of connections at each timestamp.

@@ -37,6 +37,9 @@ public abstract class Application {
 	private List<ApplicationListener> aListeners = null;
 
 	public String	appID	= null;
+	
+	private DTNHost host; // the host where this instance of the application is running
+
 
 	public Application(){
 	}
@@ -121,5 +124,9 @@ public abstract class Application {
 		for (ApplicationListener al : this.aListeners) {
 			al.gotEvent(event, params, this, host);
 		}
+	}
+	
+	public void setHost(DTNHost host) {
+		this.host = host;
 	}
 }

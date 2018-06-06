@@ -77,7 +77,9 @@ public class DTNHost implements Comparable<DTNHost> {
 		this.movement = mmProto.replicate();
 		this.movement.setComBus(comBus);
 		this.movement.setHost(this);
+		
 		setRouter(mRouterProto.replicate());
+		this.router.getApplications(null).forEach( app -> app.setHost(this) );
 
 		this.location = movement.getInitialLocation();
 

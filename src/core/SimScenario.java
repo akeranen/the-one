@@ -6,6 +6,7 @@ package core;
 
 import input.EventQueue;
 import input.EventQueueHandler;
+import javafx.util.converter.PercentageStringConverter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -117,6 +118,8 @@ public class SimScenario implements Serializable {
 	private List<UpdateListener> updateListeners;
 	/** Global application event listeners */
 	private List<ApplicationListener> appListeners;
+	/** Percentage of Data Altering hosts in system */
+	private final double percentage_DataAlteringHosts = 0.1;
 
 	static {
 		DTNSim.registerForReset(SimScenario.class.getCanonicalName());
@@ -164,6 +167,7 @@ public class SimScenario implements Serializable {
 		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
 				updateListeners, simulateConnections,
 				eqHandler.getEventQueues());
+		
 	}
 
 	/**
@@ -398,6 +402,10 @@ public class SimScenario implements Serializable {
 				DTNHost host = new DTNHost(this.messageListeners,
 						this.movementListeners,	gid, interfaces, comBus,
 						mmProto, mRouterProto);
+				double prob = Math.random();
+				if(prob < this.percentage_DataAlteringHosts) {	
+					host.setMalicious(MessageRouter.ALTER_DATA);
+				}
 				hosts.add(host);
 			}
 		}
@@ -418,5 +426,7 @@ public class SimScenario implements Serializable {
 	public World getWorld() {
 		return this.world;
 	}
+
+	
 
 }

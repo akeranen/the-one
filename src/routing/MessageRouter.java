@@ -81,6 +81,10 @@ public abstract class MessageRouter {
 	public static final int DENIED_POLICY = -5;
 	/** Receive return value for unspecified reason */
 	public static final int DENIED_UNSPECIFIED = -99;
+	/** Value of Maliciousness of a Non Malicious Node */
+	public static final int HEALTHY = 0;
+	/** Value of Maliciousness of a Data Altering Node */
+	public static final int ALTER_DATA = 1;
 
 	private List<MessageListener> mListeners;
 	/** The messages being transferred with msgID_hostName keys */
@@ -99,6 +103,8 @@ public abstract class MessageRouter {
 	protected int msgTtl;
 	/** Queue mode for sending messages */
 	private int sendQueueMode;
+	/** Nature of maliciousness of node */
+	private int malicious;
 
 	/** applications attached to the host */
 	private HashMap<String, Collection<Application>> applications = null;
@@ -141,6 +147,7 @@ public abstract class MessageRouter {
 		else {
 			sendQueueMode = Q_MODE_RANDOM;
 		}
+		setMalicious(HEALTHY);
 	}
 
 	/**
@@ -167,7 +174,8 @@ public abstract class MessageRouter {
 		this.bufferSize = r.bufferSize;
 		this.msgTtl = r.msgTtl;
 		this.sendQueueMode = r.sendQueueMode;
-
+		setMalicious(HEALTHY);
+		
 		this.applications = new HashMap<String, Collection<Application>>();
 		for (Collection<Application> apps : r.applications.values()) {
 			for (Application app : apps) {
@@ -670,5 +678,13 @@ public abstract class MessageRouter {
 		return getClass().getSimpleName() + " of " +
 			this.getHost().toString() + " with " + getNrofMessages()
 			+ " messages";
+	}
+
+	public int getMalicious() {
+		return malicious;
+	}
+
+	public void setMalicious(int malicious) {
+		this.malicious = malicious;
 	}
 }

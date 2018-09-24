@@ -48,7 +48,10 @@ public class Message implements Comparable<Message> {
 
 	/** Application ID of the application that created the message */
 	private String	appID;
-
+	
+	/** Content of the message payload */
+	private String payload;// updated 29/09 22:41
+	
 	static {
 		reset();
 		DTNSim.registerForReset(Message.class.getCanonicalName());
@@ -77,7 +80,8 @@ public class Message implements Comparable<Message> {
 		this.requestMsg = null;
 		this.properties = null;
 		this.appID = null;
-
+		
+		this.payload = "abcdefgh";// updated 21/09 22:41
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
 	}
@@ -246,7 +250,7 @@ public class Message implements Comparable<Message> {
 	 * @return a string representation of the message
 	 */
 	public String toString () {
-		return id;
+		return this.id+":"+this.getPayload();
 	}
 
 	/**
@@ -262,7 +266,7 @@ public class Message implements Comparable<Message> {
 		this.requestMsg  = m.requestMsg;
 		this.initTtl = m.initTtl;
 		this.appID = m.appID;
-
+		this.setPayload(m.getPayload());
 		if (m.properties != null) {
 			Set<String> keys = m.properties.keySet();
 			for (String key : keys) {
@@ -358,6 +362,14 @@ public class Message implements Comparable<Message> {
 	 */
 	public void setAppID(String appID) {
 		this.appID = appID;
+	}
+
+	public String getPayload() {
+		return payload;
+	}
+
+	public void setPayload(String payload) {
+		this.payload = payload;
 	}
 
 }

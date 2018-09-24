@@ -139,13 +139,13 @@ public class ProphetRouterTest extends AbstractRouterTest {
 		disconnect(h5);
 
 		clock.advance(SECONDS_IN_TIME_UNIT * 2);
-		double newPred = ProphetRouter.P_INIT * Math.pow(ProphetRouter.GAMMA,2);
+		double newPred = ProphetRouter.P_INIT * Math.pow(ProphetRouter.DEFAULT_GAMMA,2);
 
 		assertEquals(newPred, r4.getPredFor(h5));
 		assertEquals(newPred, r5.getPredFor(h4));
 
 		clock.advance(SECONDS_IN_TIME_UNIT / 10);
-		newPred = newPred *	Math.pow(ProphetRouter.GAMMA, 1.0/10);
+		newPred = newPred *	Math.pow(ProphetRouter.DEFAULT_GAMMA, 1.0/10);
 
 		assertEquals(newPred, r4.getPredFor(h5));
 		assertEquals(newPred, r5.getPredFor(h4));

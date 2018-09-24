@@ -128,6 +128,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	@Override
 	public int receiveMessage(Message m, DTNHost from) {
+		
 		int recvCheck = checkReceiving(m, from);
 		if (recvCheck != RCV_OK) {
 			return recvCheck;
@@ -176,7 +177,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 */
 	protected int startTransfer(Message m, Connection con) {
 		int retVal;
-
+		String originalMessage = m.getPayload();
 		if (!con.isReadyForTransfer()) {
 			return TRY_LATER_BUSY;
 		}
@@ -185,8 +186,17 @@ public abstract class ActiveRouter extends MessageRouter {
 				con.getOtherNode(getHost()), con, m)) {
 			return MessageRouter.DENIED_POLICY;
 		}
-
+		
+		/** If the current node is Data Altering append 'eror' to payload */
+		if(this.getMalicious() == ALTER_DATA) {
+			m.setPayload(originalMessage+"eror");
+		}
 		retVal = con.startTransfer(getHost(), m);
+		
+		/** Restore original payload if it was altered */
+		if(this.getMalicious() == ALTER_DATA)
+			m.setPayload(originalMessage);
+		
 		if (retVal == RCV_OK) { // started transfer
 			addToSendingConnections(con);
 		}

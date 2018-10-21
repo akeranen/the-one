@@ -48,12 +48,7 @@ The users of the ONE simulator have created many helpful resources:
 
 ### Contact
 
-For questions about the simulator you can subscribe to the ONE user community email list at our [mailman](https://www.netlab.tkk.fi/mailman/listinfo/theone).
-
-This list is for discussion and announcements for the ONE simulator. The users of the ONE can report bugs, share experiences and code, and give hints to each other on this list. New releases of the ONE are also announced on this list.
-
-However, we are planning to move to a new platform for Q&A in the near future. Stay tuned, the change will be announced at the mailing list.
-
+The ONE mailing list has been closed. For questions on use of the ONE we recommend Stack Overflow: https://stackoverflow.com/questions/tagged/dtn
 
 ### License
 

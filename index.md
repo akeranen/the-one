@@ -48,7 +48,7 @@ The users of the ONE simulator have created many helpful resources:
 
 ### Contact
 
-The ONE mailing list has been closed. For questions on use of the ONE we recommend Stack Overflow: https://stackoverflow.com/questions/tagged/dtn
+The ONE mailing list has been closed. For questions on use of the ONE we recommend [Stack Overflow](https://stackoverflow.com/questions/tagged/dtn).
 
 ### License
 

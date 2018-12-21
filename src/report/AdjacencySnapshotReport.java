@@ -14,9 +14,9 @@ import core.Coord;
 import core.DTNHost;
 
 /**
- * Adjency snapshot report. Reports all pairs of nodes with active connections
+ * Adjacency snapshot report. Reports all pairs of nodes with active connections
  * every configurable-amount-of-seconds (see {@link SnapshotReport#GRANULARITY}).
- * Based on SnapshotReport, AdjencyGraphvizReport and LocationSnapshotReport.
+ * Based on SnapshotReport, AdjacencyGraphvizReport and LocationSnapshotReport.
  */
 public class AdjacencySnapshotReport extends SnapshotReport implements ConnectionListener {
 
@@ -26,7 +26,7 @@ public class AdjacencySnapshotReport extends SnapshotReport implements Connectio
 	/**
 	 * Constructor.
 	 */
-	public AdjencySnapshotReport() {
+	public AdjacencySnapshotReport() {
 		// this.allHosts = null;
 		init();
 	}

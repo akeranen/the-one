@@ -7,6 +7,7 @@ package gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -22,7 +23,7 @@ import core.Message;
  * Information panel that shows data of selected messages and nodes.
  */
 public class InfoPanel extends JPanel implements ActionListener{
-	private JComboBox msgChooser;
+	private JComboBox<Object> msgChooser;
 	private JLabel info;
 	private JButton infoButton;
 	private JButton routingInfoButton;
@@ -48,15 +49,19 @@ public class InfoPanel extends JPanel implements ActionListener{
 	 * @param host Host to show the information of
 	 */
 	public void showInfo(DTNHost host) {
-		Vector<Message> messages =
-			new Vector<Message>(host.getMessageCollection());
-		Collections.sort(messages);
+		Vector<Object> messages = new Vector<>(host.getMessageCollection());
+		Collections.sort(messages, new Comparator<Object>() {
+			@Override
+			public int compare(Object o1, Object o2) {
+				return ((Message)o1).compareTo((Message)o2);
+			}
+		});
 		reset();
 		this.selectedHost = host;
 		String text = (host.isMovementActive() ? "" : "INACTIVE ") + host +
 			" at " + host.getLocation();
 
-		msgChooser = new JComboBox(messages);
+		msgChooser = new JComboBox<Object>(messages);
 		msgChooser.insertItemAt(messages.size() + " messages", 0);
 		msgChooser.setSelectedIndex(0);
 		msgChooser.addActionListener(this);

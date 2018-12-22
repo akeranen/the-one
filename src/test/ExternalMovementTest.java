@@ -17,7 +17,7 @@ import core.SimClock;
 public class ExternalMovementTest extends TestCase {
 	/* two nodes moving */
 	private static final String[] INPUT = {
-		"0 100 0 350.5 0 100 0 0",
+		"0 100 0 350 0 100 0 0",
 		"10 1 10 0",
 		"10 2 20 0",
 		"20 1 20 10",

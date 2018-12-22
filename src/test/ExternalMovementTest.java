@@ -64,6 +64,7 @@ public class ExternalMovementTest extends TestCase {
 		  new Coord(200,150), new Coord(230,80.8), new Coord(200,120),
 		  new Coord(150,150.5), new Coord(200, 180), new Coord(150, 250),
 		  new Coord(180, 200)}  // h2
+	};
 	private static final Coord[] STATIONARY_INPUT_COORDS = {
 		new Coord(10,10) , new Coord(20,20)
 	};

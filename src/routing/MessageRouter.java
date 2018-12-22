@@ -81,6 +81,8 @@ public abstract class MessageRouter {
 	public static final int DENIED_POLICY = -5;
 	/** Receive return value for unspecified reason */
 	public static final int DENIED_UNSPECIFIED = -99;
+	/** Maximum Ttl value */
+	public static final int MAX_TTL_VALUE = 35791394;
 
 	private List<MessageListener> mListeners;
 	/** The messages being transferred with msgID_hostName keys */
@@ -120,6 +122,12 @@ public abstract class MessageRouter {
 
 		if (s.contains(MSG_TTL_S)) {
 			this.msgTtl = s.getInt(MSG_TTL_S);
+			
+			if (this.msgTtl > MAX_TTL_VALUE){
+				throw new SettingsError("Invalid value for " + 
+						s.getFullPropertyName(MSG_TTL_S) + 
+								". Max value is limited to "+MAX_TTL_VALUE);
+			}
 		}
 
 		if (s.contains(SEND_QUEUE_MODE_S)) {

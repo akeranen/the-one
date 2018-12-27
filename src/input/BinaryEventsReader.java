@@ -51,7 +51,6 @@ public class BinaryEventsReader implements ExternalEventsReader {
 	 * @return Events in an ArrayList (empty list if didn't read any)
 	 * @see #storeToBinaryFile(String, List)
 	 */
-	@SuppressWarnings("unchecked") // suppress cast warnings
 	public List<ExternalEvent> readEvents(int nrof) {
 		ArrayList<ExternalEvent> events = new ArrayList<ExternalEvent>(nrof);
 

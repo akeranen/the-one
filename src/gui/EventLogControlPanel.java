@@ -21,6 +21,7 @@ import javax.swing.JPanel;
  * Control panel for event log
  *
  */
+@SuppressWarnings("serial")
 public class EventLogControlPanel extends JPanel implements ActionListener {
 	private static final String TITLE_TEXT = "Event log controls";
 	private static final String SHOW_TEXT = "show";

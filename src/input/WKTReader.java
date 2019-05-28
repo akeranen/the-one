@@ -205,6 +205,8 @@ public class WKTReader {
 			y = s.nextDouble();
 		} catch (RuntimeException e) {
 			throw new IOException("Bad coordinate values: '" + coords + "'");
+		} finally {
+			s.close();
 		}
 
 		return new Coord(x,y);
@@ -302,9 +304,11 @@ public class WKTReader {
 			y = Double.parseDouble(tupleScan.next());
 			c = new Coord(x,y);
 
+			tupleScan.close();
 			coords.add(c);
 		}
 
+		lineScan.close();
 		return coords;
 	}
 

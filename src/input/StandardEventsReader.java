@@ -98,12 +98,13 @@ public class StandardEventsReader implements ExternalEventsReader {
 				try {
 					line = this.reader.readLine();
 				} catch (IOException e) {
+					lineScan.close();
 					throw new SimError("Reading from external event file " +
 							"failed.");
 				}
 				continue;
 			}
-
+			
 			double time;
 			String action;
 			String msgId;
@@ -213,6 +214,9 @@ public class StandardEventsReader implements ExternalEventsReader {
 				e.printStackTrace();
 				throw new SimError("Can't parse external event " +
 						(eventsRead+1) + " from '" + line + "'", e);
+			}
+			finally {
+				lineScan.close();
 			}
 		}
 

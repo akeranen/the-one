@@ -67,9 +67,10 @@ public class ExternalMovementReader {
 		}
 
 		String offsets = scanner.nextLine();
+		Scanner lineScan = null;
 
 		try {
-			Scanner lineScan = new Scanner(offsets);
+			lineScan = new Scanner(offsets);
 			minTime = lineScan.nextDouble();
 			maxTime = lineScan.nextDouble();
 			minX = lineScan.nextDouble();
@@ -78,6 +79,11 @@ public class ExternalMovementReader {
 			maxY = lineScan.nextDouble();
 		} catch (Exception e) {
 			throw new SettingsError("Invalid offset line '" + offsets + "'");
+		}
+		finally {
+			if (lineScan != null) {
+				lineScan.close();
+			}
 		}
 
 		lastLine = scanner.nextLine();
@@ -140,6 +146,8 @@ public class ExternalMovementReader {
 				y = lineScan.nextDouble();
 			} catch (Exception e) {
 				throw new SettingsError("Invalid line '" + lastLine + "'");
+			} finally {
+				lineScan.close();
 			}
 
 			if (normalize) {

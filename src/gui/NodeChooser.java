@@ -44,7 +44,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 	private List<DTNHost> allNodes;
 	private List<DTNHost> shownNodes;
 
-	private JComboBox groupChooser;
+	private JComboBox<String> groupChooser;
 	private JPanel nodesPanel;
 	private JPanel chooserPanel;
 	private Vector<NodeFilter> filters;
@@ -160,7 +160,7 @@ public class NodeChooser extends JPanel implements ActionListener {
 				groupNames[i] = (last + "..." + next);
 				last = next + 1;
 			}
-			groupChooser = new JComboBox(groupNames);
+			groupChooser = new JComboBox<String>(groupNames);
 			groupChooser.addActionListener(this);
 			chooserPanel.add(groupChooser);
 		}

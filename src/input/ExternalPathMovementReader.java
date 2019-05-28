@@ -106,11 +106,12 @@ public class ExternalPathMovementReader {
 		long printSize = 5*1024*1024;
 
 		BufferedReader reader = null;
+		ZipFile zf = null;
 		try {
 			if (traceFilePath.endsWith(".zip")) {
 				// Grab the first entry from the zip file
 				// TODO: try to find the correct entry based on file name
-				ZipFile zf = new ZipFile(traceFilePath);
+				zf = new ZipFile(traceFilePath);
 				ZipEntry ze = zf.entries().nextElement();
 				reader = new BufferedReader(
 						new InputStreamReader(zf.getInputStream(ze)));
@@ -122,6 +123,10 @@ public class ExternalPathMovementReader {
 		} catch (FileNotFoundException e1) {
 			throw new SettingsError("Couldn't find external movement input " +
 					"file " + inFile);
+		} finally {
+			if (zf != null) {
+				zf.close();
+			}
 		}
 
 		/*Scanner scanner = null;
@@ -138,8 +143,9 @@ public class ExternalPathMovementReader {
 			throw new SettingsError("No offset line found.");
 		}
 		readSize += offsets.length() + 1;
+		Scanner lineScan = null;
 		try {
-			Scanner lineScan = new Scanner(offsets);
+			lineScan = new Scanner(offsets);
 			this.maxID = lineScan.nextInt();
 			this.minTime = lineScan.nextDouble();
 			this.maxTime = lineScan.nextDouble();
@@ -149,6 +155,10 @@ public class ExternalPathMovementReader {
 			this.maxY = lineScan.nextDouble();
 		} catch (Exception e) {
 			throw new SettingsError("Invalid offset line '" + offsets + "'");
+		} finally {
+			if (lineScan != null) {
+				lineScan.close();
+			}
 		}
 
 		// Initialize path cache
@@ -197,6 +207,7 @@ public class ExternalPathMovementReader {
 				path.add(e);
 			}
 			paths.add(path);
+			traceScan.close();
 
 			line = reader.readLine();
 		}
@@ -204,11 +215,12 @@ public class ExternalPathMovementReader {
 		// Parse activity times
 		inFile = new File(activityFilePath);
 		reader = null;
+		zf = null;
 		try {
 			if (activityFilePath.endsWith(".zip")) {
 				// Grab the first entry from the zip file
 				// TODO: try to find the correct entry based on file name
-				ZipFile zf = new ZipFile(activityFilePath);
+				zf = new ZipFile(activityFilePath);
 				ZipEntry ze = zf.entries().nextElement();
 				reader = new BufferedReader(
 						new InputStreamReader(zf.getInputStream(ze)));
@@ -219,6 +231,10 @@ public class ExternalPathMovementReader {
 		} catch (FileNotFoundException e) {
 			throw new SettingsError("Couldn't find external activity input " +
 					"file " + inFile);
+		} finally {
+			if (zf != null) {
+				zf.close();
+			}
 		}
 
 		// Init activity cache
@@ -243,6 +259,7 @@ public class ExternalPathMovementReader {
 				a.end -= this.minTime;
 			}
 			times.add(a);
+			traceScan.close();
 
 			line = reader.readLine();
 		}

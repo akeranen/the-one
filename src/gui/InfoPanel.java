@@ -48,8 +48,7 @@ public class InfoPanel extends JPanel implements ActionListener{
 	 * @param host Host to show the information of
 	 */
 	public void showInfo(DTNHost host) {
-		Vector<Message> messages =
-			new Vector<Message>(host.getMessageCollection());
+		Vector<Message> messages = new Vector<Message>(host.getMessageCollection());
 		Collections.sort(messages);
 		reset();
 		this.selectedHost = host;

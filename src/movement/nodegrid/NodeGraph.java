@@ -4,9 +4,7 @@ import core.Coord;
 import movement.map.MapNode;
 import movement.map.SimMap;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class NodeGraph extends SimMap {
 
@@ -29,8 +27,9 @@ public class NodeGraph extends SimMap {
         Map<Coord, MapNode> nodes = new HashMap<>();
         MapNode[][] raster = new MapNode[verticalSteps][horizontalSteps];
 
+        // raster polygon into hexagons
         for (int row = 0; row < verticalSteps; row++) {
-            double horizontalOffset = row % 2 == 0 ? 0 : innerRadius;
+            double horizontalOffset = isOffsetRow(row) ? innerRadius : 0;
             double y = anchor.getY() + row * 1.5 * outerRadius;
             for (int column = 0; column < horizontalSteps; column++) {
                 double x = anchor.getX() + horizontalOffset + column * 2 * innerRadius;
@@ -43,31 +42,40 @@ public class NodeGraph extends SimMap {
             }
         }
 
+        // add edges between nodes
         for (int row = 0; row < verticalSteps; row++) {
             for (int column = 0; column < horizontalSteps; column++) {
                 MapNode node = raster[row][column];
                 if (node == null) {
                     continue;
                 }
-                if (row % 2 == 0) {
-                    getNode(raster, row, column - 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row, column + 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row - 1, column - 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row - 1, column).ifPresent(node::addNeighbor);
-                    getNode(raster, row + 1, column - 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row + 1, column).ifPresent(node::addNeighbor);
-                } else {
-                    getNode(raster, row, column - 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row, column + 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row - 1, column).ifPresent(node::addNeighbor);
-                    getNode(raster, row - 1, column + 1).ifPresent(node::addNeighbor);
-                    getNode(raster, row + 1, column).ifPresent(node::addNeighbor);
-                    getNode(raster, row + 1, column + 1).ifPresent(node::addNeighbor);
-                }
+                getAdjacentNodes(raster, row, column).forEach(node::addNeighbor);
             }
         }
 
         return nodes;
+    }
+
+    private static boolean isOffsetRow(int row) {
+        return row % 2 != 0;
+    }
+
+    private static List<MapNode> getAdjacentNodes(MapNode[][] mapNodes, int row, int column) {
+        List<MapNode> adjacentNodes = new ArrayList<>();
+        getNode(mapNodes, row, column - 1).ifPresent(adjacentNodes::add);
+        getNode(mapNodes, row, column + 1).ifPresent(adjacentNodes::add);
+        getNode(mapNodes, row - 1, column).ifPresent(adjacentNodes::add);
+        getNode(mapNodes, row + 1, column).ifPresent(adjacentNodes::add);
+
+        if (isOffsetRow(row)) {
+            getNode(mapNodes, row - 1, column + 1).ifPresent(adjacentNodes::add);
+            getNode(mapNodes, row + 1, column + 1).ifPresent(adjacentNodes::add);
+        } else {
+            getNode(mapNodes, row - 1, column - 1).ifPresent(adjacentNodes::add);
+            getNode(mapNodes, row + 1, column - 1).ifPresent(adjacentNodes::add);
+        }
+
+        return adjacentNodes;
     }
 
     private static Optional<MapNode> getNode(MapNode[][] mapNodes, int row, int column) {

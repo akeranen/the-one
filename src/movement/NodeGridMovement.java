@@ -2,6 +2,7 @@ package movement;
 
 import core.Coord;
 import core.Settings;
+import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.SimMap;
 import movement.nodegrid.NodeGraph;
@@ -16,6 +17,8 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
 
     private MapNode currentNode;
 
+    private DijkstraPathFinder pathFinder;
+
     public NodeGridMovement(Settings settings) {
         super(settings);
         double rasterInterval = settings.getDouble(RASTER_INTERVAL);
@@ -26,11 +29,13 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
                 new Coord(100, 0)
         );
         nodeGraph = new NodeGraph(outerBound, rasterInterval);
+        pathFinder = new DijkstraPathFinder(null);
     }
 
     public NodeGridMovement(NodeGridMovement other) {
         super(other);
         nodeGraph = other.nodeGraph;
+        pathFinder = other.pathFinder;
     }
 
     @Override
@@ -40,15 +45,22 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
 
     @Override
     public Path getPath() {
-        pickRandomNode(currentNode.getNeighbors());
+        MapNode from = currentNode;
+        MapNode to = pickRandomNode(nodeGraph.getNodes());
+        currentNode = to;
+
+        List<MapNode> shortestPath = pathFinder.getShortestPath(from, to);
+
         Path path = new Path();
-        path.addWaypoint(currentNode.getLocation().clone(), 1);
+        if (shortestPath.size() > 0) {
+            path.addWaypoint(shortestPath.get(0).getLocation().clone(), 1);
+        }
         return path;
     }
 
     @Override
     public Coord getInitialLocation() {
-        pickRandomNode(nodeGraph.getNodes());
+        currentNode = pickRandomNode(nodeGraph.getNodes());
         return currentNode.getLocation().clone();
     }
 
@@ -57,8 +69,8 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
         return new NodeGridMovement(this);
     }
 
-    private void pickRandomNode(List<MapNode> graphNodes) {
+    private MapNode pickRandomNode(List<MapNode> graphNodes) {
         int chosenIndex = rng.nextInt(graphNodes.size());
-        currentNode = graphNodes.get(chosenIndex);
+        return graphNodes.get(chosenIndex);
     }
 }

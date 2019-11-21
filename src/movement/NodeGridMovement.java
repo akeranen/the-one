@@ -53,7 +53,7 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
 
         Path path = new Path();
         if (shortestPath.size() > 0) {
-            path.addWaypoint(shortestPath.get(0).getLocation().clone(), 1);
+            path.addWaypoint(shortestPath.get(0).getLocation(), 1);
         }
         return path;
     }

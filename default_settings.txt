@@ -15,5 +15,5 @@ myInterface.type = SimpleBroadcastInterface
 myInterface.transmitRange = 0
 myInterface.transmitSpeed = 0
 Group1.movementModel = NodeGridMovement
-Group1.ngmRasterInterval = 1.0
+Group1.ngmRasterInterval = 1
 Group1.router = PassiveRouter

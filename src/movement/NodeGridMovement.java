@@ -2,39 +2,45 @@ package movement;
 
 import core.Coord;
 import core.Settings;
-import movement.nodegrid.GraphNode;
+import movement.map.MapNode;
+import movement.map.SimMap;
+import movement.nodegrid.NodeGraph;
 import movement.nodegrid.Polygon;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-public class NodeGridMovement extends MovementModel {
+public class NodeGridMovement extends MovementModel implements RenderableMovement {
     private static final String RASTER_INTERVAL = "ngmRasterInterval";
 
-    private Set<GraphNode> graphNodes;
+    private NodeGraph nodeGraph;
 
-    private GraphNode currentNode;
+    private MapNode currentNode;
 
     public NodeGridMovement(Settings settings) {
         super(settings);
         double rasterInterval = settings.getDouble(RASTER_INTERVAL);
         Polygon outerBound = new Polygon(
                 new Coord(0, 0),
-                new Coord(100, 0),
-                new Coord(100, 100),
-                new Coord(0, 100)
+                new Coord(50, 50),
+                new Coord(200, 100),
+                new Coord(100, 0)
         );
-        graphNodes = rasterPolygon(outerBound, rasterInterval);
+        nodeGraph = new NodeGraph(outerBound, rasterInterval);
     }
 
     public NodeGridMovement(NodeGridMovement other) {
         super(other);
-        graphNodes = other.graphNodes;
+        nodeGraph = other.nodeGraph;
+    }
+
+    @Override
+    public SimMap getMap() {
+        return nodeGraph;
     }
 
     @Override
     public Path getPath() {
-        pickRandomNode(currentNode.getAdjacentNodes());
+        pickRandomNode(currentNode.getNeighbors());
         Path path = new Path();
         path.addWaypoint(currentNode.getLocation().clone(), 1);
         return path;
@@ -42,7 +48,7 @@ public class NodeGridMovement extends MovementModel {
 
     @Override
     public Coord getInitialLocation() {
-        pickRandomNode(graphNodes);
+        pickRandomNode(nodeGraph.getNodes());
         return currentNode.getLocation().clone();
     }
 
@@ -51,32 +57,8 @@ public class NodeGridMovement extends MovementModel {
         return new NodeGridMovement(this);
     }
 
-    private void pickRandomNode(Set<GraphNode> graphNodes) {
+    private void pickRandomNode(List<MapNode> graphNodes) {
         int chosenIndex = rng.nextInt(graphNodes.size());
-        int index = 0;
-        for (GraphNode node: graphNodes) {
-            if (index == chosenIndex) {
-                currentNode = node;
-                return;
-            }
-            index++;
-        }
-    }
-
-    /**
-     * TODO: raster polygon into hexagonal GraphNodes
-     * @param polygon the polygon to raster
-     * @param rasterInterval the distance between the centers of two adjacent hexagons
-     * @return a set of connected GraphNodes
-     */
-    private static Set<GraphNode> rasterPolygon(Polygon polygon, double rasterInterval) {
-        Set<GraphNode> graphNodes = new HashSet<>();
-        GraphNode node1 = new GraphNode(new Coord(0, 0));
-        GraphNode node2 = new GraphNode(new Coord(100, 100));
-        node1.addAdjacentNode(node2);
-        node2.addAdjacentNode(node1);
-        graphNodes.add(node1);
-        graphNodes.add(node2);
-        return graphNodes;
+        currentNode = graphNodes.get(chosenIndex);
     }
 }

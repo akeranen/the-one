@@ -42,10 +42,11 @@ public class Polygon {
     }
 
     public Edge[] getEdges() {
-        Edge[] edges = new Edge[this.vertices.length - 1];
-        for (int i = 0; i < this.vertices.length - 1; i++) {
-            edges[i] = new Edge(this.vertices[i], this.vertices[i + 1]);
+        Edge[] edges = new Edge[vertices.length];
+        for (int i = 0; i < vertices.length - 1; i++) {
+            edges[i] = new Edge(vertices[i], vertices[i + 1]);
         }
+        edges[edges.length - 1] = new Edge(vertices[0], vertices[vertices.length - 1]);
         return edges;
     }
 

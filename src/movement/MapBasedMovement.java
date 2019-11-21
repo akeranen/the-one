@@ -28,7 +28,7 @@ import core.SimError;
  * Map based movement model which gives out Paths that use the
  * roads of a SimMap.
  */
-public class MapBasedMovement extends MovementModel implements SwitchableMovement {
+public class MapBasedMovement extends MovementModel implements SwitchableMovement, RenderableMovement {
 	/** sim map for the model */
 	private SimMap map = null;
 	/** node where the last path ended or node next to initial placement */
@@ -253,6 +253,7 @@ public class MapBasedMovement extends MovementModel implements SwitchableMovemen
 	 * Returns the SimMap this movement model uses
 	 * @return The SimMap this movement model uses
 	 */
+	@Override
 	public SimMap getMap() {
 		return map;
 	}

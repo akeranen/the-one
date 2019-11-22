@@ -5,7 +5,7 @@ import core.Settings;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.SimMap;
-import movement.nodegrid.NodeGrid;
+import movement.nodegrid.NodeGridBuilder;
 import movement.nodegrid.Polygon;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class NodeGridMovement extends MovementModel implements RenderableMovement {
     private static final String RASTER_INTERVAL = "ngmRasterInterval";
 
-    private NodeGrid nodeGrid;
+    private SimMap nodeGrid;
 
     private MapNode currentNode;
 
@@ -28,7 +28,7 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
                 new Coord(200, 100),
                 new Coord(100, 0)
         );
-        nodeGrid = new NodeGrid.Builder(rasterInterval).add(outerBound).build();
+        nodeGrid = new NodeGridBuilder(rasterInterval).add(outerBound).build();
         pathFinder = new DijkstraPathFinder(null);
     }
 

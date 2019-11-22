@@ -48,7 +48,7 @@ public class NodeGraph extends SimMap {
         double innerRadius = rasterInterval / 2;
         double outerRadius = innerRadius / Math.cos(Math.toRadians(30));
 
-        Polygon.BoundingBox boundingBox = outerBound.getBoundingBox();
+        BoundingBox boundingBox = outerBound.getBoundingBox();
         double width = boundingBox.getBottomRight().getX() - boundingBox.getTopLeft().getX();
         double height = boundingBox.getBottomRight().getY() - boundingBox.getTopLeft().getY();
 

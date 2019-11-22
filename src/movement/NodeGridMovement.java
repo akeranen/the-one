@@ -5,7 +5,7 @@ import core.Settings;
 import movement.map.DijkstraPathFinder;
 import movement.map.MapNode;
 import movement.map.SimMap;
-import movement.nodegrid.NodeGraph;
+import movement.nodegrid.NodeGrid;
 import movement.nodegrid.Polygon;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class NodeGridMovement extends MovementModel implements RenderableMovement {
     private static final String RASTER_INTERVAL = "ngmRasterInterval";
 
-    private NodeGraph nodeGraph;
+    private NodeGrid nodeGrid;
 
     private MapNode currentNode;
 
@@ -28,25 +28,25 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
                 new Coord(200, 100),
                 new Coord(100, 0)
         );
-        nodeGraph = new NodeGraph(outerBound, rasterInterval);
+        nodeGrid = new NodeGrid.Builder(rasterInterval).add(outerBound).build();
         pathFinder = new DijkstraPathFinder(null);
     }
 
     public NodeGridMovement(NodeGridMovement other) {
         super(other);
-        nodeGraph = other.nodeGraph;
+        nodeGrid = other.nodeGrid;
         pathFinder = other.pathFinder;
     }
 
     @Override
     public SimMap getMap() {
-        return nodeGraph;
+        return nodeGrid;
     }
 
     @Override
     public Path getPath() {
         MapNode from = currentNode;
-        MapNode to = pickRandomNode(nodeGraph.getNodes());
+        MapNode to = pickRandomNode(nodeGrid.getNodes());
         currentNode = to;
 
         List<MapNode> shortestPath = pathFinder.getShortestPath(from, to);
@@ -60,7 +60,7 @@ public class NodeGridMovement extends MovementModel implements RenderableMovemen
 
     @Override
     public Coord getInitialLocation() {
-        currentNode = pickRandomNode(nodeGraph.getNodes());
+        currentNode = pickRandomNode(nodeGrid.getNodes());
         return currentNode.getLocation().clone();
     }
 

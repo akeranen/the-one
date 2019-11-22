@@ -9,7 +9,7 @@ public class BoundingBox {
     private Coord topLeft;
     private Coord bottomRight;
 
-    public BoundingBox(Coord topLeft, Coord bottomRight) {
+    private BoundingBox(Coord topLeft, Coord bottomRight) {
         this.topLeft = topLeft;
         this.bottomRight = bottomRight;
     }
@@ -28,6 +28,14 @@ public class BoundingBox {
 
     public void setBottomRight(Coord bottomRight) {
         this.bottomRight = bottomRight;
+    }
+
+    public double getWidth() {
+        return getBottomRight().getX() - getTopLeft().getX();
+    }
+
+    public double getHeight() {
+        return getBottomRight().getY() - getTopLeft().getY();
     }
 
     public static BoundingBox fromPoints(Coord... points) {

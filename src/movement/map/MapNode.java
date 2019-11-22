@@ -5,6 +5,7 @@
 package movement.map;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import core.Coord;
@@ -143,4 +144,17 @@ public class MapNode implements Comparable<MapNode> {
 		return this.getLocation().compareTo((o).getLocation());
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		MapNode mapNode = (MapNode) o;
+		return type == mapNode.type &&
+				getLocation().equals(mapNode.getLocation());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getLocation(), type);
+	}
 }

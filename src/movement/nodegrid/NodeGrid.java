@@ -6,41 +6,68 @@ import movement.map.SimMap;
 
 import java.util.*;
 
-public class NodeGraph extends SimMap {
+public class NodeGrid extends SimMap {
+
+    private NodeGrid(Map<Coord, MapNode> nodes) {
+        super(nodes);
+    }
 
     @Deprecated
-    public NodeGraph(Polygon outerBound, double rasterInterval) {
+    private NodeGrid(Polygon outerBound, double rasterInterval) {
         super(rasterPolygon(outerBound, rasterInterval));
     }
 
-    public NodeGraph(double rasterInterval) {
-        // TODO
-        super(new HashMap<>());
-    }
+    public static class Builder {
+        private final double rasterInterval;
 
-    /**
-     * TODO
-     * Raster polygon into hexagonal shaped nodes and them to the graph
-     * @param polygon The polygon to add
-     */
-    public void addPolygon(Polygon polygon) {
-    }
+        private List<Polygon> includedPolygons = new ArrayList<>();
 
-    /**
-     * TODO
-     * Remove nodes contained within the polygon form the graph
-     * @param polygon The polygon to subtract
-     */
-    public void subtractPolygon(Polygon polygon) {
-    }
+        private List<Polygon> excludedPolygons = new ArrayList<>();
 
-    /**
-     * TODO
-     * Attach nodes by their n closest nodes to the graph
-     * @param numberOfAttachmentPoints The number of attachment points
-     * @param nodes The nodes to attach to the graph
-     */
-    public void attachNodeToClosestNodes(int numberOfAttachmentPoints, MapNode... nodes) {
+        private Map<MapNode, Integer> numberOfAttachmentsByPointOfInterest = new HashMap<>();
+
+        public Builder(double rasterInterval) {
+            this.rasterInterval = rasterInterval;
+        }
+
+        public Builder add(Polygon... polygons) {
+            includedPolygons.addAll(Arrays.asList(polygons));
+            return this;
+        }
+
+        public Builder subtract(Polygon... polygons) {
+            excludedPolygons.addAll(Arrays.asList(polygons));
+            return this;
+        }
+
+        public Builder attachNodeByClosestNodes(MapNode node, int numberOfClosestNodes) {
+            numberOfAttachmentsByPointOfInterest.put(node, numberOfClosestNodes);
+            return this;
+        }
+
+        public NodeGrid build() {
+            // TODO
+            if (includedPolygons.size() == 0) {
+                return new NodeGrid(new HashMap<>());
+            }
+            return new NodeGrid(includedPolygons.get(0), rasterInterval);
+        }
+
+        private BoundingBox getRasterBoundingBox() {
+            BoundingBox[] boundingBoxes = includedPolygons.stream()
+                    .map(Polygon::getBoundingBox)
+                    .toArray(BoundingBox[]::new);
+
+            return BoundingBox.merge(boundingBoxes);
+        }
+
+        private double getInnerCircleRadius() {
+            return rasterInterval / 2;
+        }
+
+        private double getOuterCircleRadius() {
+            return getInnerCircleRadius() / Math.cos(Math.toRadians(30));
+        }
     }
 
     private static Map<Coord, MapNode> rasterPolygon(Polygon outerBound, double rasterInterval) {
@@ -49,8 +76,8 @@ public class NodeGraph extends SimMap {
         double outerRadius = innerRadius / Math.cos(Math.toRadians(30));
 
         BoundingBox boundingBox = outerBound.getBoundingBox();
-        double width = boundingBox.getBottomRight().getX() - boundingBox.getTopLeft().getX();
-        double height = boundingBox.getBottomRight().getY() - boundingBox.getTopLeft().getY();
+        double width = boundingBox.getWidth();
+        double height = boundingBox.getHeight();
 
         // determine raster size
         int horizontalSteps = (int) Math.floor(width / (innerRadius * 2));

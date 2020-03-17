@@ -33,9 +33,15 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * If set to true and final recipient of a message rejects it because it
 	 * already has it, the message is deleted from buffer. Default=false. */
 	public static final String DELETE_DELIVERED_S = "deleteDelivered";
+	/** Concurrent transmissions -setting id ({@value}). Boolean valued.
+	 * If set to true, multiple outgoing connections can be used concurrently.
+	 * Default=false. */
+	public static final String CONCURRENT_TRANS_S = "concurrentTransmissions";
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
 	protected boolean deleteDelivered;
+
+	protected boolean concurrentTransmissions;
 
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
@@ -60,6 +66,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		this.policy = new MessageTransferAcceptPolicy(s);
 
 		this.deleteDelivered = s.getBoolean(DELETE_DELIVERED_S, false);
+		this.concurrentTransmissions = s.getBoolean(CONCURRENT_TRANS_S, false);
 
 		if (s.contains(EnergyModel.INIT_ENERGY_S)) {
 			this.energy = new EnergyModel(s);
@@ -75,6 +82,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	protected ActiveRouter(ActiveRouter r) {
 		super(r);
 		this.deleteDelivered = r.deleteDelivered;
+		this.concurrentTransmissions = r.concurrentTransmissions;
 		this.policy = r.policy;
 		this.energy = (r.energy != null ? r.energy.replicate() : null);
 	}
@@ -205,6 +213,9 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return True if router can start transfer, false if not
 	 */
 	protected boolean canStartTransfer() {
+		if (this.isTransferring() && !concurrentTransmissions) {
+			return false;
+		}
 		if (this.getNrofMessages() == 0) {
 			return false;
 		}
@@ -407,7 +418,7 @@ public abstract class ActiveRouter extends MessageRouter {
 			if (retVal == RCV_OK) {
 				return m;	// accepted a message, don't try others
 			}
-			else if (retVal > 0) {
+			else if (retVal > 0 && !concurrentTransmissions) {
 				return null; // should try later -> don't bother trying others
 			}
 		}

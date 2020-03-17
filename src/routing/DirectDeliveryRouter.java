@@ -22,7 +22,7 @@ public class DirectDeliveryRouter extends ActiveRouter {
 	@Override
 	public void update() {
 		super.update();
-		if (isTransferring() || !canStartTransfer()) {
+		if (!canStartTransfer()) {
 			return; // can't start a new transfer
 		}
 

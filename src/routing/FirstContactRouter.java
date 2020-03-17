@@ -49,7 +49,7 @@ public class FirstContactRouter extends ActiveRouter {
 	@Override
 	public void update() {
 		super.update();
-		if (isTransferring() || !canStartTransfer()) {
+		if (!canStartTransfer()) {
 			return;
 		}
 

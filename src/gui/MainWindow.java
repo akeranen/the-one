@@ -22,6 +22,7 @@ import core.World;
  * Main window for the program. Takes care of layouting the main components
  * in the window.
  */
+@SuppressWarnings("serial")
 public class MainWindow extends JFrame {
 	/** The namespace for general GUI settings */
 	public static final String GUI_NS = "GUI";

@@ -10,7 +10,9 @@ import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.event.*;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -35,6 +37,7 @@ import core.SimClock;
  * GUI's control panel
  *
  */
+@SuppressWarnings("serial")
 public class GUIControls extends JPanel implements ActionListener, ChangeListener {
 	private static final String PATH_GRAPHICS = "buttonGraphics/";
 	private static final String ICON_PAUSE = "Pause16.gif";

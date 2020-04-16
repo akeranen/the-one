@@ -29,6 +29,7 @@ import core.SimClock;
 /**
  * Event log panel where log entries are displayed.
  */
+@SuppressWarnings("serial")
 public class EventLogPanel extends JPanel
 	implements ConnectionListener, MessageListener, ActionListener {
 

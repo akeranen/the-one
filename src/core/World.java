@@ -31,9 +31,20 @@ public class World {
 	 * ({@value}) */
 	public static final boolean DEF_RANDOMIZE_UPDATES = true;
 
+	
+	/**
+	 * Real-time simulation enabled -setting id ({@value}). 
+	 * If set to true and simulation time moves faster than real time,
+	 * the simulation will pause after each update round to wait until real
+	 * time catches up. Default = false.
+	 */
+	public static final String REALTIME_SIM_S = "realtime";
+	/** should the update order of nodes be randomized -setting's default value
+	 * ({@value}) */
+	
 	/**
 	 * Should the connectivity simulation be stopped after one round
-	 * -setting id ({@value}). Boolean (true/false) variable.
+	 * -setting id ({@value}). Boolean (true/false) variable. Default = false.
 	 */
 	public static final String SIMULATE_CON_ONCE_S = "simulateConnectionsOnce";
 
@@ -56,6 +67,9 @@ public class World {
 	/** Queue of scheduled update requests */
 	private ScheduledUpdatesQueue scheduledUpdates;
 	private boolean simulateConOnce;
+	
+	private boolean realtimeSimulation;
+	private long simStartRealtime;
 
 	/**
 	 * Constructor.
@@ -75,6 +89,8 @@ public class World {
 		this.scheduledUpdates = new ScheduledUpdatesQueue();
 		this.isCancelled = false;
 
+		this.simStartRealtime = -1;
+		
 		setNextEventQueue();
 		initSettings();
 	}
@@ -84,12 +100,12 @@ public class World {
 	 */
 	private void initSettings() {
 		Settings s = new Settings(OPTIMIZATION_SETTINGS_NS);
-		boolean randomizeUpdates = DEF_RANDOMIZE_UPDATES;
+		boolean randomizeUpdates = s.getBoolean(RANDOMIZE_UPDATES_S, 
+				DEF_RANDOMIZE_UPDATES);
 
-		if (s.contains(RANDOMIZE_UPDATES_S)) {
-			randomizeUpdates = s.getBoolean(RANDOMIZE_UPDATES_S);
-		}
-		simulateConOnce = s.getBoolean(SIMULATE_CON_ONCE_S, false);
+		this.simulateConOnce = s.getBoolean(SIMULATE_CON_ONCE_S, false);
+		
+		this.realtimeSimulation = s.getBoolean(REALTIME_SIM_S ,false);
 
 		if(randomizeUpdates) {
 			// creates the update order array that can be shuffled
@@ -149,7 +165,24 @@ public class World {
 	 */
 	public void update () {
 		double runUntil = SimClock.getTime() + this.updateInterval;
+		
+		if (realtimeSimulation) {
+			if (this.simStartRealtime < 0) {
+				/* first update round */
+				this.simStartRealtime = System.currentTimeMillis();
+			}
 
+			long sleepTime = (long) (SimClock.getTime() * 1000 
+					- (System.currentTimeMillis() - this.simStartRealtime));
+			if (sleepTime > 0) {
+				try {
+					Thread.sleep(sleepTime);
+				} catch (InterruptedException e) {
+					throw new SimError("Sleep interrupted:" + e);
+				}
+			}
+		}
+		
 		setNextEventQueue();
 
 		/* process all events that are due until next interval update */
@@ -170,6 +203,7 @@ public class World {
 		for (UpdateListener ul : this.updateListeners) {
 			ul.updated(this.hosts);
 		}
+		
 	}
 
 	/**

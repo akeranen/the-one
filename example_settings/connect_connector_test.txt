@@ -1,0 +1,8 @@
+Report.nrofReports = 1
+Report.report1 = ConnectivityReportConnector
+ConnectivityReportConnector.address = localhost
+ConnectivityReportConnector.port = 50042
+# How many digits in connection speed 
+ConnectivityReportConnector.precision = 0
+
+Optimization.realtime = true

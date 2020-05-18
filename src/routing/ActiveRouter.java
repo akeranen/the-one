@@ -101,7 +101,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	@Override
 	public boolean requestDeliverableMessages(Connection con) {
-		if (isTransferring()) {
+		if (con.isTransferring()) {
 			return false;
 		}
 
@@ -228,11 +228,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * does not fit into buffer
 	 */
 	protected int checkReceiving(Message m, DTNHost from) {
-		if (isTransferring()) {
-			return TRY_LATER_BUSY; // only one connection at a time
-		}
-
-		if ( hasMessage(m.getId()) || isDeliveredMessage(m) ||
+		if (hasMessage(m.getId()) || isDeliveredMessage(m) ||
 				super.isBlacklistedMessage(m.getId())) {
 			return DENIED_OLD; // already seen this message -> reject it
 		}
@@ -485,8 +481,11 @@ public abstract class ActiveRouter extends MessageRouter {
 
 		// didn't start transfer to any node -> ask messages from connected
 		for (Connection con : connections) {
-			if (con.getOtherNode(getHost()).requestDeliverableMessages(con)) {
-				return con;
+			// We may only request messages via outgoing connections if they are bidirectional
+			if (con.getFromInterface().isBidirectionalConnections()) {
+				if (con.getOtherNode(getHost()).requestDeliverableMessages(con)) {
+					return con;
+				}
 			}
 		}
 

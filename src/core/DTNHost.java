@@ -71,7 +71,7 @@ public class DTNHost implements Comparable<DTNHost> {
 		//this.name = groupId + ((NetworkInterface)net.get(1)).getAddress();
 
 		this.msgListeners = msgLs;
-		this.movListeners = movLs;
+		this.movListeners = movLs == null ? new ArrayList<MovementListener>() : movLs;
 
 		// create instances by replicating the prototypes
 		this.movement = mmProto.replicate();
@@ -537,6 +537,17 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public int compareTo(DTNHost h) {
 		return this.getAddress() - h.getAddress();
+	}
+	
+	/**
+	 * Registers a new movement listener. This method can be used by
+	 * routers that need to keep track of nodes movement.
+	 * @param listener The listener to add.
+	 */
+	public void addMovementListener(MovementListener listener) {
+		if (!this.movListeners.contains(listener)) {
+			this.movListeners.add(listener);
+		}
 	}
 
 }

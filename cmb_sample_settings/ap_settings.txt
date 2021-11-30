@@ -1,0 +1,36 @@
+# Settings for access point connectivity
+
+Scenario.name = AP
+Scenario.endTime = 6000
+Scenario.updateInterval = 0.1
+Scenario.simulateConnections = true
+MovementModel.worldSize = 1000,1000
+Events.nrof = 0
+
+# Communication Interface
+myInterface.type = HubInterface
+myInterface.hubGroups = AccessPoint
+myInterface.transmitRange = 50
+myInterface.transmitSpeed = 1000
+
+# Groups
+Scenario.nrofHostGroups = 2
+
+Group1.groupID = AccessPoint
+Group1.nrofHosts = 1
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+Group1.movementModel = StationaryMovement
+Group1.nodeLocation = 500,500
+Group1.router = PassiveRouter
+
+Group2.groupID = Stations
+Group2.nrofHosts = 20
+Group2.nrofInterfaces = 1
+Group2.interface1 = myInterface
+Group2.movementModel = RandomWaypoint
+Group2.router = PassiveRouter
+
+# Reports
+Report.nrofReports = 0
+Report.reportDir = reports

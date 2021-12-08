@@ -49,6 +49,7 @@ public class PlayField extends JPanel {
 	private double underlayImgDx;
 	private double underlayImgDy;
 	private float underlayImgOpacity;
+	private boolean underlayImgOffsetRelMap;
 
 	/**
 	 * Creates a playfield
@@ -95,7 +96,7 @@ public class PlayField extends JPanel {
 	 * @param opacity Opacity of the background image
 	 */
 	public void setUnderlayImage(BufferedImage image,
-			double dx, double dy, double scale, double rotation, float opacity) {
+			double dx, double dy, double scale, double rotation, float opacity, boolean offsetRelMap) {
 		if (image == null) {
 			this.underlayImage = null;
 			this.imageTransform = null;
@@ -104,18 +105,41 @@ public class PlayField extends JPanel {
 			return;
 		}
 		this.underlayImage = image;
-        this.imageTransform = AffineTransform.getRotateInstance(rotation);
-        this.imageTransform.scale(scale, scale);
-        this.curTransform = new AffineTransform(imageTransform);
-        this.underlayImgDx = dx;
-        this.underlayImgDy = dy;
 		this.underlayImgOpacity = opacity;
 
-		curTransform.scale(PlayFieldGraphic.getScale(),
-				PlayFieldGraphic.getScale());
-		curTransform.translate(this.underlayImgDx, this.underlayImgDy);
+		this.imageTransform = AffineTransform.getRotateInstance(rotation);
+		this.imageTransform.scale(scale, scale);
+
+		this.underlayImgOffsetRelMap = offsetRelMap;
+		this.underlayImgDx = dx;
+		this.underlayImgDy = dy;
+
+		updateUnderlyingImageTransform();
 		updateField();
 
+	}
+
+	private void updateUnderlyingImageTransform(){
+		if (this.imageTransform != null) {
+			double dx = this.underlayImgDx;
+			double dy = this.underlayImgDy;
+			double scale = PlayFieldGraphic.getScale();
+
+			if(this.underlayImgOffsetRelMap && mapGraphic != null){
+				Coord c = mapGraphic.getMap().getOffset();
+				dx += c.getX();
+				dy = mapGraphic.getMap().isMirrored() ? -dy+c.getY() : dy+c.getY();
+
+				this.curTransform = AffineTransform.getScaleInstance(scale, scale);
+				curTransform.translate(dx, dy);
+				curTransform.concatenate(imageTransform);
+			}
+			else {
+				this.curTransform = new AffineTransform(imageTransform);
+				curTransform.scale(scale, scale);
+				curTransform.translate(dx, dy);
+			}
+		}
 	}
 
 	/**
@@ -125,11 +149,7 @@ public class PlayField extends JPanel {
 	public void setScale(double scale) {
 		PlayFieldGraphic.setScale(scale);
 		this.updateFieldSize();
-		if (this.imageTransform != null) {
-			this.curTransform = new AffineTransform(imageTransform);
-			curTransform.scale(scale, scale);
-			curTransform.translate(this.underlayImgDx, this.underlayImgDy);
-		}
+		this.updateUnderlyingImageTransform();
 	}
 
 	/**
@@ -139,6 +159,7 @@ public class PlayField extends JPanel {
 	public void setMap(SimMap simMap) {
 		this.mapGraphic = new MapGraphic(simMap);
 		this.showMapGraphic = true;
+		this.updateUnderlyingImageTransform();
 	}
 
 	/**
@@ -195,7 +216,7 @@ public class PlayField extends JPanel {
 		if (underlayImage != null) {
 			Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, this.underlayImgOpacity);
 			g2.setComposite(c);
-			g2.drawImage(underlayImage,curTransform, null);
+			g2.drawImage(underlayImage, curTransform, null);
 			g2.setComposite(AlphaComposite.SrcOver);
 		}
 

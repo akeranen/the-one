@@ -50,4 +50,11 @@ public class MapGraphic extends PlayFieldGraphic {
 		}
 	}
 
+	/**
+	 * @return The simMap of the graphic
+	 */
+	public SimMap getMap(){
+		return simMap;
+	}
+
 }

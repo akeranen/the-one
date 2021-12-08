@@ -186,6 +186,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		field.setAutoClearOverlay(autoClearOverlay.isSelected());
 		field.setFocusOnClick(focusOnClick.isSelected());
 		field.setZoomWheelInvert(zoomWheelInvert.isSelected());
+		field.updateField();
 	}
 
 	private String getFilterString(String message) {
@@ -235,13 +236,15 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 			int[] offsets;
 			double scale, rotate;
 			float opacity;
+			boolean offsetRelMap;
 			BufferedImage image;
 			try {
 				Settings settings = new Settings(UNDERLAY_NS);
 				imgFile = settings.getSetting("fileName");
 				offsets = settings.getCsvInts("offset", 2);
-				scale = settings.getDouble("scale");
-				rotate = settings.getDouble("rotate");
+				offsetRelMap = settings.getBoolean("offsetRelativeToMap", false);
+				scale = settings.getDouble("scale", 1.0);
+				rotate = settings.getDouble("rotate", 0);
 				opacity = (float) (settings.getDouble("opacity", 1.0));
 	            image = ImageIO.read(new File(imgFile));
 	        } catch (IOException ex) {
@@ -256,11 +259,11 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		return;
 	        }
 			field.setUnderlayImage(image, offsets[0], offsets[1],
-					scale, rotate, opacity);
+					scale, rotate, opacity, offsetRelMap);
 		}
 		else {
 			// disable the image
-			field.setUnderlayImage(null, 0, 0, 0, 0, 0);
+			field.setUnderlayImage(null, 0, 0, 0, 0, 0, false);
 		}
 	}
 

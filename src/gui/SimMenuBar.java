@@ -57,6 +57,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	private JCheckBoxMenuItem enableMapGraphic;
 	private JCheckBoxMenuItem autoClearOverlay;
 	private JCheckBoxMenuItem focusOnClick;
+	private JCheckBoxMenuItem zoomWheelInvert;
 
 	private JMenuItem clearOverlay;
 	private JMenuItem addNodeMessageFilter;
@@ -76,6 +77,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	public static final String SHOW_BUFFER_S = "showMessageBuffer";
 	/** Show node connections -setting id ({@value})*/
 	public static final String FOCUS_ON_CLICK_S = "focusOnClick";
+	/** Invert Mouse Scrool Wheel Zoom -setting id ({@value})*/
+	public static final String ZOOM_WHEEL_INVERT_S = "invertZoomWheel";
 	/** The namespace where underlay image -related settings are found */
 	public static final String UNDERLAY_NS = "GUI.UnderlayImage";
 
@@ -110,6 +113,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				"Show message buffer", true, SHOW_BUFFER_S);
 		focusOnClick = createCheckItem(pfMenu,
 				"Focus to closest node on mouse click", false,FOCUS_ON_CLICK_S);
+		zoomWheelInvert = createCheckItem(pfMenu,
+				"Invert mouse wheel zoom direction", false, ZOOM_WHEEL_INVERT_S);
 
 		enableMapGraphic = createCheckItem(pfMenu,"Show map graphic",
 				true, null);
@@ -176,6 +181,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		field.setShowMapGraphic(enableMapGraphic.isSelected());
 		field.setAutoClearOverlay(autoClearOverlay.isSelected());
 		field.setFocusOnClick(focusOnClick.isSelected());
+		field.setZoomWheelInvert(zoomWheelInvert.isSelected());
 	}
 
 	private String getFilterString(String message) {
@@ -194,7 +200,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				source == this.enableMapGraphic ||
 				source == this.autoClearOverlay ||
 				source == this.showBuffer ||
-				source == this.focusOnClick) {
+				source == this.focusOnClick ||
+				source == this.zoomWheelInvert) {
 			updatePlayfieldSettings();
 		}
 

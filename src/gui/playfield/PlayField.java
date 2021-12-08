@@ -41,6 +41,7 @@ public class PlayField extends JPanel {
 	private boolean showMapGraphic;
 	private ScaleReferenceGraphic refGraphic;
 	private boolean focusOnClick;
+	private boolean zoomWheelInvert;
 
 	private BufferedImage underlayImage;
 	private AffineTransform imageTransform;
@@ -161,6 +162,13 @@ public class PlayField extends JPanel {
 	 */
 	public void setFocusOnClick(boolean focus) {
 		this.focusOnClick = focus;
+	}
+
+	public void setZoomWheelInvert(boolean zoomWheelInvert){
+		this.zoomWheelInvert = zoomWheelInvert;
+	}
+	public boolean getZoomWheelInvert(){
+		return zoomWheelInvert;
 	}
 
 	/**

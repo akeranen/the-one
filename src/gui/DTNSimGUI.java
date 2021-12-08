@@ -336,7 +336,7 @@ public class DTNSimGUI extends DTNSimUI {
 			int scrollBeforeX = sp.getHorizontalScrollBar().getValue();
 			int scrollBeforeY = sp.getVerticalScrollBar().getValue();
 
-			guiControls.changeZoom(-e.getWheelRotation());
+			guiControls.changeZoom((field.getZoomWheelInvert() ? -1 : 1) * e.getWheelRotation());
 			updateView();
 
 			Coord gLoc = field.getGraphicsPosition(worldMousePos);

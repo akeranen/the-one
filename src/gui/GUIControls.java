@@ -8,11 +8,8 @@ import gui.playfield.PlayField;
 
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import javax.swing.event.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -35,7 +32,7 @@ import core.SimClock;
  * GUI's control panel
  *
  */
-public class GUIControls extends JPanel implements ActionListener, ChangeListener {
+public class GUIControls extends JPanel implements ActionListener, ChangeListener, MouseWheelListener {
 	private static final String PATH_GRAPHICS = "buttonGraphics/";
 	private static final String ICON_PAUSE = "Pause16.gif";
 	private static final String ICON_PLAY = "Play16.gif";
@@ -163,7 +160,9 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 		this.add(this.screenShotButton);
 
 		guiUpdateChooser.addActionListener(this);
+		guiUpdateChooser.addMouseWheelListener(this);
 		zoomSelector.addChangeListener(this);
+		zoomSelector.addMouseWheelListener(this);
 		this.screenShotButton.addActionListener(this);
 	}
 
@@ -394,4 +393,14 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 		}
 	}
 
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		if(e.getSource() == guiUpdateChooser){
+			guiUpdateChooser.setSelectedIndex(Math.min(guiUpdateChooser.getItemCount()-1, Math.max(0,
+							guiUpdateChooser.getSelectedIndex() + (int) Math.signum(e.getWheelRotation()))));
+		}
+		else if(e.getSource() == zoomSelector){
+			changeZoom((pf.getZoomWheelInvert() ? -1 : 1) * e.getWheelRotation());
+		}
+	}
 }

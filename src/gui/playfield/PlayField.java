@@ -48,6 +48,7 @@ public class PlayField extends JPanel {
 	private AffineTransform curTransform;
 	private double underlayImgDx;
 	private double underlayImgDy;
+	private float underlayImgOpacity;
 
 	/**
 	 * Creates a playfield
@@ -91,13 +92,15 @@ public class PlayField extends JPanel {
 	 * @param dy Y offset of the image
 	 * @param scale Image scaling factor
 	 * @param rotation Rotatation angle of the image (radians)
+	 * @param opacity Opacity of the background image
 	 */
 	public void setUnderlayImage(BufferedImage image,
-			double dx, double dy, double scale, double rotation) {
+			double dx, double dy, double scale, double rotation, float opacity) {
 		if (image == null) {
 			this.underlayImage = null;
 			this.imageTransform = null;
 			this.curTransform = null;
+			updateField();
 			return;
 		}
 		this.underlayImage = image;
@@ -106,10 +109,12 @@ public class PlayField extends JPanel {
         this.curTransform = new AffineTransform(imageTransform);
         this.underlayImgDx = dx;
         this.underlayImgDy = dy;
+		this.underlayImgOpacity = opacity;
 
 		curTransform.scale(PlayFieldGraphic.getScale(),
 				PlayFieldGraphic.getScale());
 		curTransform.translate(this.underlayImgDx, this.underlayImgDy);
+		updateField();
 
 	}
 
@@ -188,7 +193,10 @@ public class PlayField extends JPanel {
 				this.getWidth() + PLAYFIELD_OFFSET,
 				this.getHeight() + PLAYFIELD_OFFSET);
 		if (underlayImage != null) {
+			Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, this.underlayImgOpacity);
+			g2.setComposite(c);
 			g2.drawImage(underlayImage,curTransform, null);
+			g2.setComposite(AlphaComposite.SrcOver);
 		}
 
 		// draw map (is exists and drawing requested)

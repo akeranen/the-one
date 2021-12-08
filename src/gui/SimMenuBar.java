@@ -81,6 +81,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	public static final String ZOOM_WHEEL_INVERT_S = "invertZoomWheel";
 	/** The namespace where underlay image -related settings are found */
 	public static final String UNDERLAY_NS = "GUI.UnderlayImage";
+	/** Set underlying image visible at startup id ({@value})*/
+	public static final String UNDERLAY_VISIBLE = "show";
 
 	public SimMenuBar(PlayField field, NodeChooser nodeChooser) {
 		this.field = field;
@@ -99,6 +101,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 			// create underlay image menu item only if filename is specified
 			enableBgImage = createCheckItem(pfMenu,"Show underlay image",
 					false, null);
+			enableBgImage.setSelected(settings.getBoolean(UNDERLAY_VISIBLE, false));
 		}
 
 		settings.setNameSpace(gui.MainWindow.GUI_NS);
@@ -129,6 +132,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		clearNodeFilters = createMenuItem(pfToolsMenu, "Clear node filters");
 
 		updatePlayfieldSettings();
+		toggleUnderlayImage();
 
 		about = createMenuItem(help,"about");
 		this.add(pfMenu);
@@ -230,6 +234,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 			String imgFile = null;
 			int[] offsets;
 			double scale, rotate;
+			float opacity;
 			BufferedImage image;
 			try {
 				Settings settings = new Settings(UNDERLAY_NS);
@@ -237,6 +242,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				offsets = settings.getCsvInts("offset", 2);
 				scale = settings.getDouble("scale");
 				rotate = settings.getDouble("rotate");
+				opacity = (float) (settings.getDouble("opacity", 1.0));
 	            image = ImageIO.read(new File(imgFile));
 	        } catch (IOException ex) {
 		warn("Couldn't set underlay image " + imgFile + ". " +
@@ -250,11 +256,11 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		return;
 	        }
 			field.setUnderlayImage(image, offsets[0], offsets[1],
-					scale, rotate);
+					scale, rotate, opacity);
 		}
 		else {
 			// disable the image
-			field.setUnderlayImage(null, 0, 0, 0, 0);
+			field.setUnderlayImage(null, 0, 0, 0, 0, 0);
 		}
 	}
 

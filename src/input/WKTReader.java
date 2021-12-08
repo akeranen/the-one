@@ -29,6 +29,8 @@ public class WKTReader {
 	public static final String MULTILINESTRING = "MULTILINESTRING";
 	/** known WKT type POINT */
 	public static final String POINT = "POINT";
+	/** known WKT type MULTIPOINT */
+	public static final String MULTIPOINT = "MULTIPOINT";
 
 	/** are all lines of the file read */
 	private boolean done;
@@ -60,6 +62,10 @@ public class WKTReader {
 		while((type = nextType()) != null) {
 			if (type.equals(POINT)) {
 				points.add(parsePoint());
+			}
+			if (type.equals(MULTIPOINT)) {
+				// Linestring is mostly equivalent to multipoint string so we can just re-use the code
+				points.addAll(parseLineString(readNestedContents(reader)));
 			}
 			else {
 				// known type but not interesting -> skip
@@ -139,6 +145,9 @@ public class WKTReader {
 			return true;
 		}
 		else if (type.equals(POINT)) {
+			return true;
+		}
+		else if (type.equals(MULTIPOINT)) {
 			return true;
 		}
 		else {

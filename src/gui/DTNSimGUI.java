@@ -6,6 +6,7 @@ package gui;
 
 import gui.playfield.PlayField;
 
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelListener;
@@ -59,8 +60,10 @@ public class DTNSimGUI extends DTNSimUI {
 	private void initGUI() {
 		this.field = new PlayField(world, this);
 
-		this.field.addMouseListener(new PlayfieldMouseHandler());
-		this.field.addMouseWheelListener(new PlayfieldMouseHandler());
+		PlayfieldMouseHandler mouseHandler = new PlayfieldMouseHandler();
+		this.field.addMouseListener(mouseHandler);
+		this.field.addMouseMotionListener(mouseHandler);
+		this.field.addMouseWheelListener(mouseHandler);
 
 		this.guiControls = new GUIControls(this,this.field);
 		this.eventLogPanel = new EventLogPanel(this);
@@ -218,11 +221,11 @@ public class DTNSimGUI extends DTNSimUI {
      *
      */
     private void updateView() {
-	double simTime = SimClock.getTime();
-	this.lastUpdate = simTime;
-	guiControls.setSimTime(simTime); //update time to control panel
+		double simTime = SimClock.getTime();
+		this.lastUpdate = simTime;
+		guiControls.setSimTime(simTime); //update time to control panel
 
-	this.field.updateField();
+		this.field.updateField();
     }
 
     /**
@@ -238,9 +241,9 @@ public class DTNSimGUI extends DTNSimUI {
      * @param host The node to center
      */
     public void setFocus(DTNHost host) {
-	centerViewAt(host.getLocation());
-	infoPanel.showInfo(host);
-	showPath(host.getPath()); // show path on the playfield
+		centerViewAt(host.getLocation());
+		infoPanel.showInfo(host);
+		showPath(host.getPath()); // show path on the playfield
     }
 
     /**
@@ -257,15 +260,15 @@ public class DTNSimGUI extends DTNSimUI {
      * @return The coordinates
      */
     public Coord getCenterViewCoord() {
-	JScrollPane sp = main.getPlayFieldScroll();
-	double midX, midY;
+		JScrollPane sp = main.getPlayFieldScroll();
+		double midX, midY;
 
-	midX = sp.getHorizontalScrollBar().getValue() +
-		sp.getViewport().getWidth()/2;
-	midY = sp.getVerticalScrollBar().getValue() +
-		sp.getViewport().getHeight()/2;
+		midX = sp.getHorizontalScrollBar().getValue() +
+			sp.getViewport().getWidth()/2;
+		midY = sp.getVerticalScrollBar().getValue() +
+			sp.getViewport().getHeight()/2;
 
-	return this.field.getWorldPosition(new Coord(midX, midY));
+		return this.field.getWorldPosition(new Coord(midX, midY));
     }
 
     /**
@@ -273,17 +276,17 @@ public class DTNSimGUI extends DTNSimUI {
      * @param loc The location to center
      */
     public void centerViewAt(Coord loc) {
-	JScrollPane sp = main.getPlayFieldScroll();
-	Coord gLoc = this.field.getGraphicsPosition(loc);
-	int midX, midY;
+		JScrollPane sp = main.getPlayFieldScroll();
+		Coord gLoc = this.field.getGraphicsPosition(loc);
+		int midX, midY;
 
-	updateView(); // update graphics to match the values
+		updateView(); // update graphics to match the values
 
-	midX = (int)gLoc.getX() - sp.getViewport().getWidth()/2;
-	midY = (int)gLoc.getY() - sp.getViewport().getHeight()/2;
+		midX = (int)gLoc.getX() - sp.getViewport().getWidth()/2;
+		midY = (int)gLoc.getY() - sp.getViewport().getHeight()/2;
 
-	sp.getHorizontalScrollBar().setValue(midX);
-	sp.getVerticalScrollBar().setValue(midY);
+		sp.getHorizontalScrollBar().setValue(midX);
+		sp.getVerticalScrollBar().setValue(midY);
     }
 
     /**
@@ -324,12 +327,46 @@ public class DTNSimGUI extends DTNSimUI {
 		 */
 		public void mouseClicked(MouseEvent e) {
 
-			java.awt.Point p = e.getPoint();
+			Point p = e.getPoint();
 			centerViewAt(field.getWorldPosition(new Coord(p.x, p.y)));
 		}
 
+
+		Point mouseDownPoint = null;
+		int mouseDownScrollX = 0;
+		int mouseDownScrollY = 0;
+		@Override
+		public void mousePressed(MouseEvent e) {
+			mouseDownPoint = new Point(e.getLocationOnScreen());
+			JScrollPane sp = main.getPlayFieldScroll();
+			mouseDownScrollX = sp.getHorizontalScrollBar().getValue();
+			mouseDownScrollY = sp.getVerticalScrollBar().getValue();
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			Point newMousePoint = e.getLocationOnScreen();
+			if(mouseDownPoint != null){
+				JScrollPane sp = main.getPlayFieldScroll();
+				sp.getHorizontalScrollBar().setValue(mouseDownScrollX - newMousePoint.x + mouseDownPoint.x);
+				sp.getVerticalScrollBar().setValue(mouseDownScrollY - newMousePoint.y + mouseDownPoint.y);
+			}
+		}
+
 		public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
-			guiControls.changeZoom(e.getWheelRotation());
+			// Zoom towards the mouse position
+			JScrollPane sp = main.getPlayFieldScroll();
+			Point p = e.getPoint();
+			Coord worldMousePos = field.getWorldPosition(new Coord(p.x, p.y));
+			int scrollBeforeX = sp.getHorizontalScrollBar().getValue();
+			int scrollBeforeY = sp.getVerticalScrollBar().getValue();
+
+			guiControls.changeZoom((field.getZoomWheelInvert() ? -1 : 1) * e.getWheelRotation());
+			updateView();
+
+			Coord gLoc = field.getGraphicsPosition(worldMousePos);
+			sp.getHorizontalScrollBar().setValue(scrollBeforeX + (int)gLoc.getX() - p.x);
+			sp.getVerticalScrollBar().setValue(scrollBeforeY + (int)gLoc.getY() - p.y);
 		}
 	}
 

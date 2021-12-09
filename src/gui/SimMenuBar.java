@@ -231,7 +231,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	 * when it is enabled to save some memory.
 	 */
 	private void toggleUnderlayImage() {
-		if (enableBgImage.isSelected()) {
+		if (enableBgImage != null && enableBgImage.isSelected()) {
 			String imgFile = null;
 			int[] offsets;
 			double scale, rotate;
@@ -248,15 +248,15 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				opacity = (float) (settings.getDouble("opacity", 1.0));
 	            image = ImageIO.read(new File(imgFile));
 	        } catch (IOException ex) {
-		warn("Couldn't set underlay image " + imgFile + ". " +
-				ex.getMessage());
-		enableBgImage.setSelected(false);
-		return;
+				warn("Couldn't set underlay image " + imgFile + ". " +
+						ex.getMessage());
+				enableBgImage.setSelected(false);
+				return;
 	        }
 	        catch (SettingsError er) {
-		warn("Problem with the underlay image settings: " +
-				er.getMessage());
-		return;
+				warn("Problem with the underlay image settings: " +
+						er.getMessage());
+				return;
 	        }
 			field.setUnderlayImage(image, offsets[0], offsets[1],
 					scale, rotate, opacity, offsetRelMap);

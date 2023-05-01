@@ -48,7 +48,8 @@ public class Message implements Comparable<Message> {
 
 	/** Application ID of the application that created the message */
 	private String	appID;
-
+	/** Forwarding Counter of this message */
+	private int forwardingCounter;
 	static {
 		reset();
 		DTNSim.registerForReset(Message.class.getCanonicalName());
@@ -77,6 +78,7 @@ public class Message implements Comparable<Message> {
 		this.requestMsg = null;
 		this.properties = null;
 		this.appID = null;
+		this.forwardingCounter = 0;
 
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
@@ -359,5 +361,19 @@ public class Message implements Comparable<Message> {
 	public void setAppID(String appID) {
 		this.appID = appID;
 	}
+	
+	/**
+	 * Returns the number of times this message has been forwarded
+         * @return the forwarding counter
+         */
+        public int getForwardingCounter() {
+                return this.forwardingCounter;
+        }
+	/**
+	 * Increments the forwardingCounter each time a message is forwarded
+	 */
+        public void incrementForwardingCounter() {
+                this.forwardingCounter++;     
+        }
 
 }

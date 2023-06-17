@@ -7,6 +7,7 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
+import movement.MovementEngine;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,14 +57,17 @@ public class World {
 	/** Queue of scheduled update requests */
 	private ScheduledUpdatesQueue scheduledUpdates;
 	private boolean simulateConOnce;
+	private MovementEngine movementEngine;
 
 	/**
 	 * Constructor.
 	 */
-	public World(List<DTNHost> hosts, int sizeX, int sizeY,
+	public World(List<DTNHost> hosts, MovementEngine movementEngine, int sizeX, int sizeY,
 			double updateInterval, List<UpdateListener> updateListeners,
 			boolean simulateConnections, List<EventQueue> eventQueues) {
 		this.hosts = hosts;
+		this.movementEngine = movementEngine;
+		movementEngine.init(hosts);
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
 		this.updateInterval = updateInterval;
@@ -112,13 +116,13 @@ public class World {
 		}
 
 		while(SimClock.getTime() < -updateInterval) {
-			moveHosts(updateInterval);
+			movementEngine.moveHosts(hosts, updateInterval);
 			simClock.advance(updateInterval);
 		}
 
 		double finalStep = -SimClock.getTime();
 
-		moveHosts(finalStep);
+		movementEngine.moveHosts(hosts, finalStep);
 		simClock.setTime(0);
 	}
 
@@ -161,7 +165,7 @@ public class World {
 			setNextEventQueue();
 		}
 
-		moveHosts(this.updateInterval);
+		movementEngine.moveHosts(this.hosts, this.updateInterval);
 		simClock.setTime(runUntil);
 
 		updateHosts();
@@ -201,17 +205,6 @@ public class World {
 
 		if (simulateConOnce && simulateConnections) {
 			simulateConnections = false;
-		}
-	}
-
-	/**
-	 * Moves all hosts in the world for a given amount of time
-	 * @param timeIncrement The time how long all nodes should move
-	 */
-	private void moveHosts(double timeIncrement) {
-		for (int i=0,n = hosts.size(); i<n; i++) {
-			DTNHost host = hosts.get(i);
-			host.move(timeIncrement);
 		}
 	}
 

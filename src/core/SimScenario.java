@@ -11,7 +11,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import movement.DefaultMovementEngine;
 import movement.MapBasedMovement;
+import movement.MovementEngine;
 import movement.MovementModel;
 import movement.map.SimMap;
 import routing.MessageRouter;
@@ -73,6 +75,8 @@ public class SimScenario implements Serializable {
 
 	/** package where to look for movement models */
 	private static final String MM_PACKAGE = "movement.";
+	/** package where to look for movement engines */
+	private static final String ME_PACKAGE = "movement.";
 	/** package where to look for router classes */
 	private static final String ROUTING_PACKAGE = "routing.";
 
@@ -159,9 +163,21 @@ public class SimScenario implements Serializable {
 		this.worldSizeX = worldSize[0];
 		this.worldSizeY = worldSize[1];
 
+		s.setNameSpace(MovementEngine.MOVEMENT_ENGINE_NS);
+		MovementEngine movementEngine;
+		if (s.contains(MovementEngine.NAME)) {
+			movementEngine =
+					(MovementEngine)s.createIntializedObject(ME_PACKAGE +
+							s.getSetting(MovementEngine.NAME));
+		} else {
+			movementEngine =
+					(MovementEngine)s.createIntializedObject(ME_PACKAGE + DefaultMovementEngine.NAME);
+		}
+		s.restoreNameSpace();
+
 		createHosts();
 
-		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
+		this.world = new World(hosts, movementEngine, worldSizeX, worldSizeY, updateInterval,
 				updateListeners, simulateConnections,
 				eqHandler.getEventQueues());
 	}

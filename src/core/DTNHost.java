@@ -29,7 +29,6 @@ public class DTNHost implements Comparable<DTNHost> {
 	private MovementModel movement;
 	private Path path;
 	private double speed;
-	private double nextTimeToMove;
 	public final String groupId;
 	private String name;
 	private List<MessageListener> msgListeners;
@@ -82,8 +81,6 @@ public class DTNHost implements Comparable<DTNHost> {
 		setRouter(mRouterProto.replicate());
 
 		this.location = movement.getInitialLocation();
-
-		this.nextTimeToMove = movement.nextPathAvailable();
 		this.path = null;
 
 		if (movLs != null) { // inform movement listeners about the location
@@ -189,11 +186,59 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
+	 * Sets the Node's location
+	 * @param location The location to set
+	 */
+	public void setLocation(Coord location) {
+		this.location = location.clone();
+	}
+
+	/**
 	 * Returns the current location of this host.
 	 * @return The location
 	 */
 	public Coord getLocation() {
 		return this.location;
+	}
+
+	/**
+	 * Sets the Node's next destination and speed
+	 * @param destination The destination to set
+	 */
+	public void setDestination(Coord destination, double speed) {
+		this.destination = destination.clone();
+		this.speed = speed;
+
+		if (this.movListeners != null) {
+			for (MovementListener l : this.movListeners) {
+				l.newDestination(this, this.destination, this.speed);
+			}
+		}
+	}
+
+	/**
+	 * Returns the current destination of this host.
+	 * @return The destination
+	 */
+	public Coord getDestination() {
+		return this.destination;
+	}
+
+	/**
+	 * Returns the current speed of this host.
+	 * @return The speed
+	 */
+	public double getSpeed() {
+		return this.speed;
+	}
+
+	/**
+	 * Sets the Path this node is currently traveling or null if no
+	 * path is in use at the moment. (Node is waiting for new path or stationary)
+	 * @return The path this node is traveling
+	 */
+	public void setPath(Path path) {
+		this.path = path;
 	}
 
 	/**
@@ -205,13 +250,12 @@ public class DTNHost implements Comparable<DTNHost> {
 		return this.path;
 	}
 
-
 	/**
-	 * Sets the Node's location overriding any location set by movement model
-	 * @param location The location to set
+	 * Returns the movement model of this node
+	 * @return The movement model of this node
 	 */
-	public void setLocation(Coord location) {
-		this.location = location.clone();
+	public MovementModel getMovement() {
+		return this.movement;
 	}
 
 	/**
@@ -367,75 +411,6 @@ public class DTNHost implements Comparable<DTNHost> {
 				i.destroyConnection(inf);
 			}
 		}
-	}
-
-	/**
-	 * Moves the node towards the next waypoint or waits if it is
-	 * not time to move yet
-	 * @param timeIncrement How long time the node moves
-	 */
-	public void move(double timeIncrement) {
-		double possibleMovement;
-		double distance;
-		double dx, dy;
-
-		if (!isMovementActive() || SimClock.getTime() < this.nextTimeToMove) {
-			return;
-		}
-		if (this.destination == null) {
-			if (!setNextWaypoint()) {
-				return;
-			}
-		}
-
-		possibleMovement = timeIncrement * speed;
-		distance = this.location.distance(this.destination);
-
-		while (possibleMovement >= distance) {
-			// node can move past its next destination
-			this.location.setLocation(this.destination); // snap to destination
-			possibleMovement -= distance;
-			if (!setNextWaypoint()) { // get a new waypoint
-				return; // no more waypoints left
-			}
-			distance = this.location.distance(this.destination);
-		}
-
-		// move towards the point for possibleMovement amount
-		dx = (possibleMovement/distance) * (this.destination.getX() -
-				this.location.getX());
-		dy = (possibleMovement/distance) * (this.destination.getY() -
-				this.location.getY());
-		this.location.translate(dx, dy);
-	}
-
-	/**
-	 * Sets the next destination and speed to correspond the next waypoint
-	 * on the path.
-	 * @return True if there was a next waypoint to set, false if node still
-	 * should wait
-	 */
-	private boolean setNextWaypoint() {
-		if (path == null) {
-			path = movement.getPath();
-		}
-
-		if (path == null || !path.hasNext()) {
-			this.nextTimeToMove = movement.nextPathAvailable();
-			this.path = null;
-			return false;
-		}
-
-		this.destination = path.getNextWaypoint();
-		this.speed = path.getSpeed();
-
-		if (this.movListeners != null) {
-			for (MovementListener l : this.movListeners) {
-				l.newDestination(this, this.destination, this.speed);
-			}
-		}
-
-		return true;
 	}
 
 	/**

@@ -82,7 +82,7 @@ public class LifeRouter extends ActiveRouter {
 		Vector<String> messagesToDelete = new Vector<String>();
 		super.update();
 
-		if (isTransferring() || !canStartTransfer()) {
+		if (!canStartTransfer()) {
 			return; /* transferring, don't try other connections yet */
 		}
 

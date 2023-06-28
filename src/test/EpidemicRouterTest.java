@@ -4,6 +4,7 @@
  */
 package test;
 
+import routing.ActiveRouter;
 import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
@@ -618,5 +619,41 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 		assertNotSame(orderedIds, runMessageExchange(true));
 		assertNotSame(orderedIds, runMessageExchange(false));
+	}
+
+	/**
+	 * Checks that concurrent transfers can be enabled
+	 */
+	public void testConcurrentTransfers() throws Exception {
+		ts.setNameSpace(null);
+		ts.putSetting(ActiveRouter.CONCURRENT_TRANS_S, "true");
+		this.setUp();
+
+		Message m1 = new Message(h1, h2, msgId1, 1);
+		h1.createNewMessage(m1);
+		Message m2 = new Message(h1, h3, msgId2, 1);
+		h1.createNewMessage(m2);
+		mc.reset();
+
+		// check that both routers start the transfer simultaneously
+		h1.connect(h2);
+		h1.connect(h3);
+		updateAllNodes();
+		assertTrue(mc.next());
+		assertEquals(mc.TYPE_START, mc.getLastType());
+		assertFalse(mc.next());
+		// next transfer should be started immediately, not advancing clock
+		updateAllNodes();
+		assertTrue(mc.next());
+		assertEquals(mc.TYPE_START, mc.getLastType());
+		assertFalse(mc.next());
+		// only two messages
+		updateAllNodes();
+		assertFalse(mc.next());
+
+		// restore setting as other tests depend on default behavior
+		ts.setNameSpace(null);
+		ts.putSetting(ActiveRouter.CONCURRENT_TRANS_S, "false");
+		this.setUp();
 	}
 }

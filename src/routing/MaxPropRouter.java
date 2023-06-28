@@ -288,7 +288,7 @@ public class MaxPropRouter extends ActiveRouter {
 	@Override
 	public void update() {
 		super.update();
-		if (!canStartTransfer() ||isTransferring()) {
+		if (!canStartTransfer()) {
 			return; // nothing to transfer or is currently transferring
 		}
 

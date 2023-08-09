@@ -16,33 +16,53 @@ import java.util.List;
 public class MSIMMovementEngine extends MovementEngine {
     /** movement engines -setting id ({@value})*/
     public static final String NAME = "MSIMMovementEngine";
+    /** additional arguments -setting id ({@value})*/
+    public static final String ARGS_S = "args";
 
-    private MSIMConnector pipeConnector = null;
+    /** Interface to the MSIM process (communication pipe) */
+    private MSIMConnector connector = null;
+    /** Additional arguments to be passed to MSIM during initialization */
+    private String additionalArgs = null;
 
     /**
      * Creates a new MovementEngine based on a Settings object's settings.
-     * @param settings The Settings object where the settings are read from
+     * @param s The Settings object where the settings are read from
      */
-    public MSIMMovementEngine(Settings settings) {
-        super(settings);
+    public MSIMMovementEngine(Settings s) {
+        super(s);
 
-        // TODO get world size
-        //settings.setNameSpace(MOVEMENT_MODEL_NS);
-        //int [] worldSize = settings.getCsvInts(WORLD_SIZE,2);
-        //this.maxX = worldSize[0];
-        //this.maxY = worldSize[1];
-        //settings.restoreNameSpace();
+        s.setNameSpace(MovementEngine.MOVEMENT_ENGINE_NS);
+        additionalArgs = s.getSetting(ARGS_S, "");
+        s.restoreNameSpace();
 
-        pipeConnector = (MSIMConnector)settings.createIntializedObject("input." + MSIMConnector.NAME);
+        connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
     }
 
     @Override
-    public void init(List<DTNHost> hosts) {
+    public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
 
-        // do init handshake
-        // send cmd args/configuration
-        // send initial locations
+        // Initialize
+        connector.writeHeader(MSIMConnector.Header.Initialize);
 
+        // Send configuration (in cmd line format)
+        String num_entities = String.format("--num-entities=%d ", hosts.size());
+        String map_size = String.format("--map-width=%d --map-height=%d ", worldSizeX, worldSizeY);
+        connector.writeString(num_entities + map_size + additionalArgs);
+        connector.flushOutput();
+
+        // Send initial locations
+        for (int i = 0; i < hosts.size(); i++) {
+            DTNHost host = hosts.get(i);
+            connector.writeCoord(host.getLocation());
+
+            // Periodically flush output, to allow receiver to work in parallel
+            if (i % 1024 == 0) { // TODO benchmark optimal value
+                connector.flushOutput();
+            }
+        }
+        connector.flushOutput();
+
+        // TODO
         // initially add all hosts to the path waiting queue
         // initially add all hosts to waypoint requests (with full buffer size)
     }

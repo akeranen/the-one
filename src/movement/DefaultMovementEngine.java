@@ -48,7 +48,7 @@ public class DefaultMovementEngine extends MovementEngine {
      * @param hosts to be initialized
      */
     @Override
-    public void init(List<DTNHost> hosts) {
+    public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
         // Initially all hosts wait for a path
         for (int i=0,n = hosts.size(); i<n; i++) {
             DTNHost host = hosts.get(i);

@@ -67,7 +67,6 @@ public class World {
 			boolean simulateConnections, List<EventQueue> eventQueues) {
 		this.hosts = hosts;
 		this.movementEngine = movementEngine;
-		movementEngine.init(hosts);
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
 		this.updateInterval = updateInterval;
@@ -81,6 +80,7 @@ public class World {
 
 		setNextEventQueue();
 		initSettings();
+		movementEngine.init(hosts, sizeX, sizeY);
 	}
 
 	/**

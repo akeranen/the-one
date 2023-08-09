@@ -1,5 +1,6 @@
 package input;
 
+import core.Coord;
 import core.Settings;
 import core.SettingsError;
 import movement.MovementEngine;
@@ -30,35 +31,35 @@ public class MSIMConnector {
     DataInputStream pipeIn = null;
     DataOutputStream pipeOut = null;
 
-    public enum Request {
-        Initialize(0),
-        Move(1),
-        GetEntityPositions(3);
-
-        private final int id;
-        private Request(int _id) {
-            this.id = _id;
-        }
-
-        public int ID() {
-            return id;
-        }
-    }
-
-    public enum Response {
+    public enum Header {
         Ok(0),
-        Error(1);
+        Initialize(1),
+        Move(2),
+        GetEntityPositions(3),
+        Count(4);
 
         private final int id;
-        private Response(int _id) {
-            this.id = _id;
+        private Header(int id) {
+            this.id = id;
         }
 
+        public static Header fromID(int id) {
+            switch(id) {
+                case 0:
+                    return Ok;
+                case 1:
+                    return Initialize;
+                case 2:
+                    return Move;
+                case 3:
+                    return GetEntityPositions;
+            }
+            throw new IllegalArgumentException("Cannot convert id (" + id + ") to enum Header.");
+        }
         public int ID() {
             return id;
         }
     }
-
 
     /**
      * Creates a new MSIMConnector based on a Settings object's settings.
@@ -119,6 +120,24 @@ public class MSIMConnector {
         }
     }
 
+    public void writeShort(int value) {
+        assert(value >= Short.MIN_VALUE && value <= Short.MAX_VALUE);
+        try {
+            pipeOut.writeShort(value);
+        } catch (IOException ex) {
+            error_handler();
+        }
+    }
+
+    public int readShort() {
+        try {
+            return pipeIn.readShort();
+        } catch (IOException ex) {
+            error_handler();
+        }
+        return 0; // never reached..
+    }
+
     public void writeInt(int value) {
         try {
             pipeOut.writeInt(value);
@@ -168,6 +187,31 @@ public class MSIMConnector {
             error_handler();
         }
         return ""; // never reached..
+    }
+
+    public void writeHeader(Header header) {
+        writeShort(header.id);
+    }
+
+    public Header readHeader() {
+        int id = readShort();
+        assert(id < Header.Count.id);
+        return Header.fromID(id);
+    }
+
+    public void writeCoord(Coord coord) {
+        // Note: Precision-loss is expected. We only check that values are within bounds.
+        assert(coord.getX() >= Float.MIN_VALUE && coord.getX() <= Float.MAX_VALUE);
+        assert(coord.getY() >= Float.MIN_VALUE && coord.getY() <= Float.MAX_VALUE);
+
+        writeFloat((float) coord.getX());
+        writeFloat((float) coord.getY());
+    }
+
+    public void readCoordInto(Coord coord) {
+        float x = readFloat();
+        float y = readFloat();
+        coord.setLocation(x, y);
     }
 
     /**

@@ -21,7 +21,7 @@ public abstract class MovementEngine {
      */
     public MovementEngine(Settings settings) { }
 
-    public abstract void init(List<DTNHost> hosts);
+    public abstract void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY);
 
     /**
      * Moves all hosts in the world for a given amount of time

@@ -12,8 +12,8 @@ import java.util.List;
 public abstract class MovementEngine {
     /** MovementEngine namespace ({@value})*/
     public static final String MOVEMENT_ENGINE_NS = "MovementEngine";
-    /** movement models' rng seed -setting id ({@value})*/
-    public static final String NAME = "name";
+    /** The movement engine type -setting id ({@value})*/
+    public static final String TYPE = "type";
 
     /**
      * Creates a new MovementEngine based on a Settings object's settings.

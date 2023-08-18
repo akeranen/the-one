@@ -4,9 +4,12 @@ import core.DTNHost;
 import core.MovementListener;
 import core.Settings;
 import core.SimClock;
+import core.Coord;
 import input.MSIMConnector;
 
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  * Provides a GPU accelerated implementation to move hosts in the world according to their MovementModel
@@ -16,13 +19,52 @@ import java.util.List;
 public class MSIMMovementEngine extends MovementEngine {
     /** movement engines -setting id ({@value})*/
     public static final String NAME = "MSIMMovementEngine";
+    /** waypoint buffer size -setting id ({@value})*/
+    public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
     /** additional arguments -setting id ({@value})*/
-    public static final String ARGS_S = "args";
+    public static final String ARGS_S = "additionalArgs";
 
     /** Interface to the MSIM process (communication pipe) */
     private MSIMConnector connector = null;
-    /** Additional arguments to be passed to MSIM during initialization */
+    /** Number of buffered waypoints per host */
+    private int waypointBufferSize = 0;
+    /** Additional (override) arguments to be passed to MSIM during initialization */
     private String additionalArgs = null;
+    /** queue of hosts waiting for a new path */
+    private final PriorityQueue<MSIMMovementEngine.PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
+    /** queue of pending waypoint requests */ // TODO maybe turn into priorityQueue and sort by ID for cache optimization?
+    private final ArrayDeque<MSIMMovementEngine.WaypointRequest> waypointRequests = new ArrayDeque<>();
+
+
+    //private static int PathWaitingHostCount = 0; // Enable if stable ordering is required
+    static class PathWaitingHost implements Comparable<MSIMMovementEngine.PathWaitingHost> {
+        public int hostID;
+        public double nextPathAvailableTime;
+        //private final int order; // Enable if stable ordering is required
+
+        public PathWaitingHost(int hostID, double nextPathAvailableTime) {
+            this.hostID = hostID;
+            this.nextPathAvailableTime = nextPathAvailableTime;
+            //this.order = PathWaitingHostCount++; // Enable if stable ordering is required
+        }
+
+        @Override
+        public int compareTo(MSIMMovementEngine.PathWaitingHost o) {
+            int t = (int)(this.nextPathAvailableTime - o.nextPathAvailableTime);
+            //return (t != 0) ? t : this.order - o.order; // Enable if stable ordering is required
+            return t;
+        }
+    }
+
+    static class WaypointRequest {
+        public int hostID;
+        public int numWaypoints; // request size
+
+        public WaypointRequest(int hostID, int numWaypoints) {
+            this.hostID = hostID;
+            this.numWaypoints = numWaypoints;
+        }
+    }
 
     /**
      * Creates a new MovementEngine based on a Settings object's settings.
@@ -31,7 +73,8 @@ public class MSIMMovementEngine extends MovementEngine {
     public MSIMMovementEngine(Settings s) {
         super(s);
 
-        s.setNameSpace(MovementEngine.MOVEMENT_ENGINE_NS);
+        s.setNameSpace(NAME);
+        waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
         additionalArgs = s.getSetting(ARGS_S, "");
         s.restoreNameSpace();
 
@@ -46,6 +89,12 @@ public class MSIMMovementEngine extends MovementEngine {
      */
     @Override
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
+        // Initially all hosts wait for a path
+        for (int i=0,n = hosts.size(); i<n; i++) {
+            //double nextPathAvailableTime = host.movement.nextPathAvailable();
+            double nextPathAvailableTime = 0.0;
+            pathWaitingHosts.add(new MSIMMovementEngine.PathWaitingHost(i, nextPathAvailableTime));
+        }
 
         // Initialize
         connector.writeHeader(MSIMConnector.Header.Initialize);
@@ -53,7 +102,8 @@ public class MSIMMovementEngine extends MovementEngine {
         // Send configuration (in cmd line format)
         String num_entities = String.format("--num-entities=%d ", hosts.size());
         String map_size = String.format("--map-width=%d --map-height=%d ", worldSizeX, worldSizeY);
-        connector.writeString(num_entities + map_size + additionalArgs);
+        String waypoint_buffer_size = String.format("--waypoint-buffer-size=%d ", waypointBufferSize);
+        connector.writeString(num_entities + map_size + waypoint_buffer_size + additionalArgs);
         connector.flushOutput();
 
         // Send initial locations
@@ -110,39 +160,78 @@ public class MSIMMovementEngine extends MovementEngine {
 
     }
 
-        // get path from movement model and advance until msim waypoints are populated
-        // when current path runs empty, try to get new one
-        //  set entity speed==0 as special condition
+    private void run_movement_pass(List<DTNHost> hosts, double timeIncrement) {
+        double time = SimClock.getTime();
 
+        // Request movement pass
+        connector.writeHeader(MSIMConnector.Header.Move);
+        connector.writeFloat((float)timeIncrement);
 
-        // Datastructures:
-        //  PathWaitingHosts priority queue (hosts waiting for a new path)
-        //  int[] HostWaypointRequests (array with number of waypoints requested per host)
-        //  WaypointRequestQueue (ids of hosts, waiting for new waypoints)
+        // Check hosts waiting for new path
+        while (!pathWaitingHosts.isEmpty()) {
+            MSIMMovementEngine.PathWaitingHost pwh = pathWaitingHosts.peek();
 
-        // for all path waiting hosts, check if path available
-        //  then add path to host
-        //  add host to waypoint request queue (wprq)
+            if (time < pwh.nextPathAvailableTime) {
+                // All remaining hosts have their time in the future
+                break;
+            }
 
-        // for all hosts in wprq
-        //  send new waypoints to MSIM
+            // Else we can now try to retrieve the next path
+            pathWaitingHosts.poll(); // remove front element
+            DTNHost host = hosts.get(pwh.hostID);
 
-        // request movement pass
+            host.setPath(host.getMovement().getPath());
 
-        // receive waypoint requests
-        //  if (path.has next)
-        //   wprq.add()
-        //  else /*path is empty*/
-        //   if (full buffer request) /*reached end of path*/
-        //    pathwaiting.add()
-        //   else /*ignore threshold request*/
+            if (host.getPath() == null) {
+                // Still no path available
+                double nextPathAvailableTime = host.getMovement().nextPathAvailable();
+                pathWaitingHosts.add(new MSIMMovementEngine.PathWaitingHost(pwh.hostID, nextPathAvailableTime));
+            } else {
+                // Just got new path => queue full buffer waypoint request
+                waypointRequests.add(new WaypointRequest(pwh.hostID, waypointBufferSize));
+            }
+        }
 
+        // Send waypoints updates
+        assert(waypointRequests.size() < hosts.size());
+        connector.writeInt(waypointRequests.size()); // Number of updates (1 per host)
+        System.out.printf("MSIMMovementEngine.move() Sending %d waypoint updates\n", waypointRequests.size());
+        while (!waypointRequests.isEmpty()) {
+            WaypointRequest request = waypointRequests.poll();
+            DTNHost host = hosts.get(request.hostID);
+            Path path = host.getPath();
 
-        // if enabled, synchronize host locations
+            int available = Math.min(path.remainingWaypoints(), request.numWaypoints);
+            assert(available > 0); // Or there should not have been a request
 
-        // if enabled, request interface contact detection
-        // receive LinkUp/LinkDown events
+            connector.writeInt(request.hostID); // The following waypoints are for this host
+            connector.writeShort(available); // Number of waypoints in this update
 
+            for (int i=0; i < available; i++) {
+                connector.writeCoord(path.getNextWaypoint());
+                connector.writeFloat((float)path.getSpeed());
+            }
+        }
+        connector.flushOutput();
+
+        // Receive waypoint requests
+        int numRequests = connector.readInt();
+        System.out.printf("MSIMMovementEngine.move() Received %d waypoint requests\n", numRequests);
+        for (int i = 0; i < numRequests; i++) {
+            int hostID = connector.readInt();
+            int numWaypoints = connector.readShort();
+            DTNHost host = hosts.get(hostID);
+
+            if (host.getPath().hasNext()) {
+                waypointRequests.add(new WaypointRequest(hostID, numWaypoints));
+            } else /* path is empty */ {
+                if (numWaypoints == waypointBufferSize) /* reached end of path */ {
+                    double nextPathAvailableTime = host.getMovement().nextPathAvailable();
+                    pathWaitingHosts.add(new PathWaitingHost(hostID, nextPathAvailableTime));
+                }
+                // else ignore threshold request (until hosts reaches end of path)
+            }
+        }
     }
 
 }

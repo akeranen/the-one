@@ -3,7 +3,7 @@ package input;
 import core.Coord;
 import core.Settings;
 import core.SettingsError;
-import movement.MovementEngine;
+import movement.MSIMMovementEngine;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -32,11 +32,12 @@ public class MSIMConnector {
     DataOutputStream pipeOut = null;
 
     public enum Header {
-        Ok(0),
-        Initialize(1),
+        Initialize(0),
+        Shutdown(1),
         Move(2),
-        GetEntityPositions(3),
-        Count(4);
+        SyncPositions(3),
+        ContactDetection(4),
+        Count(5);
 
         private final int id;
         private Header(int id) {
@@ -46,13 +47,15 @@ public class MSIMConnector {
         public static Header fromID(int id) {
             switch(id) {
                 case 0:
-                    return Ok;
-                case 1:
                     return Initialize;
+                case 1:
+                    return Shutdown;
                 case 2:
                     return Move;
                 case 3:
-                    return GetEntityPositions;
+                    return SyncPositions;
+                case 4:
+                    return ContactDetection;
             }
             throw new IllegalArgumentException("Cannot convert id (" + id + ") to enum Header.");
         }
@@ -66,7 +69,7 @@ public class MSIMConnector {
      * @param s The Settings object where the settings are read from
      */
     public MSIMConnector(Settings s) {
-        s.setNameSpace(MovementEngine.MOVEMENT_ENGINE_NS);
+        s.setNameSpace(MSIMMovementEngine.NAME);
 
         Path pipeInFilepath = null; // our input pipe (aka msim's output pipe)
         Path pipeOutFilepath = null; // our output pipe (aka msim's input pipe)
@@ -81,10 +84,10 @@ public class MSIMConnector {
             pipeOutFilepath = Paths.get(s.getSetting(OUT_PIPE_S));
         }
         if (pipeInFilepath == null) {
-            throw new SettingsError("MSIMMovementEngine is used but setting MovementEngine.pipeIn is missing.");
+            throw new SettingsError("MSIMMovementEngine is used but setting MSIMMovementEngine.pipeIn is missing.");
         }
         if (pipeOutFilepath == null) {
-            throw new SettingsError("MSIMMovementEngine is used but setting MovementEngine.pipeOut is missing.");
+            throw new SettingsError("MSIMMovementEngine is used but setting MSIMMovementEngine.pipeOut is missing.");
         }
 
         // Open pipes

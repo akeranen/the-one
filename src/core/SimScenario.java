@@ -165,10 +165,10 @@ public class SimScenario implements Serializable {
 
 		s.setNameSpace(MovementEngine.MOVEMENT_ENGINE_NS);
 		MovementEngine movementEngine;
-		if (s.contains(MovementEngine.NAME)) {
+		if (s.contains(MovementEngine.TYPE)) {
 			movementEngine =
 					(MovementEngine)s.createIntializedObject(ME_PACKAGE +
-							s.getSetting(MovementEngine.NAME));
+							s.getSetting(MovementEngine.TYPE));
 		} else {
 			movementEngine =
 					(MovementEngine)s.createIntializedObject(ME_PACKAGE + DefaultMovementEngine.NAME);

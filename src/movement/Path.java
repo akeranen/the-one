@@ -103,6 +103,14 @@ public class Path  {
 	}
 
 	/**
+	 * Returns number of remaining (yet to be retrieved) waypoints
+	 * @return number of remaining (yet to be retrieved) waypoints
+	 */
+	public int remainingWaypoints() {
+		return this.coords.size() - nextWpIndex;
+	}
+
+	/**
 	 * Returns the speed towards the next waypoint (asked with
 	 * {@link #getNextWaypoint()}.
 	 * @return the speed towards the next waypoint

@@ -38,6 +38,12 @@ public class MSIMMovementEngine extends MovementEngine {
         connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
     }
 
+    /**
+     * Initializes the movement engine
+     * Sends configuration and initial host locations to MSIM
+     * Note: Hosts get their initial location on construction, not here!
+     * @param hosts to be initialized
+     */
     @Override
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
 
@@ -61,10 +67,31 @@ public class MSIMMovementEngine extends MovementEngine {
             }
         }
         connector.flushOutput();
+    }
 
-        // TODO
-        // initially add all hosts to the path waiting queue
-        // initially add all hosts to waypoint requests (with full buffer size)
+    /**
+     * Finalizes the movement engine
+     * Called on world shutdown for cleanup
+     */
+    @Override
+    public void fini() {
+        connector.writeHeader(MSIMConnector.Header.Shutdown);
+        connector.flushOutput();
+        try {
+            Thread.sleep(500); // Give it some time to shut down gracefully
+        } catch (InterruptedException ignored) { }
+    }
+
+    /**
+     * Moves all hosts in the world for a given amount of time
+     * Only performs host movement. Even if enabled it does not
+     * perform interface contact detection or other functionality.
+     * @param hosts to be moved
+     * @param timeIncrement how long all nodes should move
+     */
+    @Override
+    public void warmup(List<DTNHost> hosts, double timeIncrement) {
+        run_movement_pass(hosts, timeIncrement);
     }
 
     /**
@@ -73,11 +100,15 @@ public class MSIMMovementEngine extends MovementEngine {
      */
     @Override
     public void moveHosts(List<DTNHost> hosts, double timeIncrement) {
-        // TODO
 
+        run_movement_pass(hosts, timeIncrement);
 
-        // only use host.getMovementmodel and host.setlocation ??
+        // TODO if enabled, synchronize host locations
 
+        // TODO if enabled, request interface contact detection
+        // TODO receive LinkUp/LinkDown events
+
+    }
 
         // get path from movement model and advance until msim waypoints are populated
         // when current path runs empty, try to get new one

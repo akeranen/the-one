@@ -60,6 +60,25 @@ public class DefaultMovementEngine extends MovementEngine {
     }
 
     /**
+     * Finalizes the movement engine
+     * Called on world shutdown for cleanup
+     */
+    @Override
+    public void fini() {
+        // No cleanup necessary
+    }
+
+    /**
+     * Moves all hosts in the world for a given amount of time
+     * @param hosts to be moved
+     * @param timeIncrement how long all nodes should move
+     */
+    @Override
+    public void warmup(List<DTNHost> hosts, double timeIncrement) {
+        moveHosts(hosts, timeIncrement);
+    }
+
+    /**
      * Moves all hosts in the world for a given amount of time
      * @param hosts to be moved
      * @param timeIncrement The time how long all nodes should move

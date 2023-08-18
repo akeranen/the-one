@@ -132,6 +132,8 @@ public abstract class DTNSimUI {
 		for (Report r : this.reports) {
 			r.done();
 		}
+
+		world.shutdown();
 	}
 
 	/**

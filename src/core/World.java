@@ -105,6 +105,14 @@ public class World {
 	}
 
 	/**
+	 * Called when no more updates are performed.
+	 * Initiates cleanup and graceful shutdown.
+	 */
+	public void shutdown() {
+		movementEngine.fini();
+	}
+
+	/**
 	 * Moves hosts in the world for the time given time initialize host
 	 * positions properly. SimClock must be set to <CODE>-time</CODE> before
 	 * calling this method.

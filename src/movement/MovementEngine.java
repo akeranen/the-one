@@ -21,11 +21,30 @@ public abstract class MovementEngine {
      */
     public MovementEngine(Settings settings) { }
 
+    /**
+     * Initializes the movement engine
+     * Note: Hosts get their initial location on construction, not here!
+     * @param hosts to be initialized
+     */
     public abstract void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY);
 
     /**
+     * Finalizes the movement engine
+     * Called on world shutdown for cleanup
+     */
+    public abstract void fini();
+
+    /**
      * Moves all hosts in the world for a given amount of time
-     * @param timeIncrement The time how long all nodes should move
+     * @param hosts to be moved
+     * @param timeIncrement how long all nodes should move
+     */
+    public abstract void warmup(List<DTNHost> hosts, double timeIncrement);
+
+    /**
+     * Moves all hosts in the world for a given amount of time
+     * @param hosts to be moved
+     * @param timeIncrement how long all nodes should move
      */
     public abstract void moveHosts(List<DTNHost> hosts, double timeIncrement);
 

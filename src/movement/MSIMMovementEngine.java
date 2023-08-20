@@ -21,15 +21,11 @@ public class MSIMMovementEngine extends MovementEngine {
     public static final String NAME = "MSIMMovementEngine";
     /** waypoint buffer size -setting id ({@value})*/
     public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
-    /** additional arguments -setting id ({@value})*/
-    public static final String ARGS_S = "additionalArgs";
 
-    /** Interface to the MSIM process (communication pipe) */
+    /** Interface to the MSIM process */
     private MSIMConnector connector = null;
     /** Number of buffered waypoints per host */
     private int waypointBufferSize = 0;
-    /** Additional (override) arguments to be passed to MSIM during initialization */
-    private String additionalArgs = null;
     /** queue of hosts waiting for a new path */
     private final PriorityQueue<MSIMMovementEngine.PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
     /** queue of pending waypoint requests */ // TODO maybe turn into priorityQueue and sort by ID for cache optimization?
@@ -75,7 +71,6 @@ public class MSIMMovementEngine extends MovementEngine {
 
         s.setNameSpace(NAME);
         waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
-        additionalArgs = s.getSetting(ARGS_S, "");
         s.restoreNameSpace();
 
         connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
@@ -96,15 +91,13 @@ public class MSIMMovementEngine extends MovementEngine {
             pathWaitingHosts.add(new MSIMMovementEngine.PathWaitingHost(i, nextPathAvailableTime));
         }
 
-        // Initialize
-        connector.writeHeader(MSIMConnector.Header.Initialize);
+        // Start process and open connection
+        connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize);
 
-        // Send configuration (in cmd line format)
-        String num_entities = String.format("--num-entities=%d ", hosts.size());
-        String map_size = String.format("--map-width=%d --map-height=%d ", worldSizeX, worldSizeY);
-        String waypoint_buffer_size = String.format("--waypoint-buffer-size=%d ", waypointBufferSize);
-        connector.writeString(num_entities + map_size + waypoint_buffer_size + additionalArgs);
-        connector.flushOutput();
+        // Initialize simulation
+        connector.writeHeader(MSIMConnector.Header.Initialize);
+        // TODO just send entitiy positions header
+
 
         // Send initial locations
         for (int i = 0; i < hosts.size(); i++) {
@@ -130,6 +123,9 @@ public class MSIMMovementEngine extends MovementEngine {
         try {
             Thread.sleep(500); // Give it some time to shut down gracefully
         } catch (InterruptedException ignored) { }
+
+        // Close connection and shutdown process
+        connector.fini();
     }
 
     /**

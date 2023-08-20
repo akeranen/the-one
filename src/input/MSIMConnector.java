@@ -6,10 +6,14 @@ import core.SettingsError;
 import movement.MSIMMovementEngine;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths
-;import static java.nio.file.StandardOpenOption.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * Provides an interface to communicate with an external MSIM process.
@@ -20,16 +24,22 @@ public class MSIMConnector {
     /** movement engines -setting id ({@value})*/
     public static final String NAME = "MSIMConnector";
 
-    /** prefix of communication pipe paths -setting id ({@value})*/
-    public static final String PIPES_S = "pipes";
-    /** path of input communication pipe -setting id ({@value})*/
-    public static final String IN_PIPE_S = "inPipe";
-    /** path of output communication pipe -setting id ({@value})*/
-    public static final String OUT_PIPE_S = "outPipe";
+    /** path of msim binary/working directory -setting id ({@value})*/
+    public static final String MSIM_DIRECTORY_S = "directory";
+    /** additional arguments -setting id ({@value})*/
+    public static final String ARGS_S = "additionalArgs";
 
+    /** The msim process */
+    private Process msim = null;
+    /** Directory were to find the msim executable */
+    private File msimDirectory = null;
+    /** Additional arguments passed to the process (may be used of override arguments) */
+    private String additionalArgs = null;
+    /** Temporary directory for the pipes */
+    private Path tempDir = null;
     /** Communication pipes */
-    DataInputStream pipeIn = null;
-    DataOutputStream pipeOut = null;
+    private DataInputStream pipeIn = null;
+    private DataOutputStream pipeOut = null;
 
     public enum Header {
         Initialize(0),
@@ -71,26 +81,71 @@ public class MSIMConnector {
     public MSIMConnector(Settings s) {
         s.setNameSpace(MSIMMovementEngine.NAME);
 
-        Path pipeInFilepath = null; // our input pipe (aka msim's output pipe)
-        Path pipeOutFilepath = null; // our output pipe (aka msim's input pipe)
-        if (s.contains(PIPES_S)) {
-            pipeInFilepath = Paths.get(s.getSetting(PIPES_S) + ".out");
-            pipeOutFilepath = Paths.get(s.getSetting(PIPES_S) + ".in");
+        msimDirectory = new File(s.getSetting(MSIM_DIRECTORY_S));
+        additionalArgs = s.getSetting(ARGS_S, "");
+
+        s.restoreNameSpace();
+    }
+
+    private void preparePipes() throws IOException, InterruptedException {
+        // Create temporary directory
+        tempDir = Files.createTempDirectory("msim-connector-");
+
+        // Create named pipes
+        new ProcessBuilder()
+                .directory(tempDir.toFile())
+                .command("mkfifo", "msim.in")
+                .start()
+                .waitFor(2, TimeUnit.SECONDS);
+
+        new ProcessBuilder()
+                .directory(tempDir.toFile())
+                .command("mkfifo", "msim.out")
+                .start()
+                .waitFor(2, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Starts the msim process and opens the communication connection
+     */
+    public void init(int numEntities, int worldSizeX, int worldSizeY, int waypointBufferSize) {
+        // Prepare temporary directory and named pipes
+        try {
+            preparePipes();
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Cannot prepare named pipes: " + e.getMessage());
+            System.exit(1); // cannot recover
         }
-        if (s.contains(IN_PIPE_S)) {
-            pipeInFilepath = Paths.get(s.getSetting(IN_PIPE_S));
-        }
-        if (s.contains(OUT_PIPE_S)) {
-            pipeOutFilepath = Paths.get(s.getSetting(OUT_PIPE_S));
-        }
-        if (pipeInFilepath == null) {
-            throw new SettingsError("MSIMMovementEngine is used but setting MSIMMovementEngine.pipeIn is missing.");
-        }
-        if (pipeOutFilepath == null) {
-            throw new SettingsError("MSIMMovementEngine is used but setting MSIMMovementEngine.pipeOut is missing.");
+
+        // Start the msim process
+        List<String> args = new ArrayList<>();
+        args.add("./msim"); // Executable
+        args.add(String.format("--pipes=%s", tempDir.resolve("msim")));
+        args.add(String.format("--num-entities=%d", numEntities));
+        args.add(String.format("--map-width=%d", worldSizeX));
+        args.add(String.format("--map-height=%d", worldSizeY));
+        args.add(String.format("--waypoint-buffer-size=%d", waypointBufferSize));
+        args.addAll(Arrays.asList(additionalArgs.split(" ")));
+
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.directory(msimDirectory);
+        //builder.inheritIO();
+        builder.redirectOutput(msimDirectory.toPath().resolve("logs/console.log").toFile());
+        builder.redirectError(msimDirectory.toPath().resolve("logs/console.log").toFile());
+        builder.command(args);
+
+        try {
+            msim = builder.start();
+        } catch (IOException e) {
+            System.err.println("Cannot start msim process: " + e.getMessage());
+            System.exit(1); // cannot recover
         }
 
         // Open pipes
+        Path pipeOutFilepath = tempDir.resolve("msim.in"); // our output pipe (aka msim's input pipe)
+        Path pipeInFilepath = tempDir.resolve("msim.out"); // our input pipe (aka msim's output pipe)
+
         System.out.printf("Opening output pipe (%s)\n", pipeOutFilepath);
         try {
             pipeOut = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(pipeOutFilepath, WRITE, APPEND)));
@@ -105,9 +160,57 @@ public class MSIMConnector {
             throw new SettingsError("Cannot open pipe (" + pipeInFilepath + ") for reading", ex);
         }
 
-        s.restoreNameSpace();
-
+        // Test binary conversions (ex. endianness) works as expected across processes
         testDataExchange();
+    }
+
+    /**
+     * Closes the communication connection and shuts down the msim process
+     */
+    public void fini() {
+        // Ensure pipe is empty
+        flushOutput();
+
+        try {
+            msim.waitFor();
+            //msim.waitFor(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            System.err.println("MSIM Process did not exit gracefully. => Killing it");
+            msim.destroyForcibly();
+        }
+        msim = null;
+
+        // Cleanup pipes and temporary directory
+        try {
+            pipeOut.close();
+            pipeIn.close();
+
+            // Recursively delete directory
+            // Ref.: https://www.baeldung.com/java-delete-directory
+            Files.walkFileTree(tempDir,
+                    new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult postVisitDirectory(
+                                Path dir, IOException exc) throws IOException {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(
+                                Path file, BasicFileAttributes attrs)
+                                throws IOException {
+                            Files.delete(file);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+
+        } catch (IOException e) {
+            System.err.println("Cannot delete temporary directory: " + e.getMessage());
+        }
+        pipeIn = null;
+        pipeOut = null;
+        tempDir = null;
     }
 
     private void error_handler() {

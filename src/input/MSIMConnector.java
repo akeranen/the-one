@@ -36,10 +36,14 @@ public class MSIMConnector {
     /** Additional arguments passed to the process (may be used of override arguments) */
     private String additionalArgs = null;
     /** Temporary directory for the pipes */
-    private Path tempDir = null;
+    private Path tempDir = Paths.get("/tmp");
     /** Communication pipes */
     private DataInputStream pipeIn = null;
     private DataOutputStream pipeOut = null;
+
+    /** Can be used to override automatic pipe and Process creation.
+     *   tempDir must be configured! */
+    boolean debug = false;
 
     public enum Header {
         Initialize(0),
@@ -103,19 +107,20 @@ public class MSIMConnector {
                 .command("mkfifo", "msim.out")
                 .start()
                 .waitFor(2, TimeUnit.SECONDS);
-
     }
 
     /**
      * Starts the msim process and opens the communication connection
      */
     public void init(int numEntities, int worldSizeX, int worldSizeY, int waypointBufferSize) {
-        // Prepare temporary directory and named pipes
-        try {
-            preparePipes();
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Cannot prepare named pipes: " + e.getMessage());
-            System.exit(1); // cannot recover
+        if (!debug) {
+            // Prepare temporary directory and named pipes
+            try {
+                preparePipes();
+            } catch (IOException | InterruptedException e) {
+                System.err.println("Cannot prepare named pipes: " + e.getMessage());
+                System.exit(1); // cannot recover
+            }
         }
 
         // Start the msim process
@@ -128,18 +133,22 @@ public class MSIMConnector {
         args.add(String.format("--waypoint-buffer-size=%d", waypointBufferSize));
         args.addAll(Arrays.asList(additionalArgs.split(" ")));
 
-        ProcessBuilder builder = new ProcessBuilder();
-        builder.directory(msimDirectory);
-        //builder.inheritIO();
-        builder.redirectOutput(msimDirectory.toPath().resolve("logs/console.log").toFile());
-        builder.redirectError(msimDirectory.toPath().resolve("logs/console.log").toFile());
-        builder.command(args);
+        if (debug) {
+            System.out.printf("Now start msim with: '%s'\n", String.join(" ", args));
+        } else {
+            ProcessBuilder builder = new ProcessBuilder();
+            builder.directory(msimDirectory);
+            //builder.inheritIO();
+            builder.redirectOutput(msimDirectory.toPath().resolve("logs/console.log").toFile());
+            builder.redirectError(msimDirectory.toPath().resolve("logs/console.log").toFile());
+            builder.command(args);
 
-        try {
-            msim = builder.start();
-        } catch (IOException e) {
-            System.err.println("Cannot start msim process: " + e.getMessage());
-            System.exit(1); // cannot recover
+            try {
+                msim = builder.start();
+            } catch (IOException e) {
+                System.err.println("Cannot start msim process: " + e.getMessage());
+                System.exit(1); // cannot recover
+            }
         }
 
         // Open pipes
@@ -170,6 +179,8 @@ public class MSIMConnector {
     public void fini() {
         // Ensure pipe is empty
         flushOutput();
+
+        if (debug) return;
 
         try {
             msim.waitFor();

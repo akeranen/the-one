@@ -27,38 +27,39 @@ public class MSIMMovementEngine extends MovementEngine {
     /** Number of buffered waypoints per host */
     private int waypointBufferSize = 0;
     /** queue of hosts waiting for a new path */
-    private final PriorityQueue<MSIMMovementEngine.PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
-    /** queue of pending waypoint requests */ // TODO maybe turn into priorityQueue and sort by ID for cache optimization?
-    private final ArrayDeque<MSIMMovementEngine.WaypointRequest> waypointRequests = new ArrayDeque<>();
+    private final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
+    /** queue of pending waypoint requests */
+    //private final ArrayDeque<WaypointRequest> waypointRequests = new ArrayDeque<>(); // TODO benchmark
+    private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
 
-
-    //private static int PathWaitingHostCount = 0; // Enable if stable ordering is required
-    static class PathWaitingHost implements Comparable<MSIMMovementEngine.PathWaitingHost> {
+    static class PathWaitingHost implements Comparable<PathWaitingHost> {
         public int hostID;
         public double nextPathAvailableTime;
-        //private final int order; // Enable if stable ordering is required
 
         public PathWaitingHost(int hostID, double nextPathAvailableTime) {
             this.hostID = hostID;
             this.nextPathAvailableTime = nextPathAvailableTime;
-            //this.order = PathWaitingHostCount++; // Enable if stable ordering is required
         }
 
         @Override
-        public int compareTo(MSIMMovementEngine.PathWaitingHost o) {
+        public int compareTo(PathWaitingHost o) {
             int t = (int)(this.nextPathAvailableTime - o.nextPathAvailableTime);
-            //return (t != 0) ? t : this.order - o.order; // Enable if stable ordering is required
-            return t;
+            return (t != 0) ? t : this.hostID - o.hostID;
         }
     }
 
-    static class WaypointRequest {
+    static class WaypointRequest implements Comparable<WaypointRequest> {
         public int hostID;
         public int numWaypoints; // request size
 
         public WaypointRequest(int hostID, int numWaypoints) {
             this.hostID = hostID;
             this.numWaypoints = numWaypoints;
+        }
+
+        @Override
+        public int compareTo(WaypointRequest o) {
+            return this.hostID - o.hostID;
         }
     }
 
@@ -80,15 +81,17 @@ public class MSIMMovementEngine extends MovementEngine {
      * Initializes the movement engine
      * Sends configuration and initial host locations to MSIM
      * Note: Hosts get their initial location on construction, not here!
-     * @param hosts to be initialized
+     * @param hosts to be moved
      */
     @Override
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
+        this.hosts = hosts;
+
         // Initially all hosts wait for a path
         for (int i=0,n = hosts.size(); i<n; i++) {
             //double nextPathAvailableTime = host.movement.nextPathAvailable();
             double nextPathAvailableTime = 0.0;
-            pathWaitingHosts.add(new MSIMMovementEngine.PathWaitingHost(i, nextPathAvailableTime));
+            pathWaitingHosts.add(new PathWaitingHost(i, nextPathAvailableTime));
         }
 
         // Start process and open connection
@@ -132,12 +135,11 @@ public class MSIMMovementEngine extends MovementEngine {
      * Moves all hosts in the world for a given amount of time
      * Only performs host movement. Even if enabled it does not
      * perform interface contact detection or other functionality.
-     * @param hosts to be moved
      * @param timeIncrement how long all nodes should move
      */
     @Override
-    public void warmup(List<DTNHost> hosts, double timeIncrement) {
-        run_movement_pass(hosts, timeIncrement);
+    public void warmup(double timeIncrement) {
+        run_movement_pass(timeIncrement);
     }
 
     /**
@@ -145,9 +147,9 @@ public class MSIMMovementEngine extends MovementEngine {
      * @param timeIncrement The time how long all hosts should move
      */
     @Override
-    public void moveHosts(List<DTNHost> hosts, double timeIncrement) {
+    public void moveHosts(double timeIncrement) {
 
-        run_movement_pass(hosts, timeIncrement);
+        run_movement_pass(timeIncrement);
 
         // TODO if enabled, synchronize host locations
 
@@ -156,7 +158,7 @@ public class MSIMMovementEngine extends MovementEngine {
 
     }
 
-    private void run_movement_pass(List<DTNHost> hosts, double timeIncrement) {
+    private void run_movement_pass(double timeIncrement) {
         double time = SimClock.getTime();
 
         // Request movement pass
@@ -165,7 +167,7 @@ public class MSIMMovementEngine extends MovementEngine {
 
         // Check hosts waiting for new path
         while (!pathWaitingHosts.isEmpty()) {
-            MSIMMovementEngine.PathWaitingHost pwh = pathWaitingHosts.peek();
+            PathWaitingHost pwh = pathWaitingHosts.peek();
 
             if (time < pwh.nextPathAvailableTime) {
                 // All remaining hosts have their time in the future
@@ -181,7 +183,7 @@ public class MSIMMovementEngine extends MovementEngine {
             if (host.getPath() == null) {
                 // Still no path available
                 double nextPathAvailableTime = host.getMovement().nextPathAvailable();
-                pathWaitingHosts.add(new MSIMMovementEngine.PathWaitingHost(pwh.hostID, nextPathAvailableTime));
+                pathWaitingHosts.add(new PathWaitingHost(pwh.hostID, nextPathAvailableTime));
             } else {
                 // Just got new path => queue full buffer waypoint request
                 waypointRequests.add(new WaypointRequest(pwh.hostID, waypointBufferSize));

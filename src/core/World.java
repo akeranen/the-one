@@ -124,13 +124,13 @@ public class World {
 		}
 
 		while(SimClock.getTime() < -updateInterval) {
-			movementEngine.moveHosts(hosts, updateInterval);
+			movementEngine.moveHosts(updateInterval);
 			simClock.advance(updateInterval);
 		}
 
 		double finalStep = -SimClock.getTime();
 
-		movementEngine.moveHosts(hosts, finalStep);
+		movementEngine.moveHosts(finalStep);
 		simClock.setTime(0);
 	}
 
@@ -173,7 +173,7 @@ public class World {
 			setNextEventQueue();
 		}
 
-		movementEngine.moveHosts(this.hosts, this.updateInterval);
+		movementEngine.moveHosts(this.updateInterval);
 		simClock.setTime(runUntil);
 
 		updateHosts();

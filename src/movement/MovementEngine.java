@@ -15,6 +15,9 @@ public abstract class MovementEngine {
     /** The movement engine type -setting id ({@value})*/
     public static final String TYPE = "type";
 
+    /** List of all hosts in the simulation */
+    protected List<DTNHost> hosts = null;
+
     /**
      * Creates a new MovementEngine based on a Settings object's settings.
      * @param settings The Settings object where the settings are read from
@@ -36,17 +39,15 @@ public abstract class MovementEngine {
 
     /**
      * Moves all hosts in the world for a given amount of time
-     * @param hosts to be moved
      * @param timeIncrement how long all nodes should move
      */
-    public abstract void warmup(List<DTNHost> hosts, double timeIncrement);
+    public abstract void warmup(double timeIncrement);
 
     /**
      * Moves all hosts in the world for a given amount of time
-     * @param hosts to be moved
      * @param timeIncrement how long all nodes should move
      */
-    public abstract void moveHosts(List<DTNHost> hosts, double timeIncrement);
+    public abstract void moveHosts(double timeIncrement);
 
 
 

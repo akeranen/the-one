@@ -97,12 +97,8 @@ public class MSIMMovementEngine extends MovementEngine {
         // Start process and open connection
         connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize);
 
-        // Initialize simulation
-        connector.writeHeader(MSIMConnector.Header.Initialize);
-        // TODO just send entitiy positions header
-
-
         // Send initial locations
+        connector.writeHeader(MSIMConnector.Header.SyncPositions);
         for (int i = 0; i < hosts.size(); i++) {
             DTNHost host = hosts.get(i);
             connector.writeCoord(host.getLocation());
@@ -154,8 +150,15 @@ public class MSIMMovementEngine extends MovementEngine {
         // TODO if enabled, synchronize host locations
 
         // TODO if enabled, request interface contact detection
+        run_contact_detection_pass();
+
         // TODO receive LinkUp/LinkDown events
 
+    }
+
+    private void run_contact_detection_pass() {
+        connector.writeHeader(MSIMConnector.Header.ContactDetection);
+        connector.flushOutput();
     }
 
     private void run_movement_pass(double timeIncrement) {

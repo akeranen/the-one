@@ -46,7 +46,8 @@ public class MSIMConnector {
     boolean debug = false;
 
     public enum Header {
-        Initialize(0),
+        // Must be 0, because 0 is correctly read even if endianness is interpreted incorrectly.
+        TestDataExchange(0),
         Shutdown(1),
         Move(2),
         SyncPositions(3),
@@ -61,7 +62,7 @@ public class MSIMConnector {
         public static Header fromID(int id) {
             switch(id) {
                 case 0:
-                    return Initialize;
+                    return TestDataExchange;
                 case 1:
                     return Shutdown;
                 case 2:
@@ -338,10 +339,11 @@ public class MSIMConnector {
      */
     public void testDataExchange() {
         System.out.print("Testing pipe data exchange\n");
+        writeHeader(MSIMConnector.Header.TestDataExchange);
 
         System.out.print("Testing int/uint32 exchange\n");
         // Send int value, expect value+1, send value+2
-        int[] ivalues = {0, 257, 65793, 1073807617};
+        int[] ivalues = {1, 257, 65793, 1073807617};
         for(int value : ivalues) {
             writeInt(value);
             flushOutput();
@@ -350,6 +352,7 @@ public class MSIMConnector {
             System.out.printf("MSIMConnector.testDataExchange() Received %d\n", result);
             if (result != value + 1) {
                 System.err.printf("MSIMConnector.testDataExchange() failed: Expected %d, but got %d\n", value + 1, result);
+                System.exit(1);
             }
             writeInt(result + 1);
             flushOutput();
@@ -367,6 +370,7 @@ public class MSIMConnector {
             System.out.printf("MSIMConnector.testDataExchange() Received %f\n", result);
             if (result != value * 2.0f) {
                 System.err.printf("MSIMConnector.testDataExchange() failed: Expected %f, but got %f\n", value + 1, result);
+                System.exit(1);
             }
             writeFloat(result * 2.0f);
             flushOutput();
@@ -384,6 +388,7 @@ public class MSIMConnector {
         value += "bar";
         if (!result.equals(value)) {
             System.err.printf("MSIMConnector.testDataExchange() failed: Expected %s, but got %s\n", value, result);
+            System.exit(1);
         }
         result += "baz";
         writeString(result);

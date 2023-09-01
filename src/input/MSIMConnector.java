@@ -50,9 +50,10 @@ public class MSIMConnector {
         TestDataExchange(0),
         Shutdown(1),
         Move(2),
-        SyncPositions(3),
-        ContactDetection(4),
-        Count(5);
+        SetPositions(3),
+        GetPositions(4),
+        ContactDetection(5),
+        Count(6);
 
         private final int id;
         private Header(int id) {
@@ -68,8 +69,10 @@ public class MSIMConnector {
                 case 2:
                     return Move;
                 case 3:
-                    return SyncPositions;
+                    return SetPositions;
                 case 4:
+                    return GetPositions;
+                case 5:
                     return ContactDetection;
             }
             throw new IllegalArgumentException("Cannot convert id (" + id + ") to enum Header.");
@@ -326,10 +329,10 @@ public class MSIMConnector {
         writeFloat((float) coord.getY());
     }
 
-    public void readCoordInto(Coord coord) {
+    public Coord readCoord() {
         float x = readFloat();
         float y = readFloat();
-        coord.setLocation(x, y);
+        return new Coord(x, y);
     }
 
     /**

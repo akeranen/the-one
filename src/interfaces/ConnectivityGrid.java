@@ -143,28 +143,6 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	/**
-	 * Removes a network interface from the overlay grid
-	 * @param ni The interface to be removed
-	 */
-	public void removeInterface(NetworkInterface ni) {
-		GridCell c = ginterfaces.get(ni);
-		if (c != null) {
-			c.removeInterface(ni);
-		}
-		ginterfaces.remove(ni);
-	}
-
-	/**
-	 * Adds interfaces to overlay grid
-	 * @param interfaces Collection of interfaces to add
-	 */
-	public void addInterfaces(Collection<NetworkInterface> interfaces) {
-		for (NetworkInterface n : interfaces) {
-			addInterface(n);
-		}
-	}
-
-	/**
 	 * Checks and updates (if necessary) interface's position in the grid
 	 * @param ni The interface to update
 	 */
@@ -222,13 +200,6 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	/**
-	 * Returns all interfaces that use the same technology and channel
-	 */
-	public Collection<NetworkInterface> getAllInterfaces() {
-		return (Collection<NetworkInterface>)ginterfaces.keySet();
-	}
-
-	/**
 	 * Returns all interfaces that are "near" (i.e., in neighboring grid cells)
 	 * and use the same technology and channel as the given interface
 	 * @param ni The interface whose neighboring interfaces are returned
@@ -237,7 +208,7 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	public Collection<NetworkInterface> getNearInterfaces(
 			NetworkInterface ni) {
 		ArrayList<NetworkInterface> niList = new ArrayList<NetworkInterface>();
-		GridCell loc = (GridCell)ginterfaces.get(ni);
+		GridCell loc = ginterfaces.get(ni);
 
 		if (loc != null) {
 			GridCell[] neighbors =

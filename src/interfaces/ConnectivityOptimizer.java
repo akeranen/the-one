@@ -20,12 +20,6 @@ abstract public class ConnectivityOptimizer {
 	abstract public void addInterface(NetworkInterface ni);
 
 	/**
-	 * Adds a collection of network interfaces to the optimizer (except of those
-	 * already added
-	 */
-	abstract public void addInterfaces(Collection<NetworkInterface> interfaces);
-
-	/**
 	 * Updates a network interface's location
 	 */
 	abstract public void updateLocation(NetworkInterface ni);
@@ -40,9 +34,4 @@ abstract public class ConnectivityOptimizer {
 	abstract public Collection<NetworkInterface> getNearInterfaces(
 			NetworkInterface ni);
 
-	/**
-	 * Finds all other interfaces that are registered to the
-	 * ConnectivityOptimizer
-	 */
-	abstract public Collection<NetworkInterface> getAllInterfaces();
 }

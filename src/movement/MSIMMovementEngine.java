@@ -10,21 +10,22 @@ import java.util.*;
 /**
  * Provides a GPU accelerated implementation to move hosts in the world according to their MovementModel
  * by communicating to a MSIM process.
- * Supports accelerated interface contact detection (LinkUp/LinkDown Events).
+ * Supports accelerated connectivity detection.
+ * Attention: Connectivity detection currently only supports a single interface type and only 1 interface per host!
  */
 public class MSIMMovementEngine extends MovementEngine {
-    /** movement engines -setting id ({@value})*/
+    /** Class name */
     public static final String NAME = "MSIMMovementEngine";
-    /** waypoint buffer size -setting id ({@value})*/
+    /** Waypoint buffer size -setting id ({@value})*/
     public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
 
     /** Interface to the MSIM process */
     private MSIMConnector connector = null;
     /** Number of buffered waypoints per host */
     private int waypointBufferSize = 0;
-    /** queue of hosts waiting for a new path */
+    /** Queue of hosts waiting for a new path */
     private final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
-    /** queue of pending waypoint requests */
+    /** Queue of pending waypoint requests */
     //private final ArrayDeque<WaypointRequest> waypointRequests = new ArrayDeque<>(); // TODO benchmark
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
     /** The MSIMConnectivityOptimizer associated with this MSIMMovementEngine */
@@ -213,7 +214,6 @@ public class MSIMMovementEngine extends MovementEngine {
         // Send waypoints updates
         assert(waypointRequests.size() < hosts.size());
         connector.writeInt(waypointRequests.size()); // Number of updates (1 per host)
-        System.out.printf("MSIMMovementEngine.move() Sending %d waypoint updates\n", waypointRequests.size());
         while (!waypointRequests.isEmpty()) {
             WaypointRequest request = waypointRequests.poll();
             DTNHost host = hosts.get(request.hostID);
@@ -234,7 +234,6 @@ public class MSIMMovementEngine extends MovementEngine {
 
         // Receive waypoint requests
         int numRequests = connector.readInt();
-        System.out.printf("MSIMMovementEngine.move() Received %d waypoint requests\n", numRequests);
         for (int i = 0; i < numRequests; i++) {
             int hostID = connector.readInt();
             int numWaypoints = connector.readShort();

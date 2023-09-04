@@ -21,7 +21,7 @@ import static java.nio.file.StandardOpenOption.*;
  * and/or for detecting interface contacts.
  */
 public class MSIMConnector {
-    /** movement engines -setting id ({@value})*/
+    /** Class name */
     public static final String NAME = "MSIMConnector";
 
     /** path of msim binary/working directory -setting id ({@value})*/

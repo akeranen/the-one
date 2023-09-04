@@ -1,6 +1,7 @@
 package movement;
 
 import core.*;
+import interfaces.ConnectivityOptimizer;
 
 import java.util.List;
 import java.util.PriorityQueue;
@@ -107,6 +108,12 @@ public class DefaultMovementEngine extends MovementEngine {
         for (int i=0,n = hosts.size(); i<n; i++) {
             move(i, timeIncrement);
         }
+    }
+
+    @Override
+    public ConnectivityOptimizer optimizer() {
+        // TODO Associate ConnectivityGrid as default optimizer
+        return null;
     }
 
     /**

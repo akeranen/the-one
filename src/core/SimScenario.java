@@ -11,10 +11,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import movement.DefaultMovementEngine;
-import movement.MapBasedMovement;
-import movement.MovementEngine;
-import movement.MovementModel;
+import interfaces.ConnectivityOptimizer;
+import movement.*;
 import movement.map.SimMap;
 import routing.MessageRouter;
 
@@ -110,6 +108,8 @@ public class SimScenario implements Serializable {
 	private boolean simulateConnections;
 	/** Map used for host movement (if any) */
 	private SimMap simMap;
+	/** Engine for host movement */
+	private MovementEngine movementEngine;
 
 	/** Global connection event listeners */
 	private List<ConnectionListener> connectionListeners;
@@ -164,15 +164,8 @@ public class SimScenario implements Serializable {
 		this.worldSizeY = worldSize[1];
 
 		s.setNameSpace(MovementEngine.MOVEMENT_ENGINE_NS);
-		MovementEngine movementEngine;
-		if (s.contains(MovementEngine.TYPE)) {
-			movementEngine =
-					(MovementEngine)s.createIntializedObject(ME_PACKAGE +
-							s.getSetting(MovementEngine.TYPE));
-		} else {
-			movementEngine =
-					(MovementEngine)s.createIntializedObject(ME_PACKAGE + DefaultMovementEngine.NAME);
-		}
+		String movementEngineName = s.getSetting(MovementEngine.TYPE, DefaultMovementEngine.NAME);
+		this.movementEngine = (MovementEngine)s.createIntializedObject(ME_PACKAGE + movementEngineName);
 		s.restoreNameSpace();
 
 		createHosts();
@@ -366,6 +359,7 @@ public class SimScenario implements Serializable {
 				NetworkInterface iface =
 					(NetworkInterface)intSettings.createIntializedObject(
 							INTTYPE_PACKAGE +intSettings.getSetting(INTTYPE_S));
+				iface.setOptimizer(this.movementEngine.optimizer());
 				iface.setClisteners(connectionListeners);
 				iface.setGroupSettings(s);
 				interfaces.add(iface);

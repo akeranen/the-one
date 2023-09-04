@@ -1,15 +1,11 @@
 package movement;
 
-import core.DTNHost;
-import core.MovementListener;
-import core.Settings;
-import core.SimClock;
-import core.Coord;
+import core.*;
 import input.MSIMConnector;
+import interfaces.ConnectivityOptimizer;
+import interfaces.MSIMConnectivityOptimizer;
 
-import java.util.ArrayDeque;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Provides a GPU accelerated implementation to move hosts in the world according to their MovementModel
@@ -31,6 +27,8 @@ public class MSIMMovementEngine extends MovementEngine {
     /** queue of pending waypoint requests */
     //private final ArrayDeque<WaypointRequest> waypointRequests = new ArrayDeque<>(); // TODO benchmark
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
+    /** The MSIMConnectivityOptimizer associated with this MSIMMovementEngine */
+    private MSIMConnectivityOptimizer optimizer = null;
 
     static class PathWaitingHost implements Comparable<PathWaitingHost> {
         public int hostID;
@@ -154,6 +152,15 @@ public class MSIMMovementEngine extends MovementEngine {
         run_contact_detection_pass();
         // TODO receive LinkUp/LinkDown events
 
+    }
+
+    /**
+     * Returns the MSIMConnectivityOptimizer associated with a MSIMMovementEngine.
+     * Returns null if the optimizer is disabled.
+     */
+    @Override
+    public ConnectivityOptimizer optimizer() {
+        return optimizer;
     }
 
     private void sync_positions() {

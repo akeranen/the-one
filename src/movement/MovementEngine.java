@@ -2,6 +2,7 @@ package movement;
 
 import core.DTNHost;
 import core.Settings;
+import interfaces.ConnectivityOptimizer;
 
 import java.util.List;
 
@@ -49,6 +50,8 @@ public abstract class MovementEngine {
      */
     public abstract void moveHosts(double timeIncrement);
 
-
-
+    /**
+     * Returns the ConnectivityOptimizer associated with this MovementEngine, or null if none.
+     */
+    public abstract ConnectivityOptimizer optimizer();
 }

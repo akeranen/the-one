@@ -116,6 +116,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		this.transmitSpeed = ni.transmitSpeed;
 		this.scanInterval = ni.scanInterval;
 		this.ah = ni.ah;
+		this.optimizer = ni.optimizer;
 
 		if (ni.activenessJitterMax > 0) {
 			this.activenessJitterValue = rng.nextInt(ni.activenessJitterMax);
@@ -154,13 +155,27 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 			comBus.subscribe(SPEED_ID, this);
 		}
 
+		// Note: The optimizer is initialized here, because it may need
+		//       the interface location, aka host location, which
+		//       is only available after the host is assigned to this interface.
+		// TODO  1. Refactor ConnectivityGrid as standalone optimizer class
+		//          (Not instanced through ConnectivityGridFactory(..))
+		//       2. Associate ConnectivityGrid with DefaultMovementEngine as default optimizer
+		//       3. Only call updateLocation(..) here
 		if (transmitRange > 0) {
-			optimizer = ConnectivityGrid.ConnectivityGridFactory(
-					this.interfacetype.hashCode(), transmitRange);
+			if (optimizer == null) {
+				// None set yet => use ConnectivityGrid as default optimizer
+				optimizer = ConnectivityGrid.ConnectivityGridFactory(
+						this.interfacetype.hashCode(), transmitRange);
+			}
 			optimizer.addInterface(this);
 		} else {
 			optimizer = null;
 		}
+	}
+
+	public void setOptimizer(ConnectivityOptimizer optimizer) {
+		this.optimizer = optimizer;
 	}
 
 	/**

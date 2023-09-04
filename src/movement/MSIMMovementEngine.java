@@ -18,6 +18,8 @@ public class MSIMMovementEngine extends MovementEngine {
     public static final String NAME = "MSIMMovementEngine";
     /** Waypoint buffer size -setting id ({@value})*/
     public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
+    /** Connectivity optimizer -setting id ({@value})*/
+    public static final String DISABLE_OPTIMIZER_S = "disableConnectivityOptimizer";
 
     /** Interface to the MSIM process */
     private MSIMConnector connector = null;
@@ -71,9 +73,14 @@ public class MSIMMovementEngine extends MovementEngine {
 
         s.setNameSpace(NAME);
         waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
+        boolean disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
         s.restoreNameSpace();
 
         connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
+
+        if (!disableOptimizer) {
+            optimizer = (MSIMConnectivityOptimizer) s.createIntializedObject("interfaces." + MSIMConnectivityOptimizer.NAME);
+        }
     }
 
     /**
@@ -91,6 +98,39 @@ public class MSIMMovementEngine extends MovementEngine {
             //double nextPathAvailableTime = host.movement.nextPathAvailable();
             double nextPathAvailableTime = 0.0;
             pathWaitingHosts.add(new PathWaitingHost(i, nextPathAvailableTime));
+        }
+
+        if (optimizer != null) {
+            // For sanity checks
+            String type = null; // Only one type supported
+            double range = -1.0; // Range should be equal for all
+
+            // Initialize NetworkInterface<->ID mapping
+            HashMap<NetworkInterface, Integer> NI2ID = new HashMap<>();
+            HashMap<Integer, NetworkInterface> ID2NI = new HashMap<>();
+            for (int i = 0; i < hosts.size(); i++) {
+                List<NetworkInterface> interfaces = hosts.get(i).getInterfaces();
+                assert(interfaces.size() <= 1);
+                if (interfaces.size() == 1) {
+                    NetworkInterface ni = interfaces.get(0);
+                    // Add to mappings
+                    NI2ID.put(ni, i); // Note: We use the hostID as InterfaceID
+                    ID2NI.put(i, ni);
+                    // Sanity checks
+                    if (type == null) {
+                        type = ni.getInterfaceType();
+                    } else {
+                        assert(type.equals(ni.getInterfaceType()));
+                    }
+                    if (range == -1.0) {
+                        range = ni.getTransmitRange();
+                    } else {
+                        assert(range == ni.getTransmitRange());
+                    }
+                }
+            }
+            optimizer.setNI2ID(NI2ID);
+            optimizer.setID2NI(ID2NI);
         }
 
         // Start process and open connection
@@ -149,10 +189,9 @@ public class MSIMMovementEngine extends MovementEngine {
         // TODO if enabled, synchronize host locations
         sync_positions();
 
-        // TODO if enabled, request interface contact detection
-        run_contact_detection_pass();
-        // TODO receive LinkUp/LinkDown events
-
+        if (optimizer != null) {
+            run_contact_detection_pass();
+        }
     }
 
     /**
@@ -177,6 +216,17 @@ public class MSIMMovementEngine extends MovementEngine {
     private void run_contact_detection_pass() {
         connector.writeHeader(MSIMConnector.Header.ContactDetection);
         connector.flushOutput();
+
+        // Receive link up events
+        int linkUpEventCount = connector.readInt();
+        HashMap<Integer, List<Integer>> nearInterfaces = new HashMap<>((int) (linkUpEventCount / 0.75 + 1));
+        for (int i = 0; i < linkUpEventCount; i++) {
+            int ID0 = connector.readInt();
+            int ID1 = connector.readInt();
+            nearInterfaces.computeIfAbsent(ID0, k -> new ArrayList<>()).add(ID1);
+            nearInterfaces.computeIfAbsent(ID1, k -> new ArrayList<>()).add(ID0);
+        }
+        optimizer.setNearInterfaces(nearInterfaces);
     }
 
     private void run_movement_pass(double timeIncrement) {

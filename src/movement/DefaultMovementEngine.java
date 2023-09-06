@@ -3,6 +3,9 @@ package movement;
 import core.*;
 import interfaces.ConnectivityOptimizer;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -14,6 +17,7 @@ public class DefaultMovementEngine extends MovementEngine {
     public static final String NAME = "DefaultMovementEngine";
     /** queue of hosts waiting for a new path */
     private final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
+    private final Coord origin = new Coord(0.0, 0.0);
 
     static class PathWaitingHost implements Comparable<PathWaitingHost> {
         public int hostID;
@@ -110,6 +114,8 @@ public class DefaultMovementEngine extends MovementEngine {
         for (int i=0,n = hosts.size(); i<n; i++) {
             move(i, timeIncrement);
         }
+
+        debug_output_positions();
     }
 
     @Override
@@ -232,6 +238,17 @@ public class DefaultMovementEngine extends MovementEngine {
         return true;
     }
 
-
+    private void debug_output_destinations(int hostID, Coord target) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/dest_one.txt",true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        // Format: tick,ID,x,y
+        writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
+        writer.close();
+    }
 
 }

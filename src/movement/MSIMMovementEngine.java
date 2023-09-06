@@ -193,6 +193,8 @@ public class MSIMMovementEngine extends MovementEngine {
         if (optimizer != null) {
             run_contact_detection_pass();
         }
+
+        debug_output_positions();
     }
 
     /**

@@ -4,6 +4,7 @@ import core.DTNHost;
 import core.Settings;
 import interfaces.ConnectivityOptimizer;
 
+import java.io.*;
 import java.util.List;
 
 
@@ -56,4 +57,18 @@ public abstract class MovementEngine {
      * Returns the ConnectivityOptimizer associated with this MovementEngine, or null if none.
      */
     public abstract ConnectivityOptimizer optimizer();
+
+    protected void debug_output_positions() {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/pos_one.txt",true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        for (DTNHost host : hosts) {
+            writer.printf("%a\n%a\n", host.getLocation().getX(), host.getLocation().getY());
+        }
+        writer.close();
+    }
 }

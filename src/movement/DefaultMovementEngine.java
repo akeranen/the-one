@@ -125,6 +125,52 @@ public class DefaultMovementEngine extends MovementEngine {
      * @param timeIncrement The time how long the node should move
      */
     public void move(int hostID, double timeIncrement) {
+        DTNHost host = hosts.get(hostID);
+        if (!host.isMovementActive() || host.getPath() == null) {
+            return;
+        }
+        if (host.getDestination() == null) {
+            if (!setNextWaypoint(hostID, host)) {
+                return;
+            }
+        }
+
+        Coord target = host.getDestination();
+        double speed = host.getSpeed();
+
+        double dtt = host.getLocation().distance(target); // distance to target
+        double ttt = dtt / speed; // time to target
+
+        while (timeIncrement >= ttt) {
+            // node can move past its next destination
+            host.setLocation(target); // snap to destination
+            timeIncrement -= ttt;
+
+            debug_output_destinations(hostID, target);
+
+            if (!setNextWaypoint(hostID, host)) { // get a new waypoint
+                return; // no more waypoints left
+            }
+
+            target = host.getDestination();
+            speed = host.getSpeed();
+            dtt = host.getLocation().distance(target);
+            ttt = dtt / speed;
+        }
+
+        // move towards the target
+        Coord pos = host.getLocation();
+        Coord dir = new Coord(target.getX() - pos.getX(), target.getY() - pos.getY());
+        double length = dir.distance(origin);
+
+        if (length > 0) {
+            dir.setLocation(dir.getX() / length, dir.getY() / length); // Normalize
+            pos.translate(dir.getX() * timeIncrement, dir.getY() * timeIncrement);
+            host.setLocation(pos);
+        }
+    }
+
+    /*public void mov_old(int hostID, double timeIncrement) {
         double possibleMovement;
         double distance;
         double dx, dy;
@@ -146,6 +192,7 @@ public class DefaultMovementEngine extends MovementEngine {
             // node can move past its next destination
             host.setLocation(host.getDestination()); // snap to destination
             possibleMovement -= distance;
+            debug_output_destinations();
             if (!setNextWaypoint(hostID, host)) { // get a new waypoint
                 return; // no more waypoints left
             }
@@ -156,12 +203,12 @@ public class DefaultMovementEngine extends MovementEngine {
         Coord location = host.getLocation();
         Coord destination = host.getDestination();
         dx = (possibleMovement/distance) *
-            (destination.getX() - location.getX());
+                (destination.getX() - location.getX());
         dy = (possibleMovement/distance) *
-            (destination.getY() - location.getY());
+                (destination.getY() - location.getY());
         location.translate(dx, dy);
         host.setLocation(location);
-    }
+    }*/
 
     /**
      * Sets the next destination and speed to correspond to the next waypoint

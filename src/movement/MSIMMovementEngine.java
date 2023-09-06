@@ -183,6 +183,7 @@ public class MSIMMovementEngine extends MovementEngine {
      */
     @Override
     public void moveHosts(double timeIncrement) {
+        currentTick++;
 
         run_movement_pass(timeIncrement);
 

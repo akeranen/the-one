@@ -18,6 +18,8 @@ public abstract class MovementEngine {
 
     /** List of all hosts in the simulation */
     protected List<DTNHost> hosts = null;
+    /** Current simulation tick */
+    protected long currentTick = 0;
 
     /**
      * Creates a new MovementEngine based on a Settings object's settings.

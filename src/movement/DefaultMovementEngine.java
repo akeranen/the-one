@@ -80,6 +80,8 @@ public class DefaultMovementEngine extends MovementEngine {
      */
     @Override
     public void moveHosts(double timeIncrement) {
+        currentTick++;
+
         double time = SimClock.getTime();
 
         // Check hosts waiting for new path

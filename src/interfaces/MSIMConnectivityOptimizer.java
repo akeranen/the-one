@@ -53,10 +53,17 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 		if (ids == null) {
 			return Collections.emptyList();
 		}
+
+		boolean deterministic = true; // TODO add setting
+		if (deterministic) {
+			Collections.sort(ids);
+		}
+
 		ArrayList<NetworkInterface> interfaces = new ArrayList<>(ids.size());
 		for (int id : ids) {
 			interfaces.add(ID_to_NI(id));
 		}
+
 		return interfaces;
 	}
 

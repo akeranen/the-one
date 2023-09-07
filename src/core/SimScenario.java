@@ -112,15 +112,15 @@ public class SimScenario implements Serializable {
 	private MovementEngine movementEngine;
 
 	/** Global connection event listeners */
-	private List<ConnectionListener> connectionListeners;
+	private List<ConnectionListener> connectionListeners = new ArrayList<>();
 	/** Global message event listeners */
-	private List<MessageListener> messageListeners;
+	private List<MessageListener> messageListeners = new ArrayList<>();
 	/** Global movement event listeners */
-	private List<MovementListener> movementListeners;
+	private List<MovementListener> movementListeners = new ArrayList<>();
 	/** Global update event listeners */
-	private List<UpdateListener> updateListeners;
+	private List<UpdateListener> updateListeners = new ArrayList<>();
 	/** Global application event listeners */
-	private List<ApplicationListener> appListeners;
+	private List<ApplicationListener> appListeners = new ArrayList<>();
 
 	static {
 		DTNSim.registerForReset(SimScenario.class.getCanonicalName());
@@ -131,10 +131,24 @@ public class SimScenario implements Serializable {
 		myinstance = null;
 	}
 
-	/**
-	 * Creates a scenario based on Settings object.
-	 */
 	protected SimScenario() {
+		// Call scenario.init() after setting everything up
+	}
+
+	/**
+	 * Returns the SimScenario instance and creates one if it doesn't exist yet
+	 */
+	public static SimScenario getInstance() {
+		if (myinstance == null) {
+			myinstance = new SimScenario();
+		}
+		return myinstance;
+	}
+
+	/**
+	 * Initializes the scenario based on Settings object.
+	 */
+	public void init() {
 		Settings s = new Settings(SCENARIO_NS);
 		nrofGroups = s.getInt(NROF_GROUPS_S);
 
@@ -147,15 +161,10 @@ public class SimScenario implements Serializable {
 		s.ensurePositiveValue(endTime, END_TIME_S);
 		s.ensurePositiveValue(updateInterval, UP_INT_S);
 
+		eqHandler = new EventQueueHandler();
+
 		this.simMap = null;
 		this.maxHostRange = 1;
-
-		this.connectionListeners = new ArrayList<ConnectionListener>();
-		this.messageListeners = new ArrayList<MessageListener>();
-		this.movementListeners = new ArrayList<MovementListener>();
-		this.updateListeners = new ArrayList<UpdateListener>();
-		this.appListeners = new ArrayList<ApplicationListener>();
-		this.eqHandler = new EventQueueHandler();
 
 		/* TODO: check size from movement models */
 		s.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
@@ -174,18 +183,6 @@ public class SimScenario implements Serializable {
 				updateListeners, simulateConnections,
 				eqHandler.getEventQueues());
 	}
-
-	/**
-	 * Returns the SimScenario instance and creates one if it doesn't exist yet
-	 */
-	public static SimScenario getInstance() {
-		if (myinstance == null) {
-			myinstance = new SimScenario();
-		}
-		return myinstance;
-	}
-
-
 
 	/**
 	 * Returns the name of the simulation run

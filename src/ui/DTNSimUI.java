@@ -110,6 +110,8 @@ public abstract class DTNSimUI {
 						reportClass));
 			}
 
+			this.scen.init();
+
 			this.world = this.scen.getWorld();
 			world.warmupMovementModel(warmupTime);
 		}

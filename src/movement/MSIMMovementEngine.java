@@ -206,32 +206,6 @@ public class MSIMMovementEngine extends MovementEngine {
         return optimizer;
     }
 
-    private void sync_positions() {
-        connector.writeHeader(MSIMConnector.Header.GetPositions);
-        connector.flushOutput();
-
-        for (int i = 0; i < hosts.size(); i++) {
-            Coord coord = connector.readCoord();
-            hosts.get(i).setLocation(coord);
-        }
-    }
-
-    private void run_contact_detection_pass() {
-        connector.writeHeader(MSIMConnector.Header.ContactDetection);
-        connector.flushOutput();
-
-        // Receive link up events
-        int linkUpEventCount = connector.readInt();
-        HashMap<Integer, List<Integer>> nearInterfaces = new HashMap<>((int) (linkUpEventCount / 0.75 + 1));
-        for (int i = 0; i < linkUpEventCount; i++) {
-            int ID0 = connector.readInt();
-            int ID1 = connector.readInt();
-            nearInterfaces.computeIfAbsent(ID0, k -> new ArrayList<>()).add(ID1);
-            nearInterfaces.computeIfAbsent(ID1, k -> new ArrayList<>()).add(ID0);
-        }
-        optimizer.setNearInterfaces(nearInterfaces);
-    }
-
     private void run_movement_pass(double timeIncrement) {
         double time = SimClock.getTime();
 
@@ -304,4 +278,29 @@ public class MSIMMovementEngine extends MovementEngine {
         }
     }
 
+    private void sync_positions() {
+        connector.writeHeader(MSIMConnector.Header.GetPositions);
+        connector.flushOutput();
+
+        for (int i = 0; i < hosts.size(); i++) {
+            Coord coord = connector.readCoord();
+            hosts.get(i).setLocation(coord);
+        }
+    }
+
+    private void run_contact_detection_pass() {
+        connector.writeHeader(MSIMConnector.Header.ContactDetection);
+        connector.flushOutput();
+
+        // Receive link up events
+        int linkUpEventCount = connector.readInt();
+        HashMap<Integer, List<Integer>> nearInterfaces = new HashMap<>((int) (linkUpEventCount / 0.75 + 1));
+        for (int i = 0; i < linkUpEventCount; i++) {
+            int ID0 = connector.readInt();
+            int ID1 = connector.readInt();
+            nearInterfaces.computeIfAbsent(ID0, k -> new ArrayList<>()).add(ID1);
+            nearInterfaces.computeIfAbsent(ID1, k -> new ArrayList<>()).add(ID0);
+        }
+        optimizer.setNearInterfaces(nearInterfaces);
+    }
 }

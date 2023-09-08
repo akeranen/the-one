@@ -201,7 +201,7 @@ public class MSIMMovementEngine extends MovementEngine {
             run_contact_detection_pass();
         }
 
-        debug_output_positions("msim");
+        //debug_output_positions("msim");
     }
 
     /**
@@ -242,7 +242,7 @@ public class MSIMMovementEngine extends MovementEngine {
             } else {
                 // Just got new path => queue full buffer waypoint request
                 waypointRequests.add(new WaypointRequest(pwh.hostID, waypointBufferSize));
-                debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
+                //debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
             }
         }
 

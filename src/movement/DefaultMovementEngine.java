@@ -108,7 +108,7 @@ public class DefaultMovementEngine extends MovementEngine {
                 double nextPathAvailableTime = host.getMovement().nextPathAvailable();
                 pathWaitingHosts.add(new PathWaitingHost(pwh.hostID, nextPathAvailableTime));
             } else {
-                debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
+                //debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
             }
         }
 
@@ -117,7 +117,7 @@ public class DefaultMovementEngine extends MovementEngine {
             move(i, timeIncrement);
         }
 
-        debug_output_positions("one");
+        //debug_output_positions("one");
     }
 
     @Override
@@ -154,7 +154,7 @@ public class DefaultMovementEngine extends MovementEngine {
             host.setLocation(target); // snap to destination
             timeIncrement -= ttt;
 
-            debug_output_num_reached_destinations(hostID, target);
+            //debug_output_num_reached_destinations(hostID, target);
             //debug_num_reached_destinations++;
             //System.out.println(currentTick + ": snapped to: " + target);
             //debug_output_destinations(hostID, target); // TODO

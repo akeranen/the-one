@@ -206,6 +206,10 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param destination The destination to set
 	 */
 	public void setDestination(Coord destination, double speed) {
+		if (destination == null) {
+			this.destination = null;
+			return;
+		}
 		this.destination = destination.clone();
 		this.speed = speed;
 

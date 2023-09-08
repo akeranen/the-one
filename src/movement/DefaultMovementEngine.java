@@ -228,6 +228,7 @@ public class DefaultMovementEngine extends MovementEngine {
 
         if (!host.getPath().hasNext()) {
             host.setPath(null);
+            host.setDestination(null, 0.0);
             double nextPathAvailableTime = host.getMovement().nextPathAvailable();
             pathWaitingHosts.add(new PathWaitingHost(hostID, nextPathAvailableTime));
             return false;

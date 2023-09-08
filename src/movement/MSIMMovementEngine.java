@@ -77,6 +77,10 @@ public class MSIMMovementEngine extends MovementEngine {
         s.setNameSpace(NAME);
         waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
         boolean disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
+
+        s.setNameSpace(SimScenario.SCENARIO_NS);
+        // No need to run optimizer if connections are not simulated
+        disableOptimizer |= !s.getBoolean(SimScenario.SIM_CON_S);
         s.restoreNameSpace();
 
         connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);

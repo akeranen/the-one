@@ -5,6 +5,9 @@ import input.MSIMConnector;
 import interfaces.ConnectivityOptimizer;
 import interfaces.MSIMConnectivityOptimizer;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -194,7 +197,7 @@ public class MSIMMovementEngine extends MovementEngine {
             run_contact_detection_pass();
         }
 
-        debug_output_positions();
+        debug_output_positions("msim");
     }
 
     /**
@@ -235,6 +238,7 @@ public class MSIMMovementEngine extends MovementEngine {
             } else {
                 // Just got new path => queue full buffer waypoint request
                 waypointRequests.add(new WaypointRequest(pwh.hostID, waypointBufferSize));
+                debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
             }
         }
 
@@ -302,5 +306,20 @@ public class MSIMMovementEngine extends MovementEngine {
             nearInterfaces.computeIfAbsent(ID1, k -> new ArrayList<>()).add(ID0);
         }
         optimizer.setNearInterfaces(nearInterfaces);
+    }
+
+    private void debug_output_paths(int hostID, Coord target) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/paths_msim.txt",true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        // Format: tick,ID,x,y
+        //writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
+        // Format: tick,ID,
+        writer.printf("%d,%d\n", currentTick, hostID);
+        writer.close();
     }
 }

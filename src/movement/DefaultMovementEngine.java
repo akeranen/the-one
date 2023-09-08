@@ -107,6 +107,8 @@ public class DefaultMovementEngine extends MovementEngine {
                 // Still no path available
                 double nextPathAvailableTime = host.getMovement().nextPathAvailable();
                 pathWaitingHosts.add(new PathWaitingHost(pwh.hostID, nextPathAvailableTime));
+            } else {
+                debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
             }
         }
 
@@ -115,7 +117,7 @@ public class DefaultMovementEngine extends MovementEngine {
             move(i, timeIncrement);
         }
 
-        debug_output_positions();
+        debug_output_positions("one");
     }
 
     @Override
@@ -152,7 +154,10 @@ public class DefaultMovementEngine extends MovementEngine {
             host.setLocation(target); // snap to destination
             timeIncrement -= ttt;
 
-            debug_output_destinations(hostID, target);
+            debug_output_num_reached_destinations(hostID, target);
+            //debug_num_reached_destinations++;
+            //System.out.println(currentTick + ": snapped to: " + target);
+            //debug_output_destinations(hostID, target); // TODO
 
             if (!setNextWaypoint(hostID, host)) { // get a new waypoint
                 return; // no more waypoints left
@@ -249,6 +254,33 @@ public class DefaultMovementEngine extends MovementEngine {
         }
         // Format: tick,ID,x,y
         writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
+        writer.close();
+    }
+
+    private void debug_output_paths(int hostID, Coord target) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/paths_one.txt",true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        // Format: tick,ID,x,y
+        //writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
+        // Format: tick,ID,
+        writer.printf("%d,%d\n", currentTick, hostID);
+        writer.close();
+    }
+
+    protected void debug_output_num_reached_destinations(int hostID, Coord dest) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/dests_one.txt",true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        writer.printf("%d,%d,%f,%f\n", currentTick, hostID, dest.getX(), dest.getY());
         writer.close();
     }
 

@@ -62,14 +62,14 @@ public abstract class MovementEngine {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/msim/logs/debug/pos_" + name + ".txt",true));
+                    "/home/crydsch/msim/logs/debug/pos_" + name,true));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
         for (int i = 0; i < hosts.size(); i++) {
             DTNHost host = hosts.get(i);
-            writer.printf("%d,%d,%f,%f\n", currentTick, i, host.getLocation().getX(), host.getLocation().getY());
-            //writer.printf("%d,%d,%a,%a\n", currentTick, i, host.getLocation().getX(), host.getLocation().getY());
+            //writer.printf("%03d,%04d,%f,%f\n", currentTick, i, host.getLocation().getX(), host.getLocation().getY());
+            writer.printf("%03d,%04d,%a,%a\n", currentTick, i, host.getLocation().getX(), host.getLocation().getY());
         }
         writer.close();
     }

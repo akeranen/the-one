@@ -141,6 +141,7 @@ public class MSIMConnector {
         if (debug) {
             System.out.printf("Now start msim with: '%s'\n", String.join(" ", args));
         } else {
+            System.out.printf("Starting msim with: '%s'\n", String.join(" ", args));
             ProcessBuilder builder = new ProcessBuilder();
             builder.directory(msimDirectory);
             //builder.inheritIO();

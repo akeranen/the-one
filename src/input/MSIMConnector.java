@@ -116,7 +116,7 @@ public class MSIMConnector {
     /**
      * Starts the msim process and opens the communication connection
      */
-    public void init(int numEntities, int worldSizeX, int worldSizeY, int waypointBufferSize) {
+    public void init(int numEntities, int worldSizeX, int worldSizeY, int waypointBufferSize, double interfaceRange) {
         if (!debug) {
             // Prepare temporary directory and named pipes
             try {
@@ -135,6 +135,7 @@ public class MSIMConnector {
         args.add(String.format("--map-width=%d", worldSizeX));
         args.add(String.format("--map-height=%d", worldSizeY));
         args.add(String.format("--waypoint-buffer-size=%d", waypointBufferSize));
+        args.add(String.format("--interface-range=%f", interfaceRange));
         args.addAll(Arrays.asList(additionalArgs.split(" ")));
 
         if (debug) {

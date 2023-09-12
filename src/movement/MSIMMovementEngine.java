@@ -141,7 +141,8 @@ public class MSIMMovementEngine extends MovementEngine {
         }
 
         // Start process and open connection
-        connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize);
+        double interfaceRange = hosts.get(0).getInterface(1).getTransmitRange();
+        connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize, interfaceRange);
 
         // Send initial locations
         connector.writeHeader(MSIMConnector.Header.SetPositions);

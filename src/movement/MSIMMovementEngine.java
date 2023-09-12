@@ -297,7 +297,7 @@ public class MSIMMovementEngine extends MovementEngine {
     }
 
     private void run_contact_detection_pass() {
-        connector.writeHeader(MSIMConnector.Header.ContactDetection);
+        connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
         connector.flushOutput();
 
         // Receive link up events

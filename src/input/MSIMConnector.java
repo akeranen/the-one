@@ -52,7 +52,7 @@ public class MSIMConnector {
         Move(2),
         SetPositions(3),
         GetPositions(4),
-        ContactDetection(5),
+        ConnectivityDetection(5),
         Count(6);
 
         private final int id;
@@ -73,7 +73,7 @@ public class MSIMConnector {
                 case 4:
                     return GetPositions;
                 case 5:
-                    return ContactDetection;
+                    return ConnectivityDetection;
             }
             throw new IllegalArgumentException("Cannot convert id (" + id + ") to enum Header.");
         }

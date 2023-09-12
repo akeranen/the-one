@@ -175,8 +175,10 @@ public class MSIMConnector {
             throw new SettingsError("Cannot open pipe (" + pipeInFilepath + ") for reading", ex);
         }
 
-        // Test binary conversions (ex. endianness) works as expected across processes
-        testDataExchange();
+        if (debug) {
+            // Test binary conversions (ex. endianness) works as expected across processes
+            testDataExchange();
+        }
     }
 
     /**

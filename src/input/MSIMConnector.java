@@ -24,8 +24,10 @@ public class MSIMConnector {
     /** Class name */
     public static final String NAME = "MSIMConnector";
 
-    /** path of msim binary/working directory -setting id ({@value})*/
+    /** path of msim executable/working directory -setting id ({@value})*/
     public static final String MSIM_DIRECTORY_S = "directory";
+    /** name of msim executable -setting id ({@value})*/
+    public static final String MSIM_EXECUTABLE_S = "executable";
     /** additional arguments -setting id ({@value})*/
     public static final String ARGS_S = "additionalArgs";
 
@@ -33,6 +35,8 @@ public class MSIMConnector {
     private Process msim = null;
     /** Directory were to find the msim executable */
     private File msimDirectory = null;
+    /** Name of the msim executable */
+    private String msimExecutable = null;
     /** Additional arguments passed to the process (may be used of override arguments) */
     private String additionalArgs = null;
     /** Temporary directory for the pipes */
@@ -90,6 +94,7 @@ public class MSIMConnector {
         s.setNameSpace(MSIMMovementEngine.NAME);
 
         msimDirectory = new File(s.getSetting(MSIM_DIRECTORY_S));
+        msimExecutable = s.getSetting(MSIM_EXECUTABLE_S, "msim");
         additionalArgs = s.getSetting(ARGS_S, "");
 
         s.restoreNameSpace();
@@ -129,7 +134,7 @@ public class MSIMConnector {
 
         // Start the msim process
         List<String> args = new ArrayList<>();
-        args.add("./msim"); // Executable
+        args.add("./" + msimExecutable); // Executable
         args.add(String.format("--pipes=%s", tempDir.resolve("msim")));
         args.add(String.format("--num-entities=%d", numEntities));
         args.add(String.format("--map-width=%d", worldSizeX));

@@ -194,7 +194,7 @@ public class MSIMMovementEngine extends MovementEngine {
         sync_positions();
 
         if (optimizer != null) {
-            run_contact_detection_pass();
+            run_connectivity_detection_pass();
         }
 
         //debug_output_positions("msim");
@@ -292,7 +292,7 @@ public class MSIMMovementEngine extends MovementEngine {
         }
     }
 
-    private void run_contact_detection_pass() {
+    private void run_connectivity_detection_pass() {
         connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
         connector.flushOutput();
 

@@ -149,11 +149,6 @@ public class MSIMMovementEngine extends MovementEngine {
         for (int i = 0; i < hosts.size(); i++) {
             DTNHost host = hosts.get(i);
             connector.writeCoord(host.getLocation());
-
-            // Periodically flush output, to allow receiver to work in parallel
-            if (i % 1024 == 0) { // TODO benchmark optimal value
-                connector.flushOutput();
-            }
         }
         connector.flushOutput();
     }

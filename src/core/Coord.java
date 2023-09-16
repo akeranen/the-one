@@ -52,15 +52,23 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	}
 
 	/**
+	 * Returns the squared distance to another coordinate
+	 * @param other The other coordinate
+	 * @return The distance between this and another coordinate
+	 */
+	public double distanceSquared(Coord other) {
+		double dx = this.x - other.x;
+		double dy = this.y - other.y;
+		return dx*dx + dy*dy;
+	}
+
+	/**
 	 * Returns the distance to another coordinate
 	 * @param other The other coordinate
 	 * @return The distance between this and another coordinate
 	 */
 	public double distance(Coord other) {
-		double dx = this.x - other.x;
-		double dy = this.y - other.y;
-
-		return Math.sqrt(dx*dx + dy*dy);
+		return Math.sqrt(distanceSquared(other));
 	}
 
 	/**

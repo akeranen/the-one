@@ -21,6 +21,29 @@ public abstract class MovementEngine {
     protected List<DTNHost> hosts = null;
     /** Current simulation tick */
     protected long currentTick = 0;
+    /** Queue of hosts waiting for a new path */
+    protected final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
+
+    /**
+     * Helper class for managing hosts, which are waiting for a new movement path.
+     * When a host reaches the end of its path, it has to query its movement model for a new one.
+     * However, it may not be available immediately.
+     */
+    protected static class PathWaitingHost implements Comparable<PathWaitingHost> {
+        public int hostID;
+        public double nextPathAvailableTime;
+
+        public PathWaitingHost(int hostID, double nextPathAvailableTime) {
+            this.hostID = hostID;
+            this.nextPathAvailableTime = nextPathAvailableTime;
+        }
+
+        @Override
+        public int compareTo(PathWaitingHost o) {
+            int t = (int)(this.nextPathAvailableTime - o.nextPathAvailableTime);
+            return (t != 0) ? t : this.hostID - o.hostID;
+        }
+    }
 
     /**
      * Creates a new MovementEngine based on a Settings object's settings.
@@ -34,6 +57,20 @@ public abstract class MovementEngine {
      * @param hosts to be initialized
      */
     public abstract void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY);
+    public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
+        this.hosts = hosts;
+
+        for (int i=0; i<hosts.size(); i++) {
+            // Set initial location
+            locations.set(i, hosts.get(i).getMovementModel().getInitialLocation());
+            hosts.get(i).notifyInitialLocation();
+
+            // Initially all hosts wait for a path
+            //double nextPathAvailableTime = host.movement.nextPathAvailable(); // TODO ?
+            double nextPathAvailableTime = 0.0;
+            pathWaitingHosts.add(new PathWaitingHost(i, nextPathAvailableTime));
+        }
+    }
 
     /**
      * Finalizes the movement engine

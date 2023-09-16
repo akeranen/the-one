@@ -6,8 +6,6 @@ import interfaces.ConnectivityOptimizer;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.PriorityQueue;
 
 /**
  * Provides a default implementation to move hosts in the world according to their MovementModel
@@ -15,25 +13,8 @@ import java.util.PriorityQueue;
 public class DefaultMovementEngine extends MovementEngine {
     /** movement engines -setting id ({@value})*/
     public static final String NAME = "DefaultMovementEngine";
-    /** queue of hosts waiting for a new path */
-    private final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
     private final Coord origin = new Coord(0.0, 0.0);
 
-    static class PathWaitingHost implements Comparable<PathWaitingHost> {
-        public int hostID;
-        public double nextPathAvailableTime;
-
-        public PathWaitingHost(int hostID, double nextPathAvailableTime) {
-            this.hostID = hostID;
-            this.nextPathAvailableTime = nextPathAvailableTime;
-        }
-
-        @Override
-        public int compareTo(PathWaitingHost o) {
-            int t = (int)(this.nextPathAvailableTime - o.nextPathAvailableTime);
-            return (t != 0) ? t : this.hostID - o.hostID;
-        }
-    }
 
     /**
      * Creates a new MovementEngine based on a Settings object's settings.
@@ -41,23 +22,6 @@ public class DefaultMovementEngine extends MovementEngine {
      */
     public DefaultMovementEngine(Settings settings) {
         super(settings);
-    }
-
-    /**
-     * Initializes the movement engine
-     * Note: Hosts get their initial location on construction, not here!
-     * @param hosts to be moved
-     */
-    @Override
-    public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
-        this.hosts = hosts;
-
-        // Initially all hosts wait for a path
-        for (int i=0,n = hosts.size(); i<n; i++) {
-            //double nextPathAvailableTime = host.movement.nextPathAvailable();
-            double nextPathAvailableTime = 0.0;
-            pathWaitingHosts.add(new PathWaitingHost(i, nextPathAvailableTime));
-        }
     }
 
     /**

@@ -28,29 +28,12 @@ public class MSIMMovementEngine extends MovementEngine {
     private MSIMConnector connector = null;
     /** Number of buffered waypoints per host */
     private int waypointBufferSize = 0;
-    /** Queue of hosts waiting for a new path */
-    private final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
     /** Queue of pending waypoint requests */
     //private final ArrayDeque<WaypointRequest> waypointRequests = new ArrayDeque<>(); // TODO benchmark
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
     /** The MSIMConnectivityOptimizer associated with this MSIMMovementEngine */
     private MSIMConnectivityOptimizer optimizer = null;
 
-    static class PathWaitingHost implements Comparable<PathWaitingHost> {
-        public int hostID;
-        public double nextPathAvailableTime;
-
-        public PathWaitingHost(int hostID, double nextPathAvailableTime) {
-            this.hostID = hostID;
-            this.nextPathAvailableTime = nextPathAvailableTime;
-        }
-
-        @Override
-        public int compareTo(PathWaitingHost o) {
-            int t = (int)(this.nextPathAvailableTime - o.nextPathAvailableTime);
-            return (t != 0) ? t : this.hostID - o.hostID;
-        }
-    }
 
     static class WaypointRequest implements Comparable<WaypointRequest> {
         public int hostID;
@@ -93,19 +76,11 @@ public class MSIMMovementEngine extends MovementEngine {
     /**
      * Initializes the movement engine
      * Sends configuration and initial host locations to MSIM
-     * Note: Hosts get their initial location on construction, not here!
      * @param hosts to be moved
      */
     @Override
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
-        this.hosts = hosts;
-
-        // Initially all hosts wait for a path
-        for (int i=0,n = hosts.size(); i<n; i++) {
-            //double nextPathAvailableTime = host.movement.nextPathAvailable();
-            double nextPathAvailableTime = 0.0;
-            pathWaitingHosts.add(new PathWaitingHost(i, nextPathAvailableTime));
-        }
+        super.init(hosts, worldSizeX, worldSizeY);
 
         if (optimizer != null) {
             // For sanity checks

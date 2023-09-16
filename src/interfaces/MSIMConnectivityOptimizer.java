@@ -26,15 +26,6 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	public MSIMConnectivityOptimizer(Settings s) {}
 
 	/**
-	 * Adds a network interface to the optimizer (unless it is already present)
-	 */
-	public void addInterface(NetworkInterface ni) {
-		// Does nothing; This optimizer does not need to access host locations
-		// TODO Add unique ID to every NetworkInterface und build NI2ID,ID2NI mappings here
-		//      Think about host<->interface relation and how MSIM gets this information
-	}
-
-	/**
 	 * Updates a network interface's location
 	 */
 	public void updateLocation(NetworkInterface ni) {

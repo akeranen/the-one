@@ -133,16 +133,6 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	/**
-	 * Adds a network interface to the overlay grid
-	 * @param ni The new network interface
-	 */
-	public void addInterface(NetworkInterface ni) {
-		GridCell c = cellFromCoord(ni.getLocation());
-		c.addInterface(ni);
-		ginterfaces.put(ni,c);
-	}
-
-	/**
 	 * Checks and updates (if necessary) interface's position in the grid
 	 * @param ni The interface to update
 	 */
@@ -150,7 +140,10 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 		GridCell oldCell = (GridCell)ginterfaces.get(ni);
 		GridCell newCell = cellFromCoord(ni.getLocation());
 
-		if (newCell != oldCell) {
+		if (oldCell == null) { // This interface is new
+			newCell.addInterface(ni);
+			ginterfaces.put(ni, newCell);
+		} else if (newCell != oldCell) {
 			oldCell.moveInterface(ni, newCell);
 			ginterfaces.put(ni,newCell);
 		}

@@ -15,11 +15,6 @@ import core.NetworkInterface;
 abstract public class ConnectivityOptimizer {
 
 	/**
-	 * Adds a network interface to the optimizer (unless it is already present)
-	 */
-	abstract public void addInterface(NetworkInterface ni);
-
-	/**
 	 * Updates a network interface's location
 	 */
 	abstract public void updateLocation(NetworkInterface ni);

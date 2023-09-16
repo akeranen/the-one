@@ -370,9 +370,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	 */
 	public boolean isWithinRange(NetworkInterface other) {
 		double range = Math.min(getTransmitRange(), other.getTransmitRange());
-
-		return this.host.getLocation().distance(
-				other.getHost().getLocation()) <= range;
+		return this.host.getLocation().distanceSquared(other.host.getLocation()) <= range * range;
 	}
 
 	/**

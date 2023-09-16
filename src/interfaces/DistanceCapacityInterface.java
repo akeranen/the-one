@@ -73,33 +73,7 @@ public class DistanceCapacityInterface extends NetworkInterface {
 	 * that are out of range and creates new ones).
 	 */
 	public void update() {
-		if (optimizer == null) {
-			return; /* nothing to do */
-		}
-
-		// First break the old ones
-		optimizer.updateLocation(this);
-		for (int i=0; i<this.connections.size(); ) {
-			Connection con = this.connections.get(i);
-			NetworkInterface anotherInterface = con.getOtherInterface(this);
-
-			// all connections should be up at this stage
-			assert con.isUp() : "Connection " + con + " was down!";
-
-			if (!isWithinRange(anotherInterface)) {
-				disconnect(con,anotherInterface);
-				connections.remove(i);
-			}
-			else {
-				i++;
-			}
-		}
-		// Then find new possible connections
-		Collection<NetworkInterface> interfaces =
-			optimizer.getInterfacesInRange(this);
-		for (NetworkInterface i : interfaces) {
-			connect(i);
-		}
+		super.update(); // Break old & make new connections
 
 		/* update all connections */
 		for (Connection con : getConnections()) {

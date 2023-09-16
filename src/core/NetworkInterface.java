@@ -8,6 +8,7 @@ import interfaces.ConnectivityGrid;
 import interfaces.ConnectivityOptimizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -404,9 +405,37 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 
 	/**
 	 * Updates the state of current connections (ie tears down connections
-	 * that are out of range, recalculates transmission speeds etc.).
+	 * that are out of range, makes new connections, recalculates transmission speeds etc.).
 	 */
-	abstract public void update();
+	public void update() {
+		if (optimizer == null) {
+			return; /* nothing to do */
+		}
+
+		// First break the old ones
+		optimizer.updateLocation(this);
+		for (int i=0; i<this.connections.size(); ) {
+			Connection con = this.connections.get(i);
+			NetworkInterface anotherInterface = con.getOtherInterface(this);
+
+			// all connections should be up at this stage
+			assert con.isUp() : "Connection " + con + " was down!";
+
+			if (!isWithinRange(anotherInterface)) {
+				disconnect(con,anotherInterface);
+				connections.remove(i);
+			}
+			else {
+				i++;
+			}
+		}
+		// Then find new possible connections
+		Collection<NetworkInterface> interfaces =
+				optimizer.getInterfacesInRange(this);
+		for (NetworkInterface i : interfaces) {
+			connect(i);
+		}
+	}
 
 	/**
 	 * Notifies all the connection listeners about a change in connections.

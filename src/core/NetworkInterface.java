@@ -168,7 +168,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 				optimizer = ConnectivityGrid.ConnectivityGridFactory(
 						this.interfacetype.hashCode(), transmitRange);
 			}
-			optimizer.addInterface(this);
 		} else {
 			optimizer = null;
 		}

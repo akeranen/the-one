@@ -204,11 +204,11 @@ public class MSIMMovementEngine extends MovementEngine {
             pathWaitingHosts.poll(); // remove front element
             DTNHost host = hosts.get(pwh.hostID);
 
-            host.setPath(host.getMovement().getPath());
+            host.setPath(host.getMovementModel().getPath());
 
             if (host.getPath() == null) {
                 // Still no path available
-                double nextPathAvailableTime = host.getMovement().nextPathAvailable();
+                double nextPathAvailableTime = host.getMovementModel().nextPathAvailable();
                 pathWaitingHosts.add(new PathWaitingHost(pwh.hostID, nextPathAvailableTime));
             } else {
                 // Just got new path => queue full buffer waypoint request
@@ -249,7 +249,7 @@ public class MSIMMovementEngine extends MovementEngine {
                 waypointRequests.add(new WaypointRequest(hostID, numWaypoints));
             } else /* path is empty */ {
                 if (numWaypoints == waypointBufferSize) /* reached end of path */ {
-                    double nextPathAvailableTime = host.getMovement().nextPathAvailable();
+                    double nextPathAvailableTime = host.getMovementModel().nextPathAvailable();
                     pathWaitingHosts.add(new PathWaitingHost(hostID, nextPathAvailableTime));
                 }
                 // else ignore threshold request (until hosts reaches end of path)

@@ -65,11 +65,11 @@ public class DefaultMovementEngine extends MovementEngine {
             pathWaitingHosts.poll(); // remove front element
             DTNHost host = hosts.get(pwh.hostID);
 
-            host.setPath(host.getMovement().getPath());
+            host.setPath(host.getMovementModel().getPath());
 
             if (host.getPath() == null) {
                 // Still no path available
-                double nextPathAvailableTime = host.getMovement().nextPathAvailable();
+                double nextPathAvailableTime = host.getMovementModel().nextPathAvailable();
                 pathWaitingHosts.add(new PathWaitingHost(pwh.hostID, nextPathAvailableTime));
             } else {
                 //debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
@@ -198,7 +198,7 @@ public class DefaultMovementEngine extends MovementEngine {
         if (!host.getPath().hasNext()) {
             host.setPath(null);
             host.setDestination(null, 0.0);
-            double nextPathAvailableTime = host.getMovement().nextPathAvailable();
+            double nextPathAvailableTime = host.getMovementModel().nextPathAvailable();
             pathWaitingHosts.add(new PathWaitingHost(hostID, nextPathAvailableTime));
             return false;
         }

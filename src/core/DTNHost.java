@@ -27,6 +27,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
 	private MessageRouter router;
 	private MovementModel movement;
+	private MovementModel movementModel;
 	private Path path;
 	private double speed;
 	public final String groupId;
@@ -75,9 +76,9 @@ public class DTNHost implements Comparable<DTNHost> {
 		this.movListeners = movLs;
 
 		// create instances by replicating the prototypes
-		this.movement = mmProto.replicate();
-		this.movement.setComBus(comBus);
-		this.movement.setHost(this);
+		this.movementModel = mmProto.replicate();
+		this.movementModel.setComBus(comBus);
+		this.movementModel.setHost(this);
 		setRouter(mRouterProto.replicate());
 
 		this.location = movement.getInitialLocation();
@@ -110,7 +111,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @return true if this node is actively moving (false if not)
 	 */
 	public boolean isMovementActive() {
-		return this.movement.isActive();
+		return this.movementModel.isActive();
 	}
 
 	/**
@@ -257,8 +258,8 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * Returns the movement model of this node
 	 * @return The movement model of this node
 	 */
-	public MovementModel getMovement() {
-		return this.movement;
+	public MovementModel getMovementModel() {
+		return this.movementModel;
 	}
 
 	/**

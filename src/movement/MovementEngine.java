@@ -1,11 +1,15 @@
 package movement;
 
+import core.Coord;
 import core.DTNHost;
 import core.Settings;
 import interfaces.ConnectivityOptimizer;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.PriorityQueue;
 
 
 /**
@@ -19,6 +23,8 @@ public abstract class MovementEngine {
 
     /** List of all hosts in the simulation */
     protected List<DTNHost> hosts = null;
+    /** List of all host locations in the simulation */
+    protected List<Coord> locations = null;
     /** Current simulation tick */
     protected long currentTick = 0;
     /** Queue of hosts waiting for a new path */
@@ -53,12 +59,11 @@ public abstract class MovementEngine {
 
     /**
      * Initializes the movement engine
-     * Note: Hosts get their initial location on construction, not here!
      * @param hosts to be initialized
      */
-    public abstract void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY);
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
         this.hosts = hosts;
+        this.locations = new ArrayList<>(Collections.nCopies(hosts.size(), new Coord(0,0)));
 
         for (int i=0; i<hosts.size(); i++) {
             // Set initial location
@@ -94,6 +99,25 @@ public abstract class MovementEngine {
      * Returns the ConnectivityOptimizer associated with this MovementEngine, or null if none.
      */
     public abstract ConnectivityOptimizer optimizer();
+
+    /**
+     * Returns a hosts current location
+     * @param hostID The ID of the host
+     * @return the hosts current location
+     */
+    public Coord getLocation(int hostID) {
+        return locations.get(hostID);
+    }
+
+    /**
+     * Returns a hosts current location
+     * @param hostID The ID of the host
+     * @param c The new location
+     * @return the hosts current location
+     */
+    public Coord setLocation(int hostID, Coord c) {
+        return locations.set(hostID, c.clone());
+    }
 
     protected void debug_output_positions(String name) {
         PrintWriter writer = null;

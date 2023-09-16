@@ -121,9 +121,8 @@ public class MSIMMovementEngine extends MovementEngine {
 
         // Send initial locations
         connector.writeHeader(MSIMConnector.Header.SetPositions);
-        for (int i = 0; i < hosts.size(); i++) {
-            DTNHost host = hosts.get(i);
-            connector.writeCoord(host.getLocation());
+        for (int i = 0; i < locations.size(); i++) {
+            connector.writeCoord(locations.get(i));
         }
         connector.flushOutput();
     }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import movement.MovementEngine;
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
@@ -22,11 +23,10 @@ public class DTNHost implements Comparable<DTNHost> {
 	private static int count = 0;
 	private int ID;
 
-	private Coord location; 	// where is the host
 	private Coord destination;	// where is it going
 
 	private MessageRouter router;
-	private MovementModel movement;
+	private MovementEngine movementEngine;
 	private MovementModel movementModel;
 	private Path path;
 	private double speed;
@@ -55,10 +55,9 @@ public class DTNHost implements Comparable<DTNHost> {
 			List<MovementListener> movLs,
 			String groupId, List<NetworkInterface> interf,
 			ModuleCommunicationBus comBus,
-			MovementModel mmProto, MessageRouter mRouterProto) {
+			MovementEngine me, MovementModel mmProto, MessageRouter mRouterProto) {
 		this.comBus = comBus;
 		this.ID = getNextID();
-		this.location = new Coord(0,0);
 		this.groupId = groupId;
 		this.name = groupId+ ID;
 		this.net = new ArrayList<NetworkInterface>();
@@ -75,20 +74,15 @@ public class DTNHost implements Comparable<DTNHost> {
 		this.msgListeners = msgLs;
 		this.movListeners = movLs;
 
+		this.movementEngine = me;
+
 		// create instances by replicating the prototypes
 		this.movementModel = mmProto.replicate();
 		this.movementModel.setComBus(comBus);
 		this.movementModel.setHost(this);
 		setRouter(mRouterProto.replicate());
 
-		this.location = movement.getInitialLocation();
 		this.path = null;
-
-		if (movLs != null) { // inform movement listeners about the location
-			for (MovementListener l : movLs) {
-				l.initialLocation(this, this.location);
-			}
-		}
 	}
 
 	/**
@@ -186,11 +180,11 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
-	 * Sets the Node's location
+	 * Sets the host's location
 	 * @param location The location to set
 	 */
 	public void setLocation(Coord location) {
-		this.location = location.clone();
+		movementEngine.setLocation(ID, location);
 	}
 
 	/**
@@ -198,7 +192,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @return The location
 	 */
 	public Coord getLocation() {
-		return this.location;
+		return movementEngine.getLocation(ID);
 	}
 
 	/**
@@ -491,6 +485,18 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public void deleteMessage(String id, boolean drop) {
 		this.router.deleteMessage(id, drop);
+	}
+
+	/**
+	 * Informs movement listeners about the initial location.
+	 * Called by movement engine after setting the initial location.
+	 */
+	public void notifyInitialLocation() {
+		if (movListeners != null) {
+			for (MovementListener l : movListeners) {
+				l.initialLocation(this, getLocation());
+			}
+		}
 	}
 
 	/**

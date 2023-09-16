@@ -85,7 +85,7 @@ public abstract class SnapshotReport extends Report implements UpdateListener {
 		write ("[" + (int)getSimTime() + "]"); /* simulation time stamp */
 		for (DTNHost h : hosts) {
 			if (this.reportedNodes != null &&
-				!this.reportedNodes.contains(h.getAddress())) {
+				!this.reportedNodes.contains(h.getID())) {
 				continue; /* node not in the list */
 			}
 			writeSnapshot(h);

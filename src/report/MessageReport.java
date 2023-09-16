@@ -40,7 +40,7 @@ public class MessageReport extends Report implements MessageListener {
 					+ format(m.getCreationTime()) + " "
 					+ format(getSimTime()));
 		} else {
-			if (to.getAddress() == m.getTo().getAddress()) {
+			if (to.getID() == m.getTo().getID()) {
 				write(m.getId() + " "
 						+ format(m.getCreationTime()) + " "
 						+ format(getSimTime()) + " duplicate");

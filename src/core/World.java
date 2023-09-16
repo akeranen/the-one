@@ -259,7 +259,7 @@ public class World {
 		}
 
 		DTNHost node = this.hosts.get(address);
-		assert node.getAddress() == address : "Node indexing failed. " +
+		assert node.getID() == address : "Node indexing failed. " +
 			"Node " + node + " in index " + address;
 
 		return node;

@@ -49,8 +49,8 @@ public class ContactsDuringAnICTReport extends Report
 		if (!updateHasBeenCalled) {
 			return;
 		}
-		int id1 = host1.getAddress();
-		int id2 = host2.getAddress();
+		int id1 = host1.getID();
+		int id2 = host2.getID();
 		if (areDisconnected[id1][id2]) {
 			areDisconnected[id1][id2] = false;
 			areDisconnected[id2][id1] = false;
@@ -66,7 +66,7 @@ public class ContactsDuringAnICTReport extends Report
 	}
 
 	private void incContactForAllDisconnectedNodes(DTNHost host) {
-		int id = host.getAddress();
+		int id = host.getID();
 		for (int i=0; i<contactCount[id].length; i++) {
 			if (areDisconnected[id][i]) {
 				contactCount[id][i]++;
@@ -78,8 +78,8 @@ public class ContactsDuringAnICTReport extends Report
 		if (!updateHasBeenCalled) {
 			return;
 		}
-		areDisconnected[host1.getAddress()][host2.getAddress()] = true;
-		areDisconnected[host2.getAddress()][host1.getAddress()] = true;
+		areDisconnected[host1.getID()][host2.getID()] = true;
+		areDisconnected[host2.getID()][host1.getID()] = true;
 	}
 
 	public void updated(List<DTNHost> hosts) {

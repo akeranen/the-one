@@ -237,7 +237,7 @@ public class MessageTransferAcceptPolicy {
 			return true;
 		}
 
-		address = host.getAddress();
+		address = host.getID();
 
 		for (Range r : policy) {
 			if (r.isInRange(TO_ME_VALUE) && address == thisHost) {
@@ -281,7 +281,7 @@ public class MessageTransferAcceptPolicy {
 			return false;
 		}
 
-		int myAddr = from.getAddress();
+		int myAddr = from.getID();
 		if (! (checkSimplePolicy(m.getTo(), this.toSendPolicy, myAddr) &&
 			checkSimplePolicy(m.getFrom(), this.fromSendPolicy,	myAddr)) ) {
 			return false;
@@ -308,7 +308,7 @@ public class MessageTransferAcceptPolicy {
 			return false;
 		}
 
-		int myAddr = to.getAddress();
+		int myAddr = to.getID();
 		if (! (checkSimplePolicy(m.getTo(), this.toReceivePolicy,myAddr) &&
 			checkSimplePolicy(m.getFrom(), this.fromReceivePolicy, myAddr)) ) {
 			return false;

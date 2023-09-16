@@ -28,8 +28,8 @@ public class TotalEncountersReport extends Report implements ConnectionListener,
 		if (encounters == null) {
 			return;
 		}
-		encounters[host1.getAddress()]++;
-		encounters[host2.getAddress()]++;
+		encounters[host1.getID()]++;
+		encounters[host2.getID()]++;
 	}
 
 	public void hostsDisconnected(DTNHost host1, DTNHost host2) {}

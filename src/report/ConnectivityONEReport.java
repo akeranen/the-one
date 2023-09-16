@@ -52,18 +52,15 @@ public class ConnectivityONEReport extends Report
 
 	/**
 	 * Creates and returns a String presentation of the connection where the
-	 * node with the lower network address is first
+	 * node with the lower ID is first
 	 * @param h1 The other node of the connection
 	 * @param h2 The other node of the connection
 	 * @return String presentation of the connection
 	 */
 	private String connectionString(DTNHost h1, DTNHost h2) {
-		if (h1.getAddress() < h2.getAddress()) {
-		    return h1.getAddress() + " " + h2.getAddress();
-		}
-		else {
-		    return h2.getAddress() + " " + h1.getAddress();
-		}
+		int id1 = h1.getID();
+		int id2 = h2.getID();
+		return Math.min(id1, id2) + " " + Math.max(id1, id2);
 	}
 
 }

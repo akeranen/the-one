@@ -59,8 +59,8 @@ public class ExternalPathMovement extends MovementModel {
 		ExternalPathMovementReader reader =
 			ExternalPathMovementReader.getInstance(this.traceFile,
 					this.activeFile);
-		this.paths = reader.getPaths(getHost().getAddress());
-		this.active = reader.getActive(getHost().getAddress());
+		this.paths = reader.getPaths(getHost().getID());
+		this.active = reader.getActive(getHost().getID());
 	}
 
 	@Override

@@ -125,7 +125,7 @@ public class PingApplication extends Application {
 		// Respond with pong if we're the recipient
 		if (msg.getTo()==host && type.equalsIgnoreCase("ping")) {
 			String id = "pong" + SimClock.getIntTime() + "-" +
-				host.getAddress();
+				host.getID();
 			Message m = new Message(host, msg.getFrom(), id, getPongSize());
 			m.addProperty("type", "pong");
 			m.setAppID(APP_ID);
@@ -177,7 +177,7 @@ public class PingApplication extends Application {
 		if (curTime - this.lastPing >= this.interval) {
 			// Time to send a new ping
 			Message m = new Message(host, randomHost(), "ping" +
-					SimClock.getIntTime() + "-" + host.getAddress(),
+					SimClock.getIntTime() + "-" + host.getID(),
 					getPingSize());
 			m.addProperty("type", "ping");
 			m.setAppID(APP_ID);

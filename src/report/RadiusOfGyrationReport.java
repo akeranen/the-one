@@ -95,7 +95,7 @@ extends SamplingReport {
 	protected void sample(List<DTNHost> hosts) {
 		for ( final DTNHost host : hosts ) {
 			if ( host.isMovementActive() ) {
-				final int nodeId = host.getAddress();
+				final int nodeId = host.getID();
 				final Coord location = host.getLocation();
 				final double x = location.getX();
 				final double y = location.getY();

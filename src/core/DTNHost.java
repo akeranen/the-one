@@ -19,8 +19,8 @@ import static core.Constants.DEBUG;
  * A DTN capable host.
  */
 public class DTNHost implements Comparable<DTNHost> {
-	private static int nextAddress = 0;
-	private int address;
+	private static int count = 0;
+	private int ID;
 
 	private Coord location; 	// where is the host
 	private Coord destination;	// where is it going
@@ -56,10 +56,10 @@ public class DTNHost implements Comparable<DTNHost> {
 			ModuleCommunicationBus comBus,
 			MovementModel mmProto, MessageRouter mRouterProto) {
 		this.comBus = comBus;
+		this.ID = getNextID();
 		this.location = new Coord(0,0);
-		this.address = getNextAddress();
 		this.groupId = groupId;
-		this.name = groupId+address;
+		this.name = groupId+ ID;
 		this.net = new ArrayList<NetworkInterface>();
 
 		for (NetworkInterface i : interf) {
@@ -91,19 +91,18 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
-	 * Returns a new network interface address and increments the address for
-	 * subsequent calls.
-	 * @return The next address.
+	 * Returns a new unique ID and increment the host count.
+	 * @return The next ID.
 	 */
-	private synchronized static int getNextAddress() {
-		return nextAddress++;
+	private synchronized static int getNextID() {
+		return count++;
 	}
 
 	/**
 	 * Reset the host and its interfaces
 	 */
 	public static void reset() {
-		nextAddress = 0;
+		count = 0;
 	}
 
 	/**
@@ -144,10 +143,10 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
-	 * Returns the network-layer address of this host.
+	 * Returns the ID of this host.
 	 */
-	public int getAddress() {
-		return this.address;
+	public int getID() {
+		return this.ID;
 	}
 
 	/**
@@ -512,11 +511,11 @@ public class DTNHost implements Comparable<DTNHost> {
 	}
 
 	/**
-	 * Compares two DTNHosts by their addresses.
+	 * Compares two DTNHosts by their IDs.
 	 * @see Comparable#compareTo(Object)
 	 */
 	public int compareTo(DTNHost h) {
-		return this.getAddress() - h.getAddress();
+		return this.getID() - h.getID();
 	}
 
 }

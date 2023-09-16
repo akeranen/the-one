@@ -173,15 +173,15 @@ public class MaxPropRouterWithEstimation extends ActiveRouter {
 				otherRouter.deleteAckedMessages();
 
 				/* update both meeting probabilities */
-				probs.updateMeetingProbFor(otherHost.getAddress());
-				otherRouter.probs.updateMeetingProbFor(getHost().getAddress());
+				probs.updateMeetingProbFor(otherHost.getID());
+				otherRouter.probs.updateMeetingProbFor(getHost().getID());
 
 				/* exchange the transitive probabilities */
 				this.updateTransitiveProbs(otherRouter.allProbs);
 				otherRouter.updateTransitiveProbs(this.allProbs);
-				this.allProbs.put(otherHost.getAddress(),
+				this.allProbs.put(otherHost.getID(),
 						otherRouter.probs.replicate());
-				otherRouter.allProbs.put(getHost().getAddress(),
+				otherRouter.allProbs.put(getHost().getID(),
 						this.probs.replicate());
 			}
 		}
@@ -442,22 +442,22 @@ public class MaxPropRouterWithEstimation extends ActiveRouter {
 		/* check if the cached values are OK */
 		if (this.costsForMessages == null || lastCostFrom != from) {
 			/* cached costs are invalid -> calculate new costs */
-			this.allProbs.put(getHost().getAddress(), this.probs);
-			int fromIndex = from.getAddress();
+			this.allProbs.put(getHost().getID(), this.probs);
+			int fromIndex = from.getID();
 
 			/* calculate paths only to nodes we have messages to
 			 * (optimization) */
 			Set<Integer> toSet = new HashSet<Integer>();
 			for (Message m : getMessageCollection()) {
-				toSet.add(m.getTo().getAddress());
+				toSet.add(m.getTo().getID());
 			}
 
 			this.costsForMessages = dijkstra.getCosts(fromIndex, toSet);
 			this.lastCostFrom = from; // store source host for caching checks
 		}
 
-		if (costsForMessages.containsKey(to.getAddress())) {
-			return costsForMessages.get(to.getAddress());
+		if (costsForMessages.containsKey(to.getID())) {
+			return costsForMessages.get(to.getID());
 		}
 		else {
 			/* there's no known path to the given host */

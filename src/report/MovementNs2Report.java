@@ -60,14 +60,14 @@ public class MovementNs2Report extends Report implements MovementListener {
 	}
 
 	public void initialLocation(DTNHost host, Coord location) {
-		int index = host.getAddress();
+		int index = host.getID();
 		write(nodeArray + "("+ index + ") set X_ " + fix(location.getX()));
 		write(nodeArray + "("+ index + ") set Y_ " + fix(location.getY()));
 		write(nodeArray + "("+ index + ") set Z_ 0");
 	}
 
 	public void newDestination(DTNHost host, Coord dst, double speed) {
-		int index = host.getAddress();
+		int index = host.getID();
 		double time = getSimTime();
 
 		write(nsCmd + " at " + time + " \"\\" + nodeArray +	"(" + index + ")" +

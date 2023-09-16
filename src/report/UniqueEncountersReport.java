@@ -29,8 +29,8 @@ public class UniqueEncountersReport extends Report implements
 		if (nodeRelationships == null) {
 			return;
 		}
-		nodeRelationships[host1.getAddress()][host2.getAddress()]++;
-		nodeRelationships[host2.getAddress()][host1.getAddress()]++;
+		nodeRelationships[host1.getID()][host2.getID()]++;
+		nodeRelationships[host2.getID()][host1.getID()]++;
 	}
 
 	public void hostsDisconnected(DTNHost host1, DTNHost host2) {}

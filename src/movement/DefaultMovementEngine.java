@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 public class DefaultMovementEngine extends MovementEngine {
     /** movement engines -setting id ({@value})*/
     public static final String NAME = "DefaultMovementEngine";
-    private final Coord origin = new Coord(0.0, 0.0);
+    private final Coord ORIGIN = new Coord(0.0, 0.0);
 
 
     /**
@@ -136,7 +136,7 @@ public class DefaultMovementEngine extends MovementEngine {
         // move towards the target
         Coord pos = host.getLocation();
         Coord dir = new Coord(target.getX() - pos.getX(), target.getY() - pos.getY());
-        double length = dir.distance(origin);
+        double length = dir.distance(ORIGIN);
 
         if (length > 0) {
             dir.setLocation(dir.getX() / length, dir.getY() / length); // Normalize

@@ -365,18 +365,14 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	/**
 	 * Returns true if another interface is within radio range of this interface
 	 * and this interface is also within radio range of the another interface.
-	 * @param anotherInterface The another interface
+	 * @param other The another interface
 	 * @return True if the interface is within range, false if not
 	 */
-	protected boolean isWithinRange(NetworkInterface anotherInterface) {
-		double smallerRange = anotherInterface.getTransmitRange();
-		double myRange = getTransmitRange();
-		if (myRange < smallerRange) {
-			smallerRange = myRange;
-		}
+	public boolean isWithinRange(NetworkInterface other) {
+		double range = Math.min(getTransmitRange(), other.getTransmitRange());
 
 		return this.host.getLocation().distance(
-				anotherInterface.getHost().getLocation()) <= smallerRange;
+				other.getHost().getLocation()) <= range;
 	}
 
 	/**

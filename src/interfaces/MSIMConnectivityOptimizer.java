@@ -39,7 +39,7 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	 * @param ni network interface that needs to be connected
 	 * @return A collection of network interfaces within proximity
 	 */
-	public Collection<NetworkInterface> getNearInterfaces(NetworkInterface ni) {
+	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
 		List<Integer> ids = nearInterfaces.get(NI_to_ID(ni));
 		if (ids == null) {
 			return Collections.emptyList();

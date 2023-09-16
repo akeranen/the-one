@@ -38,16 +38,15 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 
 	/**
 	 * Tries to connect this host to another host. The other host must be
-	 * active and within range of this host for the connection to succeed.
+	 * active of this host for the connection to succeed.
+	 * It is expected that both hosts are within range of each other.
 	 * @param anotherInterface The interface to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
 		if (isScanning()
 				&& anotherInterface.getHost().isRadioActive()
-				&& isWithinRange(anotherInterface)
 				&& !isConnected(anotherInterface)
 				&& (this != anotherInterface)) {
-			// new contact within range
 			// connection speed is the lower one of the two speeds
 			int conSpeed = anotherInterface.getTransmitSpeed(this);
 			if (conSpeed > this.transmitSpeed) {
@@ -88,7 +87,7 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 		}
 		// Then find new possible connections
 		Collection<NetworkInterface> interfaces =
-			optimizer.getNearInterfaces(this);
+			optimizer.getInterfacesInRange(this);
 		for (NetworkInterface i : interfaces) {
 			connect(i);
 		}

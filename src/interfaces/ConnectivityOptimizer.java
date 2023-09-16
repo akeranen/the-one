@@ -26,7 +26,6 @@ abstract public class ConnectivityOptimizer {
 	 * @param ni network interface that needs to be connected
 	 * @return A collection of network interfaces within proximity
 	 */
-	abstract public Collection<NetworkInterface> getNearInterfaces(
-			NetworkInterface ni);
+	abstract public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni);
 
 }

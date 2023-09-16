@@ -193,22 +193,25 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	/**
-	 * Returns all interfaces that are "near" (i.e., in neighboring grid cells)
+	 * Returns all interfaces that are in range (i.e., in neighboring grid cells)
 	 * and use the same technology and channel as the given interface
 	 * @param ni The interface whose neighboring interfaces are returned
-	 * @return List of near interfaces
+	 * @return List of in range interfaces
 	 */
-	public Collection<NetworkInterface> getNearInterfaces(
-			NetworkInterface ni) {
+	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
 		ArrayList<NetworkInterface> niList = new ArrayList<NetworkInterface>();
 		GridCell loc = ginterfaces.get(ni);
 
 		if (loc != null) {
 			GridCell[] neighbors =
 				getNeighborCellsByCoord(ni.getLocation());
-			for (int i=0; i < neighbors.length; i++) {
-				niList.addAll(neighbors[i].getInterfaces());
-			}
+            for (GridCell neighbor : neighbors) {
+				for (NetworkInterface nni : neighbor.getInterfaces()) {
+					if (ni.isWithinRange(nni)) {
+						niList.add(nni);
+					}
+				}
+            }
 		}
 
 		return niList;

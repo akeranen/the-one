@@ -58,7 +58,6 @@ public class DistanceCapacityInterface extends NetworkInterface {
 	public void connect(NetworkInterface anotherInterface) {
 		if (isScanning()
 				&& anotherInterface.getHost().isRadioActive()
-				&& isWithinRange(anotherInterface)
 				&& !isConnected(anotherInterface)
 				&& (this != anotherInterface)) {
 

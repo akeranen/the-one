@@ -61,10 +61,8 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	public void connect(NetworkInterface anotherInterface) {
 		if (isScanning()
 				&& anotherInterface.getHost().isRadioActive()
-				&& isWithinRange(anotherInterface)
 				&& !isConnected(anotherInterface)
 				&& (this != anotherInterface)) {
-			// new contact within range
 
 			Connection con = new VBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface);

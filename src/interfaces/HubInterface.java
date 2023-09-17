@@ -43,12 +43,10 @@ extends SimpleBroadcastInterface {
   public void connect( NetworkInterface anotherInterface) {
     if (super.isScanning()
         && anotherInterface.getHost().isRadioActive()
-        && isWithinRange(anotherInterface)
         && !isConnected(anotherInterface)
         && (this != anotherInterface)
         && this.isHubConnection( anotherInterface ) ) {
 
-      // new contact within range
       // connection speed is the lower one of the two speeds
       int conSpeed = anotherInterface.getTransmitSpeed(this);
       if (conSpeed > this.transmitSpeed) {

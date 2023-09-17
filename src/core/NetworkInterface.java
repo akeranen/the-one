@@ -154,21 +154,15 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 			comBus.subscribe(SPEED_ID, this);
 		}
 
-		// Note: The optimizer is initialized here, because it may need
-		//       the interface location, aka host location, which
-		//       is only available after the host is assigned to this interface.
 		// TODO  1. Refactor ConnectivityGrid as standalone optimizer class
 		//          (Not instanced through ConnectivityGridFactory(..))
 		//       2. Associate ConnectivityGrid with DefaultMovementEngine as default optimizer
-		//       3. Only call updateLocation(..) here
 		if (transmitRange > 0) {
 			if (optimizer == null) {
 				// None set yet => use ConnectivityGrid as default optimizer
 				optimizer = ConnectivityGrid.ConnectivityGridFactory(
 						this.interfacetype.hashCode(), transmitRange);
 			}
-		} else {
-			optimizer = null;
 		}
 	}
 
@@ -412,7 +406,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 		Set<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
 
 		// First break the old ones
-		for (int i=0; i<this.connections.size(); ) {
+		for (int i = 0; i < this.connections.size(); ) {
 			Connection con = this.connections.get(i);
 			NetworkInterface anotherInterface = con.getOtherInterface(this);
 

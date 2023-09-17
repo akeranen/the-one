@@ -497,6 +497,14 @@ public class DTNHost implements Comparable<DTNHost> {
 				l.initialLocation(this, getLocation());
 			}
 		}
+
+		if (movementEngine.optimizer() == null) {
+			// We are using the default grid optimizer
+			// => We need to notify it about our location
+			for (NetworkInterface ni : net) {
+				ni.optimizer.updateLocation(ni);
+			}
+		}
 	}
 
 	/**

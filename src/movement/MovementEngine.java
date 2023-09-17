@@ -65,15 +65,15 @@ public abstract class MovementEngine {
         this.hosts = hosts;
         this.locations = new ArrayList<>(hosts.size());
 
-        for (int i=0; i<hosts.size(); i++) {
+        for (DTNHost host : hosts) {
             // Set initial location
-            locations.add(hosts.get(i).getMovementModel().getInitialLocation());
-            hosts.get(i).notifyInitialLocation();
+            locations.add(host.getMovementModel().getInitialLocation());
+            host.notifyInitialLocation();
 
             // Initially all hosts wait for a path
             //double nextPathAvailableTime = host.movement.nextPathAvailable(); // TODO ?
             double nextPathAvailableTime = 0.0;
-            pathWaitingHosts.add(new PathWaitingHost(i, nextPathAvailableTime));
+            pathWaitingHosts.add(new PathWaitingHost(host.getID(), nextPathAvailableTime));
         }
     }
 

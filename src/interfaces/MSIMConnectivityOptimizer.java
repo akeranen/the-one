@@ -1,5 +1,6 @@
 package interfaces;
 
+import core.DTNHost;
 import core.NetworkInterface;
 import core.Settings;
 
@@ -12,18 +13,25 @@ import java.util.*;
 public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	/** Class name */
 	public static final String NAME = "MSIMConnectivityOptimizer";
-	/** NetworkInterface-to-ID mapping */
-	private HashMap<NetworkInterface, Integer> NI2ID = null;
-	/** NetworkID-to-Interface mapping */
-	private HashMap<Integer, NetworkInterface> ID2NI = null;
-	/** Near NetworkIDs mapping */
-	private HashMap<Integer, List<Integer>> nearInterfaces = null;
+	/** List of all hosts in the simulation */
+	private List<DTNHost> hosts = null;
+	/** Map of Interfaces within range of each other */
+	private List<Set<NetworkInterface>> interfacesInRange = null;
 
 	/**
 	 * Creates a new MSIMConnectivityOptimizer based on a Settings object's settings.
 	 * @param s The Settings object where the settings are read from
 	 */
 	public MSIMConnectivityOptimizer(Settings s) {}
+
+	public void init(List<DTNHost> hosts) {
+		this.hosts = hosts;
+
+		this.interfacesInRange = new ArrayList<>(hosts.size());
+		for (int i = 0; i < hosts.size(); i++) {
+			this.interfacesInRange.add(i, new HashSet<>());
+		}
+	}
 
 	/**
 	 * Updates a network interface's location
@@ -39,47 +47,33 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	 * @param ni network interface that needs to be connected
 	 * @return A collection of network interfaces within proximity
 	 */
-	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
-		List<Integer> ids = nearInterfaces.get(NI_to_ID(ni));
-		if (ids == null) {
-			return Collections.emptyList();
+	public Set<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
+		return interfacesInRange.get(NI_to_ID(ni));
+	}
+
+	// TODO rem
+	public void resetEvents() {
+		for(Set<NetworkInterface> s : interfacesInRange) {
+			s.clear();
 		}
-
-		boolean deterministic = true; // TODO add setting
-		if (deterministic) {
-			Collections.sort(ids);
-		}
-
-		ArrayList<NetworkInterface> interfaces = new ArrayList<>(ids.size());
-		for (int id : ids) {
-			interfaces.add(ID_to_NI(id));
-		}
-
-		return interfaces;
 	}
 
-	/** Sets the nearInterfaces mapping */
-	public void setNearInterfaces(HashMap<Integer, List<Integer>> nearInterfaces) {
-		this.nearInterfaces = nearInterfaces;
+	public void applyLinkUpEvent(int ID0, int ID1) {
+		interfacesInRange.get(ID0).add(ID_to_NI(ID1));
 	}
 
-	/** Sets the NetworkInterface-to-ID mapping */
-	public void setNI2ID(HashMap<NetworkInterface, Integer> NI2ID) {
-		this.NI2ID = NI2ID;
+	public void applyLinkUpEvents() {
+		// TODO
 	}
 
-	/** Sets the NetworkID-to-Interface mapping */
-	public void setID2NI(HashMap<Integer, NetworkInterface> ID2NI) {
-		this.ID2NI = ID2NI;
-	}
-
-	/** Maps a NetworkInterface to its unique ID */
+	// Maps a NetworkInterface to its unique ID
 	private int NI_to_ID(NetworkInterface ni) {
-		return NI2ID.get(ni);
+		return ni.getHost().getID();
 	}
 
-	/** Maps a NetworkInterfaceID to its Interface class */
+	// Maps a NetworkInterfaceID to its Interface class
 	private NetworkInterface ID_to_NI(int id) {
-		return ID2NI.get(id);
+		return hosts.get(id).getInterfaces().get(0);
 	}
+
 }

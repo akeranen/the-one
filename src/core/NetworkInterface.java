@@ -7,10 +7,8 @@ package core;
 import interfaces.ConnectivityGrid;
 import interfaces.ConnectivityOptimizer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import routing.util.EnergyModel;
 
@@ -19,7 +17,7 @@ import util.ActivenessHandler;
 /**
  * Network interface of a DTNHost. Takes care of connectivity among hosts.
  */
-abstract public class NetworkInterface implements ModuleCommunicationListener {
+abstract public class NetworkInterface implements ModuleCommunicationListener, Comparable<NetworkInterface> {
 	/** transmit range -setting id ({@value})*/
 	public static final String TRANSMIT_RANGE_S = "transmitRange";
 	/** transmit speed -setting id ({@value})*/
@@ -410,8 +408,10 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 			return; /* nothing to do */
 		}
 
-		// First break the old ones
 		optimizer.updateLocation(this);
+		Set<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
+
+		// First break the old ones
 		for (int i=0; i<this.connections.size(); ) {
 			Connection con = this.connections.get(i);
 			NetworkInterface anotherInterface = con.getOtherInterface(this);
@@ -427,10 +427,16 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 				i++;
 			}
 		}
+
 		// Then find new possible connections
-		Collection<NetworkInterface> interfaces =
-				optimizer.getInterfacesInRange(this);
-		for (NetworkInterface i : interfaces) {
+		Collection<NetworkInterface> newInterfaces = interfaces;
+		boolean deterministic = false; // TODO add setting
+		if (deterministic) {
+			// We need to sort the random order values form the set
+			newInterfaces = interfaces.stream().sorted().collect(Collectors.toList());
+		}
+
+		for (NetworkInterface i : newInterfaces) {
 			connect(i);
 		}
 	}
@@ -549,6 +555,11 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	public String toString() {
 		return this.address + " of " + this.host +
 			". Connections: " +	this.connections;
+	}
+
+	@Override
+	public int compareTo(NetworkInterface b) {
+		return this.getHost().getID() - b.getHost().getID();
 	}
 
 }

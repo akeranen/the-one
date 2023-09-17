@@ -82,39 +82,6 @@ public class MSIMMovementEngine extends MovementEngine {
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
         super.init(hosts, worldSizeX, worldSizeY);
 
-        if (optimizer != null) {
-            // For sanity checks
-            String type = null; // Only one type supported
-            double range = -1.0; // Range should be equal for all
-
-            // Initialize NetworkInterface<->ID mapping
-            HashMap<NetworkInterface, Integer> NI2ID = new HashMap<>();
-            HashMap<Integer, NetworkInterface> ID2NI = new HashMap<>();
-            for (int i = 0; i < hosts.size(); i++) {
-                List<NetworkInterface> interfaces = hosts.get(i).getInterfaces();
-                assert(interfaces.size() <= 1);
-                if (interfaces.size() == 1) {
-                    NetworkInterface ni = interfaces.get(0);
-                    // Add to mappings
-                    NI2ID.put(ni, i); // Note: We use the hostID as InterfaceID
-                    ID2NI.put(i, ni);
-                    // Sanity checks
-                    if (type == null) {
-                        type = ni.getInterfaceType();
-                    } else {
-                        assert(type.equals(ni.getInterfaceType()));
-                    }
-                    if (range == -1.0) {
-                        range = ni.getTransmitRange();
-                    } else {
-                        assert(range == ni.getTransmitRange());
-                    }
-                }
-            }
-            optimizer.setNI2ID(NI2ID);
-            optimizer.setID2NI(ID2NI);
-        }
-
         // Start process and open connection
         double interfaceRange = hosts.get(0).getInterface(1).getTransmitRange();
         connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize, interfaceRange);
@@ -125,6 +92,11 @@ public class MSIMMovementEngine extends MovementEngine {
             connector.writeCoord(locations.get(i));
         }
         connector.flushOutput();
+
+        // Initialize optimizer
+        if (optimizer != null) {
+            optimizer.init(hosts);
+        }
     }
 
     /**
@@ -270,16 +242,18 @@ public class MSIMMovementEngine extends MovementEngine {
         connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
         connector.flushOutput();
 
+        optimizer.resetEvents();
+
         // Receive link up events
         int linkUpEventCount = connector.readInt();
-        HashMap<Integer, List<Integer>> nearInterfaces = new HashMap<>((int) (linkUpEventCount / 0.75 + 1));
         for (int i = 0; i < linkUpEventCount; i++) {
             int ID0 = connector.readInt();
             int ID1 = connector.readInt();
-            nearInterfaces.computeIfAbsent(ID0, k -> new ArrayList<>()).add(ID1);
-            nearInterfaces.computeIfAbsent(ID1, k -> new ArrayList<>()).add(ID0);
+            optimizer.applyLinkUpEvent(ID0, ID1);
+            optimizer.applyLinkUpEvent(ID1, ID0);
         }
-        optimizer.setNearInterfaces(nearInterfaces);
+
+        // TODO Receive link down events
     }
 
     private void debug_output_paths(int hostID, Coord target) {

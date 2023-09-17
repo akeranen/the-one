@@ -4,9 +4,7 @@
  */
 package interfaces;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 import movement.MovementModel;
 
@@ -196,25 +194,24 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	 * Returns all interfaces that are in range (i.e., in neighboring grid cells)
 	 * and use the same technology and channel as the given interface
 	 * @param ni The interface whose neighboring interfaces are returned
-	 * @return List of in range interfaces
+	 * @return Set of in range interfaces
 	 */
-	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
-		ArrayList<NetworkInterface> niList = new ArrayList<NetworkInterface>();
+	public Set<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
+		HashSet<NetworkInterface> niSet = new HashSet<>();
 		GridCell loc = ginterfaces.get(ni);
 
 		if (loc != null) {
-			GridCell[] neighbors =
-				getNeighborCellsByCoord(ni.getLocation());
+			GridCell[] neighbors = getNeighborCellsByCoord(ni.getLocation());
             for (GridCell neighbor : neighbors) {
 				for (NetworkInterface nni : neighbor.getInterfaces()) {
 					if (ni.isWithinRange(nni)) {
-						niList.add(nni);
+						niSet.add(nni);
 					}
 				}
             }
 		}
 
-		return niList;
+		return niSet;
 	}
 
 

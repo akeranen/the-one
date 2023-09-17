@@ -4,7 +4,7 @@
  */
 package interfaces;
 
-import java.util.Collection;
+import java.util.Set;
 
 import core.NetworkInterface;
 
@@ -26,6 +26,6 @@ abstract public class ConnectivityOptimizer {
 	 * @param ni network interface that needs to be connected
 	 * @return A collection of network interfaces within proximity
 	 */
-	abstract public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni);
+	abstract public Set<NetworkInterface> getInterfacesInRange(NetworkInterface ni);
 
 }

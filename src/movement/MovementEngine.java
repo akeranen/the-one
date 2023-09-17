@@ -63,11 +63,11 @@ public abstract class MovementEngine {
      */
     public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
         this.hosts = hosts;
-        this.locations = new ArrayList<>(Collections.nCopies(hosts.size(), new Coord(0,0)));
+        this.locations = new ArrayList<>(hosts.size());
 
         for (int i=0; i<hosts.size(); i++) {
             // Set initial location
-            locations.set(i, hosts.get(i).getMovementModel().getInitialLocation());
+            locations.add(hosts.get(i).getMovementModel().getInitialLocation());
             hosts.get(i).notifyInitialLocation();
 
             // Initially all hosts wait for a path

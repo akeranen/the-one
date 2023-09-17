@@ -355,17 +355,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 	}
 
 	/**
-	 * Returns true if another interface is within radio range of this interface
-	 * and this interface is also within radio range of the another interface.
-	 * @param other The another interface
-	 * @return True if the interface is within range, false if not
-	 */
-	public boolean isWithinRange(NetworkInterface other) {
-		double range = Math.min(getTransmitRange(), other.getTransmitRange());
-		return this.host.getLocation().distanceSquared(other.host.getLocation()) <= range * range;
-	}
-
-	/**
 	 * Returns true if the given NetworkInterface is connected to this host.
 	 * @param netinterface The other NetworkInterface to check
 	 * @return True if the two hosts are connected
@@ -403,7 +392,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 		}
 
 		optimizer.updateLocation(this);
-		Set<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
+		Collection<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
 
 		// First break the old ones
 		for (int i = 0; i < this.connections.size(); ) {
@@ -413,7 +402,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 			// all connections should be up at this stage
 			assert con.isUp() : "Connection " + con + " was down!";
 
-			if (!isWithinRange(anotherInterface)) {
+			if (!optimizer.areWithinRange(this, anotherInterface)) {
 				disconnect(con,anotherInterface);
 				connections.remove(i);
 			}

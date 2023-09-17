@@ -40,6 +40,12 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 		// Does nothing; This optimizer does not need to access host locations
 	}
 
+	@Override
+	public boolean areWithinRange(NetworkInterface a, NetworkInterface b) {
+		double range = Math.min(a.getTransmitRange(), b.getTransmitRange());
+		return a.getLocation().distanceSquared(b.getLocation()) <= range * range;
+	}
+
 	/**
 	 * Finds all network interfaces that might be located so that they can be
 	 * connected with the network interface (corresponds to MSIM link up events)
@@ -47,7 +53,7 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	 * @param ni network interface that needs to be connected
 	 * @return A collection of network interfaces within proximity
 	 */
-	public Set<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
+	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
 		return interfacesInRange.get(NI_to_ID(ni));
 	}
 

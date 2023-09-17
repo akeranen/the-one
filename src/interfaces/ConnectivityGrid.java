@@ -191,27 +191,39 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	/**
+	 * Returns true if both interfaces are within radio range of each other.
+	 * @param a The first interface
+	 * @param b The second interface
+	 * @return True if the interfaces are within range, false if not
+	 */
+	@Override
+	public boolean areWithinRange(NetworkInterface a, NetworkInterface b) {
+		double range = Math.min(a.getTransmitRange(), b.getTransmitRange());
+		return a.getLocation().distanceSquared(b.getLocation()) <= range * range;
+	}
+
+	/**
 	 * Returns all interfaces that are in range (i.e., in neighboring grid cells)
 	 * and use the same technology and channel as the given interface
 	 * @param ni The interface whose neighboring interfaces are returned
 	 * @return Set of in range interfaces
 	 */
-	public Set<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
-		HashSet<NetworkInterface> niSet = new HashSet<>();
+	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
+		List<NetworkInterface> niList = new ArrayList<>();
 		GridCell loc = ginterfaces.get(ni);
 
 		if (loc != null) {
 			GridCell[] neighbors = getNeighborCellsByCoord(ni.getLocation());
             for (GridCell neighbor : neighbors) {
 				for (NetworkInterface nni : neighbor.getInterfaces()) {
-					if (ni.isWithinRange(nni)) {
-						niSet.add(nni);
+					if (areWithinRange(ni, nni)) {
+						niList.add(nni);
 					}
 				}
             }
 		}
 
-		return niSet;
+		return niList;
 	}
 
 

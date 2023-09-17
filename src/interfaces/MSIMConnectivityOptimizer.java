@@ -33,13 +33,6 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 		}
 	}
 
-	/**
-	 * Updates a network interface's location
-	 */
-	public void updateLocation(NetworkInterface ni) {
-		// Does nothing; This optimizer does not need to access host locations
-	}
-
 	@Override
 	public boolean areWithinRange(NetworkInterface a, NetworkInterface b) {
 		double range = Math.min(a.getTransmitRange(), b.getTransmitRange());

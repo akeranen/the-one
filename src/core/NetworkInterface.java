@@ -62,6 +62,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 	/** scanning interval, or 0.0 if n/a */
 	private double scanInterval;
 	private double lastScanTime;
+	private boolean	randomizeUpdates;
 
 	/** activeness handler for the node group */
 	private ActivenessHandler ah;
@@ -93,6 +94,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 		this.transmitSpeed = s.getInt(TRANSMIT_SPEED_S);
 		ensurePositiveValue(transmitRange, TRANSMIT_RANGE_S);
 		ensurePositiveValue(transmitSpeed, TRANSMIT_SPEED_S);
+		randomizeUpdates = s.getBoolean(World.RANDOMIZE_UPDATES_S, World.DEF_RANDOMIZE_UPDATES);
 	}
 
 	/**
@@ -391,8 +393,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 			return; /* nothing to do */
 		}
 
-		Collection<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
-
 		// First break the old ones
 		for (int i = 0; i < this.connections.size(); ) {
 			Connection con = this.connections.get(i);
@@ -411,10 +411,10 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 		}
 
 		// Then find new possible connections
+		Collection<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
 		Collection<NetworkInterface> newInterfaces = interfaces;
-		boolean deterministic = false; // TODO add setting
-		if (deterministic) {
-			// We need to sort the random order values form the set
+		if (!randomizeUpdates) {
+			// The order of interfaces might not be deterministic. We need to sort them.
 			newInterfaces = interfaces.stream().sorted().collect(Collectors.toList());
 		}
 

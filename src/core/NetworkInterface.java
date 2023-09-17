@@ -391,7 +391,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 			return; /* nothing to do */
 		}
 
-		optimizer.updateLocation(this);
 		Collection<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
 
 		// First break the old ones

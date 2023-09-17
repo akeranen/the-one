@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import interfaces.ConnectivityGrid;
 import movement.MovementEngine;
 import movement.MovementModel;
 import movement.Path;
@@ -498,11 +499,11 @@ public class DTNHost implements Comparable<DTNHost> {
 			}
 		}
 
-		if (movementEngine.optimizer() == null) {
-			// We are using the default grid optimizer
-			// => We need to notify it about our location
-			for (NetworkInterface ni : net) {
-				ni.optimizer.updateLocation(ni);
+		for (NetworkInterface ni : net) {
+			if (ni.optimizer instanceof ConnectivityGrid) {
+				// We are using the grid optimizer
+				// => notify it about our initial location
+				((ConnectivityGrid)(ni.optimizer)).updateLocation(ni);
 			}
 		}
 	}

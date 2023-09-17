@@ -15,11 +15,6 @@ import core.NetworkInterface;
 abstract public class ConnectivityOptimizer {
 
 	/**
-	 * Updates a network interface's location
-	 */
-	abstract public void updateLocation(NetworkInterface ni);
-
-	/**
 	 * Returns true if both interfaces are within radio range of each other.
 	 * @param a The first interface
 	 * @param b The second interface

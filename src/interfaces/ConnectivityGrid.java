@@ -209,6 +209,8 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	 * @return Set of in range interfaces
 	 */
 	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
+		updateLocation(ni);
+
 		List<NetworkInterface> niList = new ArrayList<>();
 		GridCell loc = ginterfaces.get(ni);
 

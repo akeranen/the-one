@@ -23,6 +23,8 @@ public class MSIMMovementEngine extends MovementEngine {
     public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
     /** Connectivity optimizer -setting id ({@value})*/
     public static final String DISABLE_OPTIMIZER_S = "disableConnectivityOptimizer";
+    /** Connectivity optimizer, link events -setting id ({@value})*/
+    public static final String DISABLE_LINK_EVENS_S = "disableLinkEvents";
 
     /** Interface to the MSIM process */
     private MSIMConnector connector = null;
@@ -36,6 +38,7 @@ public class MSIMMovementEngine extends MovementEngine {
     /** Keep host locations in sync with msim */
     private long locationsVersionTick = 0;
     private boolean locationsChanged = true; // Note: Need to set initial locations
+    private boolean disableLinkEvents = false;
 
     static class WaypointRequest implements Comparable<WaypointRequest> {
         public int hostID;
@@ -62,6 +65,7 @@ public class MSIMMovementEngine extends MovementEngine {
         s.setNameSpace(NAME);
         waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
         boolean disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
+        disableLinkEvents = s.getBoolean(DISABLE_LINK_EVENS_S, false);
 
         s.setNameSpace(SimScenario.SCENARIO_NS);
         // No need to run optimizer if connections are not simulated
@@ -272,23 +276,40 @@ public class MSIMMovementEngine extends MovementEngine {
     }
 
     private void run_connectivity_detection_pass() {
-        connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
-        connector.flushOutput();
+        if (disableLinkEvents) {
+            // Get connectivity via list of collisions
+            connector.writeHeader(MSIMConnector.Header.CollisionDetection);
+            connector.flushOutput();
 
-        // Receive link down events
-        int linkDownEventCount = connector.readInt();
-        for (int i = 0; i < linkDownEventCount; i++) {
-            int ID0 = connector.readInt();
-            int ID1 = connector.readInt();
-            optimizer.applyLinkDownEvent(ID0, ID1);
-        }
+            optimizer.resetAllEvents();
 
-        // Receive link up events
-        int linkUpEventCount = connector.readInt();
-        for (int i = 0; i < linkUpEventCount; i++) {
-            int ID0 = connector.readInt();
-            int ID1 = connector.readInt();
-            optimizer.applyLinkUpEvent(ID0, ID1);
+            // Receive collisions
+            int collisionsCount = connector.readInt();
+            for (int i = 0; i < collisionsCount; i++) {
+                int ID0 = connector.readInt();
+                int ID1 = connector.readInt();
+                optimizer.applyLinkUpEvent(ID0, ID1);
+            }
+        } else {
+            // Get connectivity via link up/link down events
+            connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
+            connector.flushOutput();
+
+            // Receive link down events
+            int linkDownEventCount = connector.readInt();
+            for (int i = 0; i < linkDownEventCount; i++) {
+                int ID0 = connector.readInt();
+                int ID1 = connector.readInt();
+                optimizer.applyLinkDownEvent(ID0, ID1);
+            }
+
+            // Receive link up events
+            int linkUpEventCount = connector.readInt();
+            for (int i = 0; i < linkUpEventCount; i++) {
+                int ID0 = connector.readInt();
+                int ID1 = connector.readInt();
+                optimizer.applyLinkUpEvent(ID0, ID1);
+            }
         }
     }
 

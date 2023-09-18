@@ -53,8 +53,7 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 		return interfacesInRange.get(NI_to_ID(ni));
 	}
 
-	// TODO rem
-	public void resetEvents() {
+	public void resetAllEvents() {
 		for(Set<NetworkInterface> s : interfacesInRange) {
 			s.clear();
 		}

@@ -267,7 +267,7 @@ public class MSIMMovementEngine extends MovementEngine {
         connector.flushOutput();
         for (int i = 0; i < hosts.size(); i++) {
             Coord coord = connector.readCoord();
-            hosts.get(i).setLocation(coord);
+            locations.set(i, coord);
         }
     }
 

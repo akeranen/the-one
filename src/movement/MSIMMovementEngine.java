@@ -248,7 +248,6 @@ public class MSIMMovementEngine extends MovementEngine {
             int ID0 = connector.readInt();
             int ID1 = connector.readInt();
             optimizer.applyLinkDownEvent(ID0, ID1);
-            optimizer.applyLinkDownEvent(ID1, ID0);
         }
 
         // Receive link up events
@@ -257,7 +256,6 @@ public class MSIMMovementEngine extends MovementEngine {
             int ID0 = connector.readInt();
             int ID1 = connector.readInt();
             optimizer.applyLinkUpEvent(ID0, ID1);
-            optimizer.applyLinkUpEvent(ID1, ID0);
         }
     }
 

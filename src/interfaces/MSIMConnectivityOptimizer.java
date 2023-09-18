@@ -35,8 +35,11 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 
 	@Override
 	public boolean areWithinRange(NetworkInterface a, NetworkInterface b) {
-		double range = Math.min(a.getTransmitRange(), b.getTransmitRange());
-		return a.getLocation().distanceSquared(b.getLocation()) <= range * range;
+		int IDa = NI_to_ID(a);
+		int IDb = NI_to_ID(b);
+		int min = Math.min(IDa, IDb);
+		int max = Math.max(IDa, IDb);
+		return interfacesInRange.get(min).contains(ID_to_NI(max));
 	}
 
 	/**

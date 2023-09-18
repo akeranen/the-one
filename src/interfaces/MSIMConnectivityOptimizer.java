@@ -29,7 +29,7 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 
 		this.interfacesInRange = new ArrayList<>(hosts.size());
 		for (int i = 0; i < hosts.size(); i++) {
-			this.interfacesInRange.add(i, new HashSet<>());
+			this.interfacesInRange.add(i, new LinkedHashSet<>());
 		}
 	}
 

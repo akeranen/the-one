@@ -242,7 +242,14 @@ public class MSIMMovementEngine extends MovementEngine {
         connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
         connector.flushOutput();
 
-        optimizer.resetEvents();
+        // Receive link down events
+        int linkDownEventCount = connector.readInt();
+        for (int i = 0; i < linkDownEventCount; i++) {
+            int ID0 = connector.readInt();
+            int ID1 = connector.readInt();
+            optimizer.applyLinkDownEvent(ID0, ID1);
+            optimizer.applyLinkDownEvent(ID1, ID0);
+        }
 
         // Receive link up events
         int linkUpEventCount = connector.readInt();
@@ -252,8 +259,6 @@ public class MSIMMovementEngine extends MovementEngine {
             optimizer.applyLinkUpEvent(ID0, ID1);
             optimizer.applyLinkUpEvent(ID1, ID0);
         }
-
-        // TODO Receive link down events
     }
 
     private void debug_output_paths(int hostID, Coord target) {

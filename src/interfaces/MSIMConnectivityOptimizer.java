@@ -57,12 +57,12 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 		}
 	}
 
-	public void applyLinkUpEvent(int ID0, int ID1) {
-		interfacesInRange.get(ID0).add(ID_to_NI(ID1));
+	public void applyLinkDownEvent(int ID0, int ID1) {
+		interfacesInRange.get(ID0).remove(ID_to_NI(ID1));
 	}
 
-	public void applyLinkUpEvents() {
-		// TODO
+	public void applyLinkUpEvent(int ID0, int ID1) {
+		interfacesInRange.get(ID0).add(ID_to_NI(ID1));
 	}
 
 	// Maps a NetworkInterface to its unique ID

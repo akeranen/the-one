@@ -33,7 +33,9 @@ public class MSIMMovementEngine extends MovementEngine {
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
     /** The MSIMConnectivityOptimizer associated with this MSIMMovementEngine */
     private MSIMConnectivityOptimizer optimizer = null;
-
+    /** Keep host locations in sync with msim */
+    private long locationsVersionTick = 0;
+    private boolean locationsChanged = true; // Note: Need to set initial locations
 
     static class WaypointRequest implements Comparable<WaypointRequest> {
         public int hostID;
@@ -86,13 +88,6 @@ public class MSIMMovementEngine extends MovementEngine {
         double interfaceRange = hosts.get(0).getInterface(1).getTransmitRange();
         connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize, interfaceRange);
 
-        // Send initial locations
-        connector.writeHeader(MSIMConnector.Header.SetPositions);
-        for (int i = 0; i < locations.size(); i++) {
-            connector.writeCoord(locations.get(i));
-        }
-        connector.flushOutput();
-
         // Initialize optimizer
         if (optimizer != null) {
             optimizer.init(hosts);
@@ -116,6 +111,34 @@ public class MSIMMovementEngine extends MovementEngine {
     }
 
     /**
+     * Returns a hosts current location
+     * @param hostID The ID of the host
+     * @return the hosts current location
+     */
+    @Override
+    public Coord getLocation(int hostID) {
+        if (locationsVersionTick != currentTick) {
+            long start = System.nanoTime();
+            get_locations(); // Update locations
+            locationsVersionTick = currentTick;
+            System.out.printf(" %d:  get_locations = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
+        }
+        return locations.get(hostID);
+    }
+
+    /**
+     * Returns a hosts current location
+     * @param hostID The ID of the host
+     * @param c The new location
+     * @return the hosts current location
+     */
+    @Override
+    public Coord setLocation(int hostID, Coord c) {
+        locationsChanged = true;
+        return locations.set(hostID, c.clone());
+    }
+
+    /**
      * Moves all hosts in the world for a given amount of time
      * Only performs host movement. Even if enabled it does not
      * perform interface contact detection or other functionality.
@@ -134,10 +157,13 @@ public class MSIMMovementEngine extends MovementEngine {
     public void moveHosts(double timeIncrement) {
         currentTick++;
 
+        if (locationsChanged) {
+            set_locations();
+            locationsChanged = false;
+        }
+
         run_movement_pass(timeIncrement);
 
-        // TODO if enabled, synchronize host locations
-        sync_positions();
 
         if (optimizer != null) {
             run_connectivity_detection_pass();
@@ -228,10 +254,17 @@ public class MSIMMovementEngine extends MovementEngine {
         }
     }
 
-    private void sync_positions() {
+    private void set_locations() {
+        connector.writeHeader(MSIMConnector.Header.SetPositions);
+        for (int i = 0; i < locations.size(); i++) {
+            connector.writeCoord(locations.get(i));
+        }
+        connector.flushOutput();
+    }
+
+    private void get_locations() {
         connector.writeHeader(MSIMConnector.Header.GetPositions);
         connector.flushOutput();
-
         for (int i = 0; i < hosts.size(); i++) {
             Coord coord = connector.readCoord();
             hosts.get(i).setLocation(coord);

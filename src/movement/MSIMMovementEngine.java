@@ -153,6 +153,23 @@ public class MSIMMovementEngine extends MovementEngine {
         run_movement_pass(timeIncrement);
     }
 
+    private String toHumanTime(long nanos) {
+        if (nanos > 1000000000) {
+            // at least one second
+            return (nanos / 1000000000) + " s";
+        }
+        if (nanos > 1000000) {
+            // less than a second, but at least one millisecond
+            return (nanos / 1000000) + " ms";
+        }
+        if (nanos > 1000) {
+            // less than a millisecond, but at least one microsecond
+            return (nanos / 1000) + " us";
+        }
+        // less than a microsecond
+        return nanos + " ns";
+    }
+
     /**
      * Moves all hosts in the world for a given amount of time
      * @param timeIncrement The time how long all hosts should move
@@ -162,15 +179,20 @@ public class MSIMMovementEngine extends MovementEngine {
         currentTick++;
 
         if (locationsChanged) {
+            long start = System.nanoTime();
             set_locations();
             locationsChanged = false;
+            System.out.printf(" %d:  set_locations = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
         }
 
+        long start = System.nanoTime();
         run_movement_pass(timeIncrement);
-
+        System.out.printf(" %d:  movement = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
 
         if (optimizer != null) {
+            start = System.nanoTime();
             run_connectivity_detection_pass();
+            System.out.printf(" %d:  connectivity_detection = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
         }
 
         //debug_output_positions("msim");

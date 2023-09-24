@@ -13,7 +13,7 @@ Optimization.randomizeUpdateOrder = false
 
 #MovementEngine.type = DefaultMovementEngine
 MovementEngine.type = MSIMMovementEngine
-MSIMMovementEngine.directory = /home/crydsch/msim
+MSIMMovementEngine.directory = ~/msim
 MSIMMovementEngine.executable = [msim_gpu; msim_cpu_emil; msim_cpu; msim; msim_cpu_std]
 MSIMMovementEngine.waypointBufferSize = 4
 MSIMMovementEngine.additionalArgs = --waypoint-buffer-threshold=2

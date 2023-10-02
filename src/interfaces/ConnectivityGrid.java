@@ -5,15 +5,8 @@
 package interfaces;
 
 import java.util.*;
-
+import core.*;
 import movement.MovementModel;
-
-import core.Coord;
-import core.DTNSim;
-import core.NetworkInterface;
-import core.Settings;
-import core.SettingsError;
-import core.World;
 
 /**
  * <P>
@@ -53,24 +46,20 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	public static final int DEF_CON_CELL_SIZE_MULT = 5;
 
 	private GridCell[][] cells;
+	private List<NetworkInterface> interfaces;
 	private HashMap<NetworkInterface, GridCell> ginterfaces;
 	private int cellSize;
 	private int rows;
 	private int cols;
-	private static int worldSizeX;
-	private static int worldSizeY;
-	private static int cellSizeMultiplier;
+	private int worldSizeX;
+	private int worldSizeY;
+	private int cellSizeMultiplier;
 
-	static HashMap<Integer,ConnectivityGrid> gridobjects;
-
-	static {
-		DTNSim.registerForReset(ConnectivityGrid.class.getCanonicalName());
-		reset();
-	}
-
-	public static void reset() {
-		gridobjects = new HashMap<Integer, ConnectivityGrid>();
-
+	/**
+	 * Creates a new ConnectivityGrid
+	 * @param interfaces The interfaces to be managed by this grid
+	 */
+	public ConnectivityGrid(List<NetworkInterface> interfaces) {
 		Settings s = new Settings(MovementModel.MOVEMENT_MODEL_NS);
 		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE,2);
 		worldSizeX = worldSize[0];
@@ -88,45 +77,63 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 					") for " + World.OPTIMIZATION_SETTINGS_NS +
 					"." + CELL_SIZE_MULT_S);
 		}
-	}
 
-	/**
-	 * Creates a new overlay connectivity grid
-	 * @param cellSize Cell's edge's length (must be larger than the largest
-	 * 	radio coverage's diameter)
-	 */
-	private ConnectivityGrid(int cellSize) {
+		double maxRange = Double.MIN_VALUE;
+		for (NetworkInterface ni : interfaces) {
+			maxRange = Math.max(maxRange, ni.getTransmitRange());
+		}
+
+		this.interfaces = interfaces;
+		this.cellSize = (int)Math.ceil(maxRange * cellSizeMultiplier);
 		this.rows = worldSizeY/cellSize + 1;
 		this.cols = worldSizeX/cellSize + 1;
 		// leave empty cells on both sides to make neighbor search easier
 		this.cells = new GridCell[rows+2][cols+2];
-		this.cellSize = cellSize;
 
 		for (int i=0; i<rows+2; i++) {
 			for (int j=0; j<cols+2; j++) {
 				this.cells[i][j] = new GridCell();
 			}
 		}
-		ginterfaces = new HashMap<NetworkInterface,GridCell>();
+		this.ginterfaces = new HashMap<>();
 	}
 
 	/**
-	 * Returns a connectivity grid object based on a hash value
-	 * @param key A hash value that separates different interfaces from each other
-	 * @param maxRange Maximum range used by the radio technology using this
-	 *  connectivity grid.
-	 * @return The connectivity grid object for a specific interface
+	 * Detects interfaces which are in range/no longer in range of each other
+	 * Issues LinkUp/LinkDown events to the corresponding interfaces
 	 */
-	public static ConnectivityGrid ConnectivityGridFactory(int key,
-			double maxRange) {
-		if (gridobjects.containsKey((Integer)key)) {
-			return (ConnectivityGrid)gridobjects.get((Integer)key);
-		} else {
-			ConnectivityGrid newgrid =
-				new ConnectivityGrid((int)Math.ceil(maxRange *
-						cellSizeMultiplier));
-			gridobjects.put((Integer)key,newgrid);
-			return newgrid;
+	@Override
+	public void detectConnectivity() {
+		// Update all interface positions
+		for (NetworkInterface ni : interfaces) {
+			updateLocation(ni);
+		}
+
+		// Detect link events
+		for (NetworkInterface ni : interfaces) {
+			// Issue LinkDown Events
+			List<Connection> connections = ni.getConnections();
+			for (int i = 0; i < connections.size(); ) {
+				Connection con = connections.get(i);
+				NetworkInterface other = con.getOtherInterface(ni);
+
+				// all connections should be up at this stage
+				assert con.isUp() : "Connection " + con + " was down!";
+
+				if (!areWithinRange(ni, other)) {
+					ni.linkDown(other);
+				}
+				else {
+					i++;
+				}
+			}
+
+			// Issue LinkDown Events
+			for (NetworkInterface i : getInterfacesInRange(ni)) {
+				if (ni != i && !ni.isConnected(i)) {
+					ni.linkUp(i);
+				}
+			}
 		}
 	}
 
@@ -134,8 +141,8 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	 * Checks and updates (if necessary) interface's position in the grid
 	 * @param ni The interface to update
 	 */
-	public void updateLocation(NetworkInterface ni) {
-		GridCell oldCell = (GridCell)ginterfaces.get(ni);
+	private void updateLocation(NetworkInterface ni) {
+		GridCell oldCell = ginterfaces.get(ni);
 		GridCell newCell = cellFromCoord(ni.getLocation());
 
 		if (oldCell == null) { // This interface is new
@@ -191,24 +198,12 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	/**
-	 * Returns true if both interfaces are within radio range of each other.
-	 * @param a The first interface
-	 * @param b The second interface
-	 * @return True if the interfaces are within range, false if not
-	 */
-	@Override
-	public boolean areWithinRange(NetworkInterface a, NetworkInterface b) {
-		double range = Math.min(a.getTransmitRange(), b.getTransmitRange());
-		return a.getLocation().distanceSquared(b.getLocation()) <= range * range;
-	}
-
-	/**
 	 * Returns all interfaces that are in range (i.e., in neighboring grid cells)
 	 * and use the same technology and channel as the given interface
 	 * @param ni The interface whose neighboring interfaces are returned
 	 * @return Set of in range interfaces
 	 */
-	public Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
+	private Collection<NetworkInterface> getInterfacesInRange(NetworkInterface ni) {
 		updateLocation(ni);
 
 		List<NetworkInterface> niList = new ArrayList<>();
@@ -227,7 +222,6 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 
 		return niList;
 	}
-
 
 	/**
 	 * Returns a string representation of the ConnectivityCells object

@@ -356,7 +356,6 @@ public class SimScenario implements Serializable {
 				NetworkInterface iface =
 					(NetworkInterface)intSettings.createIntializedObject(
 							INTTYPE_PACKAGE +intSettings.getSetting(INTTYPE_S));
-				iface.setOptimizer(this.movementEngine.optimizer());
 				iface.setClisteners(connectionListeners);
 				iface.setGroupSettings(s);
 				interfaces.add(iface);

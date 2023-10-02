@@ -59,7 +59,7 @@ public class MSIMMovementEngine extends MovementEngine {
         super(s);
 
         s.setNameSpace(NAME);
-        waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
+        waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S, 4);
         disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
         disableLinkEvents = s.getBoolean(DISABLE_LINK_EVENS_S, false);
 

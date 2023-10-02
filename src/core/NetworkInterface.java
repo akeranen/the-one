@@ -58,11 +58,9 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 	protected double transmitRange;
 	protected double oldTransmitRange;
 	protected int transmitSpeed;
-	protected ConnectivityOptimizer optimizer = null;
 	/** scanning interval, or 0.0 if n/a */
 	private double scanInterval;
 	private double lastScanTime;
-	private boolean	randomizeUpdates;
 
 	/** activeness handler for the node group */
 	private ActivenessHandler ah;
@@ -94,7 +92,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 		this.transmitSpeed = s.getInt(TRANSMIT_SPEED_S);
 		ensurePositiveValue(transmitRange, TRANSMIT_RANGE_S);
 		ensurePositiveValue(transmitSpeed, TRANSMIT_SPEED_S);
-		randomizeUpdates = s.getBoolean(World.RANDOMIZE_UPDATES_S, World.DEF_RANDOMIZE_UPDATES);
 	}
 
 	/**
@@ -117,7 +114,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 		this.transmitSpeed = ni.transmitSpeed;
 		this.scanInterval = ni.scanInterval;
 		this.ah = ni.ah;
-		this.optimizer = ni.optimizer;
 
 		if (ni.activenessJitterMax > 0) {
 			this.activenessJitterValue = rng.nextInt(ni.activenessJitterMax);
@@ -155,21 +151,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 			comBus.subscribe(RANGE_ID, this);
 			comBus.subscribe(SPEED_ID, this);
 		}
-
-		// TODO  1. Refactor ConnectivityGrid as standalone optimizer class
-		//          (Not instanced through ConnectivityGridFactory(..))
-		//       2. Associate ConnectivityGrid with DefaultMovementEngine as default optimizer
-		if (transmitRange > 0) {
-			if (optimizer == null) {
-				// None set yet => use ConnectivityGrid as default optimizer
-				optimizer = ConnectivityGrid.ConnectivityGridFactory(
-						this.interfacetype.hashCode(), transmitRange);
-			}
-		}
-	}
-
-	public void setOptimizer(ConnectivityOptimizer optimizer) {
-		this.optimizer = optimizer;
 	}
 
 	/**
@@ -337,34 +318,53 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 	}
 
 	/**
+	 * Disconnect a connection between this and another host.
+	 * @param other The other host's network interface to disconnect
+	 * from this host
+	 */
+	public void disconnect(NetworkInterface other) {
+		for (int i = 0; i < this.connections.size(); i++) {
+			Connection con = this.connections.get(i);
+
+			if (con.getOtherInterface(this) == other) {
+				disconnect(con, other);
+				connections.remove(i);
+				return;
+			}
+		}
+		// the connection didn't exist, do nothing
+	}
+
+	/**
 	 * Disconnects this host from another host.  The derived class should
 	 * make the decision whether to disconnect or not
 	 * @param con The connection to tear down
 	 */
-	protected void disconnect(Connection con,
-			NetworkInterface anotherInterface) {
+	protected void disconnect(Connection con, NetworkInterface other) {
+		// all connections should be up at this stage
+		assert con.isUp() : "Connection " + con + " was down!";
+
 		con.setUpState(false);
-		notifyConnectionListeners(CON_DOWN, anotherInterface.getHost());
+		notifyConnectionListeners(CON_DOWN, other.getHost());
 
 		// tear down bidirectional connection
-		if (!anotherInterface.getConnections().remove(con)) {
+		if (!other.getConnections().remove(con)) {
 			throw new SimError("No connection " + con + " found in " +
-					anotherInterface);
+					other);
 		}
 
 		this.host.connectionDown(con);
-		anotherInterface.getHost().connectionDown(con);
+		other.getHost().connectionDown(con);
 	}
 
 	/**
-	 * Returns true if the given NetworkInterface is connected to this host.
-	 * @param netinterface The other NetworkInterface to check
+	 * Returns true if the given NetworkInterface is connected to this interface.
+	 * @param other The other NetworkInterface to check
 	 * @return True if the two hosts are connected
 	 */
-	protected boolean isConnected(NetworkInterface netinterface) {
+	public boolean isConnected(NetworkInterface other) {
 		for (int i = 0; i < this.connections.size(); i++) {
-			if (this.connections.get(i).getOtherInterface(this) ==
-				netinterface) {
+			if (this.connections.get(i).getOtherInterface(this) == other) {
 				return true;
 			}
 		}
@@ -385,43 +385,33 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 	}
 
 	/**
-	 * Updates the state of current connections (ie tears down connections
-	 * that are out of range, makes new connections, recalculates transmission speeds etc.).
+	 * Called when <other> interface enters the transmission range
+	 * May be called only once even if connection is not immediately established
+	 *  Callee is responsible to keep track of available connections
+	 * Caller guarantees that:
+	 *  - <other> =/= <this>
+	 *  - There is no connection yet
+	 * @param other The other interface
 	 */
-	public void update() {
-		if (optimizer == null) {
-			return; /* nothing to do */
-		}
-
-		// First break the old ones
-		for (int i = 0; i < this.connections.size(); ) {
-			Connection con = this.connections.get(i);
-			NetworkInterface anotherInterface = con.getOtherInterface(this);
-
-			// all connections should be up at this stage
-			assert con.isUp() : "Connection " + con + " was down!";
-
-			if (!optimizer.areWithinRange(this, anotherInterface)) {
-				disconnect(con,anotherInterface);
-				connections.remove(i);
-			}
-			else {
-				i++;
-			}
-		}
-
-		// Then find new possible connections
-		Collection<NetworkInterface> interfaces = optimizer.getInterfacesInRange(this);
-		Collection<NetworkInterface> newInterfaces = interfaces;
-		if (!randomizeUpdates) {
-			// The order of interfaces might not be deterministic. We need to sort them.
-			newInterfaces = interfaces.stream().sorted().collect(Collectors.toList());
-		}
-
-		for (NetworkInterface i : newInterfaces) {
-			connect(i);
-		}
+	public void linkUp(NetworkInterface other) {
+		connect(other);
 	}
+
+	/**
+	 * Called when <other> interface leaves the transmission range
+	 * Caller guarantees that:
+	 *  - <other> =/= <this>
+	 *  - There was a connection
+	 * @param other The other interface
+	 */
+	public void linkDown(NetworkInterface other) {
+		disconnect(other);
+	}
+
+	/**
+	 * Updates the state of current connections(ie recalculate transmission speeds etc.).
+	 */
+	public abstract void update();
 
 	/**
 	 * Notifies all the connection listeners about a change in connections.
@@ -474,46 +464,6 @@ abstract public class NetworkInterface implements ModuleCommunicationListener, C
 	 * @param anotherInterface The interface to create the connection to
 	 */
 	public abstract void createConnection(NetworkInterface anotherInterface);
-
-	/**
-	 * Disconnect a connection between this and another host.
-	 * @param anotherInterface The other host's network interface to disconnect
-	 * from this host
-	 */
-	public void destroyConnection(NetworkInterface anotherInterface) {
-		DTNHost anotherHost = anotherInterface.getHost();
-		for (int i=0; i < this.connections.size(); i++) {
-			if (this.connections.get(i).getOtherNode(this.host) == anotherHost){
-				removeConnectionByIndex(i, anotherInterface);
-			}
-		}
-		// the connection didn't exist, do nothing
-	}
-
-	/**
-	 * Removes a connection by its position (index) in the connections array
-	 * of the interface
-	 * @param index The array index of the connection to be removed
-	 * @param anotherInterface The interface of the other host
-	 */
-	private void removeConnectionByIndex(int index,
-			NetworkInterface anotherInterface) {
-		Connection con = this.connections.get(index);
-		DTNHost anotherNode = anotherInterface.getHost();
-		con.setUpState(false);
-		notifyConnectionListeners(CON_DOWN, anotherNode);
-
-		// tear down bidirectional connection
-		if (!anotherInterface.getConnections().remove(con)) {
-			throw new SimError("No connection " + con + " found in " +
-					anotherNode);
-		}
-
-		this.host.connectionDown(con);
-		anotherNode.connectionDown(con);
-
-		connections.remove(index);
-	}
 
 	/**
 	 * Returns the DTNHost of this interface

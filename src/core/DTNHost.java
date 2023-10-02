@@ -359,7 +359,7 @@ public class DTNHost implements Comparable<DTNHost> {
 		if (up) {
 			ni.createConnection(no);
 		} else {
-			ni.destroyConnection(no);
+			ni.disconnect(no);
 		}
 	}
 
@@ -407,7 +407,7 @@ public class DTNHost implements Comparable<DTNHost> {
 				removeList.add(con.getOtherInterface(i));
 			}
 			for (NetworkInterface inf : removeList) {
-				i.destroyConnection(inf);
+				i.disconnect(inf);
 			}
 		}
 	}
@@ -496,14 +496,6 @@ public class DTNHost implements Comparable<DTNHost> {
 		if (movListeners != null) {
 			for (MovementListener l : movListeners) {
 				l.initialLocation(this, getLocation());
-			}
-		}
-
-		for (NetworkInterface ni : net) {
-			if (ni.optimizer instanceof ConnectivityGrid) {
-				// We are using the grid optimizer
-				// => notify it about our initial location
-				((ConnectivityGrid)(ni.optimizer)).updateLocation(ni);
 			}
 		}
 	}

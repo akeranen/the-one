@@ -43,8 +43,6 @@ extends SimpleBroadcastInterface {
   public void connect( NetworkInterface anotherInterface) {
     if (super.isScanning()
         && anotherInterface.getHost().isRadioActive()
-        && !isConnected(anotherInterface)
-        && (this != anotherInterface)
         && this.isHubConnection( anotherInterface ) ) {
 
       // connection speed is the lower one of the two speeds

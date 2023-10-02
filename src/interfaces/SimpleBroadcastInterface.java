@@ -43,10 +43,7 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 	 * @param anotherInterface The interface to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning()
-				&& anotherInterface.getHost().isRadioActive()
-				&& !isConnected(anotherInterface)
-				&& (this != anotherInterface)) {
+		if (isScanning() && anotherInterface.getHost().isRadioActive()) {
 			// connection speed is the lower one of the two speeds
 			int conSpeed = anotherInterface.getTransmitSpeed(this);
 			if (conSpeed > this.transmitSpeed) {
@@ -76,6 +73,14 @@ public class SimpleBroadcastInterface extends NetworkInterface {
 					anotherInterface.getHost(), anotherInterface, conSpeed);
 			connect(con,anotherInterface);
 		}
+	}
+
+	/**
+	 * Updates the state of current connections
+	 */
+	@Override
+	public void update() {
+		// nothing to update
 	}
 
 	/**

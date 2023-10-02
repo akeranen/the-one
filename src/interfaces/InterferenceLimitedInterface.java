@@ -59,11 +59,7 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	 * @param anotherInterface The host to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning()
-				&& anotherInterface.getHost().isRadioActive()
-				&& !isConnected(anotherInterface)
-				&& (this != anotherInterface)) {
-
+		if (isScanning() && anotherInterface.getHost().isRadioActive()) {
 			Connection con = new VBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface);
 			connect(con, anotherInterface);
@@ -71,12 +67,10 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 	}
 
 	/**
-	 * Updates the state of current connections (i.e., tears down connections
-	 * that are out of range).
+	 * Updates the state of current connections
 	 */
+	@Override
 	public void update() {
-		super.update(); // Break old & make new connections
-
 		// Find the current number of transmissions
 		// (to calculate the current transmission speed
 		numberOfTransmissions = 0;
@@ -102,6 +96,7 @@ public class InterferenceLimitedInterface extends NetworkInterface {
 						Math.log(1.0*numberOfActive))) /
 							ntrans );
 
+		/* update all connections */
 		for (Connection con : getConnections()) {
 			con.update();
 		}

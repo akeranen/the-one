@@ -56,11 +56,7 @@ public class DistanceCapacityInterface extends NetworkInterface {
 	 * @param anotherInterface The interface to connect to
 	 */
 	public void connect(NetworkInterface anotherInterface) {
-		if (isScanning()
-				&& anotherInterface.getHost().isRadioActive()
-				&& !isConnected(anotherInterface)
-				&& (this != anotherInterface)) {
-
+		if (isScanning() && anotherInterface.getHost().isRadioActive()) {
 			Connection con = new VBRConnection(this.host, this,
 					anotherInterface.getHost(), anotherInterface);
 			connect(con,anotherInterface);
@@ -68,12 +64,10 @@ public class DistanceCapacityInterface extends NetworkInterface {
 	}
 
 	/**
-	 * Updates the state of current connections (i.e. tears down connections
-	 * that are out of range and creates new ones).
+	 * Updates the state of current connections
 	 */
+	@Override
 	public void update() {
-		super.update(); // Break old & make new connections
-
 		/* update all connections */
 		for (Connection con : getConnections()) {
 			con.update();

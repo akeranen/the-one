@@ -1,11 +1,13 @@
 package movement;
 
 import core.*;
+import interfaces.ConnectivityGrid;
 import interfaces.ConnectivityOptimizer;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * Provides a default implementation to move hosts in the world according to their MovementModel
@@ -15,13 +17,35 @@ public class DefaultMovementEngine extends MovementEngine {
     public static final String NAME = "DefaultMovementEngine";
     private final Coord ORIGIN = new Coord(0.0, 0.0);
 
-
     /**
      * Creates a new MovementEngine based on a Settings object's settings.
      * @param settings The Settings object where the settings are read from
      */
     public DefaultMovementEngine(Settings settings) {
         super(settings);
+    }
+
+    /**
+     * Initializes the movement engine
+     * @param hosts to be moved
+     */
+    @Override
+    public void init(List<DTNHost> hosts, int worldSizeX, int worldSizeY) {
+        super.init(hosts, worldSizeX, worldSizeY);
+
+        // Initialize optimizer
+        Map<String, List<NetworkInterface>> interface_map = new HashMap<>();
+        for (DTNHost host : hosts) {
+            for (NetworkInterface ni : host.getInterfaces()) {
+                if (ni.getTransmitRange() > 0) {
+                    interface_map.computeIfAbsent(ni.getInterfaceType(), k -> new ArrayList<>()).add(ni);
+                }
+            }
+        }
+
+        for (List<NetworkInterface> interfaces : interface_map.values()) {
+            optimizer.add(new ConnectivityGrid(interfaces));
+        }
     }
 
     /**
@@ -84,12 +108,6 @@ public class DefaultMovementEngine extends MovementEngine {
         //debug_output_positions("one");
     }
 
-    @Override
-    public ConnectivityOptimizer optimizer() {
-        // TODO Associate ConnectivityGrid as default optimizer
-        return null;
-    }
-
     /**
      * Moves the host towards the next waypoint or waits if it is
      * not time to move yet
@@ -118,11 +136,6 @@ public class DefaultMovementEngine extends MovementEngine {
             host.setLocation(target); // snap to destination
             timeIncrement -= ttt;
 
-            //debug_output_num_reached_destinations(hostID, target);
-            //debug_num_reached_destinations++;
-            //System.out.println(currentTick + ": snapped to: " + target);
-            //debug_output_destinations(hostID, target); // TODO
-
             if (!setNextWaypoint(hostID, host)) { // get a new waypoint
                 return; // no more waypoints left
             }
@@ -144,46 +157,6 @@ public class DefaultMovementEngine extends MovementEngine {
             host.setLocation(pos);
         }
     }
-
-    /*public void mov_old(int hostID, double timeIncrement) {
-        double possibleMovement;
-        double distance;
-        double dx, dy;
-
-        DTNHost host = hosts.get(hostID);
-        if (!host.isMovementActive() || host.getPath() == null) {
-            return;
-        }
-        if (host.getDestination() == null) {
-            if (!setNextWaypoint(hostID, host)) {
-                return;
-            }
-        }
-
-        possibleMovement = timeIncrement * host.getSpeed();
-        distance = host.getLocation().distance(host.getDestination());
-
-        while (possibleMovement >= distance) {
-            // node can move past its next destination
-            host.setLocation(host.getDestination()); // snap to destination
-            possibleMovement -= distance;
-            debug_output_destinations();
-            if (!setNextWaypoint(hostID, host)) { // get a new waypoint
-                return; // no more waypoints left
-            }
-            distance = host.getLocation().distance(host.getDestination());
-        }
-
-        // move towards the point for possibleMovement amount
-        Coord location = host.getLocation();
-        Coord destination = host.getDestination();
-        dx = (possibleMovement/distance) *
-                (destination.getX() - location.getX());
-        dy = (possibleMovement/distance) *
-                (destination.getY() - location.getY());
-        location.translate(dx, dy);
-        host.setLocation(location);
-    }*/
 
     /**
      * Sets the next destination and speed to correspond to the next waypoint
@@ -218,33 +191,6 @@ public class DefaultMovementEngine extends MovementEngine {
         }
         // Format: tick,ID,x,y
         writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
-        writer.close();
-    }
-
-    private void debug_output_paths(int hostID, Coord target) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/msim/logs/debug/paths_one.txt",true));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        // Format: tick,ID,x,y
-        //writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
-        // Format: tick,ID,
-        writer.printf("%d,%d\n", currentTick, hostID);
-        writer.close();
-    }
-
-    protected void debug_output_num_reached_destinations(int hostID, Coord dest) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/msim/logs/debug/dests_one.txt",true));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        writer.printf("%d,%d,%f,%f\n", currentTick, hostID, dest.getX(), dest.getY());
         writer.close();
     }
 

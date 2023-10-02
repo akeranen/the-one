@@ -2,12 +2,9 @@ package movement;
 
 import core.*;
 import input.MSIMConnector;
-import interfaces.ConnectivityOptimizer;
+import interfaces.ConnectivityGrid;
 import interfaces.MSIMConnectivityOptimizer;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -33,12 +30,11 @@ public class MSIMMovementEngine extends MovementEngine {
     /** Queue of pending waypoint requests */
     //private final ArrayDeque<WaypointRequest> waypointRequests = new ArrayDeque<>(); // TODO benchmark
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
-    /** The MSIMConnectivityOptimizer associated with this MSIMMovementEngine */
-    private MSIMConnectivityOptimizer optimizer = null;
     /** Keep host locations in sync with msim */
     private long locationsVersionTick = 0;
     private boolean locationsChanged = true; // Note: Need to set initial locations
     private boolean disableLinkEvents = false;
+    private boolean disableOptimizer = false;
 
     static class WaypointRequest implements Comparable<WaypointRequest> {
         public int hostID;
@@ -64,7 +60,7 @@ public class MSIMMovementEngine extends MovementEngine {
 
         s.setNameSpace(NAME);
         waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S);
-        boolean disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
+        disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
         disableLinkEvents = s.getBoolean(DISABLE_LINK_EVENS_S, false);
 
         s.setNameSpace(SimScenario.SCENARIO_NS);
@@ -73,10 +69,6 @@ public class MSIMMovementEngine extends MovementEngine {
         s.restoreNameSpace();
 
         connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
-
-        if (!disableOptimizer) {
-            optimizer = (MSIMConnectivityOptimizer) s.createIntializedObject("interfaces." + MSIMConnectivityOptimizer.NAME);
-        }
     }
 
     /**
@@ -93,8 +85,31 @@ public class MSIMMovementEngine extends MovementEngine {
         connector.init(hosts.size(), worldSizeX, worldSizeY, waypointBufferSize, interfaceRange);
 
         // Initialize optimizer
-        if (optimizer != null) {
-            optimizer.init(hosts);
+        Map<String, List<NetworkInterface>> interface_map = new HashMap<>();
+        for (DTNHost host : hosts) {
+            for (NetworkInterface ni : host.getInterfaces()) {
+                if (ni.getTransmitRange() > 0) {
+                    interface_map.computeIfAbsent(ni.getInterfaceType(), k -> new ArrayList<>()).add(ni);
+                }
+            }
+        }
+
+        Iterator<List<NetworkInterface>> interfaces_it = interface_map.values().iterator();
+        if (!interfaces_it.hasNext()) {
+            return;
+        }
+        if (!disableOptimizer) {
+            List<NetworkInterface> interfaces = interfaces_it.next();
+            // First list of interfaces will be accelerated by msim
+            if (interfaces.size() != hosts.size()) {
+                throw new SettingsError("MSIMConnectivityOptimizer requires one interface of the same type for every host!");
+            }
+            optimizer.add(new MSIMConnectivityOptimizer(connector, interfaces));
+        }
+
+        // All others will be managed by grids
+        while (interfaces_it.hasNext()) {
+            optimizer.add(new ConnectivityGrid(interfaces_it.next()));
         }
     }
 
@@ -107,7 +122,7 @@ public class MSIMMovementEngine extends MovementEngine {
         connector.writeHeader(MSIMConnector.Header.Shutdown);
         connector.flushOutput();
         try {
-            Thread.sleep(500); // Give it some time to shut down gracefully
+            Thread.sleep(1000); // Give it some time to shut down gracefully
         } catch (InterruptedException ignored) { }
 
         // Close connection and shutdown process
@@ -150,24 +165,9 @@ public class MSIMMovementEngine extends MovementEngine {
      */
     @Override
     public void warmup(double timeIncrement) {
+        long start = System.nanoTime();
         run_movement_pass(timeIncrement);
-    }
-
-    private String toHumanTime(long nanos) {
-        if (nanos > 1000000000) {
-            // at least one second
-            return (nanos / 1000000000) + " s";
-        }
-        if (nanos > 1000000) {
-            // less than a second, but at least one millisecond
-            return (nanos / 1000000) + " ms";
-        }
-        if (nanos > 1000) {
-            // less than a millisecond, but at least one microsecond
-            return (nanos / 1000) + " us";
-        }
-        // less than a microsecond
-        return nanos + " ns";
+        System.out.printf(" %d:  movement = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
     }
 
     /**
@@ -189,22 +189,8 @@ public class MSIMMovementEngine extends MovementEngine {
         run_movement_pass(timeIncrement);
         System.out.printf(" %d:  movement = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
 
-        if (optimizer != null) {
-            start = System.nanoTime();
-            run_connectivity_detection_pass();
-            System.out.printf(" %d:  connectivity_detection = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
-        }
-
+        //get_locations();
         //debug_output_positions("msim");
-    }
-
-    /**
-     * Returns the MSIMConnectivityOptimizer associated with a MSIMMovementEngine.
-     * Returns null if the optimizer is disabled.
-     */
-    @Override
-    public ConnectivityOptimizer optimizer() {
-        return optimizer;
     }
 
     private void run_movement_pass(double timeIncrement) {
@@ -297,56 +283,4 @@ public class MSIMMovementEngine extends MovementEngine {
         }
     }
 
-    private void run_connectivity_detection_pass() {
-        if (disableLinkEvents) {
-            // Get connectivity via list of collisions
-            connector.writeHeader(MSIMConnector.Header.CollisionDetection);
-            connector.flushOutput();
-
-            optimizer.resetAllEvents();
-
-            // Receive collisions
-            int collisionsCount = connector.readInt();
-            for (int i = 0; i < collisionsCount; i++) {
-                int ID0 = connector.readInt();
-                int ID1 = connector.readInt();
-                optimizer.applyLinkUpEvent(ID0, ID1);
-            }
-        } else {
-            // Get connectivity via link up/link down events
-            connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
-            connector.flushOutput();
-
-            // Receive link down events
-            int linkDownEventCount = connector.readInt();
-            for (int i = 0; i < linkDownEventCount; i++) {
-                int ID0 = connector.readInt();
-                int ID1 = connector.readInt();
-                optimizer.applyLinkDownEvent(ID0, ID1);
-            }
-
-            // Receive link up events
-            int linkUpEventCount = connector.readInt();
-            for (int i = 0; i < linkUpEventCount; i++) {
-                int ID0 = connector.readInt();
-                int ID1 = connector.readInt();
-                optimizer.applyLinkUpEvent(ID0, ID1);
-            }
-        }
-    }
-
-    private void debug_output_paths(int hostID, Coord target) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/msim/logs/debug/paths_msim.txt",true));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        // Format: tick,ID,x,y
-        //writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
-        // Format: tick,ID,
-        writer.printf("%d,%d\n", currentTick, hostID);
-        writer.close();
-    }
 }

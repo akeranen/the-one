@@ -25,8 +25,10 @@ public abstract class MovementEngine {
     protected List<DTNHost> hosts = null;
     /** List of all host locations in the simulation */
     protected List<Coord> locations = null;
+    /** Optimizer for interface connectivity detection */
+    protected List<ConnectivityOptimizer> optimizer = new ArrayList<>();
     /** Current simulation tick */
-    protected long currentTick = 0;
+    protected static long currentTick = 0;
     /** Queue of hosts waiting for a new path */
     protected final PriorityQueue<PathWaitingHost> pathWaitingHosts = new PriorityQueue<>();
 
@@ -96,9 +98,14 @@ public abstract class MovementEngine {
     public abstract void moveHosts(double timeIncrement);
 
     /**
-     * Returns the ConnectivityOptimizer associated with this MovementEngine, or null if none.
+     * Detects host connectivity
+     * Issues LinkUp/LinkDown events to interfaces
      */
-    public abstract ConnectivityOptimizer optimizer();
+    public void detectConnectivity() {
+        for (ConnectivityOptimizer opt : optimizer) {
+            opt.detectConnectivity();
+        }
+    }
 
     /**
      * Returns a hosts current location
@@ -119,11 +126,30 @@ public abstract class MovementEngine {
         return locations.set(hostID, c.clone());
     }
 
-    protected void debug_output_positions(String name) {
+    public static long getCurrentTick() { return currentTick; }
+
+    public String toHumanTime(long nanos) {
+        if (nanos > 1000000000) {
+            // at least one second
+            return (nanos / 1000000000) + " s";
+        }
+        if (nanos > 1000000) {
+            // less than a second, but at least one millisecond
+            return (nanos / 1000000) + " ms";
+        }
+        if (nanos > 1000) {
+            // less than a millisecond, but at least one microsecond
+            return (nanos / 1000) + " us";
+        }
+        // less than a microsecond
+        return nanos + " ns";
+    }
+
+    public void debug_output_positions(String name) {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/msim/logs/debug/pos_" + name,true));
+                    "/home/wagnerc/msim/logs/debug/pos_" + name,true));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -134,4 +160,32 @@ public abstract class MovementEngine {
         }
         writer.close();
     }
+
+    private void debug_output_paths(int hostID, Coord target, String name) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/pos_" + name,true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        // Format: tick,ID,x,y
+        //writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
+        // Format: tick,ID,
+        writer.printf("%d,%d\n", currentTick, hostID);
+        writer.close();
+    }
+
+    protected void debug_output_num_reached_destinations(int hostID, Coord dest, String name) {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileOutputStream(
+                    "/home/crydsch/msim/logs/debug/dests_" + name,true));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        writer.printf("%d,%d,%f,%f\n", currentTick, hostID, dest.getX(), dest.getY());
+        writer.close();
+    }
+
 }

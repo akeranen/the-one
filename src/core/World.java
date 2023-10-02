@@ -121,13 +121,13 @@ public class World {
 		}
 
 		while(SimClock.getTime() < -updateInterval) {
-			movementEngine.moveHosts(updateInterval);
+			movementEngine.warmup(updateInterval);
 			simClock.advance(updateInterval);
 		}
 
 		double finalStep = -SimClock.getTime();
 
-		movementEngine.moveHosts(finalStep);
+		movementEngine.warmup(finalStep);
 		simClock.setTime(0);
 	}
 

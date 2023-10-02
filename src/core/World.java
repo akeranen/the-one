@@ -7,6 +7,9 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
+import interfaces.ConnectivityGrid;
+import interfaces.MSIMConnectivityOptimizer;
+import movement.MSIMMovementEngine;
 import movement.MovementEngine;
 
 import java.util.ArrayList;
@@ -172,6 +175,10 @@ public class World {
 
 		movementEngine.moveHosts(this.updateInterval);
 		simClock.setTime(runUntil);
+
+		if (simulateConnections) {
+			movementEngine.detectConnectivity();
+		}
 
 		updateHosts();
 

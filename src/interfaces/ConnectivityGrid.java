@@ -128,7 +128,7 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 				}
 			}
 
-			// Issue LinkDown Events
+			// Issue LinkUp Events
 			for (NetworkInterface i : getInterfacesInRange(ni)) {
 				if (ni != i && !ni.isConnected(i)) {
 					ni.linkUp(i);

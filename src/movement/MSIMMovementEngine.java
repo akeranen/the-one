@@ -20,8 +20,6 @@ public class MSIMMovementEngine extends MovementEngine {
     public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
     /** Connectivity optimizer -setting id ({@value})*/
     public static final String DISABLE_OPTIMIZER_S = "disableConnectivityOptimizer";
-    /** Connectivity optimizer, link events -setting id ({@value})*/
-    public static final String DISABLE_LINK_EVENS_S = "disableLinkEvents";
 
     /** Interface to the MSIM process */
     private MSIMConnector connector = null;
@@ -32,7 +30,6 @@ public class MSIMMovementEngine extends MovementEngine {
     /** Keep host locations in sync with msim */
     private long locationsVersionTick = 0;
     private boolean locationsChanged = true; // Note: Need to set initial locations
-    private boolean disableLinkEvents = false;
     private boolean disableOptimizer = false;
 
     static class WaypointRequest implements Comparable<WaypointRequest> {
@@ -60,7 +57,6 @@ public class MSIMMovementEngine extends MovementEngine {
         s.setNameSpace(NAME);
         waypointBufferSize = s.getInt(WAYPOINT_BUFFER_SIZE_S, 4);
         disableOptimizer = s.getBoolean(DISABLE_OPTIMIZER_S, false);
-        disableLinkEvents = s.getBoolean(DISABLE_LINK_EVENS_S, false);
 
         s.setNameSpace(SimScenario.SCENARIO_NS);
         // No need to run optimizer if connections are not simulated

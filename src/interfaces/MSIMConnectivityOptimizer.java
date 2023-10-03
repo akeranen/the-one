@@ -1,8 +1,11 @@
 package interfaces;
 
+import core.Connection;
 import core.NetworkInterface;
+import core.Settings;
 import core.SettingsError;
 import input.MSIMConnector;
+import movement.MSIMMovementEngine;
 import movement.MovementEngine;
 
 import java.util.List;
@@ -14,11 +17,15 @@ import java.util.List;
 public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	/** Class name */
 	public static final String NAME = "MSIMConnectivityOptimizer";
+	/** Disable gpu link events, link events -setting id ({@value})*/
+	public static final String DISABLE_GPU_LINK_EVENTS_S = "disableGPULinkEvents";
 
 	/** Connector for IPC */
 	private MSIMConnector connector = null;
 	/** List of managed interfaces */
 	private List<NetworkInterface> interfaces = null;
+	/** This disables link event filtering on the GPU, copies all collisions and filters locally */
+	private boolean disableGPULinkEvents = false;
 
 	public MSIMConnectivityOptimizer(MSIMConnector connector, List<NetworkInterface> interfaces) {
 		this.connector = connector;
@@ -30,6 +37,10 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 				throw new SettingsError("MSIMConnectivityOptimizer requires one interface the same type for every host!");
 			}
 		}
+
+		Settings s = new Settings(MSIMMovementEngine.NAME);
+		disableGPULinkEvents = s.getBoolean(DISABLE_GPU_LINK_EVENTS_S, false);
+
 	}
 
 	// TODO move to debug_utils class
@@ -56,12 +67,25 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	 */
 	@Override
 	public void detectConnectivity() {
-		// Run connectivity detection
+		if (disableGPULinkEvents) {
+			// Detect link events
+			for (NetworkInterface ni : interfaces) {
+				// Issue LinkDown Events
+				List<Connection> connections = ni.getConnections();
+				for (int i = 0; i < connections.size(); ) {
+					Connection con = connections.get(i);
+					NetworkInterface other = con.getOtherInterface(ni);
 
-		// TODO
-		boolean disableLinkEvents = false;
-		if (disableLinkEvents) {
-			/*// Get connectivity via list of collisions
+					if (!areWithinRange(ni, other)) {
+						ni.linkDown(other);
+					}
+					else {
+						i++;
+					}
+				}
+			}
+
+			// Get connectivity via list of collisions
 			connector.writeHeader(MSIMConnector.Header.CollisionDetection);
 			connector.flushOutput();
 
@@ -70,8 +94,14 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 			for (int i = 0; i < collisionsCount; i++) {
 				int ID0 = connector.readInt();
 				int ID1 = connector.readInt();
-				applyLinkUpEvent(ID0, ID1);
-			}*/
+				NetworkInterface ni0 = interfaces.get(ID0);
+				NetworkInterface ni1 = interfaces.get(ID1);
+
+				// Issue LinkUp Events
+				if (!ni0.isConnected(ni1)) {
+					ni0.linkUp(ni1);
+				}
+			}
 		} else {
 			// Get connectivity via link up/link down events
 			long startPass = System.nanoTime();

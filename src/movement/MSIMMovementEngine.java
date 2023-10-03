@@ -28,7 +28,6 @@ public class MSIMMovementEngine extends MovementEngine {
     /** Number of buffered waypoints per host */
     private int waypointBufferSize = 0;
     /** Queue of pending waypoint requests */
-    //private final ArrayDeque<WaypointRequest> waypointRequests = new ArrayDeque<>(); // TODO benchmark
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
     /** Keep host locations in sync with msim */
     private long locationsVersionTick = 0;

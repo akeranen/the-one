@@ -67,6 +67,15 @@ public class MSIMMovementEngine extends MovementEngine {
         disableOptimizer |= !s.getBoolean(SimScenario.SIM_CON_S);
         s.restoreNameSpace();
 
+        s.setNameSpace(World.OPTIMIZATION_SETTINGS_NS);
+        boolean randomize_updates = s.getBoolean(World.RANDOMIZE_UPDATES_S, World.DEF_RANDOMIZE_UPDATES);
+        s.restoreNameSpace();
+
+        if (!disableOptimizer && !randomize_updates) {
+            System.out.println("WARNING: MSIMConnectivityOptimizer is active and update randomization is turned off.\n" +
+                    "         The network interface link event update order is not deterministic due to GPU acceleration.");
+        }
+
         connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
     }
 

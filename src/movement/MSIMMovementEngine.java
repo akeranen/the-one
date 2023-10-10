@@ -163,19 +163,6 @@ public class MSIMMovementEngine extends MovementEngine {
 
     /**
      * Moves all hosts in the world for a given amount of time
-     * Only performs host movement. Even if enabled it does not
-     * perform interface contact detection or other functionality.
-     * @param timeIncrement how long all nodes should move
-     */
-    @Override
-    public void warmup(double timeIncrement) {
-        long start = System.nanoTime();
-        run_movement_pass(timeIncrement);
-        System.out.printf(" %d:  movement = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
-    }
-
-    /**
-     * Moves all hosts in the world for a given amount of time
      * @param timeIncrement The time how long all hosts should move
      */
     @Override

@@ -73,8 +73,7 @@ public abstract class MovementEngine {
             host.notifyInitialLocation();
 
             // Initially all hosts wait for a path
-            //double nextPathAvailableTime = host.movement.nextPathAvailable(); // TODO ?
-            double nextPathAvailableTime = 0.0;
+            double nextPathAvailableTime = host.getMovementModel().nextPathAvailable();
             pathWaitingHosts.add(new PathWaitingHost(host.getID(), nextPathAvailableTime));
         }
     }
@@ -84,12 +83,6 @@ public abstract class MovementEngine {
      * Called on world shutdown for cleanup
      */
     public abstract void fini();
-
-    /**
-     * Moves all hosts in the world for a given amount of time
-     * @param timeIncrement how long all nodes should move
-     */
-    public abstract void warmup(double timeIncrement);
 
     /**
      * Moves all hosts in the world for a given amount of time

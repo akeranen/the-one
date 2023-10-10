@@ -59,15 +59,6 @@ public class DefaultMovementEngine extends MovementEngine {
 
     /**
      * Moves all hosts in the world for a given amount of time
-     * @param timeIncrement how long all nodes should move
-     */
-    @Override
-    public void warmup(double timeIncrement) {
-        moveHosts(timeIncrement);
-    }
-
-    /**
-     * Moves all hosts in the world for a given amount of time
      * @param timeIncrement The time how long all nodes should move
      */
     @Override

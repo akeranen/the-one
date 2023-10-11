@@ -1,0 +1,48 @@
+
+Scenario.name = perf_rwp_msim_gpu_set
+Scenario.simulateConnections = true
+Scenario.updateInterval = 1
+Scenario.endTime = [1000; 1000; 1000; 1000; 1000; 1000; 1000; 1000; 1000; 1000; 100; 100; 100]
+
+Scenario.nrofHostGroups = 1
+Events.nrof = 0
+
+Group1.groupID = E
+Group1.speed = 0.5, 1.5
+Group1.nrofHosts = [100; 1000; 10000; 100000; 200000; 300000; 400000; 500000; 600000; 700000; 800000; 900000; 1000000]
+Group1.movementModel = RandomWaypoint
+Group1.router = PassiveRouter
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 10
+myInterface.transmitSpeed = 1
+
+## MovementEngine settings
+#MovementEngine.type = DefaultMovementEngine
+MovementEngine.type = MSIMMovementEngine
+MSIMMovementEngine.directory = /home/wagnerc/msim
+MSIMMovementEngine.executable = msim_cpu
+MSIMMovementEngine.waypointBufferSize = 4
+MSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
+# Disable msim optimizer and use default grid optimizer
+#MSIMMovementEngine.disableConnectivityOptimizer = true
+# Disable msim connectivity detection and only use collision detection
+#MSIMMovementEngine.disableGPULinkEvents = true
+
+# seed for movement models' pseudo random number generator (default = 0)
+MovementModel.rngSeed = 0
+
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 10000, 10000
+MovementModel.warmup = 100
+
+# Reports
+Report.report1 = ConnectivityONEReport
+Report.nrofReports = 0
+Report.output = reports/%%Scenario.name%%_%%Group1.nrofHosts%%e_%%Scenario.endTime%%t
+
+## Optimization settings
+Optimization.cellSizeMult = 1
+Optimization.randomizeUpdateOrder = true

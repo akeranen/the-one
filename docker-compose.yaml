@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+    theone:
+        container_name: theone
+        image: theone
+        build: .
+        environment:
+            - "DISPLAY=:0"
+        volumes:
+            - ./data:/one
+            - /tmp/.X11-unix:/tmp/.X11-unix

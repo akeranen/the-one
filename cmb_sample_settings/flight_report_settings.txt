@@ -1,0 +1,23 @@
+## Settings that define FlightLengthReport.
+
+Scenario.name = FlightReport
+Scenario.endTime = 6000
+Scenario.updateInterval = 0.1
+Scenario.simulateConnections = false
+MovementModel.worldSize = 1000,1000
+Events.nrof = 0
+
+Scenario.nrofHostGroups = 1
+Group1.groupID = x
+Group1.nrofHosts = 100
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 0
+myInterface.transmitSpeed = 0
+Group1.movementModel = RandomWaypoint
+Group1.router = PassiveRouter
+
+Report.nrofReports = 1
+Report.report1 = FlightLengthReport
+Report.reportDir = reports

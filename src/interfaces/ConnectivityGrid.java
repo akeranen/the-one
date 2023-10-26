@@ -6,6 +6,7 @@ package interfaces;
 
 import java.util.*;
 import core.*;
+import movement.MovementEngine;
 import movement.MovementModel;
 
 /**
@@ -105,11 +106,14 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	@Override
 	public void detectConnectivity() {
 		// Update all interface positions
+		long time_default_opt_updateInterfaceLocations = System.nanoTime();
 		for (NetworkInterface ni : interfaces) {
 			updateLocation(ni);
 		}
+		System.out.printf(" %d:  default_opt.updateInterfaceLocations = %d\n", MovementEngine.getCurrentTick(), System.nanoTime() - time_default_opt_updateInterfaceLocations);
 
 		// Detect link events
+		long time_default_opt_detectLinkEvents = System.nanoTime();
 		for (NetworkInterface ni : interfaces) {
 			// Issue LinkDown Events
 			List<Connection> connections = ni.getConnections();
@@ -135,6 +139,7 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 				}
 			}
 		}
+		System.out.printf(" %d:  default_opt.detectLinkEvents = %d\n", MovementEngine.getCurrentTick(), System.nanoTime() - time_default_opt_detectLinkEvents);
 	}
 
 	/**

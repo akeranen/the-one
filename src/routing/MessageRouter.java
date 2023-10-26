@@ -97,6 +97,8 @@ public abstract class MessageRouter {
 	private DTNHost host;
 	/** size of the buffer */
 	private long bufferSize;
+	/** current occupancy of the buffer */
+	private long bufferOccupancy;
 	/** TTL for all messages */
 	protected int msgTtl;
 	/** Queue mode for sending messages */
@@ -165,6 +167,7 @@ public abstract class MessageRouter {
 		this.blacklistedMessages = new HashMap<String, Object>();
 		this.mListeners = mListeners;
 		this.host = host;
+		this.bufferOccupancy = 0;
 	}
 
 	/**
@@ -282,17 +285,11 @@ public abstract class MessageRouter {
 	 * size isn't defined)
 	 */
 	public long getFreeBufferSize() {
-		long occupancy = 0;
-
 		if (this.getBufferSize() == Integer.MAX_VALUE) {
 			return Integer.MAX_VALUE;
 		}
 
-		for (Message m : getMessageCollection()) {
-			occupancy += m.getSize();
-		}
-
-		return this.getBufferSize() - occupancy;
+		return this.getBufferSize() - this.bufferOccupancy;
 	}
 
 	/**
@@ -446,6 +443,7 @@ public abstract class MessageRouter {
 	 */
 	protected void addToMessages(Message m, boolean newMessage) {
 		this.messages.put(m.getId(), m);
+		this.bufferOccupancy += m.getSize();
 
 		if (newMessage) {
 			for (MessageListener ml : this.mListeners) {
@@ -461,6 +459,7 @@ public abstract class MessageRouter {
 	 */
 	protected Message removeFromMessages(String id) {
 		Message m = this.messages.remove(id);
+		this.bufferOccupancy -= m.getSize();
 		return m;
 	}
 

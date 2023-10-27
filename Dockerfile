@@ -3,19 +3,17 @@ FROM openjdk:8
 LABEL MAINTAINER="Marvin Raiser <marvin@raiser.dev>"
 LABEL Description="This image is used to run the ONE simulator lastest version"
 
-RUN mkdir /home/one \
-  && useradd one
+RUN useradd one
 
-RUN apt-get update && apt-get install libxext6 libxrender1 libxtst6 libxi6 -y
+WORKDIR /home/one/the-one
 
-RUN  curl -sL https://codeload.github.com/akeranen/the-one/legacy.tar.gz/master \
-   | tar xvz \
-  && mv akeranen-the-one-* /home/one/the-one_latest \
-  && cd /home/one/the-one_latest \
-  && ./compile.sh \
-  && chown -R one:one /home/one
+RUN apt-get update && apt-get install dos2unix libxext6 libxrender1 libxtst6 libxi6 -y
 
-WORKDIR /home/one/the-one_latest
-USER one
+COPY . .
+
+# Convert every file to unix line endings to prevent errors on windows
+RUN find . -type f -print0 | xargs -0 dos2unix
+
+RUN  ./compile.sh && chown -R one:one /home/one
 
 ENTRYPOINT [ "/bin/sh", "one.sh" ]

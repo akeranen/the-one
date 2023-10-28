@@ -4,12 +4,11 @@
  */
 package gui.playfield;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-
+import core.Coord;
 import movement.map.MapNode;
 import movement.map.SimMap;
-import core.Coord;
+
+import java.awt.*;
 
 /**
  * PlayfieldGraphic for SimMap visualization
@@ -48,6 +47,13 @@ public class MapGraphic extends PlayFieldGraphic {
 						scale(c.getX()), scale(c.getY()));
 			}
 		}
+	}
+
+	/**
+	 * @return The simMap of the graphic
+	 */
+	public SimMap getMap(){
+		return simMap;
 	}
 
 }

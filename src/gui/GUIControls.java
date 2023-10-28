@@ -4,41 +4,23 @@
  */
 package gui;
 
-import gui.playfield.PlayField;
-
-import java.awt.FlowLayout;
-import java.awt.Graphics2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.event.*;
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-
 import core.Coord;
 import core.SimClock;
+import gui.playfield.PlayField;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 /**
  * GUI's control panel
  *
  */
-@SuppressWarnings("serial")
-public class GUIControls extends JPanel implements ActionListener, ChangeListener {
+public class GUIControls extends JPanel implements ActionListener, ChangeListener, MouseWheelListener {
 	private static final String PATH_GRAPHICS = "buttonGraphics/";
 	private static final String ICON_PAUSE = "Pause16.gif";
 	private static final String ICON_PLAY = "Play16.gif";
@@ -74,7 +56,7 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 	private int oldSpeedIndex; // what speed was selected before FFW
 
 	private JButton screenShotButton;
-	private JComboBox<String> guiUpdateChooser;
+	private JComboBox guiUpdateChooser;
 
 	/**
 	 * GUI update speeds. Negative values -> how many 1/10 seconds to wait
@@ -139,7 +121,7 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 		this.sepsField.setToolTipText(TEXT_SEPS);
 
 		this.screenShotButton = new JButton(TEXT_SCREEN_SHOT);
-		this.guiUpdateChooser = new JComboBox<String>(UP_SPEEDS);
+		this.guiUpdateChooser = new JComboBox(UP_SPEEDS);
 
 		this.zoomSelector = new JSpinner(new SpinnerNumberModel(1.0, ZOOM_MIN,
 				ZOOM_MAX, 0.001));
@@ -166,14 +148,16 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 		this.add(this.screenShotButton);
 
 		guiUpdateChooser.addActionListener(this);
+		guiUpdateChooser.addMouseWheelListener(this);
 		zoomSelector.addChangeListener(this);
+		zoomSelector.addMouseWheelListener(this);
 		this.screenShotButton.addActionListener(this);
 	}
 
 
 	private ImageIcon createImageIcon(String path) {
 		java.net.URL imgURL = getClass().getResource(PATH_GRAPHICS+path);
-		
+
 		return new ImageIcon(imgURL);
 	}
 
@@ -397,4 +381,14 @@ public class GUIControls extends JPanel implements ActionListener, ChangeListene
 		}
 	}
 
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		if(e.getSource() == guiUpdateChooser){
+			guiUpdateChooser.setSelectedIndex(Math.min(guiUpdateChooser.getItemCount()-1, Math.max(0,
+							guiUpdateChooser.getSelectedIndex() + (int) Math.signum(e.getWheelRotation()))));
+		}
+		else if(e.getSource() == zoomSelector){
+			changeZoom((pf.getZoomWheelInvert() ? -1 : 1) * e.getWheelRotation());
+		}
+	}
 }

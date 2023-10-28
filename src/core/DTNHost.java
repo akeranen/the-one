@@ -4,14 +4,14 @@
  */
 package core;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static core.Constants.DEBUG;
 
@@ -30,6 +30,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	private Path path;
 	private double speed;
 	private double nextTimeToMove;
+	public final String groupId;
 	private String name;
 	private List<MessageListener> msgListeners;
 	private List<MovementListener> movListeners;
@@ -51,13 +52,14 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param mRouterProto Prototype of the message router of this host
 	 */
 	public DTNHost(List<MessageListener> msgLs,
-			List<MovementListener> movLs,
-			String groupId, List<NetworkInterface> interf,
-			ModuleCommunicationBus comBus,
-			MovementModel mmProto, MessageRouter mRouterProto) {
+                   List<MovementListener> movLs,
+                   String groupId, List<NetworkInterface> interf,
+                   ModuleCommunicationBus comBus,
+                   MovementModel mmProto, MessageRouter mRouterProto) {
 		this.comBus = comBus;
 		this.location = new Coord(0,0);
 		this.address = getNextAddress();
+		this.groupId = groupId;
 		this.name = groupId+address;
 		this.net = new ArrayList<NetworkInterface>();
 
@@ -394,7 +396,6 @@ public class DTNHost implements Comparable<DTNHost> {
 			this.location.setLocation(this.destination); // snap to destination
 			possibleMovement -= distance;
 			if (!setNextWaypoint()) { // get a new waypoint
-				this.destination = null; // No more waypoints left, therefore the destination must be null
 				return; // no more waypoints left
 			}
 			distance = this.location.distance(this.destination);

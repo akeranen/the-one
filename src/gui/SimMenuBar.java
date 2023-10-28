@@ -4,33 +4,25 @@
  */
 package gui;
 
+import core.Settings;
+import core.SettingsError;
 import gui.nodefilter.NodeMessageFilter;
-import gui.playfield.PlayField;
 import gui.playfield.NodeGraphic;
+import gui.playfield.PlayField;
 
-import java.awt.Container;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-import javax.swing.Box;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-
-import core.Settings;
-import core.SettingsError;
-
 /**
  * Menu bar of the simulator GUI
  *
  */
-@SuppressWarnings("serial")
 public class SimMenuBar extends JMenuBar implements ActionListener {
 	/** title of the about window */
 	public static final String ABOUT_TITLE = "about ONE";
@@ -58,6 +50,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	private JCheckBoxMenuItem enableMapGraphic;
 	private JCheckBoxMenuItem autoClearOverlay;
 	private JCheckBoxMenuItem focusOnClick;
+	private JCheckBoxMenuItem zoomWheelInvert;
 
 	private JMenuItem clearOverlay;
 	private JMenuItem addNodeMessageFilter;
@@ -77,8 +70,12 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	public static final String SHOW_BUFFER_S = "showMessageBuffer";
 	/** Show node connections -setting id ({@value})*/
 	public static final String FOCUS_ON_CLICK_S = "focusOnClick";
+	/** Invert Mouse Scrool Wheel Zoom -setting id ({@value})*/
+	public static final String ZOOM_WHEEL_INVERT_S = "invertZoomWheel";
 	/** The namespace where underlay image -related settings are found */
 	public static final String UNDERLAY_NS = "GUI.UnderlayImage";
+	/** Set underlying image visible at startup id ({@value})*/
+	public static final String UNDERLAY_VISIBLE = "show";
 
 	public SimMenuBar(PlayField field, NodeChooser nodeChooser) {
 		this.field = field;
@@ -97,9 +94,10 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 			// create underlay image menu item only if filename is specified
 			enableBgImage = createCheckItem(pfMenu,"Show underlay image",
 					false, null);
+			enableBgImage.setSelected(settings.getBoolean(UNDERLAY_VISIBLE, false));
 		}
 
-		settings.setNameSpace(gui.MainWindow.GUI_NS);
+		settings.setNameSpace(MainWindow.GUI_NS);
 
 		showNodeName = createCheckItem(pfMenu, "Show node name strings",
 				true, SHOW_NODE_NAMESTR_S);
@@ -111,6 +109,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				"Show message buffer", true, SHOW_BUFFER_S);
 		focusOnClick = createCheckItem(pfMenu,
 				"Focus to closest node on mouse click", false,FOCUS_ON_CLICK_S);
+		zoomWheelInvert = createCheckItem(pfMenu,
+				"Invert mouse wheel zoom direction", false, ZOOM_WHEEL_INVERT_S);
 
 		enableMapGraphic = createCheckItem(pfMenu,"Show map graphic",
 				true, null);
@@ -125,6 +125,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		clearNodeFilters = createMenuItem(pfToolsMenu, "Clear node filters");
 
 		updatePlayfieldSettings();
+		toggleUnderlayImage();
 
 		about = createMenuItem(help,"about");
 		this.add(pfMenu);
@@ -153,7 +154,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	 */
 	private JCheckBoxMenuItem createCheckItem(Container c,String txt,
 			boolean selected, String setting) {
-		Settings s = new Settings(gui.MainWindow.GUI_NS);
+		Settings s = new Settings(MainWindow.GUI_NS);
 
 		JCheckBoxMenuItem i = new JCheckBoxMenuItem(txt);
 		if (setting == null) {
@@ -177,6 +178,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		field.setShowMapGraphic(enableMapGraphic.isSelected());
 		field.setAutoClearOverlay(autoClearOverlay.isSelected());
 		field.setFocusOnClick(focusOnClick.isSelected());
+		field.setZoomWheelInvert(zoomWheelInvert.isSelected());
+		field.updateField();
 	}
 
 	private String getFilterString(String message) {
@@ -195,7 +198,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				source == this.enableMapGraphic ||
 				source == this.autoClearOverlay ||
 				source == this.showBuffer ||
-				source == this.focusOnClick) {
+				source == this.focusOnClick ||
+				source == this.zoomWheelInvert) {
 			updatePlayfieldSettings();
 		}
 
@@ -220,35 +224,39 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	 * when it is enabled to save some memory.
 	 */
 	private void toggleUnderlayImage() {
-		if (enableBgImage.isSelected()) {
+		if (enableBgImage != null && enableBgImage.isSelected()) {
 			String imgFile = null;
 			int[] offsets;
 			double scale, rotate;
+			float opacity;
+			boolean offsetRelMap;
 			BufferedImage image;
 			try {
 				Settings settings = new Settings(UNDERLAY_NS);
 				imgFile = settings.getSetting("fileName");
 				offsets = settings.getCsvInts("offset", 2);
-				scale = settings.getDouble("scale");
-				rotate = settings.getDouble("rotate");
+				offsetRelMap = settings.getBoolean("offsetRelativeToMap", false);
+				scale = settings.getDouble("scale", 1.0);
+				rotate = settings.getDouble("rotate", 0);
+				opacity = (float) (settings.getDouble("opacity", 1.0));
 	            image = ImageIO.read(new File(imgFile));
 	        } catch (IOException ex) {
-		warn("Couldn't set underlay image " + imgFile + ". " +
-				ex.getMessage());
-		enableBgImage.setSelected(false);
-		return;
+				warn("Couldn't set underlay image " + imgFile + ". " +
+						ex.getMessage());
+				enableBgImage.setSelected(false);
+				return;
 	        }
 	        catch (SettingsError er) {
-		warn("Problem with the underlay image settings: " +
-				er.getMessage());
-		return;
+				warn("Problem with the underlay image settings: " +
+						er.getMessage());
+				return;
 	        }
 			field.setUnderlayImage(image, offsets[0], offsets[1],
-					scale, rotate);
+					scale, rotate, opacity, offsetRelMap);
 		}
 		else {
 			// disable the image
-			field.setUnderlayImage(null, 0, 0, 0, 0);
+			field.setUnderlayImage(null, 0, 0, 0, 0, 0, false);
 		}
 	}
 

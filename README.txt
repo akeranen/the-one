@@ -57,6 +57,24 @@ read in the order given in the command line. Values in the later config files
 override values in earlier config files.
 
 
+Using Docker
+------------
+By using docker you do not need to install `java` nor play around with different versions. [See more reasons](https://stackoverflow.com/questions/34487094/why-use-docker-arent-java-files-like-war-files-already-running-on-jvm).
+
+To build the current version, from this directory execute:
+
+    docker build -t theone:latest .
+
+To run it with the GUI and share conf/data files you just need to share the socket `/tmp/.X11-unix` and the variable `DISPLAY` for the GUI, as for the conf/data files, assuming that these ones are in the `./data` folder just execute:
+
+    docker run --rm -it -e DISPLAY=$DISPLAY -v ./data:/one -v /tmp/.X11-unix:/tmp/.X11-unix theone:latest
+
+For quick start you can use `docker-compose up` to build and run the current version and `docker-compose down` to shut it down.
+If issues occur use `docker-compose up --build` to rebuild the image and run it again.
+
+Hint for Windows WSL2 users: You have to launch docker or docker-compose inside your wsl distro to get the gui running.
+
+
 Configuring
 ===========
 

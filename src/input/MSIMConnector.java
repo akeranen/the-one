@@ -199,8 +199,7 @@ public class MSIMConnector {
         if (debug) return;
 
         try {
-            msim.waitFor();
-            //msim.waitFor(2, TimeUnit.SECONDS);
+            msim.waitFor(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             System.err.println("MSIM Process did not exit gracefully. => Killing it");
             msim.destroyForcibly();

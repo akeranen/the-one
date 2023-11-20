@@ -34,8 +34,3 @@ GUI.UnderlayImage.scale = 0.106
 GUI.UnderlayImage.rotate = 0
 
 GUI.UnderlayImage.show = true
-
-# how many events to show in the log panel (default = 30)
-GUI.EventLogPanel.nrofEvents = 30
-# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
-#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$

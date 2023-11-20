@@ -22,3 +22,20 @@ Group1.router = PassiveRouter
 
 Report.nrofReports = 0
 Report.reportDir = reports
+
+
+# GUI underlay image settings
+GUI.UnderlayImage.fileName = data/Assignment/plain_EG.png
+# Image offset in pixels (x, y)
+GUI.UnderlayImage.offset = 300, -50
+# Scaling factor for the image
+GUI.UnderlayImage.scale = 0.106
+# Image rotation (radians)
+GUI.UnderlayImage.rotate = 0
+
+GUI.UnderlayImage.show = true
+
+# how many events to show in the log panel (default = 30)
+GUI.EventLogPanel.nrofEvents = 30
+# Regular Expression log filter (see Pattern-class from the Java API for RE-matching details)
+#GUI.EventLogPanel.REfilter = .*p[1-9]<->p[1-9]$

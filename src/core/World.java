@@ -7,6 +7,8 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
+import movement.Exit;
+import movement.StudentMovement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -195,6 +197,9 @@ public class World {
 		}
 
 		moveHosts(this.updateInterval);
+		for (Exit exit: StudentMovement.EXITS) {
+			exit.flushExit();
+		}
 		simClock.setTime(runUntil);
 
 		updateHosts();

@@ -37,6 +37,8 @@ public class DTNHost implements Comparable<DTNHost> {
 	private List<NetworkInterface> net;
 	private ModuleCommunicationBus comBus;
 
+	private boolean isInLecture;
+
 	static {
 		DTNSim.registerForReset(DTNHost.class.getCanonicalName());
 		reset();
@@ -417,7 +419,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	private boolean setNextWaypoint() {
 		if (path == null) {
-			path = movement.getPath();
+			path = movement.getPath(this);
 		}
 
 		if (path == null || !path.hasNext()) {
@@ -540,4 +542,11 @@ public class DTNHost implements Comparable<DTNHost> {
 		return this.getAddress() - h.getAddress();
 	}
 
+	public boolean isInLecture() {
+		return isInLecture;
+	}
+
+	public void setInLecture(boolean isInLecture) {
+		this.isInLecture = isInLecture;
+	}
 }

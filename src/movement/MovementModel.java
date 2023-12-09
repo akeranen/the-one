@@ -203,6 +203,8 @@ public abstract class MovementModel {
 	 */
 	public abstract Path getPath();
 
+	public Path getPath(DTNHost dtnHost) { return null; };
+
 	/**
 	 * Returns a new initial placement for a node
 	 * @return The initial coordinates for a node

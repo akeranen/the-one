@@ -141,10 +141,8 @@ public class GSIMMovementEngine extends MovementEngine {
     @Override
     public Coord getLocation(int hostID) {
         if (locationsVersionTick != currentTick) {
-            long start = System.nanoTime();
             get_locations(); // Update locations
             locationsVersionTick = currentTick;
-            System.out.printf(" %d:  get_locations = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
         }
         return locations.get(hostID);
     }
@@ -170,15 +168,11 @@ public class GSIMMovementEngine extends MovementEngine {
         currentTick++;
 
         if (locationsChanged) {
-            long start = System.nanoTime();
             set_locations();
             locationsChanged = false;
-            System.out.printf(" %d:  set_locations = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
         }
 
-        long start = System.nanoTime();
         run_movement_pass(timeIncrement);
-        System.out.printf(" %d:  movement = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
 
         //get_locations();
         //debug_output_positions("gsim");

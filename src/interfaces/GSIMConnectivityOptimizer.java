@@ -104,14 +104,11 @@ public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 			}
 		} else {
 			// Get connectivity via link up/link down events
-			long startPass = System.nanoTime();
 			connector.writeHeader(GSIMConnector.Header.ConnectivityDetection);
 			connector.flushOutput();
 
 			// Receive link down events
 			int linkDownEventCount = connector.readInt();
-			System.out.printf(" %d:  connectivity_detection.pass = %s\n", MovementEngine.getCurrentTick(), toHumanTime(System.nanoTime() - startPass));
-			long startRecv = System.nanoTime();
 			for (int i = 0; i < linkDownEventCount; i++) {
 				int ID0 = connector.readInt();
 				int ID1 = connector.readInt();
@@ -119,11 +116,9 @@ public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 				NetworkInterface ni1 = interfaces.get(ID1);
 				ni0.linkDown(ni1);
 			}
-			System.out.printf(" %d:  connectivity_detection.recv_link_down = %s\n", MovementEngine.getCurrentTick(), toHumanTime(System.nanoTime() - startRecv));
 
 			// Receive link up events
 			int linkUpEventCount = connector.readInt();
-			long startSend = System.nanoTime();
 			for (int i = 0; i < linkUpEventCount; i++) {
 				int ID0 = connector.readInt();
 				int ID1 = connector.readInt();
@@ -131,7 +126,6 @@ public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 				NetworkInterface ni1 = interfaces.get(ID1);
 				ni0.linkUp(ni1);
 			}
-			System.out.printf(" %d:  connectivity_detection.recv_link_up = %s\n", MovementEngine.getCurrentTick(), toHumanTime(System.nanoTime() - startSend));
 		}
 	}
 

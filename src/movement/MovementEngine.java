@@ -142,7 +142,7 @@ public abstract class MovementEngine {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileOutputStream(
-                    "/home/wagnerc/gsim/logs/debug/pos_" + name,true));
+                    "/gsim/logs/debug/pos_" + name,true));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -158,7 +158,7 @@ public abstract class MovementEngine {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/gsim/logs/debug/pos_" + name,true));
+                    "/gsim/logs/debug/pos_" + name,true));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -173,7 +173,7 @@ public abstract class MovementEngine {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/gsim/logs/debug/dests_" + name,true));
+                    "/gsim/logs/debug/dests_" + name,true));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

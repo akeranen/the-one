@@ -173,9 +173,6 @@ public class GSIMMovementEngine extends MovementEngine {
         }
 
         run_movement_pass(timeIncrement);
-
-        //get_locations();
-        //debug_output_positions("gsim");
     }
 
     private void run_movement_pass(double timeIncrement) {
@@ -207,7 +204,6 @@ public class GSIMMovementEngine extends MovementEngine {
             } else {
                 // Just got new path => queue full buffer waypoint request
                 waypointRequests.add(new WaypointRequest(pwh.hostID, waypointBufferSize));
-                //debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
             }
         }
 

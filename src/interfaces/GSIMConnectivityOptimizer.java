@@ -43,24 +43,6 @@ public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 
 	}
 
-	// TODO move to debug_utils class
-	private String toHumanTime(long nanos) {
-		if (nanos > 1000000000) {
-			// at least one second
-			return (nanos / 1000000000) + " s";
-		}
-		if (nanos > 1000000) {
-			// less than a second, but at least one millisecond
-			return (nanos / 1000000) + " ms";
-		}
-		if (nanos > 1000) {
-			// less than a millisecond, but at least one microsecond
-			return (nanos / 1000) + " us";
-		}
-		// less than a microsecond
-		return nanos + " ns";
-	}
-
 	/**
 	 * Detects interfaces which are in range/no longer in range of each other
 	 * Issues LinkUp/LinkDown events to the corresponding interfaces

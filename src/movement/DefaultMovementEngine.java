@@ -86,8 +86,6 @@ public class DefaultMovementEngine extends MovementEngine {
                 // Still no path available
                 double nextPathAvailableTime = host.getMovementModel().nextPathAvailable();
                 pathWaitingHosts.add(new PathWaitingHost(pwh.hostID, nextPathAvailableTime));
-            } else {
-                //debug_output_paths(pwh.hostID, host.getPath().getCoords().get(1));
             }
         }
 
@@ -95,8 +93,6 @@ public class DefaultMovementEngine extends MovementEngine {
         for (int i=0,n = hosts.size(); i<n; i++) {
             move(i, timeIncrement);
         }
-
-        //debug_output_positions("one");
     }
 
     /**
@@ -170,19 +166,6 @@ public class DefaultMovementEngine extends MovementEngine {
         host.setDestination(host.getPath().getNextWaypoint(), host.getPath().getSpeed());
 
         return true;
-    }
-
-    private void debug_output_destinations(int hostID, Coord target) {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new FileOutputStream(
-                    "/gsim/logs/debug/dest_one.txt",true));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        // Format: tick,ID,x,y
-        writer.printf("%d,%d,%f,%f\n", currentTick, hostID, target.getX(), target.getY());
-        writer.close();
     }
 
 }

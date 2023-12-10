@@ -8,8 +8,8 @@ import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
 import interfaces.ConnectivityGrid;
-import interfaces.MSIMConnectivityOptimizer;
-import movement.MSIMMovementEngine;
+import interfaces.GSIMConnectivityOptimizer;
+import movement.GSIMMovementEngine;
 import movement.MovementEngine;
 
 import java.util.ArrayList;

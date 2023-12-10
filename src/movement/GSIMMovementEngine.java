@@ -1,33 +1,33 @@
 package movement;
 
 import core.*;
-import input.MSIMConnector;
+import input.GSIMConnector;
 import interfaces.ConnectivityGrid;
-import interfaces.MSIMConnectivityOptimizer;
+import interfaces.GSIMConnectivityOptimizer;
 
 import java.util.*;
 
 /**
  * Provides a GPU accelerated implementation to move hosts in the world according to their MovementModel
- * by communicating to a MSIM process.
+ * by communicating to a GSIM process.
  * Supports accelerated connectivity detection.
  * Attention: Connectivity detection currently only supports a single interface type and only 1 interface per host!
  */
-public class MSIMMovementEngine extends MovementEngine {
+public class GSIMMovementEngine extends MovementEngine {
     /** Class name */
-    public static final String NAME = "MSIMMovementEngine";
+    public static final String NAME = "GSIMMovementEngine";
     /** Waypoint buffer size -setting id ({@value})*/
     public static final String WAYPOINT_BUFFER_SIZE_S = "waypointBufferSize";
     /** Connectivity optimizer -setting id ({@value})*/
     public static final String DISABLE_OPTIMIZER_S = "disableConnectivityOptimizer";
 
-    /** Interface to the MSIM process */
-    private MSIMConnector connector = null;
+    /** Interface to the GSIM process */
+    private GSIMConnector connector = null;
     /** Number of buffered waypoints per host */
     private int waypointBufferSize = 0;
     /** Queue of pending waypoint requests */
     private final PriorityQueue<WaypointRequest> waypointRequests = new PriorityQueue<>();
-    /** Keep host locations in sync with msim */
+    /** Keep host locations in sync with gsim */
     private long locationsVersionTick = 0;
     private boolean locationsChanged = true; // Note: Need to set initial locations
     private boolean disableOptimizer = false;
@@ -51,7 +51,7 @@ public class MSIMMovementEngine extends MovementEngine {
      * Creates a new MovementEngine based on a Settings object's settings.
      * @param s The Settings object where the settings are read from
      */
-    public MSIMMovementEngine(Settings s) {
+    public GSIMMovementEngine(Settings s) {
         super(s);
 
         s.setNameSpace(NAME);
@@ -68,16 +68,16 @@ public class MSIMMovementEngine extends MovementEngine {
         s.restoreNameSpace();
 
         if (!disableOptimizer && !randomize_updates) {
-            System.out.println("WARNING: MSIMConnectivityOptimizer is active and update randomization is turned off.\n" +
+            System.out.println("WARNING: GSIMConnectivityOptimizer is active and update randomization is turned off.\n" +
                     "         The network interface link event update order is not deterministic due to GPU acceleration.");
         }
 
-        connector = (MSIMConnector)s.createIntializedObject("input." + MSIMConnector.NAME);
+        connector = (GSIMConnector)s.createIntializedObject("input." + GSIMConnector.NAME);
     }
 
     /**
      * Initializes the movement engine
-     * Sends configuration and initial host locations to MSIM
+     * Sends configuration and initial host locations to GSIM
      * @param hosts to be moved
      */
     @Override
@@ -104,11 +104,11 @@ public class MSIMMovementEngine extends MovementEngine {
         }
         if (!disableOptimizer) {
             List<NetworkInterface> interfaces = interfaces_it.next();
-            // First list of interfaces will be accelerated by msim
+            // First list of interfaces will be accelerated by gsim
             if (interfaces.size() != hosts.size()) {
-                throw new SettingsError("MSIMConnectivityOptimizer requires one interface of the same type for every host!");
+                throw new SettingsError("GSIMConnectivityOptimizer requires one interface of the same type for every host!");
             }
-            optimizer.add(new MSIMConnectivityOptimizer(connector, interfaces));
+            optimizer.add(new GSIMConnectivityOptimizer(connector, interfaces));
         }
 
         // All others will be managed by grids
@@ -123,7 +123,7 @@ public class MSIMMovementEngine extends MovementEngine {
      */
     @Override
     public void fini() {
-        connector.writeHeader(MSIMConnector.Header.Shutdown);
+        connector.writeHeader(GSIMConnector.Header.Shutdown);
         connector.flushOutput();
         try {
             Thread.sleep(1000); // Give it some time to shut down gracefully
@@ -181,14 +181,14 @@ public class MSIMMovementEngine extends MovementEngine {
         System.out.printf(" %d:  movement = %s\n", currentTick, toHumanTime(System.nanoTime() - start));
 
         //get_locations();
-        //debug_output_positions("msim");
+        //debug_output_positions("gsim");
     }
 
     private void run_movement_pass(double timeIncrement) {
         double time = SimClock.getTime();
 
         // Request movement pass
-        connector.writeHeader(MSIMConnector.Header.Move);
+        connector.writeHeader(GSIMConnector.Header.Move);
         connector.writeFloat((float)timeIncrement);
 
         // Check hosts waiting for new path
@@ -258,7 +258,7 @@ public class MSIMMovementEngine extends MovementEngine {
     }
 
     private void set_locations() {
-        connector.writeHeader(MSIMConnector.Header.SetPositions);
+        connector.writeHeader(GSIMConnector.Header.SetPositions);
         for (int i = 0; i < locations.size(); i++) {
             connector.writeCoord(locations.get(i));
         }
@@ -266,7 +266,7 @@ public class MSIMMovementEngine extends MovementEngine {
     }
 
     private void get_locations() {
-        connector.writeHeader(MSIMConnector.Header.GetPositions);
+        connector.writeHeader(GSIMConnector.Header.GetPositions);
         connector.flushOutput();
         for (int i = 0; i < hosts.size(); i++) {
             Coord coord = connector.readCoord();

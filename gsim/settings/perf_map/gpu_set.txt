@@ -1,5 +1,5 @@
 
-Scenario.name = perf_map_msim_gpu_set
+Scenario.name = perf_map_gsim_gpu_set
 Scenario.simulateConnections = true
 Scenario.updateInterval = 1
 Scenario.endTime = 100
@@ -24,13 +24,13 @@ myInterface.transmitSpeed = 1
 ## MovementEngine settings
 #MovementEngine.type = DefaultMovementEngine
 MovementEngine.type = GSIMMovementEngine
-GSIMMovementEngine.directory = /home/wagnerc/msim
-GSIMMovementEngine.executable = msim_cpu
+GSIMMovementEngine.directory = gsim
+GSIMMovementEngine.executable = gsim_cpu
 GSIMMovementEngine.waypointBufferSize = 4
 GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
-# Disable msim optimizer and use default grid optimizer
+# Disable gsim optimizer and use default grid optimizer
 #GSIMMovementEngine.disableConnectivityOptimizer = true
-# Disable msim connectivity detection and only use collision detection
+# Disable gsim connectivity detection and only use collision detection
 #GSIMMovementEngine.disableGPULinkEvents = true
 
 # seed for movement models' pseudo random number generator (default = 0)

@@ -3,7 +3,7 @@ package input;
 import core.Coord;
 import core.Settings;
 import core.SettingsError;
-import movement.MSIMMovementEngine;
+import movement.GSIMMovementEngine;
 
 import java.io.*;
 import java.nio.file.*;
@@ -16,27 +16,27 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.file.StandardOpenOption.*;
 
 /**
- * Provides an interface to communicate with an external MSIM process.
- * Through this connection MSIM can be used as an external movement engine
+ * Provides an interface to communicate with an external GSIM process.
+ * Through this connection GSIM can be used as an external movement engine
  * and/or for detecting interface contacts.
  */
-public class MSIMConnector {
+public class GSIMConnector {
     /** Class name */
-    public static final String NAME = "MSIMConnector";
+    public static final String NAME = "GSIMConnector";
 
-    /** path of msim executable/working directory -setting id ({@value})*/
-    public static final String MSIM_DIRECTORY_S = "directory";
-    /** name of msim executable -setting id ({@value})*/
-    public static final String MSIM_EXECUTABLE_S = "executable";
+    /** path of gsim executable/working directory -setting id ({@value})*/
+    public static final String GSIM_DIRECTORY_S = "directory";
+    /** name of gsim executable -setting id ({@value})*/
+    public static final String GSIM_EXECUTABLE_S = "executable";
     /** additional arguments -setting id ({@value})*/
     public static final String ARGS_S = "additionalArgs";
 
-    /** The msim process */
-    private Process msim = null;
-    /** Directory were to find the msim executable */
-    private File msimDirectory = null;
-    /** Name of the msim executable */
-    private String msimExecutable = null;
+    /** The gsim process */
+    private Process gsim = null;
+    /** Directory were to find the gsim executable */
+    private File gsimDirectory = null;
+    /** Name of the gsim executable */
+    private String gsimExecutable = null;
     /** Additional arguments passed to the process (may be used of override arguments) */
     private String additionalArgs = null;
     /** Temporary directory for the pipes */
@@ -90,14 +90,14 @@ public class MSIMConnector {
     }
 
     /**
-     * Creates a new MSIMConnector based on a Settings object's settings.
+     * Creates a new GSIMConnector based on a Settings object's settings.
      * @param s The Settings object where the settings are read from
      */
-    public MSIMConnector(Settings s) {
-        s.setNameSpace(MSIMMovementEngine.NAME);
+    public GSIMConnector(Settings s) {
+        s.setNameSpace(GSIMMovementEngine.NAME);
 
-        msimDirectory = new File(s.getSetting(MSIM_DIRECTORY_S, "gsim"));
-        msimExecutable = s.getSetting(MSIM_EXECUTABLE_S, "gsim");
+        gsimDirectory = new File(s.getSetting(GSIM_DIRECTORY_S, "gsim"));
+        gsimExecutable = s.getSetting(GSIM_EXECUTABLE_S, "gsim");
         additionalArgs = s.getSetting(ARGS_S, "");
 
         s.restoreNameSpace();
@@ -105,24 +105,24 @@ public class MSIMConnector {
 
     private void preparePipes() throws IOException, InterruptedException {
         // Create temporary directory
-        tempDir = Files.createTempDirectory("msim-connector-");
+        tempDir = Files.createTempDirectory("gsim-connector-");
 
         // Create named pipes
         new ProcessBuilder()
                 .directory(tempDir.toFile())
-                .command("mkfifo", "msim.in")
+                .command("mkfifo", "gsim.in")
                 .start()
                 .waitFor(2, TimeUnit.SECONDS);
 
         new ProcessBuilder()
                 .directory(tempDir.toFile())
-                .command("mkfifo", "msim.out")
+                .command("mkfifo", "gsim.out")
                 .start()
                 .waitFor(2, TimeUnit.SECONDS);
     }
 
     /**
-     * Starts the msim process and opens the communication connection
+     * Starts the gsim process and opens the communication connection
      */
     public void init(int numEntities, int worldSizeX, int worldSizeY, int waypointBufferSize, double interfaceRange) {
         if (!debug) {
@@ -135,10 +135,10 @@ public class MSIMConnector {
             }
         }
 
-        // Start the msim process
+        // Start the gsim process
         List<String> args = new ArrayList<>();
-        args.add("./" + msimExecutable); // Executable
-        args.add(String.format("--pipes=%s", tempDir.resolve("msim")));
+        args.add("./" + gsimExecutable); // Executable
+        args.add(String.format("--pipes=%s", tempDir.resolve("gsim")));
         args.add(String.format("--num-entities=%d", numEntities));
         args.add(String.format("--map-width=%d", worldSizeX));
         args.add(String.format("--map-height=%d", worldSizeY));
@@ -147,27 +147,27 @@ public class MSIMConnector {
         args.addAll(Arrays.asList(additionalArgs.split(" ")));
 
         if (debug) {
-            System.out.printf("Now start msim with: '%s'\n", String.join(" ", args));
+            System.out.printf("Now start gsim with: '%s'\n", String.join(" ", args));
         } else {
-            System.out.printf("Starting msim with: '%s'\n", String.join(" ", args));
+            System.out.printf("Starting gsim with: '%s'\n", String.join(" ", args));
             ProcessBuilder builder = new ProcessBuilder();
-            builder.directory(msimDirectory);
+            builder.directory(gsimDirectory);
             //builder.inheritIO();
-            builder.redirectOutput(msimDirectory.toPath().resolve("logs/console.log").toFile());
-            builder.redirectError(msimDirectory.toPath().resolve("logs/console.log").toFile());
+            builder.redirectOutput(gsimDirectory.toPath().resolve("logs/console.log").toFile());
+            builder.redirectError(gsimDirectory.toPath().resolve("logs/console.log").toFile());
             builder.command(args);
 
             try {
-                msim = builder.start();
+                gsim = builder.start();
             } catch (IOException e) {
-                System.err.println("Cannot start msim process: " + e.getMessage());
+                System.err.println("Cannot start gsim process: " + e.getMessage());
                 System.exit(1); // cannot recover
             }
         }
 
         // Open pipes
-        Path pipeOutFilepath = tempDir.resolve("msim.in"); // our output pipe (aka msim's input pipe)
-        Path pipeInFilepath = tempDir.resolve("msim.out"); // our input pipe (aka msim's output pipe)
+        Path pipeOutFilepath = tempDir.resolve("gsim.in"); // our output pipe (aka gsim's input pipe)
+        Path pipeInFilepath = tempDir.resolve("gsim.out"); // our input pipe (aka gsim's output pipe)
 
         System.out.printf("Opening output pipe (%s)\n", pipeOutFilepath);
         try {
@@ -190,7 +190,7 @@ public class MSIMConnector {
     }
 
     /**
-     * Closes the communication connection and shuts down the msim process
+     * Closes the communication connection and shuts down the gsim process
      */
     public void fini() {
         // Ensure pipe is empty
@@ -199,12 +199,12 @@ public class MSIMConnector {
         if (debug) return;
 
         try {
-            msim.waitFor(5, TimeUnit.SECONDS);
+            gsim.waitFor(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            System.err.println("MSIM Process did not exit gracefully. => Killing it");
-            msim.destroyForcibly();
+            System.err.println("GSIM Process did not exit gracefully. => Killing it");
+            gsim.destroyForcibly();
         }
-        msim = null;
+        gsim = null;
 
         // Cleanup pipes and temporary directory
         try {
@@ -353,7 +353,7 @@ public class MSIMConnector {
      */
     public void testDataExchange() {
         System.out.print("Testing pipe data exchange\n");
-        writeHeader(MSIMConnector.Header.TestDataExchange);
+        writeHeader(GSIMConnector.Header.TestDataExchange);
 
         System.out.print("Testing int/uint32 exchange\n");
         // Send int value, expect value+1, send value+2
@@ -361,16 +361,16 @@ public class MSIMConnector {
         for(int value : ivalues) {
             writeInt(value);
             flushOutput();
-            System.out.printf("MSIMConnector.testDataExchange() Sent %d\n", value);
+            System.out.printf("GSIMConnector.testDataExchange() Sent %d\n", value);
             int result = readInt();
-            System.out.printf("MSIMConnector.testDataExchange() Received %d\n", result);
+            System.out.printf("GSIMConnector.testDataExchange() Received %d\n", result);
             if (result != value + 1) {
-                System.err.printf("MSIMConnector.testDataExchange() failed: Expected %d, but got %d\n", value + 1, result);
+                System.err.printf("GSIMConnector.testDataExchange() failed: Expected %d, but got %d\n", value + 1, result);
                 System.exit(1);
             }
             writeInt(result + 1);
             flushOutput();
-            System.out.printf("MSIMConnector.testDataExchange() Sent %d\n", result + 1);
+            System.out.printf("GSIMConnector.testDataExchange() Sent %d\n", result + 1);
         }
 
         System.out.print("Testing float exchange\n");
@@ -379,16 +379,16 @@ public class MSIMConnector {
         for (float value : fvalues) {
             writeFloat(value);
             flushOutput();
-            System.out.printf("MSIMConnector.testDataExchange() Sent %f\n", value);
+            System.out.printf("GSIMConnector.testDataExchange() Sent %f\n", value);
             float result = readFloat();
-            System.out.printf("MSIMConnector.testDataExchange() Received %f\n", result);
+            System.out.printf("GSIMConnector.testDataExchange() Received %f\n", result);
             if (result != value * 2.0f) {
-                System.err.printf("MSIMConnector.testDataExchange() failed: Expected %f, but got %f\n", value + 1, result);
+                System.err.printf("GSIMConnector.testDataExchange() failed: Expected %f, but got %f\n", value + 1, result);
                 System.exit(1);
             }
             writeFloat(result * 2.0f);
             flushOutput();
-            System.out.printf("MSIMConnector.testDataExchange() Sent %f\n", result * 2.0f);
+            System.out.printf("GSIMConnector.testDataExchange() Sent %f\n", result * 2.0f);
         }
 
         System.out.print("Testing string exchange\n");
@@ -396,18 +396,18 @@ public class MSIMConnector {
         String value = "foo";
         writeString(value);
         flushOutput();
-        System.out.printf("MSIMConnector.testDataExchange() Sent %s\n", value);
+        System.out.printf("GSIMConnector.testDataExchange() Sent %s\n", value);
         String result = readString();
-        System.out.printf("MSIMConnector.testDataExchange() Received %s\n", result);
+        System.out.printf("GSIMConnector.testDataExchange() Received %s\n", result);
         value += "bar";
         if (!result.equals(value)) {
-            System.err.printf("MSIMConnector.testDataExchange() failed: Expected %s, but got %s\n", value, result);
+            System.err.printf("GSIMConnector.testDataExchange() failed: Expected %s, but got %s\n", value, result);
             System.exit(1);
         }
         result += "baz";
         writeString(result);
         flushOutput();
-        System.out.printf("MSIMConnector.testDataExchange() Sent %s\n", result);
+        System.out.printf("GSIMConnector.testDataExchange() Sent %s\n", result);
 
         System.out.print("Testing pipe data exchange - DONE\n");
     }

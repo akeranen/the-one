@@ -4,41 +4,41 @@ import core.Connection;
 import core.NetworkInterface;
 import core.Settings;
 import core.SettingsError;
-import input.MSIMConnector;
-import movement.MSIMMovementEngine;
+import input.GSIMConnector;
+import movement.GSIMMovementEngine;
 import movement.MovementEngine;
 
 import java.util.List;
 
 /**
- * Provides GPU accelerated connectivity detection as an extension to an MSIMMovementEngine.
+ * Provides GPU accelerated connectivity detection as an extension to an GSIMMovementEngine.
  * Attention: Connectivity detection currently only supports a single interface type and only 1 interface per host!
  */
-public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
+public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	/** Class name */
-	public static final String NAME = "MSIMConnectivityOptimizer";
+	public static final String NAME = "GSIMConnectivityOptimizer";
 	/** Disable gpu link events, link events -setting id ({@value})*/
 	public static final String DISABLE_GPU_LINK_EVENTS_S = "disableGPULinkEvents";
 
 	/** Connector for IPC */
-	private MSIMConnector connector = null;
+	private GSIMConnector connector = null;
 	/** List of managed interfaces */
 	private List<NetworkInterface> interfaces = null;
 	/** This disables link event filtering on the GPU, copies all collisions and filters locally */
 	private boolean disableGPULinkEvents = false;
 
-	public MSIMConnectivityOptimizer(MSIMConnector connector, List<NetworkInterface> interfaces) {
+	public GSIMConnectivityOptimizer(GSIMConnector connector, List<NetworkInterface> interfaces) {
 		this.connector = connector;
 		this.interfaces = interfaces;
 
 		// Sanity checks
 		for (int i = 0; i < interfaces.size(); i++) {
 			if (interfaces.get(i).getHost().getID() != i) {
-				throw new SettingsError("MSIMConnectivityOptimizer requires one interface the same type for every host!");
+				throw new SettingsError("GSIMConnectivityOptimizer requires one interface the same type for every host!");
 			}
 		}
 
-		Settings s = new Settings(MSIMMovementEngine.NAME);
+		Settings s = new Settings(GSIMMovementEngine.NAME);
 		disableGPULinkEvents = s.getBoolean(DISABLE_GPU_LINK_EVENTS_S, false);
 
 	}
@@ -86,7 +86,7 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 			}
 
 			// Get connectivity via list of collisions
-			connector.writeHeader(MSIMConnector.Header.CollisionDetection);
+			connector.writeHeader(GSIMConnector.Header.CollisionDetection);
 			connector.flushOutput();
 
 			// Receive collisions
@@ -105,7 +105,7 @@ public class MSIMConnectivityOptimizer extends ConnectivityOptimizer {
 		} else {
 			// Get connectivity via link up/link down events
 			long startPass = System.nanoTime();
-			connector.writeHeader(MSIMConnector.Header.ConnectivityDetection);
+			connector.writeHeader(GSIMConnector.Header.ConnectivityDetection);
 			connector.flushOutput();
 
 			// Receive link down events

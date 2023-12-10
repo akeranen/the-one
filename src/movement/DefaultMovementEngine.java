@@ -176,7 +176,7 @@ public class DefaultMovementEngine extends MovementEngine {
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(new FileOutputStream(
-                    "/home/crydsch/msim/logs/debug/dest_one.txt",true));
+                    "/home/crydsch/gsim/logs/debug/dest_one.txt",true));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }

@@ -1,0 +1,78 @@
+
+### This settings file illustates, how The ONE can be accelerated with gsim.
+
+Scenario.name = gsim_example
+## Note: If networking is simulated, it will also be accelerated!  
+Scenario.simulateConnections = true
+Scenario.updateInterval = 1
+Scenario.endTime = 1000
+
+Scenario.nrofHostGroups = 1
+Events.nrof = 0
+
+Group1.groupID = E
+Group1.speed = 0.5, 1.5
+Group1.nrofHosts = 100000
+Group1.movementModel = RandomWaypoint
+Group1.router = PassiveRouter
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 10
+myInterface.transmitSpeed = 1
+
+### MovementEngine settings
+## REQUIRED:
+## The "MovementEngine.type" defines whether GSIM is used or not.
+##  Defaults to the "DefaultMovementEngine"
+#MovementEngine.type = DefaultMovementEngine
+MovementEngine.type = GSIMMovementEngine
+
+## OPTIONAL:
+## Path to the gsim directory (ex. where you cloned/built gsim)
+##  Defaults to the built-in gsim directory
+#GSIMMovementEngine.directory = gsim
+
+## Name of the gsim binary
+##  (usefull to easily change between binaries with built different configurations)
+##  Defaults to "gsim"
+#GSIMMovementEngine.executable = gsim
+
+## The size of the waypoint buffer
+##  Adjust this value for your movement model
+##  If your model generates long paths, increasing this value can provide better performance
+##  Defaults to 4
+#GSIMMovementEngine.waypointBufferSize = 4
+
+## Pass additional arguments to GSIM
+## The shown arguments can be used to tune the simulation performance.
+##  We strongly advice to set the 'waypoint-buffer-threshold'.
+##  It defaults to 0, effectively disabling the threshold feature.
+##  GSIM aims to keep its waypoint buffer filled to this value.
+##  Setting it to half of the 'waypointBufferSize' is a sane default.
+GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
+
+
+# Disable msim optimizer and use default grid optimizer
+#GSIMMovementEngine.disableConnectivityOptimizer = true
+
+# Disable msim connectivity detection and only use collision detection
+#GSIMMovementEngine.disableGPULinkEvents = true
+
+
+# seed for movement models' pseudo random number generator (default = 0)
+MovementModel.rngSeed = 0
+
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 10000, 10000
+MovementModel.warmup = 100
+
+# Reports
+## Setup your report modules here. This example runs without any.
+Report.nrofReports = 0
+
+### Optimization settings
+## Attention: Through GPU paralllelism, there is always some randomization!
+##            Even if the update order is not randomized.
+Optimization.randomizeUpdateOrder = true

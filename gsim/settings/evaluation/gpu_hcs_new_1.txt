@@ -1,0 +1,51 @@
+
+Scenario.name = msim_gpu_hcs
+Scenario.simulateConnections = true
+Scenario.updateInterval = 1
+Scenario.endTime = 1000
+
+Scenario.nrofHostGroups = 1
+Events.nrof = 0
+
+Group1.groupID = E
+Group1.speed = 0.5, 1.5
+Group1.nrofHosts = 1000000
+Group1.movementModel = MapBasedMovement
+Group1.router = PassiveRouter
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 10
+myInterface.transmitSpeed = 1
+
+## MovementEngine settings
+MovementEngine.type = GSIMMovementEngine
+GSIMMovementEngine.directory = /home/wagnerc/msim/msim_gpu_new_1
+GSIMMovementEngine.executable = msim_gpu
+GSIMMovementEngine.waypointBufferSize = 4
+GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
+# Disable msim optimizer and use default grid optimizer
+#GSIMMovementEngine.disableConnectivityOptimizer = true
+# Disable msim connectivity detection and only use collision detection
+#GSIMMovementEngine.disableGPULinkEvents = true
+
+# seed for movement models' pseudo random number generator (default = 0)
+MovementModel.rngSeed = 0
+
+# World's size for Movement Models without implicit size (width, height; meters)
+MovementModel.worldSize = 8300, 7350
+MovementModel.warmup = 1000
+
+## Map based movement -movement model specific settings
+MapBasedMovement.nrofMapFiles = 1
+MapBasedMovement.mapFile1 = data/HelsinkiMedium/roads.wkt
+
+# Reports
+Report.report1 = ConnectivityONEReport
+Report.nrofReports = 0
+Report.output = reports/%%Scenario.name%%_%%Group1.nrofHosts%%e_%%Scenario.endTime%%t
+
+## Optimization settings
+Optimization.cellSizeMult = 1
+Optimization.randomizeUpdateOrder = true

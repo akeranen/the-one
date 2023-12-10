@@ -96,8 +96,8 @@ public class MSIMConnector {
     public MSIMConnector(Settings s) {
         s.setNameSpace(MSIMMovementEngine.NAME);
 
-        msimDirectory = new File(s.getSetting(MSIM_DIRECTORY_S));
-        msimExecutable = s.getSetting(MSIM_EXECUTABLE_S, "msim");
+        msimDirectory = new File(s.getSetting(MSIM_DIRECTORY_S, "gsim"));
+        msimExecutable = s.getSetting(MSIM_EXECUTABLE_S, "gsim");
         additionalArgs = s.getSetting(ARGS_S, "");
 
         s.restoreNameSpace();

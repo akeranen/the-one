@@ -1,8 +1,8 @@
 
-Scenario.name = perf_map_msim_gpu_set
+Scenario.name = perf_map_one_alone
 Scenario.simulateConnections = true
 Scenario.updateInterval = 1
-Scenario.endTime = 100
+Scenario.endTime = 200
 
 Scenario.nrofHostGroups = 1
 Events.nrof = 0
@@ -12,7 +12,7 @@ Group.router = PassiveRouter
 
 Group1.groupID = E
 Group1.speed = 0.5, 1.5
-Group1.nrofHosts = [100; 1000; 10000; 100000; 200000; 300000; 400000; 500000; 600000; 700000; 800000; 900000; 1000000]
+Group1.nrofHosts = 120000
 Group1.movementModel = MapBasedMovement
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
@@ -22,22 +22,21 @@ myInterface.transmitRange = 10
 myInterface.transmitSpeed = 1
 
 ## MovementEngine settings
-#MovementEngine.type = DefaultMovementEngine
-MovementEngine.type = MSIMMovementEngine
-MSIMMovementEngine.directory = /home/wagnerc/msim
-MSIMMovementEngine.executable = msim_cpu
-MSIMMovementEngine.waypointBufferSize = 4
-MSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
+MovementEngine.type = DefaultMovementEngine
+GSIMMovementEngine.directory = /home/wagnerc/msim
+GSIMMovementEngine.executable = msim_gpu
+GSIMMovementEngine.waypointBufferSize = 4
+GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
 # Disable msim optimizer and use default grid optimizer
-#MSIMMovementEngine.disableConnectivityOptimizer = true
+#GSIMMovementEngine.disableConnectivityOptimizer = true
 # Disable msim connectivity detection and only use collision detection
-#MSIMMovementEngine.disableGPULinkEvents = true
+#GSIMMovementEngine.disableGPULinkEvents = true
 
 # seed for movement models' pseudo random number generator (default = 0)
 MovementModel.rngSeed = 0
 
 # World's size for Movement Models without implicit size (width, height; meters)
-MovementModel.worldSize = 10000, 10000
+MovementModel.worldSize = 8300, 7350
 MovementModel.warmup = 100
 
 ## Map based movement -movement model specific settings

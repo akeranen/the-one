@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public class StudentMovement extends MovementModel {
+    private static final int LECTURE_BLOCK_LENGTH = 240;
+    private static final int LECTURE_BLOCK_OFFSET_LENGTH = 30;
 
     public static final List<Exit> EXITS = new ArrayList<>();
 
@@ -18,6 +20,8 @@ public class StudentMovement extends MovementModel {
         ROOMS.put("HS1", new Coord(310, 130));
         ROOMS.put("Bib", new Coord(90, 140));
         ROOMS.put("Rechnerhalle", new Coord(250, 100));
+        ROOMS.put("Finger 13", new Coord(50, 35));
+        ROOMS.put("Finger 04", new Coord(330, 205));
     }
     private State state;
 
@@ -39,7 +43,6 @@ public class StudentMovement extends MovementModel {
         super(other);
         this.state = other.state;
         this.normalMovement = new ProhibitedPolygonRwp(other.normalMovement);
-        //this.rooms = new ArrayList<>(rooms);
     }
 
     @Override
@@ -50,27 +53,34 @@ public class StudentMovement extends MovementModel {
     @Override
     public Path getPath(DTNHost dtnHost) {
         return switch (state) {
-            case NORMAL -> normalPath(null);
+            case NORMAL -> normalPath(dtnHost);
             case EMERGENCY -> emergencyPath(dtnHost);
         };
     }
 
     private Path normalPath(DTNHost dtnHost) {
-        // Get current time
-//        double currentTime = SimClock.getTime();
-//        if (currentTime % 120 < 15 || currentTime % 120 > 105) { //Time between lectures
-//            // Set waypoint to a lecture room
-//            // Set lecture mode
-//            dtnHost.setInLecture(true);
-//            Path path = new Path(1);
-//            path.addWaypoint(ROOMS.values().stream().toList().get(rng.nextInt(ROOMS.size())));
-//            return path;
-//        }
-//
-//        Path newPath = new Path(1);
-//        newPath.addWaypoint(new Coord(250, 100));
-//        return newPath;
-        return normalMovement.getPath();
+        double currentTime = SimClock.getTime();
+        boolean inLectureBlock = currentTime % LECTURE_BLOCK_LENGTH >= LECTURE_BLOCK_OFFSET_LENGTH && currentTime % LECTURE_BLOCK_LENGTH <= LECTURE_BLOCK_LENGTH - LECTURE_BLOCK_OFFSET_LENGTH;
+
+        if (inLectureBlock) {
+            if (dtnHost.isInLecture()) {
+                // Student should stay in room during the lecture
+                return null;
+            } else {
+                // Student should go to a lecture
+                dtnHost.setInLecture(true);
+                Path path = new Path(5);
+                String room = ROOMS.keySet().stream().toList().get(rng.nextInt(ROOMS.size()));
+                path.addWaypoint(ROOMS.get(room));
+                System.out.println(dtnHost + " is going to " + room + " at " + currentTime);
+                return path;
+            }
+        }
+        dtnHost.setInLecture(false);
+        // In between lectures we do rwp
+        Path rwp = normalMovement.getPath();
+        rwp.setSpeed(5.0);
+        return rwp;
     }
 
     private Path emergencyPath(DTNHost dtnHost) {

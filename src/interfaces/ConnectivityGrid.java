@@ -63,7 +63,8 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	private static int worldSizeY;
 	private static int cellSizeMultiplier;
 
-	static HashMap<Integer,ConnectivityGrid> gridobjects;
+	// Changed from a hashmap to just one grid to allow different interfaces to connect to each other
+	static ConnectivityGrid grid;
 
 	static {
 		DTNSim.registerForReset(ConnectivityGrid.class.getCanonicalName());
@@ -71,8 +72,6 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	}
 
 	public static void reset() {
-		gridobjects = new HashMap<Integer, ConnectivityGrid>();
-
 		Settings s = new Settings(MovementModel.MOVEMENT_MODEL_NS);
 		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE,2);
 		worldSizeX = worldSize[0];
@@ -121,15 +120,12 @@ public class ConnectivityGrid extends ConnectivityOptimizer {
 	 */
 	public static ConnectivityGrid ConnectivityGridFactory(int key,
 			double maxRange) {
-		if (gridobjects.containsKey((Integer)key)) {
-			return (ConnectivityGrid)gridobjects.get((Integer)key);
-		} else {
-			ConnectivityGrid newgrid =
-				new ConnectivityGrid((int)Math.ceil(maxRange *
-						cellSizeMultiplier));
-			gridobjects.put((Integer)key,newgrid);
-			return newgrid;
+		if (grid == null) {
+			grid = new ConnectivityGrid((int)Math.ceil(maxRange *
+					cellSizeMultiplier));
 		}
+
+		return grid;
 	}
 
 	/**

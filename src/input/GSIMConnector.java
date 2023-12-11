@@ -56,8 +56,7 @@ public class GSIMConnector {
         Move(2),
         SetPositions(3),
         GetPositions(4),
-        CollisionDetection(5),
-        ConnectivityDetection(6),
+        ConnectivityDetection(5),
         Count(6);
 
         private final int id;
@@ -78,8 +77,6 @@ public class GSIMConnector {
                 case 4:
                     return GetPositions;
                 case 5:
-                    return CollisionDetection;
-                case 6:
                     return ConnectivityDetection;
             }
             throw new IllegalArgumentException("Cannot convert id (" + id + ") to enum Header.");

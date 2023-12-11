@@ -17,15 +17,11 @@ import java.util.List;
 public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	/** Class name */
 	public static final String NAME = "GSIMConnectivityOptimizer";
-	/** Disable gpu link events, link events -setting id ({@value})*/
-	public static final String DISABLE_GPU_LINK_EVENTS_S = "disableGPULinkEvents";
 
 	/** Connector for IPC */
 	private GSIMConnector connector = null;
 	/** List of managed interfaces */
 	private List<NetworkInterface> interfaces = null;
-	/** This disables link event filtering on the GPU, copies all collisions and filters locally */
-	private boolean disableGPULinkEvents = false;
 
 	public GSIMConnectivityOptimizer(GSIMConnector connector, List<NetworkInterface> interfaces) {
 		this.connector = connector;
@@ -38,9 +34,6 @@ public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 			}
 		}
 
-		Settings s = new Settings(GSIMMovementEngine.NAME);
-		disableGPULinkEvents = s.getBoolean(DISABLE_GPU_LINK_EVENTS_S, false);
-
 	}
 
 	/**
@@ -49,65 +42,28 @@ public class GSIMConnectivityOptimizer extends ConnectivityOptimizer {
 	 */
 	@Override
 	public void detectConnectivity() {
-		if (disableGPULinkEvents) {
-			// Detect link events
-			for (NetworkInterface ni : interfaces) {
-				// Issue LinkDown Events
-				List<Connection> connections = ni.getConnections();
-				for (int i = 0; i < connections.size(); ) {
-					Connection con = connections.get(i);
-					NetworkInterface other = con.getOtherInterface(ni);
+		// Get connectivity via link up/link down events
+		connector.writeHeader(GSIMConnector.Header.ConnectivityDetection);
+		connector.flushOutput();
 
-					if (!areWithinRange(ni, other)) {
-						ni.linkDown(other);
-					}
-					else {
-						i++;
-					}
-				}
-			}
+		// Receive link down events
+		int linkDownEventCount = connector.readInt();
+		for (int i = 0; i < linkDownEventCount; i++) {
+			int ID0 = connector.readInt();
+			int ID1 = connector.readInt();
+			NetworkInterface ni0 = interfaces.get(ID0);
+			NetworkInterface ni1 = interfaces.get(ID1);
+			ni0.linkDown(ni1);
+		}
 
-			// Get connectivity via list of collisions
-			connector.writeHeader(GSIMConnector.Header.CollisionDetection);
-			connector.flushOutput();
-
-			// Receive collisions
-			int collisionsCount = connector.readInt();
-			for (int i = 0; i < collisionsCount; i++) {
-				int ID0 = connector.readInt();
-				int ID1 = connector.readInt();
-				NetworkInterface ni0 = interfaces.get(ID0);
-				NetworkInterface ni1 = interfaces.get(ID1);
-
-				// Issue LinkUp Events
-				if (!ni0.isConnected(ni1)) {
-					ni0.linkUp(ni1);
-				}
-			}
-		} else {
-			// Get connectivity via link up/link down events
-			connector.writeHeader(GSIMConnector.Header.ConnectivityDetection);
-			connector.flushOutput();
-
-			// Receive link down events
-			int linkDownEventCount = connector.readInt();
-			for (int i = 0; i < linkDownEventCount; i++) {
-				int ID0 = connector.readInt();
-				int ID1 = connector.readInt();
-				NetworkInterface ni0 = interfaces.get(ID0);
-				NetworkInterface ni1 = interfaces.get(ID1);
-				ni0.linkDown(ni1);
-			}
-
-			// Receive link up events
-			int linkUpEventCount = connector.readInt();
-			for (int i = 0; i < linkUpEventCount; i++) {
-				int ID0 = connector.readInt();
-				int ID1 = connector.readInt();
-				NetworkInterface ni0 = interfaces.get(ID0);
-				NetworkInterface ni1 = interfaces.get(ID1);
-				ni0.linkUp(ni1);
-			}
+		// Receive link up events
+		int linkUpEventCount = connector.readInt();
+		for (int i = 0; i < linkUpEventCount; i++) {
+			int ID0 = connector.readInt();
+			int ID1 = connector.readInt();
+			NetworkInterface ni0 = interfaces.get(ID0);
+			NetworkInterface ni1 = interfaces.get(ID1);
+			ni0.linkUp(ni1);
 		}
 	}
 

@@ -29,7 +29,6 @@ GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --
 # Disable gsim optimizer and use default grid optimizer
 #GSIMMovementEngine.disableConnectivityOptimizer = true
 # Disable gsim connectivity detection and only use collision detection
-#GSIMMovementEngine.disableGPULinkEvents = true
 
 # seed for movement models' pseudo random number generator (default = 0)
 MovementModel.rngSeed = 0

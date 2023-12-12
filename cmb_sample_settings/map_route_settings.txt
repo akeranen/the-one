@@ -1,0 +1,36 @@
+# Settings for map route based movement in a triangle.
+
+Scenario.name = MapRouteMovement
+Scenario.endTime = 6000
+Scenario.updateInterval = 0.1
+Scenario.simulateConnections = false
+MovementModel.worldSize = 1000,1000
+Events.nrof = 0
+
+# Communication Interface
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 0
+myInterface.transmitSpeed = 0
+
+# Groups
+Scenario.nrofHostGroups = 1
+
+Group1.groupID = x
+Group1.nrofHosts = 1
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+Group1.movementModel = MapRouteMovement
+Group1.routeFile = data/cluster/ferryroute.wkt
+Group1.routeType = 1
+Group1.router = PassiveRouter
+
+## Map based movement -movement model specific settings
+MapBasedMovement.nrofMapFiles = 2
+MapBasedMovement.mapFile1 = data/cluster/ferryroute.wkt
+MapBasedMovement.mapFile2 = data/cluster/origin.wkt
+
+# Reports
+Report.nrofReports = 1
+Report.report1 = FlightLengthReport
+
+Report.reportDir = reports

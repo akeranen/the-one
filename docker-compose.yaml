@@ -10,3 +10,4 @@ services:
         volumes:
             - ./data:/one
             - /tmp/.X11-unix:/tmp/.X11-unix
+            - ./data/map_route_settings.txt:/one/default-settings.txt

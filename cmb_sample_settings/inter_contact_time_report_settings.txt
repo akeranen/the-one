@@ -1,0 +1,28 @@
+## Settings for recording inter-contact times.
+
+Scenario.name = InterContactTimeReport
+Scenario.endTime = 6000
+Scenario.updateInterval = 0.1
+
+# NOTE!!
+Scenario.simulateConnections = true
+
+MovementModel.worldSize = 1000,1000
+Events.nrof = 0
+
+Scenario.nrofHostGroups = 1
+Group1.groupID = x
+Group1.nrofHosts = 100
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 50
+myInterface.transmitSpeed = 1
+
+Group1.movementModel = RandomWaypoint
+Group1.router = PassiveRouter
+
+Report.nrofReports = 1
+Report.report1 = InterContactTimesReport
+Report.reportDir = reports

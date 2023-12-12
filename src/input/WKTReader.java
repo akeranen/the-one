@@ -4,17 +4,12 @@
  */
 package input;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import core.Coord;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
-import core.Coord;
 
 /**
  * Class for reading "Well-known text syntax" files. See e.g.
@@ -29,6 +24,8 @@ public class WKTReader {
 	public static final String MULTILINESTRING = "MULTILINESTRING";
 	/** known WKT type POINT */
 	public static final String POINT = "POINT";
+	/** known WKT type MULTIPOINT */
+	public static final String MULTIPOINT = "MULTIPOINT";
 
 	/** are all lines of the file read */
 	private boolean done;
@@ -60,6 +57,10 @@ public class WKTReader {
 		while((type = nextType()) != null) {
 			if (type.equals(POINT)) {
 				points.add(parsePoint());
+			}
+			if (type.equals(MULTIPOINT)) {
+				// Linestring is mostly equivalent to multipoint string so we can just re-use the code
+				points.addAll(parseLineString(readNestedContents(reader)));
 			}
 			else {
 				// known type but not interesting -> skip
@@ -141,6 +142,9 @@ public class WKTReader {
 		else if (type.equals(POINT)) {
 			return true;
 		}
+		else if (type.equals(MULTIPOINT)) {
+			return true;
+		}
 		else {
 			return false;
 		}
@@ -205,8 +209,6 @@ public class WKTReader {
 			y = s.nextDouble();
 		} catch (RuntimeException e) {
 			throw new IOException("Bad coordinate values: '" + coords + "'");
-		} finally {
-			s.close();
 		}
 
 		return new Coord(x,y);
@@ -304,11 +306,9 @@ public class WKTReader {
 			y = Double.parseDouble(tupleScan.next());
 			c = new Coord(x,y);
 
-			tupleScan.close();
 			coords.add(c);
 		}
 
-		lineScan.close();
 		return coords;
 	}
 

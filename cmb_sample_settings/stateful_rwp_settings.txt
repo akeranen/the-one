@@ -1,0 +1,28 @@
+# Settings for StatefulRwp where nodes have a state that influences mobility.
+
+Scenario.name = StatefulRwp
+Scenario.endTime = 6000
+Scenario.updateInterval = 0.1
+Scenario.simulateConnections = false
+MovementModel.worldSize = 1000,1000
+Events.nrof = 0
+
+# Communication Interface
+myInterface.type = SimpleBroadcastInterface
+myInterface.transmitRange = 0
+myInterface.transmitSpeed = 0
+
+# Groups
+Scenario.nrofHostGroups = 1
+
+Group1.groupID = x
+Group1.nrofHosts = 100
+Group1.nrofInterfaces = 1
+Group1.interface1 = myInterface
+Group1.movementModel = StatefulRwp
+Group1.router = PassiveRouter
+
+# Reports
+Report.nrofReports = 0
+
+Report.reportDir = reports

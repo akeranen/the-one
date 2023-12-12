@@ -4,12 +4,15 @@
  */
 package gui.playfield;
 
+import core.Coord;
+import core.DTNHost;
+import core.World;
 import gui.DTNSimGUI;
+import movement.Path;
+import movement.map.SimMap;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -18,19 +21,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JPanel;
-
-import movement.Path;
-import movement.map.SimMap;
-import core.Coord;
-import core.DTNHost;
-import core.World;
-
 /**
  * The canvas where node graphics and message visualizations are drawn.
  *
  */
-@SuppressWarnings("serial")
 public class PlayField extends JPanel {
 	public static final int PLAYFIELD_OFFSET = 10;
 
@@ -45,12 +39,15 @@ public class PlayField extends JPanel {
 	private boolean showMapGraphic;
 	private ScaleReferenceGraphic refGraphic;
 	private boolean focusOnClick;
+	private boolean zoomWheelInvert;
 
 	private BufferedImage underlayImage;
 	private AffineTransform imageTransform;
 	private AffineTransform curTransform;
 	private double underlayImgDx;
 	private double underlayImgDy;
+	private float underlayImgOpacity;
+	private boolean underlayImgOffsetRelMap;
 
 	/**
 	 * Creates a playfield
@@ -94,26 +91,53 @@ public class PlayField extends JPanel {
 	 * @param dy Y offset of the image
 	 * @param scale Image scaling factor
 	 * @param rotation Rotatation angle of the image (radians)
+	 * @param opacity Opacity of the background image
 	 */
 	public void setUnderlayImage(BufferedImage image,
-			double dx, double dy, double scale, double rotation) {
+			double dx, double dy, double scale, double rotation, float opacity, boolean offsetRelMap) {
 		if (image == null) {
 			this.underlayImage = null;
 			this.imageTransform = null;
 			this.curTransform = null;
+			updateField();
 			return;
 		}
 		this.underlayImage = image;
-        this.imageTransform = AffineTransform.getRotateInstance(rotation);
-        this.imageTransform.scale(scale, scale);
-        this.curTransform = new AffineTransform(imageTransform);
-        this.underlayImgDx = dx;
-        this.underlayImgDy = dy;
+		this.underlayImgOpacity = opacity;
 
-		curTransform.scale(PlayFieldGraphic.getScale(),
-				PlayFieldGraphic.getScale());
-		curTransform.translate(this.underlayImgDx, this.underlayImgDy);
+		this.imageTransform = AffineTransform.getRotateInstance(rotation);
+		this.imageTransform.scale(scale, scale);
 
+		this.underlayImgOffsetRelMap = offsetRelMap;
+		this.underlayImgDx = dx;
+		this.underlayImgDy = dy;
+
+		updateUnderlyingImageTransform();
+		updateField();
+
+	}
+
+	private void updateUnderlyingImageTransform(){
+		if (this.imageTransform != null) {
+			double dx = this.underlayImgDx;
+			double dy = this.underlayImgDy;
+			double scale = PlayFieldGraphic.getScale();
+
+			if(this.underlayImgOffsetRelMap && mapGraphic != null){
+				Coord c = mapGraphic.getMap().getOffset();
+				dx += c.getX();
+				dy = mapGraphic.getMap().isMirrored() ? -dy+c.getY() : dy+c.getY();
+
+				this.curTransform = AffineTransform.getScaleInstance(scale, scale);
+				curTransform.translate(dx, dy);
+				curTransform.concatenate(imageTransform);
+			}
+			else {
+				this.curTransform = new AffineTransform(imageTransform);
+				curTransform.scale(scale, scale);
+				curTransform.translate(dx, dy);
+			}
+		}
 	}
 
 	/**
@@ -123,11 +147,7 @@ public class PlayField extends JPanel {
 	public void setScale(double scale) {
 		PlayFieldGraphic.setScale(scale);
 		this.updateFieldSize();
-		if (this.imageTransform != null) {
-			this.curTransform = new AffineTransform(imageTransform);
-			curTransform.scale(scale, scale);
-			curTransform.translate(this.underlayImgDx, this.underlayImgDy);
-		}
+		this.updateUnderlyingImageTransform();
 	}
 
 	/**
@@ -137,6 +157,7 @@ public class PlayField extends JPanel {
 	public void setMap(SimMap simMap) {
 		this.mapGraphic = new MapGraphic(simMap);
 		this.showMapGraphic = true;
+		this.updateUnderlyingImageTransform();
 	}
 
 	/**
@@ -159,12 +180,19 @@ public class PlayField extends JPanel {
 
 	/**
 	 * Enables or disables the automatic focus on click.
-	 * If enabled, the node that is closest to the clicked location is 
+	 * If enabled, the node that is closest to the clicked location is
 	 * set on focus
 	 * @param focus Auto focus is enabled if this is true, disabled on false
 	 */
 	public void setFocusOnClick(boolean focus) {
 		this.focusOnClick = focus;
+	}
+
+	public void setZoomWheelInvert(boolean zoomWheelInvert){
+		this.zoomWheelInvert = zoomWheelInvert;
+	}
+	public boolean getZoomWheelInvert(){
+		return zoomWheelInvert;
 	}
 
 	/**
@@ -175,6 +203,7 @@ public class PlayField extends JPanel {
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setBackground(bgColor);
+		g2.setRenderingHint( RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON );
 
 		g2.translate(PLAYFIELD_OFFSET, PLAYFIELD_OFFSET);
 
@@ -183,7 +212,10 @@ public class PlayField extends JPanel {
 				this.getWidth() + PLAYFIELD_OFFSET,
 				this.getHeight() + PLAYFIELD_OFFSET);
 		if (underlayImage != null) {
-			g2.drawImage(underlayImage,curTransform, null);
+			Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, this.underlayImgOpacity);
+			g2.setComposite(c);
+			g2.drawImage(underlayImage, curTransform, null);
+			g2.setComposite(AlphaComposite.SrcOver);
 		}
 
 		// draw map (is exists and drawing requested)

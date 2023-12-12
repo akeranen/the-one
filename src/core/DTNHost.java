@@ -557,7 +557,12 @@ public class DTNHost implements Comparable<DTNHost> {
 		return state;
 	}
 
-	public void setState(State state) {
-		this.state = state;
+	public void setEmergencyState() {
+		if (state != State.EMERGENCY) {
+			state = State.EMERGENCY;
+			//Interrupt current path
+			path = null;
+			destination = null;
+		}
 	}
 }

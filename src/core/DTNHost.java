@@ -37,6 +37,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	private List<NetworkInterface> net;
 	private ModuleCommunicationBus comBus;
 
+	private State state;
 	private boolean isInLecture;
 
 	static {
@@ -93,6 +94,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				l.initialLocation(this, this.location);
 			}
 		}
+
+		this.state = State.NORMAL;
 	}
 
 	/**
@@ -548,5 +551,13 @@ public class DTNHost implements Comparable<DTNHost> {
 
 	public void setInLecture(boolean isInLecture) {
 		this.isInLecture = isInLecture;
+	}
+
+	public State getState() {
+		return state;
+	}
+
+	public void setState(State state) {
+		this.state = state;
 	}
 }

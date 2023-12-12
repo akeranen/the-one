@@ -23,13 +23,11 @@ public class StudentMovement extends MovementModel {
         ROOMS.put("Finger 13", new Coord(50, 35));
         ROOMS.put("Finger 04", new Coord(330, 205));
     }
-    private State state;
 
     private ProhibitedPolygonRwp normalMovement;
 
     public StudentMovement(Settings settings) {
         super(settings);
-        this.state = State.NORMAL;
         String[] exitNames = settings.getCsvSetting("StudentMovement.exitNames");
         for (String exitName : exitNames) {
             String[] coordStrings = settings.getCsvSetting("StudentMovement." + exitName, 2);
@@ -41,7 +39,6 @@ public class StudentMovement extends MovementModel {
 
     public StudentMovement(StudentMovement other) {
         super(other);
-        this.state = other.state;
         this.normalMovement = new ProhibitedPolygonRwp(other.normalMovement);
     }
 
@@ -52,7 +49,7 @@ public class StudentMovement extends MovementModel {
 
     @Override
     public Path getPath(DTNHost dtnHost) {
-        return switch (state) {
+        return switch (dtnHost.getState()) {
             case NORMAL -> normalPath(dtnHost);
             case EMERGENCY -> emergencyPath(dtnHost);
         };
@@ -115,11 +112,6 @@ public class StudentMovement extends MovementModel {
     @Override
     public MovementModel replicate() {
         return new StudentMovement(this);
-    }
-
-    public enum State {
-        NORMAL,
-        EMERGENCY
     }
 
     public static Map<String, Coord> getRooms() {

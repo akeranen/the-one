@@ -14,7 +14,7 @@ public class StudentMovement extends MovementModel {
     private static final int LECTURE_BLOCK_LENGTH = 240;
     private static final int LECTURE_BLOCK_OFFSET_LENGTH = 30;
 
-    public static List<Exit> EXITS = new ArrayList<>();
+    public static List<Exit> EXITS = EmergencyExitHandler.getInstance().getEmergencyExits();
 
     private static Map<String, Coord> ROOMS;
     static {
@@ -31,9 +31,6 @@ public class StudentMovement extends MovementModel {
 
     public StudentMovement(Settings settings) {
         super(settings);
-
-        EXITS = EmergencyExitHandler.getInstance().getEmergencyExits();
-
         this.normalMovement = new ProhibitedPolygonRwp(settings);
     }
 

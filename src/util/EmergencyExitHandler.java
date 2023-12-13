@@ -1,8 +1,8 @@
 package util;
 
 import core.Coord;
-import core.DTNHost;
 import core.DTNSim;
+import core.Settings;
 
 import java.util.ArrayList;
 
@@ -19,9 +19,21 @@ public class EmergencyExitHandler {
 
     private EmergencyExitHandler() {
         this.emergencyExits = new ArrayList<>();
-        this.emergencyExits.add(new Exit("1. Hauptausgang", new Coord(83.1390380859375, 124.48645858573059), 3));
-        this.emergencyExits.add(new Exit("2. Hauptausgang", new Coord(292.89550781249996, 112.96934440596303), 3));
-        this.emergencyExits.add(new Exit("3. Hauptausgang", new Coord(120.65734863281252, 139.58057772547917), 3));
+
+        Settings settings = new Settings("Exit");
+
+        int numberOfExits = settings.getInt("nrof", 0);
+
+        for (int i=1; i<=numberOfExits; i++) {
+            Settings exit = new Settings("Exit"+i);
+
+            String name = exit.getSetting("name");
+            String[] coordStrings = exit.getCsvSetting("coord", 2);
+            Coord exitCoord = new Coord(Double.parseDouble(coordStrings[0]), Double.parseDouble(coordStrings[1]));
+            double exitRate = exit.getDouble("exitRate");
+
+            this.emergencyExits.add(new Exit(name, exitCoord, exitRate));
+        }
     }
 
     public static EmergencyExitHandler getInstance() {

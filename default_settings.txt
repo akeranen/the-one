@@ -1,6 +1,6 @@
-Scenario.name = Escape_the_MI-%%MovementModel.rngSeed%%
+Scenario.name = Escape_the_MI-%%MovementModel.rngSeed%%-%%Exit1.exitRate%%
 Scenario.endTime = 14400
-Scenario.updateInterval = 1
+Scenario.updateInterval = 0.1
 Scenario.simulateConnections = true
 MovementModel.worldSize = 400,250
 Events.nrof = 0
@@ -61,7 +61,8 @@ Report.nrofReports = 1
 Report.reportDir = reports
 Report.report1 = EmergencyReport
 
-MovementModel.rngSeed = [1;2;3;4;5]
+MovementModel.rngSeed = 1
+# [1;2;3;4;5]
 
 # GUI underlay image settings
 GUI.UnderlayImage.fileName = data/Assignment/plain_EG.png
@@ -73,3 +74,18 @@ GUI.UnderlayImage.scale = 0.106
 GUI.UnderlayImage.rotate = 0
 
 GUI.UnderlayImage.show = true
+
+Exit.nrof = 3
+# (x, y) Coordinates
+
+Exit1.name=1. Hauptausgang
+Exit1.coord=83.1390380859375, 124.48645858573059
+Exit1.exitRate= [3.0; 0.001]
+
+Exit2.name=2. Hauptausgang
+Exit2.coord=292.89550781249996, 112.96934440596303
+Exit2.exitRate= [3.0; 0.001]
+
+Exit3.name=3. Hauptausgang
+Exit3.coord=120.65734863281252, 139.58057772547917
+Exit3.exitRate= [3.0; 0.001]

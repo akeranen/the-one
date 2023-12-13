@@ -44,12 +44,6 @@ public class StudentMovement extends MovementModel {
 
     @Override
     public Path getPath() {
-        int nrOfMessages = this.getHost().getRouter().getNrofMessages();
-
-        if (nrOfMessages > 0) {
-            this.getHost().setEmergencyState();
-        }
-
         return switch (this.getHost().getState()) {
             case NORMAL -> normalPath();
             case EMERGENCY -> emergencyPath();

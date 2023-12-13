@@ -1,28 +1,29 @@
-## Settings that define ProhibitedPolygonRwp movement with one group of nodes.
-
-Scenario.name = ProhibitedPolygon1
+Scenario.name = Escape_the_MI-%%MovementModel.rngSeed%%
 Scenario.endTime = 6000
 Scenario.updateInterval = 0.1
 Scenario.simulateConnections = false
 MovementModel.worldSize = 400,250
 Events.nrof = 0
 
+
 Group1.rwpInvert = true
 
 Scenario.nrofHostGroups = 1
 Group1.groupID = x
-Group1.nrofHosts = 1000
+Group1.nrofHosts = 50
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 myInterface.type = SimpleBroadcastInterface
 myInterface.transmitRange = 0
 myInterface.transmitSpeed = 0
-Group1.movementModel = ProhibitedPolygonRwp
+Group1.movementModel = Escape
 Group1.router = PassiveRouter
 
-Report.nrofReports = 0
+Report.nrofReports = 1
 Report.reportDir = reports
+Report.report1 = EmergencyReport
 
+MovementModel.rngSeed = [1;2;3;4;5]
 
 # GUI underlay image settings
 GUI.UnderlayImage.fileName = data/Assignment/plain_EG.png

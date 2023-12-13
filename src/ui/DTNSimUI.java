@@ -6,6 +6,7 @@ package ui;
 
 import java.util.Vector;
 
+import report.EmergencyReport;
 import report.Report;
 import core.ApplicationListener;
 import core.ConnectionListener;
@@ -153,6 +154,9 @@ public abstract class DTNSimUI {
 		}
 		if (r instanceof ApplicationListener) {
 			scen.addApplicationListener((ApplicationListener)r);
+		}
+		if (r instanceof EmergencyReport) {
+			scen.addEmergencyReport((EmergencyReport) r);
 		}
 
 		this.reports.add(r);

@@ -14,7 +14,9 @@ import java.util.List;
 import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.map.SimMap;
+import report.EmergencyReport;
 import routing.MessageRouter;
+import util.EmergencyExitHandler;
 
 /**
  * A simulation scenario used for getting and storing the settings of a
@@ -86,6 +88,8 @@ public class SimScenario implements Serializable {
 	private World world;
 	/** List of hosts in this simulation */
 	protected List<DTNHost> hosts;
+
+	protected List<EmergencyExitHandler> emergencyExits;
 	/** Name of the simulation */
 	private String name;
 	/** number of host groups */
@@ -118,6 +122,8 @@ public class SimScenario implements Serializable {
 	/** Global application event listeners */
 	private List<ApplicationListener> appListeners;
 
+	private List<EmergencyReport> emergencyReports;
+
 	static {
 		DTNSim.registerForReset(SimScenario.class.getCanonicalName());
 		reset();
@@ -149,6 +155,7 @@ public class SimScenario implements Serializable {
 		this.connectionListeners = new ArrayList<ConnectionListener>();
 		this.messageListeners = new ArrayList<MessageListener>();
 		this.movementListeners = new ArrayList<MovementListener>();
+		this.emergencyReports = new ArrayList<EmergencyReport>();
 		this.updateListeners = new ArrayList<UpdateListener>();
 		this.appListeners = new ArrayList<ApplicationListener>();
 		this.eqHandler = new EventQueueHandler();
@@ -165,6 +172,7 @@ public class SimScenario implements Serializable {
 				updateListeners, simulateConnections,
 				eqHandler.getEventQueues());
 	}
+
 
 	/**
 	 * Returns the SimScenario instance and creates one if it doesn't exist yet
@@ -283,6 +291,8 @@ public class SimScenario implements Serializable {
 		}
 	}
 
+
+	public void addEmergencyReport(EmergencyReport report) { this.emergencyReports.add(report); }
 	/**
 	 * Adds a new update listener for the world
 	 * @param ul The listener
@@ -396,7 +406,7 @@ public class SimScenario implements Serializable {
 				// prototypes are given to new DTNHost which replicates
 				// new instances of movement model and message router
 				DTNHost host = new DTNHost(this.messageListeners,
-						this.movementListeners,	gid, interfaces, comBus,
+						this.movementListeners, this.emergencyReports, gid, interfaces, comBus,
 						mmProto, mRouterProto);
 				hosts.add(host);
 			}

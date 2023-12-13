@@ -1,17 +1,20 @@
 package movement;
 
 import core.*;
+import util.EmergencyExitHandler;
+import util.Exit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class StudentMovement extends MovementModel {
     private static final int LECTURE_BLOCK_LENGTH = 240;
     private static final int LECTURE_BLOCK_OFFSET_LENGTH = 30;
 
-    public static final List<Exit> EXITS = new ArrayList<>();
+    public static List<Exit> EXITS = new ArrayList<>();
 
     private static Map<String, Coord> ROOMS;
     static {
@@ -28,12 +31,9 @@ public class StudentMovement extends MovementModel {
 
     public StudentMovement(Settings settings) {
         super(settings);
-        String[] exitNames = settings.getCsvSetting("StudentMovement.exitNames");
-        for (String exitName : exitNames) {
-            String[] coordStrings = settings.getCsvSetting("StudentMovement." + exitName, 2);
-            Coord exitCoord = new Coord(Double.parseDouble(coordStrings[0]), Double.parseDouble(coordStrings[1]));
-            EXITS.add(new Exit(exitCoord, exitName, 2));
-        }
+
+        EXITS = EmergencyExitHandler.getInstance().getEmergencyExits();
+
         this.normalMovement = new ProhibitedPolygonRwp(settings);
     }
 
@@ -63,7 +63,7 @@ public class StudentMovement extends MovementModel {
             } else {
                 // Student should go to a lecture
                 dtnHost.setInLecture(true);
-                String roomName = ROOMS.keySet().stream().toList().get(rng.nextInt(ROOMS.size()));
+                String roomName = new ArrayList<>(ROOMS.keySet()).get(rng.nextInt(ROOMS.size()));
                 Path path = calculateShortestPath(dtnHost.getLocation(), ROOMS.get(roomName));
                 System.out.println(dtnHost + " is going to " + roomName + " at " + currentTime);
                 path.setSpeed(5);

@@ -6,8 +6,10 @@ package core;
 
 import movement.MovementModel;
 import movement.Path;
+import report.EmergencyReport;
 import routing.MessageRouter;
 import routing.util.RoutingInfo;
+import util.EmergencyExitHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +36,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	private String name;
 	private List<MessageListener> msgListeners;
 	private List<MovementListener> movListeners;
+	private List<EmergencyReport> emergencyReports;
 	private List<NetworkInterface> net;
 	private ModuleCommunicationBus comBus;
 
@@ -56,6 +59,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public DTNHost(List<MessageListener> msgLs,
                    List<MovementListener> movLs,
+				   List<EmergencyReport> emergencyReports,
                    String groupId, List<NetworkInterface> interf,
                    ModuleCommunicationBus comBus,
                    MovementModel mmProto, MessageRouter mRouterProto) {
@@ -77,6 +81,7 @@ public class DTNHost implements Comparable<DTNHost> {
 
 		this.msgListeners = msgLs;
 		this.movListeners = movLs;
+		this.emergencyReports = emergencyReports;
 
 		// create instances by replicating the prototypes
 		this.movement = mmProto.replicate();
@@ -426,6 +431,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	private boolean setNextWaypoint() {
 		if (path == null) {
+			hasReachedEmergencyExit();
 			path = movement.getPath();
 		}
 
@@ -521,6 +527,15 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	public void deleteMessage(String id, boolean drop) {
 		this.router.deleteMessage(id, drop);
+	}
+
+
+	public void hasReachedEmergencyExit() {
+		for(EmergencyReport report : this.emergencyReports) {
+			if (EmergencyExitHandler.getInstance().getExitFromCoord(this.location) != null) {
+				report.hasReachedEmergencyExit(this.toString(), this.location);
+			}
+		}
 	}
 
 	/**

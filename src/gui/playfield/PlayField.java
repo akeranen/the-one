@@ -340,4 +340,10 @@ public class PlayField extends JPanel {
 
 		gui.setFocus(closest);
 	}
+
+	public void setEmergencyModeForAllHostsInWorld() {
+		for (DTNHost host : w.getHosts()) {
+			host.setEmergencyState();
+		}
+	}
 }

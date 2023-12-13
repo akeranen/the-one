@@ -1,4 +1,4 @@
-package movement;
+package util;
 
 import core.Coord;
 
@@ -10,7 +10,7 @@ public class Exit {
     private final double exitRate;
 
 
-    public Exit(Coord coord, String name, double exitRate) {
+    public Exit(String name, Coord coord, double exitRate) {
         this.coord = coord;
         this.name = name;
         this.exitRate = exitRate;

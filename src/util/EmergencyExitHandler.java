@@ -15,13 +15,13 @@ public class EmergencyExitHandler {
 
     private static EmergencyExitHandler instance;
 
-    private ArrayList<EmergencyExit> emergencyExits;
+    private ArrayList<Exit> emergencyExits;
 
     private EmergencyExitHandler() {
         this.emergencyExits = new ArrayList<>();
-        this.emergencyExits.add(new EmergencyExit("1. Hauptausgang", new Coord(83.1390380859375, 124.48645858573059), 3));
-        this.emergencyExits.add(new EmergencyExit("2. Hauptausgang", new Coord(292.89550781249996, 112.96934440596303), 3));
-        this.emergencyExits.add(new EmergencyExit("3. Hauptausgang", new Coord(120.65734863281252, 139.58057772547917), 3));
+        this.emergencyExits.add(new Exit("1. Hauptausgang", new Coord(83.1390380859375, 124.48645858573059), 3));
+        this.emergencyExits.add(new Exit("2. Hauptausgang", new Coord(292.89550781249996, 112.96934440596303), 3));
+        this.emergencyExits.add(new Exit("3. Hauptausgang", new Coord(120.65734863281252, 139.58057772547917), 3));
     }
 
     public static EmergencyExitHandler getInstance() {
@@ -31,8 +31,8 @@ public class EmergencyExitHandler {
         return instance;
     }
 
-    public EmergencyExit getExitFromCoord(Coord coord) {
-        for (EmergencyExit exit : this.emergencyExits) {
+    public Exit getExitFromCoord(Coord coord) {
+        for (Exit exit : this.emergencyExits) {
             if (exit.getCoord().compareTo(coord) == 0) {
                 return exit;
             }
@@ -40,7 +40,7 @@ public class EmergencyExitHandler {
         return null;
     }
 
-    public ArrayList<EmergencyExit> getEmergencyExits() { return this.emergencyExits; }
+    public ArrayList<Exit> getEmergencyExits() { return this.emergencyExits; }
 
 
     public static void reset() {

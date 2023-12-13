@@ -7,7 +7,7 @@ package core;
 import input.EventQueue;
 import input.ExternalEvent;
 import input.ScheduledUpdatesQueue;
-import movement.Exit;
+import util.Exit;
 import movement.StudentMovement;
 
 import java.util.ArrayList;

@@ -44,14 +44,9 @@ public class StudentMovement extends MovementModel {
 
     @Override
     public Path getPath() {
-        return null;
-    }
-
-    @Override
-    public Path getPath(DTNHost dtnHost) {
-        return switch (dtnHost.getState()) {
-            case NORMAL -> normalPath(dtnHost);
-            case EMERGENCY -> emergencyPath(dtnHost);
+        return switch (host.getState()) {
+            case NORMAL -> normalPath(host);
+            case EMERGENCY -> emergencyPath(host);
         };
     }
 

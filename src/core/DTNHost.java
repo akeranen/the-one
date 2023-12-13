@@ -422,7 +422,7 @@ public class DTNHost implements Comparable<DTNHost> {
 	 */
 	private boolean setNextWaypoint() {
 		if (path == null) {
-			path = movement.getPath(this);
+			path = movement.getPath();
 		}
 
 		if (path == null || !path.hasNext()) {

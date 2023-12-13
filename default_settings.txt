@@ -1,22 +1,21 @@
 Scenario.name = Escape_the_MI-%%MovementModel.rngSeed%%
-Scenario.endTime = 6000
-Scenario.updateInterval = 0.1
+Scenario.endTime = 14400
+Scenario.updateInterval = 1
 Scenario.simulateConnections = false
 MovementModel.worldSize = 400,250
 Events.nrof = 0
-
 
 Group1.rwpInvert = true
 
 Scenario.nrofHostGroups = 1
 Group1.groupID = x
-Group1.nrofHosts = 50
+Group1.nrofHosts = 1000
 Group1.nrofInterfaces = 1
 Group1.interface1 = myInterface
 myInterface.type = SimpleBroadcastInterface
 myInterface.transmitRange = 0
 myInterface.transmitSpeed = 0
-Group1.movementModel = Escape
+Group1.movementModel = StudentMovement
 Group1.router = PassiveRouter
 
 Report.nrofReports = 1
@@ -35,3 +34,4 @@ GUI.UnderlayImage.scale = 0.106
 GUI.UnderlayImage.rotate = 0
 
 GUI.UnderlayImage.show = true
+

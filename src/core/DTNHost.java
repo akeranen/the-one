@@ -40,6 +40,9 @@ public class DTNHost implements Comparable<DTNHost> {
 	private List<NetworkInterface> net;
 	private ModuleCommunicationBus comBus;
 
+	private State state;
+	private boolean isInLecture;
+
 	static {
 		DTNSim.registerForReset(DTNHost.class.getCanonicalName());
 		reset();
@@ -96,6 +99,8 @@ public class DTNHost implements Comparable<DTNHost> {
 				l.initialLocation(this, this.location);
 			}
 		}
+
+		this.state = State.NORMAL;
 	}
 
 	/**
@@ -555,4 +560,24 @@ public class DTNHost implements Comparable<DTNHost> {
 		return this.getAddress() - h.getAddress();
 	}
 
+	public boolean isInLecture() {
+		return isInLecture;
+	}
+
+	public void setInLecture(boolean isInLecture) {
+		this.isInLecture = isInLecture;
+	}
+
+	public State getState() {
+		return state;
+	}
+
+	public void setEmergencyState() {
+		if (state != State.EMERGENCY) {
+			state = State.EMERGENCY;
+			//Interrupt current path
+			path = null;
+			destination = null;
+		}
+	}
 }

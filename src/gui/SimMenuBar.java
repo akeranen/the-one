@@ -56,6 +56,8 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	private JMenuItem addNodeMessageFilter;
 	private JMenuItem clearNodeFilters;
 
+	private JMenuItem activateEmergencyMode;
+
 	private JMenuItem about;
 	private PlayField field;
 	private NodeChooser chooser;
@@ -86,6 +88,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 	private void init() {
 		JMenu pfMenu = new JMenu("Playfield options");
 		JMenu pfToolsMenu = new JMenu("Tools");
+		JMenu pfWorldOptions = new JMenu("World");
 		JMenu help = new JMenu("Help");
 		JMenu nodeFilters = new JMenu("Add node filter");
 		Settings settings = new Settings(UNDERLAY_NS);
@@ -124,12 +127,15 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 		pfToolsMenu.add(nodeFilters);
 		clearNodeFilters = createMenuItem(pfToolsMenu, "Clear node filters");
 
+		activateEmergencyMode = createMenuItem(pfWorldOptions, "Activate Emergency Mode");
+
 		updatePlayfieldSettings();
 		toggleUnderlayImage();
 
 		about = createMenuItem(help,"about");
 		this.add(pfMenu);
 		this.add(pfToolsMenu);
+		this.add(pfWorldOptions);
 		this.add(Box.createHorizontalGlue());
 		this.add(help);
 	}
@@ -201,6 +207,9 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 				source == this.focusOnClick ||
 				source == this.zoomWheelInvert) {
 			updatePlayfieldSettings();
+		}
+		else if (source == this.activateEmergencyMode) {
+			field.setEmergencyModeForAllHostsInWorld();
 		}
 
 		else if (source == this.clearOverlay) {

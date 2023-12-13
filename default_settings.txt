@@ -18,12 +18,12 @@ alarmInterface.type = SimpleBroadcastInterface
 alarmInterface.transmitSpeed = 250k
 alarmInterface.transmitRange = 40
 
-Scenario.nrofHostGroups = 1
+Scenario.nrofHostGroups = 3
 
 Group.rwpInvert = true
 Group.nrofInterfaces = 1
 Group.interface1 = firstInterface
-Group.movementModel = EmergencyMovement
+Group.movementModel = StudentMovement
 Group.router = EpidemicRouter
 
 # GROUP 1
@@ -38,7 +38,7 @@ Group2.movementModel = StationaryMovement
 Group2.nodeLocation = 100,120
 Group2.interface1 = alarmInterface
 
-# GROUP 2
+# GROUP 3
 Group3.groupID = ar
 Group3.nrofHosts = 1
 Group3.speed = 0,0

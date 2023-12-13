@@ -1,23 +1,62 @@
 Scenario.name = Escape_the_MI-%%MovementModel.rngSeed%%
 Scenario.endTime = 14400
 Scenario.updateInterval = 1
-Scenario.simulateConnections = false
+Scenario.simulateConnections = true
 MovementModel.worldSize = 400,250
 Events.nrof = 0
 
 Group1.rwpInvert = true
 
-Scenario.nrofHostGroups = 1
-Group1.groupID = x
-Group1.nrofHosts = 1000
-Group1.nrofInterfaces = 1
-Group1.interface1 = myInterface
-myInterface.type = SimpleBroadcastInterface
-myInterface.transmitRange = 0
-myInterface.transmitSpeed = 0
-Group1.movementModel = StudentMovement
-Group1.router = PassiveRouter
+# INTERFACES
+firstInterface.type = SimpleBroadcastInterface
+firstInterface.transmitSpeed = 250k
+firstInterface.transmitRange = 10
 
+alarmInterface.type = SimpleBroadcastInterface
+alarmInterface.transmitSpeed = 250k
+alarmInterface.transmitRange = 40
+
+Scenario.nrofHostGroups = 3
+
+Group.rwpInvert = true
+Group.nrofInterfaces = 1
+Group.interface1 = firstInterface
+Group.movementModel = StudentMovement
+Group.router = EpidemicRouter
+
+# GROUP 1
+Group1.groupID = x
+Group1.nrofHosts = 4
+
+# GROUP 2
+Group2.groupID = al
+Group2.nrofHosts = 1
+Group2.speed = 0,0
+Group2.movementModel = StationaryMovement
+Group2.nodeLocation = 100,120
+Group2.interface1 = alarmInterface
+
+# GROUP 3
+Group3.groupID = ar
+Group3.nrofHosts = 1
+Group3.speed = 0,0
+Group3.movementModel = StationaryMovement
+Group3.nodeLocation = 300,130
+Group3.interface1 = alarmInterface
+
+# EVENTS
+Events.nrof = 1
+Events1.class = EmergencyMessageGenerator
+# Interval outside of the simulation end time
+Events1.interval = 100k,100k
+Events1.size = 50k,150k
+Events1.hosts = 4,6
+Events1.tohosts = 0,4
+# Message ID prefix
+Events1.prefix = M
+Events1.emergencyTime = 5k
+
+# REPORTS
 Report.nrofReports = 1
 Report.reportDir = reports
 Report.report1 = EmergencyReport
@@ -34,4 +73,3 @@ GUI.UnderlayImage.scale = 0.106
 GUI.UnderlayImage.rotate = 0
 
 GUI.UnderlayImage.show = true
-

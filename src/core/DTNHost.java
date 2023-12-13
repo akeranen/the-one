@@ -356,6 +356,10 @@ public class DTNHost implements Comparable<DTNHost> {
 			}
 		}
 		this.router.update();
+
+		if (this.getNrofMessages() > 0) {
+			setEmergencyState();
+		}
 	}
 
 	/**

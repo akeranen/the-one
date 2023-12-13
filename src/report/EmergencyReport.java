@@ -26,7 +26,7 @@ public class EmergencyReport extends Report{
         return this.hostsReachedExit.contains(hostName);
     }
 
-    public void emergencyTriggerd() {
+    public void emergencyTriggered() {
         write("Emergency triggered at " + SimClock.getTime());
     }
 

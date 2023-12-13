@@ -44,13 +44,15 @@ public class StudentMovement extends MovementModel {
 
     @Override
     public Path getPath() {
-        return switch (host.getState()) {
-            case NORMAL -> normalPath(host);
-            case EMERGENCY -> emergencyPath(host);
+        return switch (this.getHost().getState()) {
+            case NORMAL -> normalPath();
+            case EMERGENCY -> emergencyPath();
         };
     }
 
-    private Path normalPath(DTNHost dtnHost) {
+    private Path normalPath() {
+        DTNHost dtnHost = this.getHost();
+
         double currentTime = SimClock.getTime();
         boolean inLectureBlock = currentTime % LECTURE_BLOCK_LENGTH >= LECTURE_BLOCK_OFFSET_LENGTH && currentTime % LECTURE_BLOCK_LENGTH <= LECTURE_BLOCK_LENGTH - LECTURE_BLOCK_OFFSET_LENGTH;
 
@@ -75,7 +77,8 @@ public class StudentMovement extends MovementModel {
         return rwp;
     }
 
-    private Path emergencyPath(DTNHost dtnHost) {
+    private Path emergencyPath() {
+        DTNHost dtnHost = this.getHost();
         // Get closest Exit
         Exit closestExit = getClosestExit(dtnHost);
         Path pathToExit = calculateShortestPath(dtnHost.getLocation(), closestExit.getCoord());

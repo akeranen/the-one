@@ -66,10 +66,10 @@ public class StudentMovement extends MovementModel {
             } else {
                 // Student should go to a lecture
                 dtnHost.setInLecture(true);
-                Path path = new Path(5);
-                String room = ROOMS.keySet().stream().toList().get(rng.nextInt(ROOMS.size()));
-                path.addWaypoint(ROOMS.get(room));
-                System.out.println(dtnHost + " is going to " + room + " at " + currentTime);
+                String roomName = ROOMS.keySet().stream().toList().get(rng.nextInt(ROOMS.size()));
+                Path path = calculateShortestPath(dtnHost.getLocation(), ROOMS.get(roomName));
+                System.out.println(dtnHost + " is going to " + roomName + " at " + currentTime);
+                path.setSpeed(5);
                 return path;
             }
         }
@@ -84,12 +84,15 @@ public class StudentMovement extends MovementModel {
         // Get closest Exit
         Exit closestExit = getClosestExit(dtnHost);
         Path pathToExit = calculateShortestPath(dtnHost.getLocation(), closestExit.getCoord());
+        pathToExit.setSpeed(7.5);
         return pathToExit;
     }
 
     private Path calculateShortestPath(Coord start, Coord destination) {
-        // Calculate path within prohibited polygon
-        return null;
+        // TODO: Calculate path within prohibited polygon using a-star like algorithm
+        Path path = new Path(1);
+        path.addWaypoint(destination);
+        return path;
     }
 
     private Exit getClosestExit(DTNHost dtnHost) {

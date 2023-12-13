@@ -24,6 +24,8 @@ public class Exit {
         return name;
     }
 
+    public double getExitRate() { return exitRate; }
+
     public void useExit() {
 
     }

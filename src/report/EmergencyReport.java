@@ -61,7 +61,7 @@ public class EmergencyReport extends Report{
         return false;
     }
 
-    public void emergencyTriggerd() {
+    public void emergencyTriggered() {
         write("Emergency triggered at " + SimClock.getTime());
     }
 

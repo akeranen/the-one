@@ -10,6 +10,7 @@ import input.EventQueueHandler;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import movement.MapBasedMovement;
 import movement.MovementModel;
@@ -17,6 +18,7 @@ import movement.map.SimMap;
 import report.EmergencyReport;
 import routing.MessageRouter;
 import util.EmergencyExitHandler;
+import util.Range;
 
 /**
  * A simulation scenario used for getting and storing the settings of a
@@ -84,6 +86,8 @@ public class SimScenario implements Serializable {
 	/** package where to look for application classes */
 	private static final String APP_PACKAGE = "applications.";
 
+	private static final String EMERGENCY_RANGE_TIME_S = "emergencyRangeTime";
+
 	/** The world instance */
 	private World world;
 	/** List of hosts in this simulation */
@@ -124,6 +128,8 @@ public class SimScenario implements Serializable {
 
 	private List<EmergencyReport> emergencyReports;
 
+	private Optional<Range> emergencyStartTimeRange;
+
 	static {
 		DTNSim.registerForReset(SimScenario.class.getCanonicalName());
 		reset();
@@ -144,6 +150,12 @@ public class SimScenario implements Serializable {
 		this.endTime = s.getDouble(END_TIME_S);
 		this.updateInterval = s.getDouble(UP_INT_S);
 		this.simulateConnections = s.getBoolean(SIM_CON_S);
+		String emergencyStartString = s.getSetting(EMERGENCY_RANGE_TIME_S, "");
+		if (emergencyStartString.equals("")) {
+			this.emergencyStartTimeRange = Optional.empty();
+		} else {
+			this.emergencyStartTimeRange = Optional.of(new Range(emergencyStartString));
+		}
 
 		s.ensurePositiveValue(nrofGroups, NROF_GROUPS_S);
 		s.ensurePositiveValue(endTime, END_TIME_S);
@@ -429,4 +441,7 @@ public class SimScenario implements Serializable {
 		return this.world;
 	}
 
+	public Optional<Range> getEmergencyStartTimeRange() {
+		return emergencyStartTimeRange;
+	}
 }

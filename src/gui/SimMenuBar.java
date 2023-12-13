@@ -209,7 +209,7 @@ public class SimMenuBar extends JMenuBar implements ActionListener {
 			updatePlayfieldSettings();
 		}
 		else if (source == this.activateEmergencyMode) {
-			field.setEmergencyModeForAllHostsInWorld();
+			field.startEmergency();
 		}
 
 		else if (source == this.clearOverlay) {

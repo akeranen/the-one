@@ -311,4 +311,10 @@ public class World {
 	public void scheduleUpdate(double simTime) {
 		scheduledUpdates.addUpdate(simTime);
 	}
+
+	public void setEmergencyModeForAllHostsInWorld() {
+		for (DTNHost host : hosts) {
+			host.setEmergencyState();
+		}
+	}
 }

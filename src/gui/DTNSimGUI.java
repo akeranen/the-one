@@ -105,6 +105,7 @@ public class DTNSimGUI extends DTNSimUI {
 			}
 			else {
 				try {
+					checkForEmergencyStart();
 					world.update();
 				} catch (AssertionError e) {
 					// handles both assertion errors and SimErrors

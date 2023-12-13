@@ -26,6 +26,7 @@ public class DTNSimTextUI extends DTNSimUI {
 
 		while (simTime < endTime && !simCancelled){
 			try {
+				checkForEmergencyStart();
 				world.update();
 			} catch (AssertionError e) {
 				e.printStackTrace();

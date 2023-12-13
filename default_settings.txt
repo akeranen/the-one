@@ -2,6 +2,7 @@ Scenario.name = Escape_the_MI-%%MovementModel.rngSeed%%-%%Exit1.exitRate%%
 Scenario.endTime = 14400
 Scenario.updateInterval = 0.1
 Scenario.simulateConnections = true
+Scenario.emergencyRangeTime = 70-71
 MovementModel.worldSize = 400,250
 Events.nrof = 0
 

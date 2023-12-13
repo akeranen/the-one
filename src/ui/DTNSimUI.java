@@ -4,6 +4,7 @@
  */
 package ui;
 
+import java.util.Optional;
 import java.util.Vector;
 
 import report.EmergencyReport;
@@ -19,6 +20,7 @@ import core.SimError;
 import core.SimScenario;
 import core.UpdateListener;
 import core.World;
+import util.Range;
 
 /**
  * Abstract superclass for user interfaces; contains also some simulation
@@ -59,6 +61,8 @@ public abstract class DTNSimUI {
 	protected SimScenario scen;
 	/** simtime of last UI update */
 	protected double lastUpdate;
+
+	protected Optional<Double> emergencyStartTime = Optional.empty();
 
 	/**
 	 * Constructor.
@@ -111,6 +115,8 @@ public abstract class DTNSimUI {
 						reportClass));
 			}
 
+			this.emergencyStartTime = scen.getEmergencyStartTimeRange().map(Range::getRandomDoubleInRange);
+
 			this.world = this.scen.getWorld();
 			world.warmupMovementModel(warmupTime);
 		}
@@ -160,5 +166,22 @@ public abstract class DTNSimUI {
 		}
 
 		this.reports.add(r);
+	}
+
+	protected void checkForEmergencyStart() {
+		if (emergencyStartTime.isPresent()
+				&& Math.abs(SimClock.getTime() - emergencyStartTime.get()) <= scen.getUpdateInterval()) {
+			for (Report report : reports) {
+				if (report instanceof EmergencyReport) {
+					((EmergencyReport) report).emergencyTriggered();
+				}
+			}
+			// TODO: check if emergency mode should be instantly triggered for all hosts
+			world.setEmergencyModeForAllHostsInWorld();
+		}
+	}
+
+	public Vector<Report> getReports() {
+		return reports;
 	}
 }

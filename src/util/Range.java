@@ -4,6 +4,8 @@
  */
 package util;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 /**
  * Range of values
  * @author Ari
@@ -73,4 +75,15 @@ public class Range {
 		return "Range [" + min + ", " + max + "]";
 	}
 
+	public double getMin() {
+		return min;
+	}
+
+	public double getMax() {
+		return max;
+	}
+
+	public Double getRandomDoubleInRange() {
+		return ThreadLocalRandom.current().nextDouble(min, max);
+	}
 }

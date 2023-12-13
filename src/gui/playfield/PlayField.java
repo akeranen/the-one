@@ -10,6 +10,8 @@ import core.World;
 import gui.DTNSimGUI;
 import movement.Path;
 import movement.map.SimMap;
+import report.EmergencyReport;
+import report.Report;
 
 import javax.swing.*;
 import java.awt.*;
@@ -341,9 +343,12 @@ public class PlayField extends JPanel {
 		gui.setFocus(closest);
 	}
 
-	public void setEmergencyModeForAllHostsInWorld() {
-		for (DTNHost host : w.getHosts()) {
-			host.setEmergencyState();
+	public void startEmergency() {
+		for (Report report : gui.getReports()) {
+			if (report instanceof EmergencyReport) {
+				((EmergencyReport) report).emergencyTriggered();
+			}
 		}
+		w.setEmergencyModeForAllHostsInWorld();
 	}
 }

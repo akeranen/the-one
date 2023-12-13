@@ -56,7 +56,7 @@ Events1.hosts = 4,6
 Events1.tohosts = 0,4
 # Message ID prefix
 Events1.prefix = M
-Events1.emergencyTime = 1000
+Events1.emergencyTime = 5k
 
 # REPORTS
 Report.nrofReports = 0

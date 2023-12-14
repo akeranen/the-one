@@ -5,7 +5,7 @@ Scenario.name = gsim_example
 ## Note: If networking is simulated, it will also be accelerated!  
 Scenario.simulateConnections = true
 Scenario.updateInterval = 1
-Scenario.endTime = 1000
+Scenario.endTime = 100
 
 Scenario.nrofHostGroups = 1
 Events.nrof = 0
@@ -48,10 +48,9 @@ MovementEngine.type = GSIMMovementEngine
 ## Pass additional arguments to GSIM
 ## The shown arguments can be used to tune the simulation performance.
 ##  We strongly advice to set the 'waypoint-buffer-threshold'.
-##  It defaults to 0, effectively disabling the threshold feature.
+##  It defaults to half of 'waypointBufferSize', effectively disabling the threshold feature.
 ##  GSIM aims to keep its waypoint buffer filled to this value.
-##  Setting it to half of the 'waypointBufferSize' is a sane default.
-GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
+#GSIMMovementEngine.additionalArgs = --quadtree-depth=9 --quadtree-node-cap=10 --waypoint-buffer-threshold=2
 
 
 # Disable gsim optimizer and use default grid optimizer
@@ -66,7 +65,7 @@ MovementModel.rngSeed = 0
 
 # World's size for Movement Models without implicit size (width, height; meters)
 MovementModel.worldSize = 10000, 10000
-MovementModel.warmup = 100
+MovementModel.warmup = 0
 
 # Reports
 ## Setup your report modules here. This example runs without any.

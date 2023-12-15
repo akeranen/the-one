@@ -16,6 +16,7 @@ import movement.MapBasedMovement;
 import movement.MovementModel;
 import movement.map.SimMap;
 import report.EmergencyReport;
+import report.NumberOfHostsReport;
 import routing.MessageRouter;
 import util.EmergencyExitHandler;
 import util.Range;
@@ -128,6 +129,8 @@ public class SimScenario implements Serializable {
 
 	private List<EmergencyReport> emergencyReports;
 
+	private List<NumberOfHostsReport> numberOfHostsReports;
+
 	private Optional<Range> emergencyStartTimeRange;
 
 	static {
@@ -168,6 +171,7 @@ public class SimScenario implements Serializable {
 		this.messageListeners = new ArrayList<MessageListener>();
 		this.movementListeners = new ArrayList<MovementListener>();
 		this.emergencyReports = new ArrayList<EmergencyReport>();
+		this.numberOfHostsReports = new ArrayList<NumberOfHostsReport>();
 		this.updateListeners = new ArrayList<UpdateListener>();
 		this.appListeners = new ArrayList<ApplicationListener>();
 		this.eqHandler = new EventQueueHandler();
@@ -303,8 +307,9 @@ public class SimScenario implements Serializable {
 		}
 	}
 
-
 	public void addEmergencyReport(EmergencyReport report) { this.emergencyReports.add(report); }
+
+	public void addNumberOfHostsReport(NumberOfHostsReport report) { this.numberOfHostsReports.add(report); }
 	/**
 	 * Adds a new update listener for the world
 	 * @param ul The listener
@@ -443,5 +448,12 @@ public class SimScenario implements Serializable {
 
 	public Optional<Range> getEmergencyStartTimeRange() {
 		return emergencyStartTimeRange;
+	}
+
+	public void triggerNumberOfHostsReport() {
+		for (NumberOfHostsReport report : this.numberOfHostsReports) {
+			Settings s = new Settings("Group1");
+			report.writeNumberOfHosts(s.getInt("nrofHosts"));
+		}
 	}
 }

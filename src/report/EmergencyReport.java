@@ -10,12 +10,14 @@ import java.util.HashMap;
 
 public class EmergencyReport extends Report{
 
-
     private HashMap<Exit, ArrayList<Leaving>> hostsReachedExit;
+
+    private double emergencyTime;
 
     public EmergencyReport() {
         super();
         this.hostsReachedExit = new HashMap<>();
+        this.emergencyTime = -1.0;
 
         for (Exit exit : EmergencyExitHandler.getInstance().getEmergencyExits() ) {
             this.hostsReachedExit.put(exit, new ArrayList<>());
@@ -23,6 +25,8 @@ public class EmergencyReport extends Report{
     }
 
     public void hasReachedEmergencyExit(String hostName, Coord coord) {
+        assert this.emergencyTime != -1.0;
+
         Exit exit = EmergencyExitHandler.getInstance().getExitFromCoord(coord);
         if (!hasAlreadyReachedExit(hostName, exit)) {
             double leavingTime;
@@ -36,7 +40,7 @@ public class EmergencyReport extends Report{
                     double wait = 1 / exit.getExitRate() - (SimClock.getTime() - lleaving.getSimTime());
 
                     if (wait >= 0) {
-                        // der ausgang ist verstopft
+                        // there is a queue at the exit
                         leavingTime = SimClock.getTime() + wait;
                     } else {
                         leavingTime = SimClock.getTime();
@@ -46,8 +50,8 @@ public class EmergencyReport extends Report{
                     leavingTime = lleaving.getSimTime() + 1 / exit.getExitRate();
                 }
             }
-
-            write(hostName + " reached exit " + exit.getName() + " at " + leavingTime);
+            double relativeTime = leavingTime-this.emergencyTime;
+            write(hostName + "," + exit.getName() + "," + leavingTime + "," + relativeTime);
             this.hostsReachedExit.get(exit).add(new Leaving(hostName, leavingTime));
         }
     }
@@ -62,6 +66,8 @@ public class EmergencyReport extends Report{
     }
 
     public void emergencyTriggered() {
+        assert this.emergencyTime == -1.0;
+        this.emergencyTime = SimClock.getTime();
         write("Emergency triggered at " + SimClock.getTime());
     }
 

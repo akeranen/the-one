@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Vector;
 
 import report.EmergencyReport;
+import report.NumberOfHostsReport;
 import report.Report;
 import core.ApplicationListener;
 import core.ConnectionListener;
@@ -119,6 +120,8 @@ public abstract class DTNSimUI {
 
 			this.world = this.scen.getWorld();
 			world.warmupMovementModel(warmupTime);
+
+			this.scen.triggerNumberOfHostsReport();
 		}
 		catch (SettingsError se) {
 			System.err.println("Can't start: error in configuration file(s)");
@@ -164,13 +167,16 @@ public abstract class DTNSimUI {
 		if (r instanceof EmergencyReport) {
 			scen.addEmergencyReport((EmergencyReport) r);
 		}
-
+		if (r instanceof NumberOfHostsReport) {
+			scen.addNumberOfHostsReport((NumberOfHostsReport) r);
+		}
 		this.reports.add(r);
 	}
 
 	protected void checkForEmergencyStart() {
-		if (emergencyStartTime.isPresent()
-				&& Math.abs(SimClock.getTime() - emergencyStartTime.get()) <= scen.getUpdateInterval()) {
+		if (emergencyStartTime.isPresent() &&
+				emergencyStartTime.get() <= SimClock.getTime() &&
+				SimClock.getTime() < emergencyStartTime.get() + scen.getUpdateInterval()) {
 			for (Report report : reports) {
 				if (report instanceof EmergencyReport) {
 					((EmergencyReport) report).emergencyTriggered();

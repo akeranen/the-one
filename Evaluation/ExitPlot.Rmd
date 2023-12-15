@@ -1,0 +1,60 @@
+---
+title: "Evaluation"
+author: "Roland Stroop"
+date: '2023-12-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import Libraries
+```{r}
+library(tidyverse)
+library(dplyr)
+library(latex2exp)
+```
+
+# Include CSV
+```{r readfile}
+csv_exits     <-  read.csv("../reports/Escape_the_MI-NearestExit-4-3.0-2000-3000_EmergencyReport.txt", skip=1, header=FALSE, col.names=c("node", "exit", "absolute", "relative"))
+csv_nrofHosts <-  read.csv("../reports/Escape_the_MI-NearestExit-4-3.0-2000-3000_NumberOfHostsReport.txt", header=FALSE, col.names=c("nrofhosts"))
+```
+
+# Include CSV
+```{r readfile}
+data_exit <- csv_exits %>%
+  group_by(exit) %>%
+  arrange(relative) %>%
+  mutate(number = n()-row_number()) %>%
+  ungroup()
+
+data_main <- csv_exits %>%
+  arrange(relative) %>%
+  mutate(number = csv_nrofHosts$nrofhosts-row_number()) %>%
+  mutate(exit="MI Building")
+
+data <- rbind(data_main, data_exit)
+```
+
+# Plot
+```{r}
+plot(x=data$relative, y=data$number, xlab=TeX("Time since emergency event [s]"), ylab=TeX("Number of persons"), col=rgb(0.2,0.1,0.5,0.9), type="n")
+
+exits <- c("MI Building", "1. Hauptausgang", "2. Hauptausgang", "3. Hauptausgang") # arrange(distinct(data, exit), exit)$exit
+for (i in seq(exits)) {
+  exit_name <- exits[i]
+  tmp <- data %>% filter(exit == exit_name)
+  
+  lines(tmp$relative, tmp$number, lty=i)
+  
+  polygon(c(min(tmp$relative), tmp$relative, max(tmp$relative)),
+        c(min(tmp$number), tmp$number, min(tmp$number)),
+        col=rgb(0.2,0.1,0.5,0.2), border=FALSE)
+}
+legend('topright', 
+     legend=TeX(sprintf(r'(%s)', exits)), 
+     lwd=1, 
+     lty=seq(exits))
+```

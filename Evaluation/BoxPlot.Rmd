@@ -1,0 +1,65 @@
+---
+title: "ExitTime"
+author: "Roland Stroop"
+date: '2023-12-14'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import Libraries
+```{r}
+library(tidyverse)
+library(dplyr)
+library(latex2exp)
+```
+
+# Include CSV
+```{r}
+scenarios <- c("NearestExit")
+```
+
+```{r readfile}
+read_exit_times <- function(scenario_name) {
+  times <- c()
+  
+  filesEmerg <- list.files("../reports", pattern=sprintf(r'{Escape_the_MI-%s.*EmergencyReport.txt}', scenario_name), full.names=TRUE)
+  filesHosts <- list.files("../reports", pattern=sprintf(r'{Escape_the_MI-%s.*NumberOfHostsReport.txt}', scenario_name), full.names=TRUE)
+  
+  stopifnot(length(filesEmerg)==length(filesHosts)) # ! es fehlt oder gibt mind. einen Report zu viel/wenig
+  
+  for (i in seq(length(filesEmerg))) {
+    csv_emerg     <-  read.csv(filesEmerg[i], skip=1, header=FALSE, col.names=c("node", "exit", "absolute", "relative"))
+    csv_hosts <-  read.csv(filesHosts[i], header=FALSE, col.names=c("nrofhosts"))
+    stopifnot(length(csv_emerg$relative) == csv_hosts$nrofhosts) # ! nicht alle Nodes haben einen Exit erreicht
+    times <- c(times, max(csv_emerg$relative))
+  }
+  return(times)
+}
+```
+
+```{r}
+values <- c()
+names <- c()
+for (s in scenarios) {
+  val <- read_exit_times(s)
+  values <- c(values, val)
+  names <- c(names, rep(s, length(val)))
+}
+
+exitData <- data_frame(values, names)
+
+pdf(file="boxplot.pdf")
+boxplot(exitData$values ~ exitData$names, 
+        ylab=TeX("Time until last person left the building [s]"), 
+        xlab=TeX("Scenarios"), 
+        col=hcl.colors(length(scenarios)+1, palette = "RdYlBu"))
+dev.off()
+
+boxplot(exitData$values ~ exitData$names, 
+        ylab=TeX("Time until last person left the building [s]"), 
+        xlab=TeX("Scenarios"), 
+        col=hcl.colors(length(scenarios)+1, palette = "RdYlBu"))
+```

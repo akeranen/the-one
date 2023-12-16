@@ -10,9 +10,9 @@ MovementModel.worldSize = 400,250
 Group1.rwpInvert = true
 
 # INTERFACES
-firstInterface.type = SimpleBroadcastInterface
-firstInterface.transmitSpeed = 250k
-firstInterface.transmitRange = 10
+studentInterface.type = SimpleBroadcastInterface
+studentInterface.transmitSpeed = 250k
+studentInterface.transmitRange = 10
 
 largeAlarmInterface.type = SimpleBroadcastInterface
 largeAlarmInterface.transmitSpeed = 250k
@@ -26,7 +26,7 @@ Scenario.nrofHostGroups = 3
 
 Group.rwpInvert = true
 Group.nrofInterfaces = 1
-Group.interface1 = firstInterface
+Group.interface1 = studentInterface
 Group.movementModel = StudentMovement
 Group.router = EpidemicRouter
 

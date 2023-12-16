@@ -3,10 +3,9 @@ Scenario.name = Escape_the_MI-%%Scenario.type%%-%%MovementModel.rngSeed%%-%%Exit
 Scenario.type = NearestExit
 Scenario.endTime = 5000
 Scenario.updateInterval = 0.1
-Scenario.simulateConnections = false
+Scenario.simulateConnections = true
 Scenario.emergencyRangeTime = 2000-3000
 MovementModel.worldSize = 400,250
-Events.nrof = 0
 
 Group1.rwpInvert = true
 
@@ -15,9 +14,13 @@ firstInterface.type = SimpleBroadcastInterface
 firstInterface.transmitSpeed = 250k
 firstInterface.transmitRange = 10
 
-alarmInterface.type = SimpleBroadcastInterface
-alarmInterface.transmitSpeed = 250k
-alarmInterface.transmitRange = 40
+largeAlarmInterface.type = SimpleBroadcastInterface
+largeAlarmInterface.transmitSpeed = 250k
+largeAlarmInterface.transmitRange = 40
+
+smallAlarmInterface.type = SimpleBroadcastInterface
+smallAlarmInterface.transmitSpeed = 250k
+smallAlarmInterface.transmitRange = 20
 
 Scenario.nrofHostGroups = 3
 
@@ -33,19 +36,19 @@ Group1.nrofHosts = 100
 
 # GROUP 2
 Group2.groupID = al
-Group2.nrofHosts = 1
+Group2.nrofHosts = 2
 Group2.speed = 0,0
-Group2.movementModel = StationaryMovement
-Group2.nodeLocation = 100,120
-Group2.interface1 = alarmInterface
+Group2.movementModel = AlarmNodesStationaryMovement
+Group2.alarmNodeLocations = 100,120,300,130
+Group2.interface1 = largeAlarmInterface
 
 # GROUP 3
-Group3.groupID = ar
-Group3.nrofHosts = 1
+Group3.groupID = as
+Group3.nrofHosts = 10
 Group3.speed = 0,0
-Group3.movementModel = StationaryMovement
-Group3.nodeLocation = 300,130
-Group3.interface1 = alarmInterface
+Group3.movementModel = AlarmNodesStationaryMovement
+Group3.alarmNodeLocations = 50,40,105,40,156,40,215,40,265,40,335,220,285,215,233,210,183,205,133,200
+Group3.interface1 = smallAlarmInterface
 
 # EVENTS
 Events.nrof = 1
@@ -53,11 +56,13 @@ Events1.class = EmergencyMessageGenerator
 # Interval outside of the simulation end time
 Events1.interval = 100k,100k
 Events1.size = 50k,150k
-Events1.hosts = 4,6
-Events1.tohosts = 0,4
+# Host nodes which will send the alarm message
+Events1.hosts = 100,112
+# Host nodes which will receive the alarm message
+Events1.tohosts = 0,100
 # Message ID prefix
 Events1.prefix = M
-Events1.emergencyTime = 5k
+Events1.emergencyTime = 200
 
 # REPORTS
 Report.nrofReports = 2

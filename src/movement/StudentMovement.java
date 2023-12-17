@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class StudentMovement extends MovementModel {
+
+    public static final String EMERGENCY_TYPE_SETTING = "emergencyType";
     private static final int LECTURE_BLOCK_LENGTH = 240;
     private static final int LECTURE_BLOCK_OFFSET_LENGTH = 30;
 
@@ -27,16 +29,21 @@ public class StudentMovement extends MovementModel {
         ROOMS.put("Finger 04", new Coord(330, 205));
     }
 
+    private final String emergencyType;
+
     private ProhibitedPolygonRwp normalMovement;
 
     public StudentMovement(Settings settings) {
         super(settings);
         this.normalMovement = new ProhibitedPolygonRwp(settings);
+        this.emergencyType = settings.getSetting(EMERGENCY_TYPE_SETTING);
+        System.out.println(emergencyType);
     }
 
     public StudentMovement(StudentMovement other) {
         super(other);
         this.normalMovement = new ProhibitedPolygonRwp(other.normalMovement);
+        this.emergencyType = other.emergencyType;
     }
 
     @Override
@@ -75,12 +82,29 @@ public class StudentMovement extends MovementModel {
     }
 
     private Path emergencyPath() {
-        DTNHost dtnHost = this.getHost();
-        // Get closest Exit
-        Exit closestExit = getClosestExit(dtnHost);
-        Path pathToExit = calculateShortestPath(dtnHost.getLocation(), closestExit.getCoord());
-        pathToExit.setSpeed(7.5);
-        return pathToExit;
+        if (!host.isInBuilding()) {
+            return null;
+        }
+        host.setInBuilding(false);
+        return switch (emergencyType) {
+            case "randomExit" -> getPathToRandomExit();
+            case "nearestExit" -> getPathToNearestExit();
+            default -> throw new SettingsError(emergencyType + " is not an allowed emergency type.");
+        };
+    }
+
+    private Path getPathToRandomExit() {
+        Exit randomExit = EXITS.get(rng.nextInt(0, EXITS.size()));
+        Path path = calculateShortestPath(host.getLocation(), randomExit.getCoord());
+        path.setSpeed(7);
+        return path;
+    }
+
+    private Path getPathToNearestExit() {
+        Exit nearestExit = getClosestExit(host.getLocation());
+        Path path = calculateShortestPath(host.getLocation(), nearestExit.getCoord());
+        path.setSpeed(7);
+        return path;
     }
 
     private Path calculateShortestPath(Coord start, Coord destination) {
@@ -90,8 +114,7 @@ public class StudentMovement extends MovementModel {
         return path;
     }
 
-    private Exit getClosestExit(DTNHost dtnHost) {
-        Coord currentLocation = dtnHost.getLocation();
+    private Exit getClosestExit(Coord currentLocation) {
         Exit closestExit = null;
         for (Exit exit : EXITS) {
             if (closestExit == null || currentLocation.distance(exit.getCoord()) < currentLocation.distance(closestExit.getCoord())) {

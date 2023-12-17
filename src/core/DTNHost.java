@@ -43,6 +43,8 @@ public class DTNHost implements Comparable<DTNHost> {
 	private State state;
 	private boolean isInLecture;
 
+	private boolean isInBuilding = true;
+
 	static {
 		DTNSim.registerForReset(DTNHost.class.getCanonicalName());
 		reset();
@@ -583,5 +585,13 @@ public class DTNHost implements Comparable<DTNHost> {
 			path = null;
 			destination = null;
 		}
+	}
+
+	public boolean isInBuilding() {
+		return isInBuilding;
+	}
+
+	public void setInBuilding(boolean isInBuilding) {
+		this.isInBuilding = isInBuilding;
 	}
 }

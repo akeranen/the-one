@@ -1,0 +1,6 @@
+Scenario.simulateConnections = false
+Group1.emergencyType = randomExit
+
+Scenario.nrofHostGroups = 1
+
+Events.nrof = 0

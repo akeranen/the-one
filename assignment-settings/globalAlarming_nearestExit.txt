@@ -1,2 +1,6 @@
 Scenario.simulateConnections = false
 Group1.emergencyType = nearestExit
+
+Scenario.nrofHostGroups = 1
+
+Events.nrof = 0

@@ -6,6 +6,8 @@ Scenario.updateInterval = 0.1
 Scenario.simulateConnections = true
 Scenario.emergencyRangeTime = 2000-3000
 MovementModel.worldSize = 400,250
+# Possible types: nearestExit, randomExit, ...?
+Group1.emergencyType = randomExit
 
 Group1.rwpInvert = true
 

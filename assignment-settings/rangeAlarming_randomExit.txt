@@ -1,0 +1,2 @@
+Scenario.simulateConnections = true
+Group1.emergencyType = randomExit

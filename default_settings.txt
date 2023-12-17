@@ -28,7 +28,7 @@ Group.rwpInvert = true
 Group.nrofInterfaces = 1
 Group.interface1 = studentInterface
 Group.movementModel = StudentMovement
-Group.router = EpidemicRouter
+Group.router = EmergencyRouter
 
 # GROUP 1
 Group1.groupID = x
@@ -55,7 +55,7 @@ Events.nrof = 1
 Events1.class = EmergencyMessageGenerator
 # Interval outside of the simulation end time
 Events1.interval = 100k,100k
-Events1.size = 50k,150k
+Events1.size = 10k,15k
 # Host nodes which will send the alarm message
 Events1.hosts = 100,112
 # Host nodes which will receive the alarm message

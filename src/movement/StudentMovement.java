@@ -37,7 +37,6 @@ public class StudentMovement extends MovementModel {
         super(settings);
         this.normalMovement = new ProhibitedPolygonRwp(settings);
         this.emergencyType = settings.getSetting(EMERGENCY_TYPE_SETTING);
-        System.out.println(emergencyType);
     }
 
     public StudentMovement(StudentMovement other) {
@@ -69,7 +68,6 @@ public class StudentMovement extends MovementModel {
                 dtnHost.setInLecture(true);
                 String roomName = new ArrayList<>(ROOMS.keySet()).get(rng.nextInt(ROOMS.size()));
                 Path path = calculateShortestPath(dtnHost.getLocation(), ROOMS.get(roomName));
-                System.out.println(dtnHost + " is going to " + roomName + " at " + currentTime);
                 path.setSpeed(5);
                 return path;
             }

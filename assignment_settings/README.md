@@ -1,5 +1,12 @@
 # Assignment 1 - Group 4
 
+## Table of contents
+- [Trigger emergency as setting](#trigger-emergency-as-setting)
+- [Trigger emergency in the GUI](#trigger-emergency-in-the-gui)
+- [Setting files for use-cases](#setting-files-for-use-cases)
+  * [Alarming modes](#alarming-modes)
+  * [Emergency exit type](#emergency-exit-type)
+
 ## Trigger emergency as setting
 To schedule an alarm we introduced the following setting:
 

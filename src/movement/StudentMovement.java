@@ -95,7 +95,7 @@ public class StudentMovement extends MovementModel {
                 dtnHost.setInLecture(true);
                 String roomName = new ArrayList<>(ROOMS.keySet()).get(rng.nextInt(ROOMS.size()));
                 Path path = calculateShortestPath(dtnHost.getLocation(), ROOMS.get(roomName));
-                path.setSpeed(5);
+                path.setSpeed(8.5);
                 return path;
             }
         }
@@ -121,14 +121,14 @@ public class StudentMovement extends MovementModel {
     private Path getPathToRandomExit() {
         Exit randomExit = EXITS.get(rng.nextInt(0, EXITS.size()));
         Path path = calculateShortestPath(host.getLocation(), randomExit.getCoord());
-        path.setSpeed(7);
+        path.setSpeed(10);
         return path;
     }
 
     private Path getPathToNearestExit() {
         Exit nearestExit = getClosestExit(host.getLocation());
         Path path = calculateShortestPath(host.getLocation(), nearestExit.getCoord());
-        path.setSpeed(7);
+        path.setSpeed(10);
         return path;
     }
 

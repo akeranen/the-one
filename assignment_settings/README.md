@@ -1,12 +1,24 @@
 # Assignment 1 - Group 4
-## Trigger alarm in the GUI
+
+## Trigger emergency as setting
+To schedule an alarm we introduced the following setting:
+
+`Scenario.emergencyRangeTime`
+
+This setting accepts a range (e.g. `2000-3000`). This range indicates the simulation time range in which the emergency
+will start. The exact time point in the range is chosen randomly.
+
+This option can be overwritten in the provided setting files or the default value defined in `default_settings.txt` can
+be used.
+
+## Trigger emergency in the GUI
 We introduced an option to trigger an emergency via the GUI, for this, we added a button in the top.
 
 <img src="guiScreenshot.png" alt="guiScreenshot" width="600" height="500"/>
 
 When activating this option, all hosts enter emergency mode and they start going to an exit.
 
-## Setting files
+## Setting files for use-cases
 We provide 4 example settings to run our use-case and simulations.
 * `assignment_settings/globalAlarming_nearestExit.txt`
 * `assignment_settings/globalAlarming_randomExit.txt`

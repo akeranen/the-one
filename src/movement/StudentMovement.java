@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class StudentMovement extends MovementModel {
 
@@ -21,12 +20,40 @@ public class StudentMovement extends MovementModel {
     private static Map<String, Coord> ROOMS;
     static {
         ROOMS = new HashMap<>();
-        // TODO: add more rooms and adjust coords
-        ROOMS.put("HS1", new Coord(310, 130));
-        ROOMS.put("Bib", new Coord(90, 140));
-        ROOMS.put("Rechnerhalle", new Coord(250, 100));
+        ROOMS.put("HS1 01", new Coord(320, 120));
+        ROOMS.put("HS1 02", new Coord(330, 132));
+
+        ROOMS.put("HS2", new Coord(307.65,161.60));
+        ROOMS.put("HS3", new Coord(262.48,159.21));
+
+        ROOMS.put("Tisch 01", new Coord(155.24,122));
+        ROOMS.put("Tisch 02", new Coord(173.24,122));
+        ROOMS.put("Tisch 03", new Coord(230.24,119));
+        ROOMS.put("Tisch 04", new Coord(258.24,122));
+        ROOMS.put("Tisch 05", new Coord(217,139));
+        ROOMS.put("Tisch 06", new Coord(197,137));
+
+        ROOMS.put("Bib 01", new Coord(90, 140));
+        ROOMS.put("Bib 02", new Coord(50, 140));
+        ROOMS.put("Bib 03", new Coord(50, 175));
+
+        ROOMS.put("Rechnerhalle 01", new Coord(250, 100));
+        ROOMS.put("Rechnerhalle 02", new Coord(225, 100));
+
+        ROOMS.put("SeminarRaum 01", new Coord(77,100));
+        ROOMS.put("SeminarRaum 02", new Coord(166,158));
+
         ROOMS.put("Finger 13", new Coord(50, 35));
+        ROOMS.put("Finger 11", new Coord(103, 50));
+        ROOMS.put("Finger 09", new Coord(158.87, 50));
+        ROOMS.put("Finger 07", new Coord(211,60));
+        ROOMS.put("Finger 05", new Coord(265,70));
+
         ROOMS.put("Finger 04", new Coord(330, 205));
+        ROOMS.put("Finger 06", new Coord(286, 190));
+        ROOMS.put("Finger 08", new Coord(233,192));
+        ROOMS.put("Finger 10", new Coord(188,191));
+        ROOMS.put("Finger 12", new Coord(142,163));
     }
 
     private final String emergencyType;

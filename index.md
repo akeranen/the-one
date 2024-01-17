@@ -30,7 +30,8 @@ Older versions of the ONE are available from the [old ONE homepage](https://www.
 ### Experimental features
 
 * [GPU-accelerated mobility simulation](https://github.com/akeranen/the-one/tree/gsim)
-  * See the [gsim folder README](https://github.com/Crydsch/the-one/blob/gsim/gsim/README.md) for details 
+  * See the [gsim folder](https://github.com/akeranen/the-one/tree/gsim/gsim) for details 
+
 
 ### Referring to the ONE simulator
 

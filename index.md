@@ -27,6 +27,12 @@ Previous releases:
 
 Older versions of the ONE are available from the [old ONE homepage](https://www.netlab.tkk.fi/tutkimus/dtn/theone/).
 
+### Experimental features
+
+* [GPU-accelerated mobility simulation](https://github.com/akeranen/the-one/tree/gsim)
+  * See the [gsim folder](https://github.com/akeranen/the-one/tree/gsim/gsim) for details 
+
+
 ### Referring to the ONE simulator
 
 If you have used the ONE simulator in your research, please use the SIMUTools paper ([[PDF]](https://www.netlab.tkk.fi/tutkimus/dtn/theone/pub/the_one_simutools.pdf) [[BibTeX]](https://www.netlab.tkk.fi/tutkimus/dtn/theone/pub/theone_bib.txt)) as the reference.

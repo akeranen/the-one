@@ -18,6 +18,10 @@ public class Message implements Comparable<Message> {
 	public static final int INFINITE_TTL = -1;
 	private DTNHost from;
 	private DTNHost to;
+	/** Type of the message*/
+	private int msgType;
+	/**No of Local hops*/
+	private int localHops;
 	/** Identifier of the message */
 	private String id;
 	/** Size of the message (bytes) */
@@ -358,6 +362,30 @@ public class Message implements Comparable<Message> {
 	 */
 	public void setAppID(String appID) {
 		this.appID = appID;
+	}
+	/**
+	 * @return the msgType
+	 */
+	public int getMsgType(){
+		return this.msgType;
+	}
+	/**
+	 * @param mType the msgType to set
+	 */
+	public void setMsgType(int mType){
+		this.msgType = mType;
+	}
+	/**
+	 * @return the localHops
+	 */
+	public int getLocalHops(){
+		return this.localHops;
+	}
+	/**
+	 * @param nh the localhops to set
+	 */
+	public void setLocalHops(int nh){
+		this.localHops = nh;
 	}
 
 }

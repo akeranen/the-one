@@ -25,6 +25,8 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	public static final String TRANSMIT_SPEED_S = "transmitSpeed";
 	/** scanning interval -setting id ({@value})*/
 	public static final String SCAN_INTERVAL_S = "scanInterval";
+	/** bidirectional connections -setting id ({@value})*/
+	public static final String BIDI_CONN_S = "bidirectionalConnections";
 
 	/**
 	 * Sub-namespace for the network related settings in the Group namespace
@@ -71,6 +73,9 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 	/** this interface's activeness jitter value */
 	private int activenessJitterValue;
 
+	/** whether or not created connections are bi-directional */
+	protected boolean bidirectionalConnections;
+
 	static {
 		DTNSim.registerForReset(NetworkInterface.class.getCanonicalName());
 		reset();
@@ -94,6 +99,8 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		this.transmitSpeed = s.getInt(TRANSMIT_SPEED_S);
 		ensurePositiveValue(transmitRange, TRANSMIT_RANGE_S);
 		ensurePositiveValue(transmitSpeed, TRANSMIT_SPEED_S);
+
+		this.bidirectionalConnections = s.getBoolean(BIDI_CONN_S, true);
 	}
 
 	/**
@@ -114,6 +121,9 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		this.interfacetype = ni.interfacetype;
 		this.transmitRange = ni.transmitRange;
 		this.transmitSpeed = ni.transmitSpeed;
+
+		this.bidirectionalConnections = ni.bidirectionalConnections;
+
 		this.scanInterval = ni.scanInterval;
 		this.ah = ni.ah;
 
@@ -181,6 +191,10 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		}
 
 		s.restoreSubNameSpace();
+	}
+
+	public boolean isBidirectionalConnections() {
+		return this.bidirectionalConnections;
 	}
 
 	/**
@@ -319,12 +333,22 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		this.connections.add(con);
 		notifyConnectionListeners(CON_UP, anotherInterface.getHost());
 
+		if (this.bidirectionalConnections !=
+				anotherInterface.isBidirectionalConnections()) {
+			throw new SimError("Bidirectional connections are " +
+				this.bidirectionalConnections + " for " + this + " but " +
+				anotherInterface.isBidirectionalConnections() + " for " +
+				anotherInterface + ", which is unsupported");
+		}
+
 		// set up bidirectional connection
-		anotherInterface.getConnections().add(con);
+		if (this.bidirectionalConnections) {
+			anotherInterface.getConnections().add(con);
+			anotherInterface.getHost().connectionUp(con);
+		}
 
 		// inform routers about the connection
 		this.host.connectionUp(con);
-		anotherInterface.getHost().connectionUp(con);
 	}
 
 	/**
@@ -338,13 +362,15 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		notifyConnectionListeners(CON_DOWN, anotherInterface.getHost());
 
 		// tear down bidirectional connection
-		if (!anotherInterface.getConnections().remove(con)) {
+		if (this.bidirectionalConnections &&
+				!anotherInterface.getConnections().remove(con)) {
 			throw new SimError("No connection " + con + " found in " +
 					anotherInterface);
 		}
 
 		this.host.connectionDown(con);
-		anotherInterface.getHost().connectionDown(con);
+		if (this.bidirectionalConnections)
+			anotherInterface.getHost().connectionDown(con);
 	}
 
 	/**
@@ -479,13 +505,15 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 		notifyConnectionListeners(CON_DOWN, anotherNode);
 
 		// tear down bidirectional connection
-		if (!anotherInterface.getConnections().remove(con)) {
+		if (this.bidirectionalConnections &&
+				!anotherInterface.getConnections().remove(con)) {
 			throw new SimError("No connection " + con + " found in " +
 					anotherNode);
 		}
 
 		this.host.connectionDown(con);
-		anotherNode.connectionDown(con);
+		if (this.bidirectionalConnections)
+			anotherNode.connectionDown(con);
 
 		connections.remove(index);
 	}

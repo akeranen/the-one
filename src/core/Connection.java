@@ -64,7 +64,7 @@ public abstract class Connection {
 	 * @return true if the given node is the initiator of the connection
 	 */
 	public boolean isInitiator(DTNHost node) {
-		return node == this.fromNode;
+		return node.equals(this.fromNode);
 	}
 
 	/**
@@ -214,6 +214,13 @@ public abstract class Connection {
 		else {
 			return this.fromInterface;
 		}
+	}
+
+	/**
+	 * Returns the interface specified as originator of the connection
+	 */
+	public NetworkInterface getFromInterface() {
+		return this.fromInterface;
 	}
 
 	/**

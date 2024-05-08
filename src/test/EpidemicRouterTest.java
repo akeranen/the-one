@@ -8,6 +8,7 @@ import routing.EpidemicRouter;
 import routing.MessageRouter;
 import core.DTNHost;
 import core.Message;
+import core.NetworkInterface;
 
 /**
  * Tests for EpidemicRouter and, due the simple nature of Epidemic router,
@@ -618,5 +619,35 @@ public class EpidemicRouterTest extends AbstractRouterTest {
 
 		assertNotSame(orderedIds, runMessageExchange(true));
 		assertNotSame(orderedIds, runMessageExchange(false));
+	}
+
+	/**
+	 * Checks that disabling bidirectionalty works
+	 */
+	public void testNonBidirectionalConnections() throws Exception {
+		ts.setNameSpace(TestUtils.IFACE_NS);
+		ts.putSetting(NetworkInterface.BIDI_CONN_S, "false");
+		this.setUp();
+
+		Message m1 = new Message(h1, h2, msgId1, 1);
+		h1.createNewMessage(m1);
+		Message m2 = new Message(h2, h1, msgId2, 1);
+		h2.createNewMessage(m2);
+		mc.reset();
+
+		// check that both routers start the transfer simultaneously
+		h1.connect(h2);
+		h2.connect(h1);
+		updateAllNodes(); // h1 and h2 should start transfer
+		assertTrue(mc.next());
+		assertEquals(mc.TYPE_START, mc.getLastType());
+		assertTrue(mc.next());
+		assertEquals(mc.TYPE_START, mc.getLastType());
+		assertFalse(mc.next());
+
+		// restore setting as other tests depend on default behavior
+		ts.setNameSpace(TestUtils.IFACE_NS);
+		ts.putSetting(NetworkInterface.BIDI_CONN_S, "true");
+		this.setUp();
 	}
 }

@@ -83,6 +83,38 @@ public class Message implements Comparable<Message> {
 	}
 
 	/**
+	 * Deep copies a message from another message. If new fields are
+	 * introduced to this class, most likely they should be copied here too
+	 * (unless done in constructor).
+	 * @param m the other message
+	 */
+	protected Message(Message m) {
+		this.from = m.from;
+		this.to = m.to;
+		this.id = m.id;
+		this.size = m.size;
+		this.path = new ArrayList<DTNHost>(m.path);
+		this.uniqueId = nextUniqueId;
+
+		this.timeCreated = m.timeCreated;
+		this.timeReceived = m.timeReceived;
+		this.initTtl = m.initTtl;
+		this.responseSize = m.responseSize;
+		this.requestMsg  = m.requestMsg;
+		this.properties = null;
+		this.appID = m.appID;
+
+		if (m.properties != null) {
+			Set<String> keys = m.properties.keySet();
+			for (String key : keys) {
+				updateProperty(key, m.getProperty(key));
+			}
+		}
+
+		Message.nextUniqueId++;
+	}
+
+	/**
 	 * Returns the node this message is originally from
 	 * @return the node this message is originally from
 	 */
@@ -250,28 +282,6 @@ public class Message implements Comparable<Message> {
 	}
 
 	/**
-	 * Deep copies message data from other message. If new fields are
-	 * introduced to this class, most likely they should be copied here too
-	 * (unless done in constructor).
-	 * @param m The message where the data is copied
-	 */
-	protected void copyFrom(Message m) {
-		this.path = new ArrayList<DTNHost>(m.path);
-		this.timeCreated = m.timeCreated;
-		this.responseSize = m.responseSize;
-		this.requestMsg  = m.requestMsg;
-		this.initTtl = m.initTtl;
-		this.appID = m.appID;
-
-		if (m.properties != null) {
-			Set<String> keys = m.properties.keySet();
-			for (String key : keys) {
-				updateProperty(key, m.getProperty(key));
-			}
-		}
-	}
-
-	/**
 	 * Adds a generic property for this message. The key can be any string but
 	 * it should be such that no other class accidently uses the same value.
 	 * The value can be any object but it's good idea to store only immutable
@@ -326,9 +336,7 @@ public class Message implements Comparable<Message> {
 	 * @return A replicate of the message
 	 */
 	public Message replicate() {
-		Message m = new Message(from, to, id, size);
-		m.copyFrom(this);
-		return m;
+		return new Message(this);
 	}
 
 	/**

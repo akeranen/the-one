@@ -27,6 +27,9 @@ public class DTNSim {
 	/** List of class names that should be reset between batch runs */
 	private static List<Class<?>> resetList = new ArrayList<Class<?>>();
 
+	/** file name of the default settings file ({@value}) */
+	public static final String DEF_SETTINGS_FILE ="default_settings.txt";
+
 	/**
 	 * Starts the user interface with given arguments.
 	 * If first argument is {@link #BATCH_MODE_FLAG}, the batch mode and text UI
@@ -71,9 +74,19 @@ public class DTNSim {
 			confFiles = args;
 		}
 		else {
-			confFiles = new String[] {null};
+			// No settings file provided, using default
+			confFiles = new String[] { DEF_SETTINGS_FILE };
 		}
 
+		boolean use_default = false;
+		for (int i = firstConfIndex; i < confFiles.length; ++i) {
+			if (confFiles[i].equals(DEF_SETTINGS_FILE)) {
+				use_default = true;
+				break;
+			}
+		}
+		if (!use_default)
+			System.out.println("Compatibility warning: starting simulation without loading '" + DEF_SETTINGS_FILE + "'.");
 		initSettings(confFiles, firstConfIndex);
 
 		if (batchMode) {

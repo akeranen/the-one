@@ -1,0 +1,7 @@
+# Baseline: Epidemic router (for comparison with PoDC)
+Scenario.name = epidemic_base
+Group.router = EpidemicRouter
+Scenario.endTime = 3600
+Events1.interval = 4,10
+Events1.size = 8k,20k
+btInterface.transmitSpeed = 2M

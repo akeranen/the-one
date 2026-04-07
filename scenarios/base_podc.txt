@@ -1,0 +1,7 @@
+# Base PoDC scenario overlay — all groups use PoDCRouter
+Scenario.name = podc_base
+Group.router = PoDCRouter
+Scenario.endTime = 3600
+Events1.interval = 4,10
+Events1.size = 8k,20k
+btInterface.transmitSpeed = 2M

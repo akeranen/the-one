@@ -6,8 +6,8 @@
 Scenario.name = default_scenario
 Scenario.simulateConnections = true
 Scenario.updateInterval = 0.1
-# 43200s == 12h
-Scenario.endTime = 43200
+# PoDC / UI demo: enough time for many small-message deliveries and ACKs (full map: 43200)
+Scenario.endTime = 3600
 
 ## Interface-specific settings:
 # type : which interface class the interface belongs to
@@ -18,8 +18,8 @@ Scenario.endTime = 43200
 
 # "Bluetooth" interface for all nodes
 btInterface.type = SimpleBroadcastInterface
-# Transmit speed of 2 Mbps = 250kBps
-btInterface.transmitSpeed = 250k
+# Higher rate helps PoDC demo (many ACK/data completions in UI time)
+btInterface.transmitSpeed = 2M
 btInterface.transmitRange = 10
 
 # High speed, long range, interface for group 4
@@ -52,7 +52,7 @@ Scenario.nrofHostGroups = 6
 
 # Common settings for all groups
 Group.movementModel = ShortestPathMapBasedMovement
-Group.router = EpidemicRouter
+Group.router = PoDCRouter
 Group.bufferSize = 5M
 Group.waitTime = 0, 120
 # All nodes have the bluetooth interface
@@ -116,10 +116,9 @@ Events.nrof = 1
 # Class of the first event generator
 Events1.class = MessageEventGenerator
 # (following settings are specific for the MessageEventGenerator class)
-# Creation interval in seconds (one new message every 25 to 35 seconds)
-Events1.interval = 25,35
-# Message sizes (500kB - 1MB)
-Events1.size = 500k,1M
+# Smaller payloads + shorter interval => many completed deliveries and ACKs in the GUI
+Events1.interval = 4,10
+Events1.size = 8k,20k
 # range of message source/destination addresses
 Events1.hosts = 0,126
 # Message ID prefix
@@ -158,6 +157,13 @@ Report.report2 = ContactTimesReport
 ProphetRouter.secondsInTimeUnit = 30
 SprayAndWaitRouter.nrofCopies = 6
 SprayAndWaitRouter.binaryMode = true
+
+# PoDCRouter (Proof-of-Delivery-Chain) — read via Group* + secondary Group namespace
+Group.PoDCRouter.alpha = 0.6
+Group.PoDCRouter.beta = 0.3
+Group.PoDCRouter.gamma = 0.1
+Group.PoDCRouter.decayLambda = 0.01
+Group.PoDCRouter.initialEnergy = 100.0
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

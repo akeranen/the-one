@@ -1,0 +1,25 @@
+# Sybil attack: 20% of pedestrian nodes (Group1) are malicious
+# Groups 1 uses SybilPoDCRouter; others use PoDCRouter
+Scenario.name = sybil_20pct
+Group.router = PoDCRouter
+Scenario.endTime = 3600
+Events1.interval = 4,10
+Events1.size = 8k,20k
+btInterface.transmitSpeed = 2M
+
+# Override Group1: 8 out of 40 pedestrians are Sybil attackers
+Group1.nrofHosts = 32
+Group1.router = PoDCRouter
+
+# New Group7: 8 Sybil nodes with same movement as pedestrians
+Scenario.nrofHostGroups = 7
+Group7.groupID = s
+Group7.nrofHosts = 8
+Group7.router = SybilPoDCRouter
+Group7.movementModel = ShortestPathMapBasedMovement
+Group7.bufferSize = 5M
+Group7.waitTime = 0, 120
+Group7.speed = 0.5, 1.5
+Group7.nrofInterfaces = 1
+Group7.interface1 = btInterface
+Group7.msgTtl = 300

@@ -1,0 +1,4 @@
+scenario,sim_time,nodes,created,delivered,delivery_ratio,overhead_ratio,avg_latency,avg_hops,gini_work,avg_proof_bytes,total_forwarded,total_rejected,total_acks,total_invalid_acks
+podc_base,3600.0,126,559,105,0.187835,176.1905,1008.87,6.97,0.576391,892.3,18605,6089924,105,0
+sybil_20pct,3600.0,126,559,110,0.196780,172.0273,879.15,5.90,0.517392,755.2,19033,6932328,110,0
+energy_limited,3600.0,126,559,38,0.067979,194.6053,781.12,5.97,0.732876,764.6,7433,3185375,38,0

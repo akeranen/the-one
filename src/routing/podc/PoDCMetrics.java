@@ -14,21 +14,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Collects per-simulation PoDC metrics and writes a single CSV line when
+ * Collects per-simulation PoDC metrics and writes CSV output when
  * {@link #flush(String)} is called (typically at the end of the run).
  *
- * <p>The CSV header is written automatically if the file does not yet exist.
- * Subsequent runs append rows, making it easy to aggregate batch results.</p>
- *
- * <h3>Collected metrics</h3>
- * <ul>
- *   <li>delivery_ratio, overhead_ratio, avg_latency, avg_hops —
- *       standard DTN performance indicators</li>
- *   <li>gini_work — Gini coefficient over node work values (fairness)</li>
- *   <li>avg_proof_bytes — mean proof chain size for delivered messages</li>
- *   <li>total_forwarded, total_rejected, total_acks, total_invalid_acks —
- *       PoDC-specific counters</li>
- * </ul>
+ * <p>In addition to aggregate stats, records per-forward-event data
+ * (simulation time, forwarder's work) so that a "natural selection"
+ * chart can be generated post-hoc.</p>
  */
 public final class PoDCMetrics {
 
@@ -49,20 +40,39 @@ public final class PoDCMetrics {
     private final List<Integer> hopCounts  = new ArrayList<Integer>();
     private final List<Integer> proofBytes = new ArrayList<Integer>();
 
-    /* ---- recording API (called from PoDCRouter) ---- */
+    private static final int BIN_SIZE = 60;
+    private final List<int[]> forwardBins = new ArrayList<int[]>();
 
-    public void recordCreated()                 { created++; }
-    public void recordDelivered(double latency,
-                                int hops, int proofSize) {
+    /* ---- recording API ---- */
+
+    public void recordCreated()  { created++; }
+
+    public void recordDelivered(double latency, int hops, int proofSize) {
         delivered++;
         latencies.add(latency);
         hopCounts.add(hops);
         proofBytes.add(proofSize);
     }
-    public void recordForwarded()               { relayed++; }
-    public void recordRejected()                { rejected++; }
-    public void recordAckProcessed()            { acksProcessed++; }
-    public void recordInvalidAck()              { invalidAcks++; }
+
+    public void recordForwarded() { relayed++; }
+    public void recordRejected()  { rejected++; }
+    public void recordAckProcessed() { acksProcessed++; }
+    public void recordInvalidAck()   { invalidAcks++; }
+
+    /**
+     * Records a data-message forward event for time-series analysis.
+     * @param simTime  current simulation time
+     * @param forwarderWork  the forwarding node's accumulated work
+     */
+    public void recordForwardEvent(double simTime, double forwarderWork) {
+        int bin = (int) (simTime / BIN_SIZE);
+        while (forwardBins.size() <= bin) {
+            forwardBins.add(new int[]{0, 0});
+        }
+        int[] slot = forwardBins.get(bin);
+        slot[0]++;
+        if (forwarderWork > 0) slot[1]++;
+    }
 
     /* ---- computed metrics ---- */
 
@@ -91,10 +101,6 @@ public final class PoDCMetrics {
         return proofBytes.isEmpty() ? 0 : s / proofBytes.size();
     }
 
-    /**
-     * Gini coefficient over the {@code work} values of all PoDC routers
-     * currently in the scenario.  0 = perfectly equal, 1 = maximally unequal.
-     */
     public double giniWork() {
         SimScenario sc = SimScenario.getInstance();
         if (sc == null) return 0;
@@ -116,43 +122,50 @@ public final class PoDCMetrics {
           + "avg_proof_bytes,total_forwarded,total_rejected,"
           + "total_acks,total_invalid_acks";
 
-    /**
-     * Appends one CSV row to {@code reports/podc_results.csv}.
-     * @param scenarioName label for this run (e.g. from Settings)
-     */
     public void flush(String scenarioName) {
         String dir = "reports";
         new File(dir).mkdirs();
+
         String path = dir + "/podc_results.csv";
         boolean needsHeader = !new File(path).exists();
-        try (PrintWriter pw = new PrintWriter(
-                new FileWriter(path, true))) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(path, true))) {
             if (needsHeader) pw.println(HEADER);
             int nodes = 0;
             SimScenario sc = SimScenario.getInstance();
             if (sc != null) nodes = sc.getHosts().size();
             pw.printf("%s,%.1f,%d,%d,%d,%.6f,%.4f,%.2f,%.2f,%.6f,%.1f,%d,%d,%d,%d%n",
-                    scenarioName,
-                    SimClock.getTime(),
-                    nodes,
-                    created,
-                    delivered,
-                    deliveryRatio(),
-                    overheadRatio(),
-                    avgLatency(),
-                    avgHops(),
-                    giniWork(),
-                    avgProofBytes(),
-                    relayed,
-                    rejected,
-                    acksProcessed,
-                    invalidAcks);
+                    scenarioName, SimClock.getTime(), nodes,
+                    created, delivered, deliveryRatio(), overheadRatio(),
+                    avgLatency(), avgHops(), giniWork(), avgProofBytes(),
+                    relayed, rejected, acksProcessed, invalidAcks);
         } catch (IOException e) {
             System.err.println("PoDCMetrics: cannot write CSV — " + e);
         }
+
+        flushWorkTimeSeries(scenarioName, dir);
     }
 
-    /** Print a human-readable summary to stdout. */
+    /**
+     * Writes {@code reports/<scenario>_work_timeseries.csv} with columns:
+     * time_bin_start, total_forwards, experienced_forwards, fraction_experienced
+     *
+     * "Experienced" = forwarder had work&gt;0 (i.e. received at least one ACK).
+     */
+    private void flushWorkTimeSeries(String scenarioName, String dir) {
+        String path = dir + "/" + scenarioName + "_work_timeseries.csv";
+        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
+            pw.println("time,total_forwards,experienced_forwards,fraction_experienced");
+            for (int i = 0; i < forwardBins.size(); i++) {
+                int[] slot = forwardBins.get(i);
+                double frac = slot[0] > 0 ? (double) slot[1] / slot[0] : 0;
+                pw.printf("%d,%d,%d,%.4f%n",
+                        i * BIN_SIZE, slot[0], slot[1], frac);
+            }
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: cannot write timeseries — " + e);
+        }
+    }
+
     public void printSummary() {
         System.out.println("--- PoDC metrics summary ---");
         System.out.printf("  created          : %d%n", created);
@@ -169,13 +182,13 @@ public final class PoDCMetrics {
         System.out.printf("  total_invalid    : %d%n", invalidAcks);
     }
 
-    /** Clears all counters (called between batch runs). */
     public void reset() {
         created = delivered = 0;
         relayed = rejected = acksProcessed = invalidAcks = 0;
         latencies.clear();
         hopCounts.clear();
         proofBytes.clear();
+        forwardBins.clear();
     }
 
     /* ---- helpers ---- */

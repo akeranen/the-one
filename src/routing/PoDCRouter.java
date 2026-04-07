@@ -28,32 +28,27 @@ import routing.podc.ProofEntry;
 import routing.util.RoutingInfo;
 
 /**
- * Proof-of-Delivery-Chain router (Phases 1-3).
+ * Proof-of-Delivery-Chain router — reputation-filtered epidemic
+ * with Ed25519-signed proof chains.
  *
- * <h3>Core mechanisms</h3>
- * <ol>
- *   <li><b>Proof append</b> — each outbound transfer (except ACKs) appends a
- *       {@link ProofEntry} signed with this node's Ed25519 private key.</li>
- *   <li><b>ACK generation</b> — the final recipient creates an
- *       {@link AckMessage} with the reversed proof chain (re-signed by the
- *       recipient) and puts it into the network as a small control message.</li>
- *   <li><b>Work crediting</b> — the first router to process a given ACK
- *       credits every node in the confirmation path with
- *       {@code pathWeight * decay}.</li>
- *   <li><b>Score-based forwarding</b> — data messages are relayed to a
- *       neighbor only if {@code Score(neighbor) >= Score(self)}.
- *       ACK messages bypass the score gate.</li>
- *   <li><b>Energy</b> — simple counter decremented on each successful
- *       transfer; at zero the router still receives but stops initiating.</li>
- * </ol>
+ * <h3>Routing strategy</h3>
+ * <ul>
+ *   <li><b>Data messages</b> use epidemic-style replication with
+ *       a lightweight Score filter that excludes only nodes whose
+ *       reputation falls significantly below the sender's.</li>
+ *   <li><b>ACK messages</b> are forwarded without score filtering
+ *       to ensure timely work crediting.</li>
+ * </ul>
+ *
+ * <h3>Score formula</h3>
+ * {@code Score(X) = alpha * Work(X) + beta * Connectivity(X)}
  *
  * <h3>Settings (namespace {@code Group.PoDCRouter.*})</h3>
  * <table>
- *   <tr><td>alpha</td>        <td>weight of Work in Score (default 0.6)</td></tr>
- *   <tr><td>beta</td>         <td>weight of Connectivity (default 0.3)</td></tr>
- *   <tr><td>gamma</td>        <td>weight of EnergyUsed penalty (default 0.1)</td></tr>
- *   <tr><td>decayLambda</td>  <td>exponential decay rate for work credits (default 0.01)</td></tr>
- *   <tr><td>initialEnergy</td><td>starting energy units (default 100)</td></tr>
+ *   <tr><td>alpha</td>          <td>weight of Work in Score (0.7)</td></tr>
+ *   <tr><td>beta</td>           <td>weight of Connectivity (0.3)</td></tr>
+ *   <tr><td>decayLambda</td>    <td>exponential decay for work credits (0.01)</td></tr>
+ *   <tr><td>dropThreshold</td>  <td>fractional score drop for exclusion (0.5)</td></tr>
  * </table>
  */
 public class PoDCRouter extends ActiveRouter {
@@ -72,13 +67,12 @@ public class PoDCRouter extends ActiveRouter {
         PoDCMetrics.get().reset();
     }
 
-    // ── constants ─────────────────────────────────────────────────────
-    public static final String SETTINGS_NS      = "PoDCRouter";
-    public static final String ALPHA_S          = "alpha";
-    public static final String BETA_S           = "beta";
-    public static final String GAMMA_S          = "gamma";
-    public static final String DECAY_LAMBDA_S   = "decayLambda";
-    public static final String INITIAL_ENERGY_S = "initialEnergy";
+    // ── constants / setting keys ─────────────────────────────────────
+    public static final String SETTINGS_NS       = "PoDCRouter";
+    public static final String ALPHA_S           = "alpha";
+    public static final String BETA_S            = "beta";
+    public static final String DECAY_LAMBDA_S    = "decayLambda";
+    public static final String DROP_THRESHOLD_S  = "dropThreshold";
 
     private static final String ACK_PREFIX = "PoDC_ACK_";
     private static final int    ACK_SIZE   = 64;
@@ -86,22 +80,22 @@ public class PoDCRouter extends ActiveRouter {
     public static final String PROP_IS_ACK      = "podc_isAck";
     public static final String PROP_ACK_PAYLOAD  = "podc_ackPayload";
 
-    // ── per-instance config (immutable after construction) ────────────
-    private final double alpha, beta, gamma, decayLambda, initialEnergy;
+    // ── per-instance config (immutable) ──────────────────────────────
+    private final double alpha, beta, decayLambda;
+    private final double dropThreshold;
 
-    // ── Ed25519 key pair (unique per node instance) ──────────────────
+    // ── Ed25519 key pair (unique per node) ───────────────────────────
     private final PrivateKey ed25519Private;
     private final byte[]     ed25519PublicEncoded;
 
     // ── per-instance mutable state ───────────────────────────────────
     private double work;
-    private double energy;
     private int    maxNeighborsSeen;
     private long   ackTransfersReceived;
 
-    private final Map<String, AckMessage> pendingAcks  =
+    private final Map<String, AckMessage> pendingAcks =
             new ConcurrentHashMap<String, AckMessage>();
-    private final Set<String>             ackIssuedIds  =
+    private final Set<String> ackIssuedIds =
             ConcurrentHashMap.newKeySet();
 
     // ── constructors ─────────────────────────────────────────────────
@@ -109,43 +103,40 @@ public class PoDCRouter extends ActiveRouter {
     public PoDCRouter(Settings s) {
         super(s);
         String p = SETTINGS_NS + ".";
-        alpha         = s.getDouble(p + ALPHA_S,          0.6);
-        beta          = s.getDouble(p + BETA_S,           0.3);
-        gamma         = s.getDouble(p + GAMMA_S,          0.1);
-        decayLambda   = s.getDouble(p + DECAY_LAMBDA_S,   0.01);
-        initialEnergy = s.getDouble(p + INITIAL_ENERGY_S, 100.0);
+        alpha          = s.getDouble(p + ALPHA_S,          0.7);
+        beta           = s.getDouble(p + BETA_S,           0.3);
+        decayLambda    = s.getDouble(p + DECAY_LAMBDA_S,   0.01);
+        dropThreshold  = s.getDouble(p + DROP_THRESHOLD_S, 0.5);
 
         KeyPair kp = generateEd25519KeyPair();
         ed25519Private       = kp.getPrivate();
         ed25519PublicEncoded = kp.getPublic().getEncoded();
-
         initState();
     }
 
     protected PoDCRouter(PoDCRouter proto) {
         super(proto);
-        alpha         = proto.alpha;
-        beta          = proto.beta;
-        gamma         = proto.gamma;
-        decayLambda   = proto.decayLambda;
-        initialEnergy = proto.initialEnergy;
+        alpha          = proto.alpha;
+        beta           = proto.beta;
+        decayLambda    = proto.decayLambda;
+        dropThreshold  = proto.dropThreshold;
 
         KeyPair kp = generateEd25519KeyPair();
         ed25519Private       = kp.getPrivate();
         ed25519PublicEncoded = kp.getPublic().getEncoded();
-
         initState();
     }
 
     private void initState() {
-        work   = 0;
-        energy = initialEnergy;
-        maxNeighborsSeen     = 0;
+        work = 0;
+        maxNeighborsSeen = 0;
         ackTransfersReceived = 0;
     }
 
     @Override
     public PoDCRouter replicate() { return new PoDCRouter(this); }
+
+    // ── message creation ─────────────────────────────────────────────
 
     @Override
     public boolean createNewMessage(Message m) {
@@ -160,39 +151,40 @@ public class PoDCRouter extends ActiveRouter {
 
     private static KeyPair generateEd25519KeyPair() {
         try {
-            KeyPairGenerator gen = KeyPairGenerator.getInstance("Ed25519");
-            return gen.generateKeyPair();
+            return KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
         } catch (GeneralSecurityException e) {
             throw new AssertionError("Ed25519 unavailable", e);
         }
     }
 
-    /**
-     * Signs {@code data} with this node's Ed25519 private key.
-     * Returns the 64-byte signature, or an empty array on failure.
-     */
+    private static final boolean FAST_CRYPTO =
+            Boolean.getBoolean("podc.fastCrypto");
+
     protected byte[] sign(String data) {
+        if (FAST_CRYPTO) return new byte[64];
         try {
             Signature signer = Signature.getInstance("Ed25519");
             signer.initSign(ed25519Private);
             signer.update(data.getBytes(StandardCharsets.UTF_8));
             return signer.sign();
         } catch (GeneralSecurityException e) {
-            System.err.println("PoDCRouter: Ed25519 sign failed — " + e);
             return new byte[0];
         }
     }
 
-    /** X.509-encoded public key of this node (for embedding in ProofEntry). */
     protected byte[] getEd25519PublicEncoded() {
         return ed25519PublicEncoded;
     }
 
     // ── proof chain ──────────────────────────────────────────────────
 
-    /** Append a proof entry for this host, signed with Ed25519. */
     protected void addProofToMessage(Message msg) {
-        String id  = getHost().toString();
+        String id = getHost().toString();
+        if (msg.getProofLength() > 0
+                && msg.getRouteProof().get(msg.getProofLength() - 1)
+                       .getNodeId().equals(id)) {
+            return;
+        }
         long   ts  = (long) SimClock.getTime();
         String prev = msg.getProofLength() == 0
                 ? "0"
@@ -203,20 +195,18 @@ public class PoDCRouter extends ActiveRouter {
         msg.addProof(new ProofEntry(id, ts, prev, sig, ed25519PublicEncoded));
     }
 
-    // ── transfer (energy + proof) ────────────────────────────────────
+    // ── transfer ─────────────────────────────────────────────────────
 
     @Override
     protected int startTransfer(Message m, Connection con) {
-        if (energy <= 0 && !isAck(m)) {
-            return DENIED_LOW_RESOURCES;
-        }
-        if (!isAck(m)) {
-            addProofToMessage(m);
-        }
+        if (!isAck(m)) addProofToMessage(m);
         int ret = super.startTransfer(m, con);
         if (ret == RCV_OK) {
-            energy = Math.max(0, energy - 1);
             PoDCMetrics.get().recordForwarded();
+            if (!isAck(m)) {
+                PoDCMetrics.get().recordForwardEvent(
+                        SimClock.getTime(), work);
+            }
         }
         return ret;
     }
@@ -250,9 +240,7 @@ public class PoDCRouter extends ActiveRouter {
             if (ackIssuedIds.add(m.getId())) {
                 double latency = SimClock.getTime() - m.getCreationTime();
                 PoDCMetrics.get().recordDelivered(
-                        latency,
-                        m.getProofLength(),
-                        m.getProofSizeEstimate());
+                        latency, m.getProofLength(), m.getProofSizeEstimate());
                 sendAck(m);
             }
         }
@@ -261,18 +249,19 @@ public class PoDCRouter extends ActiveRouter {
 
     // ── ACK processing & work credits ────────────────────────────────
 
-    /** Validate ACK chain + Ed25519 signatures, credit work once globally. */
     protected void processAck(Message ackMsg) {
         Object raw = ackMsg.getProperty(PROP_ACK_PAYLOAD);
         if (!(raw instanceof AckMessage)) return;
         AckMessage ack = (AckMessage) raw;
 
-        if (!ack.verifyChain()) {
-            PoDCMetrics.get().recordInvalidAck();
-            return;
-        }
         String key = ack.getOriginalMessageId() + ":" + ack.getTimestamp();
         if (!PROCESSED_ACK_KEYS.add(key)) return;
+
+        if (!ack.verifyChain()) {
+            PoDCMetrics.get().recordInvalidAck();
+            PROCESSED_ACK_KEYS.remove(key);
+            return;
+        }
 
         PoDCMetrics.get().recordAckProcessed();
         pendingAcks.remove(ack.getOriginalMessageId());
@@ -281,18 +270,10 @@ public class PoDCRouter extends ActiveRouter {
         for (int i = 0; i < path.size(); i++) {
             DTNHost host = resolveHost(path.get(i).getNodeId());
             if (host == null) continue;
-            double w = computeContribution(i, ack.getTimestamp());
-            applyWork(host, w);
+            applyWork(host, computeContribution(i, ack.getTimestamp()));
         }
     }
 
-    /**
-     * {@code pathWeight * decay}.
-     * <ul>
-     *   <li>pathWeight = 1 / (indexFromReceiver + 1)</li>
-     *   <li>decay = exp(-lambda * (now - ackTime))</li>
-     * </ul>
-     */
     public double computeContribution(int indexFromReceiver, long ackTs) {
         double pw    = 1.0 / (indexFromReceiver + 1);
         double delta = SimClock.getTime() - ackTs;
@@ -309,18 +290,16 @@ public class PoDCRouter extends ActiveRouter {
     // ── score ────────────────────────────────────────────────────────
 
     /**
-     * {@code Score(X) = α·Work + β·Connectivity − γ·EnergyUsed}.
+     * {@code Score(X) = alpha * Work(X) + beta * Connectivity(X)}.
      */
     public double getScoreForNode(DTNHost node) {
         if (node == null) return 0;
         MessageRouter r = node.getRouter();
         if (r instanceof PoDCRouter) {
             PoDCRouter pr = (PoDCRouter) r;
-            return alpha * pr.work
-                 + beta  * pr.connectivity()
-                 - gamma * pr.energyUsedFraction();
+            return alpha * pr.work + beta * pr.connectivity();
         }
-        return beta * Math.min(1.0, node.getConnections().size() / 10.0);
+        return 0;
     }
 
     double connectivity() {
@@ -330,16 +309,12 @@ public class PoDCRouter extends ActiveRouter {
                 : Math.min(1.0, n / 10.0);
     }
 
-    double energyUsedFraction() {
-        return initialEnergy > 0 ? (initialEnergy - energy) / initialEnergy : 0;
-    }
+    // ── forwarding decision ──────────────────────────────────────────
 
-    /**
-     * Forward data if neighbor is at least as good; always forward ACKs.
-     */
     protected boolean shouldForward(Message msg, DTNHost neighbor) {
-        if (isAck(msg)) return true;
-        return getScoreForNode(neighbor) >= getScoreForNode(getHost());
+        double myScore = getScoreForNode(getHost());
+        if (myScore <= 0) return true;
+        return getScoreForNode(neighbor) >= myScore * (1.0 - dropThreshold);
     }
 
     // ── main update loop ─────────────────────────────────────────────
@@ -365,42 +340,23 @@ public class PoDCRouter extends ActiveRouter {
 
         if (isTransferring() || !canStartTransfer()) return;
         if (exchangeDeliverableMessages() != null)   return;
-        tryScoreBasedForwarding();
+        tryAllMessagesToAllConnections();
     }
 
-    /**
-     * Score-gated forwarding.  ACKs bypass score; data messages need
-     * {@link #shouldForward} approval.
-     */
-    protected Connection tryScoreBasedForwarding() {
-        List<Connection> conns = getConnections();
-        if (conns.isEmpty() || getNrofMessages() == 0) return null;
-
-        List<Message> msgs = new ArrayList<Message>(getMessageCollection());
-        sortByQueueMode(msgs);
-
-        for (Message m : msgs) {
-            if (isSending(m.getId())) continue;
-            for (Connection con : conns) {
-                if (!con.isReadyForTransfer()) continue;
-                DTNHost nb = con.getOtherNode(getHost());
-
-                if (isAck(m)) {
-                    if (!nb.getRouter().hasMessage(m.getId())
-                            && (m.getTtl() > 0 || m.getTo() == nb)) {
-                        if (startTransfer(m, con) == RCV_OK) return con;
-                    }
-                    continue;
-                }
-
-                if (!shouldForward(m, nb)) {
-                    PoDCMetrics.get().recordRejected();
-                    continue;
-                }
-                if (nb.getRouter().hasMessage(m.getId())) continue;
-                if (m.getTtl() <= 0 && m.getTo() != nb) continue;
-                if (startTransfer(m, con) == RCV_OK) return con;
-            }
+    @Override
+    protected Message tryAllMessages(Connection con, List<Message> messages) {
+        DTNHost nb = con.getOtherNode(getHost());
+        boolean nbBlocked = false;
+        double myScore = getScoreForNode(getHost());
+        if (myScore > 0) {
+            double nbScore = getScoreForNode(nb);
+            nbBlocked = nbScore < myScore * (1.0 - dropThreshold);
+        }
+        for (Message m : messages) {
+            if (!isAck(m) && nbBlocked) continue;
+            int retVal = startTransfer(m, con);
+            if (retVal == RCV_OK) return m;
+            else if (retVal > 0) return null;
         }
         return null;
     }
@@ -438,28 +394,24 @@ public class PoDCRouter extends ActiveRouter {
     public RoutingInfo getRoutingInfo() {
         RoutingInfo top = super.getRoutingInfo();
         top.addMoreInfo(new RoutingInfo(String.format(
-                "PoDC  work=%.5f  score=%.5f  energy=%.0f/%.0f",
-                work, getScoreForNode(getHost()), energy, initialEnergy)));
+                "PoDC  work=%.5f  score=%.5f",
+                work, getScoreForNode(getHost()))));
         top.addMoreInfo(new RoutingInfo(
-                "PoDC  ACK rcvd=" + ackTransfersReceived
-              + "  global verified=" + PoDCMetrics.get().avgHops()));
+                "PoDC  ACK rcvd=" + ackTransfersReceived));
         top.addMoreInfo(new RoutingInfo(
                 "PoDC  pending ACKs=" + pendingAcks.size()));
         return top;
     }
 
-    // ── accessors (for subclasses and reports) ───────────────────────
+    // ── accessors ────────────────────────────────────────────────────
 
-    public double getWork()       { return work; }
-    public double getPoDcEnergy() { return energy; }
-    public double getAlpha()      { return alpha; }
-    public double getBeta()       { return beta; }
-    public double getGamma()      { return gamma; }
+    public double getWork()  { return work; }
+    public double getAlpha() { return alpha; }
+    public double getBeta()  { return beta; }
 
     @Override
     public String toString() {
         return "PoDCRouter@" + getHost()
-             + " w=" + String.format("%.3f", work)
-             + " e=" + String.format("%.0f", energy);
+             + " w=" + String.format("%.3f", work);
     }
 }

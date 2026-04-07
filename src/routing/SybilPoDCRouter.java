@@ -78,7 +78,6 @@ public class SybilPoDCRouter extends PoDCRouter {
     @Override
     public String toString() {
         return "SybilPoDCRouter@" + getHost()
-             + " w=" + String.format("%.3f", getWork())
-             + " e=" + String.format("%.0f", getPoDcEnergy());
+             + " w=" + String.format("%.3f", getWork());
     }
 }

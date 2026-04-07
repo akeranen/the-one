@@ -1,0 +1,6 @@
+Scenario.name = Prophet_n150_s3
+MovementModel.rngSeed = 3
+Group1.nrofHosts = 50
+Group2.nrofHosts = 50
+Group3.nrofHosts = 50
+Events1.hosts = 0,156

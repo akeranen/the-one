@@ -1,0 +1,2 @@
+Scenario.name = Prophet_seed1
+MovementModel.rngSeed = 1

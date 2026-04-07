@@ -1,0 +1,2 @@
+Scenario.name = Epidemic_seed3
+MovementModel.rngSeed = 3

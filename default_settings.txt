@@ -158,12 +158,11 @@ ProphetRouter.secondsInTimeUnit = 30
 SprayAndWaitRouter.nrofCopies = 6
 SprayAndWaitRouter.binaryMode = true
 
-# PoDCRouter (Proof-of-Delivery-Chain) — read via Group* + secondary Group namespace
-Group.PoDCRouter.alpha = 0.6
+# PoDCRouter (Proof-of-Delivery-Chain)
+Group.PoDCRouter.alpha = 0.7
 Group.PoDCRouter.beta = 0.3
-Group.PoDCRouter.gamma = 0.1
 Group.PoDCRouter.decayLambda = 0.01
-Group.PoDCRouter.initialEnergy = 100.0
+Group.PoDCRouter.dropThreshold = 0.5
 
 ## Optimization settings -- these affect the speed of the simulation
 ## see World class for details.

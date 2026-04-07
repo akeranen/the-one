@@ -1,0 +1,2 @@
+Scenario.name = PoDC_sybil_s2
+MovementModel.rngSeed = 2

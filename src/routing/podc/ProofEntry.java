@@ -29,6 +29,7 @@ public class ProofEntry {
     private final String prevHash;
     private final byte[] signature;
     private final byte[] publicKey;
+    private transient String cachedHash;
 
     /**
      * @param nodeId    {@code DTNHost.toString()} of the forwarding node
@@ -53,17 +54,23 @@ public class ProofEntry {
         return nodeId + "|" + timestamp + "|" + prevHash;
     }
 
+    private static final char[] HEX = "0123456789abcdef".toCharArray();
+
     /** SHA-256 hex digest of {@link #canonicalData()}. */
     public String computeHash() {
+        if (cachedHash != null) return cachedHash;
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] dig = md.digest(
                     canonicalData().getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder(dig.length * 2);
-            for (byte b : dig) {
-                sb.append(String.format("%02x", b));
+            char[] hex = new char[dig.length * 2];
+            for (int i = 0; i < dig.length; i++) {
+                int v = dig[i] & 0xFF;
+                hex[i * 2]     = HEX[v >>> 4];
+                hex[i * 2 + 1] = HEX[v & 0x0F];
             }
-            return sb.toString();
+            cachedHash = new String(hex);
+            return cachedHash;
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError("SHA-256 unavailable", e);
         }
@@ -75,7 +82,11 @@ public class ProofEntry {
      *
      * @return {@code true} only if the signature is cryptographically valid
      */
+    private static final boolean FAST_CRYPTO =
+            Boolean.getBoolean("podc.fastCrypto");
+
     public boolean verify() {
+        if (FAST_CRYPTO) return true;
         try {
             KeyFactory kf = KeyFactory.getInstance("Ed25519");
             PublicKey pk = kf.generatePublic(

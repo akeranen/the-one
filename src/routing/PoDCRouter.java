@@ -6,7 +6,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.Signature;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,6 +91,8 @@ public class PoDCRouter extends ActiveRouter {
     private double work;
     private int    maxNeighborsSeen;
     private long   ackTransfersReceived;
+    private int    nodeDataForwards;
+    private int    deliveryContributions;
 
     private final Map<String, AckMessage> pendingAcks =
             new ConcurrentHashMap<String, AckMessage>();
@@ -131,6 +132,8 @@ public class PoDCRouter extends ActiveRouter {
         work = 0;
         maxNeighborsSeen = 0;
         ackTransfersReceived = 0;
+        nodeDataForwards = 0;
+        deliveryContributions = 0;
     }
 
     @Override
@@ -204,6 +207,7 @@ public class PoDCRouter extends ActiveRouter {
         if (ret == RCV_OK) {
             PoDCMetrics.get().recordForwarded();
             if (!isAck(m)) {
+                nodeDataForwards++;
                 PoDCMetrics.get().recordForwardEvent(
                         SimClock.getTime(), work);
             }
@@ -241,6 +245,15 @@ public class PoDCRouter extends ActiveRouter {
                 double latency = SimClock.getTime() - m.getCreationTime();
                 PoDCMetrics.get().recordDelivered(
                         latency, m.getProofLength(), m.getProofSizeEstimate());
+                for (routing.podc.ProofEntry pe : m.getRouteProof()) {
+                    DTNHost relay = resolveHost(pe.getNodeId());
+                    if (relay != null) {
+                        MessageRouter rr = relay.getRouter();
+                        if (rr instanceof PoDCRouter) {
+                            ((PoDCRouter) rr).deliveryContributions++;
+                        }
+                    }
+                }
                 sendAck(m);
             }
         }
@@ -300,6 +313,10 @@ public class PoDCRouter extends ActiveRouter {
             return alpha * pr.work + beta * pr.connectivity();
         }
         return 0;
+    }
+
+    public double getConnectivity() {
+        return connectivity();
     }
 
     double connectivity() {
@@ -408,6 +425,8 @@ public class PoDCRouter extends ActiveRouter {
     public double getWork()  { return work; }
     public double getAlpha() { return alpha; }
     public double getBeta()  { return beta; }
+    public int getNodeForwards()          { return nodeDataForwards; }
+    public int getDeliveryContributions() { return deliveryContributions; }
 
     @Override
     public String toString() {

@@ -43,6 +43,9 @@ public final class PoDCMetrics {
     private static final int BIN_SIZE = 60;
     private final List<int[]> forwardBins = new ArrayList<int[]>();
 
+    private int lastGiniBin = -1;
+    private final List<Double> giniBins = new ArrayList<Double>();
+
     /* ---- recording API ---- */
 
     public void recordCreated()  { created++; }
@@ -72,6 +75,12 @@ public final class PoDCMetrics {
         int[] slot = forwardBins.get(bin);
         slot[0]++;
         if (forwarderWork > 0) slot[1]++;
+
+        if (bin > lastGiniBin) {
+            lastGiniBin = bin;
+            while (giniBins.size() <= bin) giniBins.add(0.0);
+            giniBins.set(bin, giniWork());
+        }
     }
 
     /* ---- computed metrics ---- */
@@ -143,6 +152,9 @@ public final class PoDCMetrics {
         }
 
         flushWorkTimeSeries(scenarioName, dir);
+        flushGiniTimeSeries(scenarioName, dir);
+        flushPerMessageData(scenarioName, dir);
+        flushPerNodeData(scenarioName, dir);
     }
 
     /**
@@ -163,6 +175,58 @@ public final class PoDCMetrics {
             }
         } catch (IOException e) {
             System.err.println("PoDCMetrics: cannot write timeseries — " + e);
+        }
+    }
+
+    private void flushGiniTimeSeries(String scenarioName, String dir) {
+        String path = dir + "/" + scenarioName + "_gini_timeseries.csv";
+        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
+            pw.println("time,gini");
+            for (int i = 0; i < giniBins.size(); i++) {
+                pw.printf("%d,%.6f%n", i * BIN_SIZE, giniBins.get(i));
+            }
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: cannot write gini timeseries — " + e);
+        }
+    }
+
+    private void flushPerMessageData(String scenarioName, String dir) {
+        String path = dir + "/" + scenarioName + "_per_message.csv";
+        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
+            pw.println("latency,hops,proof_bytes");
+            int n = latencies.size();
+            for (int i = 0; i < n; i++) {
+                pw.printf("%.2f,%d,%d%n",
+                        latencies.get(i),
+                        i < hopCounts.size() ? hopCounts.get(i) : 0,
+                        i < proofBytes.size() ? proofBytes.get(i) : 0);
+            }
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: cannot write per-message data — " + e);
+        }
+    }
+
+    public void flushPerNodeData(String scenarioName, String dir) {
+        SimScenario sc = SimScenario.getInstance();
+        if (sc == null) return;
+        String path = dir + "/" + scenarioName + "_per_node.csv";
+        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
+            pw.println("node_id,work,score,connectivity,forwards,delivery_contributions");
+            for (DTNHost h : sc.getHosts()) {
+                MessageRouter r = h.getRouter();
+                if (r instanceof routing.PoDCRouter) {
+                    routing.PoDCRouter pr = (routing.PoDCRouter) r;
+                    pw.printf("%s,%.6f,%.6f,%.4f,%d,%d%n",
+                            h.toString(),
+                            pr.getWork(),
+                            pr.getScoreForNode(h),
+                            pr.getConnectivity(),
+                            pr.getNodeForwards(),
+                            pr.getDeliveryContributions());
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: cannot write per-node data — " + e);
         }
     }
 
@@ -189,6 +253,8 @@ public final class PoDCMetrics {
         hopCounts.clear();
         proofBytes.clear();
         forwardBins.clear();
+        giniBins.clear();
+        lastGiniBin = -1;
     }
 
     /* ---- helpers ---- */

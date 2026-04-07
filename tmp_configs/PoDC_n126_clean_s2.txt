@@ -1,0 +1,2 @@
+Scenario.name = PoDC_n126_clean_s2
+MovementModel.rngSeed = 2

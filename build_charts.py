@@ -151,13 +151,12 @@ def plot_grouped_bars(data, metric_key, xlabel, title, filename):
 
         offset = (i - n_proto / 2 + 0.5) * bar_h
         bars = ax.barh(y_positions + offset, means, bar_h * 0.85,
-                        xerr=errs, capsize=2,
                         label=SHORT_NAMES.get(proto, proto),
                         color=PALETTE.get(proto, "#999"),
                         edgecolor="white", linewidth=0.4)
         for bar, m_val in zip(bars, means):
             if m_val > 0:
-                ax.text(m_val + max(errs) * 0.15 + max(means) * 0.01,
+                ax.text(m_val + max(means) * 0.015,
                         bar.get_y() + bar.get_height() / 2,
                         f"{m_val:.2f}", va="center", ha="left", fontsize=6.5)
 
@@ -199,7 +198,7 @@ def plot_sybil(rows):
 
     fig, ax = plt.subplots(figsize=(5, 3.5))
     colors = ["#1B9E77", "#D95F02"]
-    bars = ax.barh(labels, means, xerr=errs, capsize=4,
+    bars = ax.barh(labels, means,
                     color=colors, edgecolor="white", height=0.4)
     for bar, m_val in zip(bars, means):
         ax.text(m_val + 0.005, bar.get_y() + bar.get_height() / 2,
@@ -453,13 +452,13 @@ def plot_sensitivity(rows):
     x = np.arange(len(thresholds))
     w = 0.28
 
-    bars1 = ax1.bar(x - w / 2, means_dr, w, yerr=errs_dr, capsize=3,
+    bars1 = ax1.bar(x - w / 2, means_dr, w,
                      color="#1B9E77", label="Delivery ratio", edgecolor="white")
     ax1.set_ylabel("Delivery ratio", color="#1B9E77")
     ax1.tick_params(axis="y", labelcolor="#1B9E77")
 
     ax2 = ax1.twinx()
-    bars2 = ax2.bar(x + w / 2, means_oh, w, yerr=errs_oh, capsize=3,
+    bars2 = ax2.bar(x + w / 2, means_oh, w,
                      color="#D95F02", label="Overhead ratio", edgecolor="white")
     ax2.set_ylabel("Overhead ratio", color="#D95F02")
     ax2.tick_params(axis="y", labelcolor="#D95F02")

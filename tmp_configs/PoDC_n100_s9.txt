@@ -1,0 +1,6 @@
+Scenario.name = PoDC_n100_s9
+MovementModel.rngSeed = 9
+Group1.nrofHosts = 33
+Group2.nrofHosts = 33
+Group3.nrofHosts = 34
+Events1.hosts = 0,106

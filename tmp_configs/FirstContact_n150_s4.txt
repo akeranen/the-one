@@ -1,0 +1,6 @@
+Scenario.name = FirstContact_n150_s4
+MovementModel.rngSeed = 4
+Group1.nrofHosts = 50
+Group2.nrofHosts = 50
+Group3.nrofHosts = 50
+Events1.hosts = 0,156

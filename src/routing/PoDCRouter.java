@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.crypto.spec.SecretKeySpec;
+
 import core.Connection;
 import core.DTNHost;
 import core.DTNSim;
@@ -22,6 +24,7 @@ import core.SimClock;
 import core.SimScenario;
 
 import routing.podc.AckMessage;
+import routing.podc.E2ECrypto;
 import routing.podc.PoDCMetrics;
 import routing.podc.ProofEntry;
 import routing.util.RoutingInfo;
@@ -63,6 +66,7 @@ public class PoDCRouter extends ActiveRouter {
     public static void reset() {
         PROCESSED_ACK_KEYS.clear();
         END_FLUSHED.set(false);
+        ADDRESS_BOOK.clear();
         PoDCMetrics.get().reset();
     }
 
@@ -86,6 +90,24 @@ public class PoDCRouter extends ActiveRouter {
     // ── Ed25519 key pair (unique per node) ───────────────────────────
     private final PrivateKey ed25519Private;
     private final byte[]     ed25519PublicEncoded;
+
+    // ── X25519 key pair for E2E encryption ─────────────────────────
+    private final PrivateKey x25519Private;
+    private final byte[]     x25519PublicEncoded;
+
+    /**
+     * Address book: host name -> X25519 public key.
+     * In PoDC the public key <b>is</b> the node identity/address —
+     * every node registers once at init, like a wallet address in crypto.
+     * This is NOT a trusted third party; it simply models the fact that
+     * public keys are public (derivable from a known address).
+     */
+    private static final Map<String, byte[]> ADDRESS_BOOK =
+            new ConcurrentHashMap<String, byte[]>();
+
+    public static final String PROP_E2E_CIPHERTEXT  = "podc_e2e_ct";
+    public static final String PROP_E2E_SENDER_PUB  = "podc_e2e_senderPub";
+    public static final String PROP_E2E_DECRYPTED   = "podc_e2e_plain";
 
     // ── per-instance mutable state ───────────────────────────────────
     private double work;
@@ -112,6 +134,9 @@ public class PoDCRouter extends ActiveRouter {
         KeyPair kp = generateEd25519KeyPair();
         ed25519Private       = kp.getPrivate();
         ed25519PublicEncoded = kp.getPublic().getEncoded();
+        KeyPair xkp = E2ECrypto.generateKeyPair();
+        x25519Private       = xkp.getPrivate();
+        x25519PublicEncoded = xkp.getPublic().getEncoded();
         initState();
     }
 
@@ -125,6 +150,9 @@ public class PoDCRouter extends ActiveRouter {
         KeyPair kp = generateEd25519KeyPair();
         ed25519Private       = kp.getPrivate();
         ed25519PublicEncoded = kp.getPublic().getEncoded();
+        KeyPair xkp = E2ECrypto.generateKeyPair();
+        x25519Private       = xkp.getPrivate();
+        x25519PublicEncoded = xkp.getPublic().getEncoded();
         initState();
     }
 
@@ -143,11 +171,39 @@ public class PoDCRouter extends ActiveRouter {
 
     @Override
     public boolean createNewMessage(Message m) {
+        if (!isAck(m)) encryptPayload(m);
         boolean ok = super.createNewMessage(m);
         if (ok && !isAck(m)) {
             PoDCMetrics.get().recordCreated();
         }
         return ok;
+    }
+
+    // ── E2E encryption (X25519 + AES-256-GCM) ────────────────────────
+
+    private void encryptPayload(Message m) {
+        DTNHost recipient = m.getTo();
+        if (recipient == null) return;
+        byte[] recipientPub = ADDRESS_BOOK.get(recipient.toString());
+        if (recipientPub == null) return;
+
+        String plain = "FROM:" + getHost() + "|TO:" + recipient
+                + "|ID:" + m.getId()
+                + "|T:" + String.format("%.0f", SimClock.getTime());
+        SecretKeySpec key = E2ECrypto.deriveKey(x25519Private, recipientPub);
+        byte[] ct = E2ECrypto.encrypt(key, plain.getBytes(StandardCharsets.UTF_8));
+        m.updateProperty(PROP_E2E_CIPHERTEXT, ct);
+        m.updateProperty(PROP_E2E_SENDER_PUB, x25519PublicEncoded);
+    }
+
+    private String tryDecrypt(Message m) {
+        Object ctObj = m.getProperty(PROP_E2E_CIPHERTEXT);
+        Object spObj = m.getProperty(PROP_E2E_SENDER_PUB);
+        if (!(ctObj instanceof byte[]) || !(spObj instanceof byte[]))
+            return null;
+        SecretKeySpec key = E2ECrypto.deriveKey(x25519Private, (byte[]) spObj);
+        byte[] plain = E2ECrypto.decrypt(key, (byte[]) ctObj);
+        return plain != null ? new String(plain, StandardCharsets.UTF_8) : null;
     }
 
     // ── Ed25519 utilities ────────────────────────────────────────────
@@ -242,6 +298,10 @@ public class PoDCRouter extends ActiveRouter {
             processAck(m);
         } else if (m.getTo() == getHost()) {
             if (ackIssuedIds.add(m.getId())) {
+                String decrypted = tryDecrypt(m);
+                if (decrypted != null) {
+                    m.updateProperty(PROP_E2E_DECRYPTED, decrypted);
+                }
                 double latency = SimClock.getTime() - m.getCreationTime();
                 PoDCMetrics.get().recordDelivered(
                         latency, m.getProofLength(), m.getProofSizeEstimate());
@@ -348,6 +408,7 @@ public class PoDCRouter extends ActiveRouter {
         super.init(host, mListeners);
         int n = getConnections().size();
         if (n > maxNeighborsSeen) maxNeighborsSeen = n;
+        ADDRESS_BOOK.put(host.toString(), x25519PublicEncoded);
     }
 
     @Override
@@ -410,13 +471,66 @@ public class PoDCRouter extends ActiveRouter {
     @Override
     public RoutingInfo getRoutingInfo() {
         RoutingInfo top = super.getRoutingInfo();
-        top.addMoreInfo(new RoutingInfo(String.format(
-                "PoDC  work=%.5f  score=%.5f",
-                work, getScoreForNode(getHost()))));
-        top.addMoreInfo(new RoutingInfo(
-                "PoDC  ACK rcvd=" + ackTransfersReceived));
-        top.addMoreInfo(new RoutingInfo(
-                "PoDC  pending ACKs=" + pendingAcks.size()));
+
+        RoutingInfo podc = new RoutingInfo("--- PoDC Status ---");
+        podc.addMoreInfo(new RoutingInfo(String.format(
+                "Work = %.5f", work)));
+        podc.addMoreInfo(new RoutingInfo(String.format(
+                "Score = %.5f  (alpha=%.1f, beta=%.1f)",
+                getScoreForNode(getHost()), alpha, beta)));
+        podc.addMoreInfo(new RoutingInfo(String.format(
+                "Connectivity = %.3f  (neighbors=%d, max=%d)",
+                connectivity(),
+                getHost().getConnections().size(), maxNeighborsSeen)));
+        podc.addMoreInfo(new RoutingInfo(
+                "ACKs received = " + ackTransfersReceived
+              + "  |  pending = " + pendingAcks.size()));
+        podc.addMoreInfo(new RoutingInfo(
+                "Forwards = " + nodeDataForwards
+              + "  |  delivery contributions = " + deliveryContributions));
+        top.addMoreInfo(podc);
+
+        RoutingInfo msgs = new RoutingInfo(
+                "--- Messages (" + getNrofMessages() + ") ---");
+        for (Message m : getMessageCollection()) {
+            if (isAck(m)) continue;
+            StringBuilder sb = new StringBuilder();
+            sb.append(m.getId());
+
+            int pl = m.getProofLength();
+            if (pl > 0) {
+                sb.append("  [").append(pl).append(" hops: ");
+                for (int i = 0; i < pl; i++) {
+                    if (i > 0) sb.append("->");
+                    sb.append(m.getRouteProof().get(i).getNodeId());
+                }
+                sb.append("]");
+            }
+
+            Object ct = m.getProperty(PROP_E2E_CIPHERTEXT);
+            if (ct instanceof byte[]) {
+                String plain = tryDecrypt(m);
+                if (plain != null) {
+                    sb.append("  E2E:OPEN \"").append(plain).append("\"");
+                } else {
+                    sb.append("  E2E:LOCKED (").append(((byte[]) ct).length).append("B)");
+                }
+            }
+            msgs.addMoreInfo(new RoutingInfo(sb.toString()));
+        }
+        top.addMoreInfo(msgs);
+
+        RoutingInfo neighbors = new RoutingInfo(
+                "--- Neighbor Scores ---");
+        for (Connection c : getConnections()) {
+            DTNHost nb = c.getOtherNode(getHost());
+            neighbors.addMoreInfo(new RoutingInfo(String.format(
+                    "%s  score=%.4f%s",
+                    nb, getScoreForNode(nb),
+                    shouldForward(null, nb) ? "" : "  [BLOCKED]")));
+        }
+        top.addMoreInfo(neighbors);
+
         return top;
     }
 

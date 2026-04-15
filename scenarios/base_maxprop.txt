@@ -1,0 +1,7 @@
+# Baseline: MaxProp router (probability-based routing with history)
+Scenario.name = maxprop_base
+Group.router = MaxPropRouter
+Scenario.endTime = 3600
+Events1.interval = 4,10
+Events1.size = 8k,20k
+btInterface.transmitSpeed = 2M

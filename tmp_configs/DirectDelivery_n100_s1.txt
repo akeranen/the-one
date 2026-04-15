@@ -1,0 +1,6 @@
+Scenario.name = DirectDelivery_n100_s1
+MovementModel.rngSeed = 1
+Group1.nrofHosts = 33
+Group2.nrofHosts = 33
+Group3.nrofHosts = 34
+Events1.hosts = 0,106

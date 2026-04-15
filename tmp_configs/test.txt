@@ -1,0 +1,2 @@
+Scenario.name = podc_e10k 
+Group.PoDCRouter.initialEnergy = 10000.0 

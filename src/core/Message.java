@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import routing.podc.ProofEntry;
+
 /**
  * A message that is created at a node or passed between nodes.
  */
@@ -49,6 +51,9 @@ public class Message implements Comparable<Message> {
 	/** Application ID of the application that created the message */
 	private String	appID;
 
+	/** Proof-of-delivery chain appended at each forward hop (PoDC Phase 1). */
+	private List<ProofEntry> routeProof;
+
 	static {
 		reset();
 		DTNSim.registerForReset(Message.class.getCanonicalName());
@@ -77,6 +82,7 @@ public class Message implements Comparable<Message> {
 		this.requestMsg = null;
 		this.properties = null;
 		this.appID = null;
+		this.routeProof = new ArrayList<ProofEntry>();
 
 		Message.nextUniqueId++;
 		addNodeOnPath(from);
@@ -269,6 +275,10 @@ public class Message implements Comparable<Message> {
 				updateProperty(key, m.getProperty(key));
 			}
 		}
+
+		this.routeProof = m.routeProof != null
+				? new ArrayList<ProofEntry>(m.routeProof)
+				: new ArrayList<ProofEntry>();
 	}
 
 	/**
@@ -358,6 +368,30 @@ public class Message implements Comparable<Message> {
 	 */
 	public void setAppID(String appID) {
 		this.appID = appID;
+	}
+
+	/** Appends a proof entry to this message's delivery chain. */
+	public void addProof(ProofEntry entry) {
+		this.routeProof.add(entry);
+	}
+
+	/** Returns the live list of proof entries (source → receiver order). */
+	public List<ProofEntry> getRouteProof() {
+		return this.routeProof;
+	}
+
+	/** Number of proof entries currently in the chain. */
+	public int getProofLength() {
+		return this.routeProof.size();
+	}
+
+	/**
+	 * Rough byte cost of the proof chain (for overhead metrics).
+	 * Each entry: 64-byte Ed25519 signature + 44-byte X.509 public key
+	 * + ~20 bytes (nodeId, timestamp, prevHash overhead) ≈ 128 bytes.
+	 */
+	public int getProofSizeEstimate() {
+		return this.routeProof.size() * 128;
 	}
 
 }

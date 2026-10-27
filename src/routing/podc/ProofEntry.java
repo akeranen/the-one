@@ -5,6 +5,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.X509EncodedKeySpec;
@@ -12,15 +13,12 @@ import java.security.spec.X509EncodedKeySpec;
 /**
  * A single record in a message's proof-of-delivery chain.
  *
- * Each forwarding hop appends one {@code ProofEntry} to the message.
- * The chain is linked via {@link #prevHash}: the first entry uses
- * {@code "0"}, each subsequent entry stores the SHA-256 hash of
- * its predecessor.
- *
- * <p>The {@link #signature} is a 64-byte Ed25519 digital signature over
- * the canonical data string {@code nodeId|timestamp|prevHash}.
- * {@link #publicKey} carries the signer's X.509-encoded Ed25519 public
- * key so that any node can call {@link #verify()} without a global PKI.</p>
+ * The node identifier is self-certifying: it must equal
+ * {@link #fingerprint(byte[])} of the embedded Ed25519 public key, so an
+ * entry can only be produced by the holder of the matching private key.
+ * Entries are linked via {@link #prevHash}; the first entry of a chain
+ * links to the genesis value {@link #genesis(String, String, String)}
+ * that binds the message id, the source and the destination.
  */
 public class ProofEntry {
 
@@ -30,16 +28,8 @@ public class ProofEntry {
     private final byte[] signature;
     private final byte[] publicKey;
     private transient String cachedHash;
+    private transient Boolean cachedValid;
 
-    /**
-     * @param nodeId    {@code DTNHost.toString()} of the forwarding node
-     * @param timestamp simulation second (truncated from {@code SimClock})
-     * @param prevHash  {@link #computeHash()} of the previous entry, or
-     *                  {@code "0"} for the very first entry
-     * @param signature Ed25519 signature (64 bytes) over
-     *                  {@code nodeId|timestamp|prevHash}
-     * @param publicKey X.509-encoded Ed25519 public key of the signer
-     */
     public ProofEntry(String nodeId, long timestamp, String prevHash,
                       byte[] signature, byte[] publicKey) {
         this.nodeId    = nodeId;
@@ -49,54 +39,98 @@ public class ProofEntry {
         this.publicKey = publicKey != null ? publicKey.clone() : new byte[0];
     }
 
-    /** Canonical data string used for both signing and hashing. */
+    /** Creates and signs an entry for the holder of {@code priv}. */
+    public static ProofEntry create(long timestamp, String prevHash,
+                                    PrivateKey priv, byte[] pubEncoded) {
+        String id = fingerprint(pubEncoded);
+        byte[] sig = sign(priv, canonical(id, timestamp, prevHash));
+        return new ProofEntry(id, timestamp, prevHash, sig, pubEncoded);
+    }
+
+    private static String canonical(String id, long ts, String prev) {
+        return id + "|" + ts + "|" + prev;
+    }
+
     private String canonicalData() {
-        return nodeId + "|" + timestamp + "|" + prevHash;
+        return canonical(nodeId, timestamp, prevHash);
     }
 
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
-    /** SHA-256 hex digest of {@link #canonicalData()}. */
-    public String computeHash() {
-        if (cachedHash != null) return cachedHash;
+    public static String sha256Hex(String s) {
+        return sha256Hex(s.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String sha256Hex(byte[] data) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] dig = md.digest(
-                    canonicalData().getBytes(StandardCharsets.UTF_8));
+            byte[] dig = MessageDigest.getInstance("SHA-256").digest(data);
             char[] hex = new char[dig.length * 2];
             for (int i = 0; i < dig.length; i++) {
                 int v = dig[i] & 0xFF;
                 hex[i * 2]     = HEX[v >>> 4];
                 hex[i * 2 + 1] = HEX[v & 0x0F];
             }
-            cachedHash = new String(hex);
-            return cachedHash;
+            return new String(hex);
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError("SHA-256 unavailable", e);
         }
     }
 
-    /**
-     * Verifies the Ed25519 signature against this entry's
-     * {@link #publicKey} and {@link #canonicalData()}.
-     *
-     * @return {@code true} only if the signature is cryptographically valid
-     */
-    private static final boolean FAST_CRYPTO =
-            Boolean.getBoolean("podc.fastCrypto");
+    /** Node identifier derived from an X.509-encoded Ed25519 public key. */
+    public static String fingerprint(byte[] pubEncoded) {
+        return sha256Hex(pubEncoded).substring(0, 32);
+    }
 
+    /** Value the first entry of a chain must link to. */
+    public static String genesis(String msgId, String srcId, String dstId) {
+        return "G" + sha256Hex(msgId + "|" + srcId + "|" + dstId);
+    }
+
+    public String computeHash() {
+        if (cachedHash == null) cachedHash = sha256Hex(canonicalData());
+        return cachedHash;
+    }
+
+    /**
+     * Checks the identity binding and the Ed25519 signature.
+     * Verification is deterministic; the result is memoized because in
+     * the simulator all copies of a message share this object.
+     */
     public boolean verify() {
-        if (FAST_CRYPTO) return true;
+        if (cachedValid != null) return cachedValid;
+        boolean ok = nodeId.equals(fingerprint(publicKey));
+        if (ok) {
+            try {
+                PublicKey pk = KeyFactory.getInstance("Ed25519")
+                        .generatePublic(new X509EncodedKeySpec(publicKey));
+                Signature v = Signature.getInstance("Ed25519");
+                v.initVerify(pk);
+                v.update(canonicalData().getBytes(StandardCharsets.UTF_8));
+                ok = v.verify(signature);
+            } catch (GeneralSecurityException e) {
+                ok = false;
+            }
+        }
+        cachedValid = ok;
+        return ok;
+    }
+
+    /** Entry that claims {@code claimedId} but is signed with another key. */
+    public static ProofEntry spoofed(String claimedId, long timestamp,
+                                     String prevHash, PrivateKey priv,
+                                     byte[] pubEncoded) {
+        byte[] sig = sign(priv, canonical(claimedId, timestamp, prevHash));
+        return new ProofEntry(claimedId, timestamp, prevHash, sig, pubEncoded);
+    }
+
+    static byte[] sign(PrivateKey key, String data) {
         try {
-            KeyFactory kf = KeyFactory.getInstance("Ed25519");
-            PublicKey pk = kf.generatePublic(
-                    new X509EncodedKeySpec(publicKey));
-            Signature verifier = Signature.getInstance("Ed25519");
-            verifier.initVerify(pk);
-            verifier.update(canonicalData().getBytes(StandardCharsets.UTF_8));
-            return verifier.verify(signature);
+            Signature s = Signature.getInstance("Ed25519");
+            s.initSign(key);
+            s.update(data.getBytes(StandardCharsets.UTF_8));
+            return s.sign();
         } catch (GeneralSecurityException e) {
-            return false;
+            throw new AssertionError("Ed25519 unavailable", e);
         }
     }
 

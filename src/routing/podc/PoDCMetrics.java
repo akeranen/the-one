@@ -4,6 +4,8 @@ import core.DTNHost;
 import core.SimClock;
 import core.SimScenario;
 import routing.MessageRouter;
+import routing.PoDCRouter;
+import routing.SybilPoDCRouter;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,259 +13,177 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Collects per-simulation PoDC metrics and writes CSV output when
- * {@link #flush(String)} is called (typically at the end of the run).
- *
- * <p>In addition to aggregate stats, records per-forward-event data
- * (simulation time, forwarder's work) so that a "natural selection"
- * chart can be generated post-hoc.</p>
+ * Simulation-wide statistics for PoDC runs. This class only observes;
+ * routing decisions never read from it.
  */
 public final class PoDCMetrics {
 
-    /* ---- singleton ---- */
     private static final PoDCMetrics INSTANCE = new PoDCMetrics();
     public static PoDCMetrics get() { return INSTANCE; }
     private PoDCMetrics() { reset(); }
 
-    /* ---- raw accumulators ---- */
-    private int  created;
-    private int  delivered;
-    private long relayed;
-    private long rejected;
-    private long acksProcessed;
-    private long invalidAcks;
+    private static final int BIN = 60;
 
-    private final List<Double>  latencies  = new ArrayList<Double>();
-    private final List<Integer> hopCounts  = new ArrayList<Integer>();
+    private final Map<String, PoDCRouter> byId = new HashMap<String, PoDCRouter>();
+    private int created, delivered, decrypted;
+    private long acksProcessed, invalidAcks;
+    private final List<Double> latencies = new ArrayList<Double>();
+    private final List<Integer> hops = new ArrayList<Integer>();
     private final List<Integer> proofBytes = new ArrayList<Integer>();
-
-    private static final int BIN_SIZE = 60;
-    private final List<int[]> forwardBins = new ArrayList<int[]>();
-
-    private int lastGiniBin = -1;
-    private final List<Double> giniBins = new ArrayList<Double>();
-
-    /* ---- recording API ---- */
-
-    public void recordCreated()  { created++; }
-
-    public void recordDelivered(double latency, int hops, int proofSize) {
-        delivered++;
-        latencies.add(latency);
-        hopCounts.add(hops);
-        proofBytes.add(proofSize);
-    }
-
-    public void recordForwarded() { relayed++; }
-    public void recordRejected()  { rejected++; }
-    public void recordAckProcessed() { acksProcessed++; }
-    public void recordInvalidAck()   { invalidAcks++; }
-
-    /**
-     * Records a data-message forward event for time-series analysis.
-     * @param simTime  current simulation time
-     * @param forwarderWork  the forwarding node's accumulated work
-     */
-    public void recordForwardEvent(double simTime, double forwarderWork) {
-        int bin = (int) (simTime / BIN_SIZE);
-        while (forwardBins.size() <= bin) {
-            forwardBins.add(new int[]{0, 0});
-        }
-        int[] slot = forwardBins.get(bin);
-        slot[0]++;
-        if (forwarderWork > 0) slot[1]++;
-
-        if (bin > lastGiniBin) {
-            lastGiniBin = bin;
-            while (giniBins.size() <= bin) giniBins.add(0.0);
-            giniBins.set(bin, giniWork());
-        }
-    }
-
-    /* ---- computed metrics ---- */
-
-    public double deliveryRatio() {
-        return created == 0 ? 0 : (double) delivered / created;
-    }
-
-    public double overheadRatio() {
-        return delivered == 0 ? Double.NaN
-                : (double)(relayed - delivered) / delivered;
-    }
-
-    public double avgLatency() {
-        return avg(latencies);
-    }
-
-    public double avgHops() {
-        double s = 0;
-        for (int h : hopCounts) s += h;
-        return hopCounts.isEmpty() ? 0 : s / hopCounts.size();
-    }
-
-    public double avgProofBytes() {
-        double s = 0;
-        for (int b : proofBytes) s += b;
-        return proofBytes.isEmpty() ? 0 : s / proofBytes.size();
-    }
-
-    public double giniWork() {
-        SimScenario sc = SimScenario.getInstance();
-        if (sc == null) return 0;
-        List<Double> works = new ArrayList<Double>();
-        for (DTNHost h : sc.getHosts()) {
-            MessageRouter r = h.getRouter();
-            if (r instanceof routing.PoDCRouter) {
-                works.add(((routing.PoDCRouter) r).getWork());
-            }
-        }
-        return gini(works);
-    }
-
-    /* ---- CSV output ---- */
-
-    private static final String HEADER =
-            "scenario,sim_time,nodes,created,delivered,delivery_ratio,"
-          + "overhead_ratio,avg_latency,avg_hops,gini_work,"
-          + "avg_proof_bytes,total_forwarded,total_rejected,"
-          + "total_acks,total_invalid_acks";
-
-    public void flush(String scenarioName) {
-        String dir = "reports";
-        new File(dir).mkdirs();
-
-        String path = dir + "/podc_results.csv";
-        boolean needsHeader = !new File(path).exists();
-        try (PrintWriter pw = new PrintWriter(new FileWriter(path, true))) {
-            if (needsHeader) pw.println(HEADER);
-            int nodes = 0;
-            SimScenario sc = SimScenario.getInstance();
-            if (sc != null) nodes = sc.getHosts().size();
-            pw.printf("%s,%.1f,%d,%d,%d,%.6f,%.4f,%.2f,%.2f,%.6f,%.1f,%d,%d,%d,%d%n",
-                    scenarioName, SimClock.getTime(), nodes,
-                    created, delivered, deliveryRatio(), overheadRatio(),
-                    avgLatency(), avgHops(), giniWork(), avgProofBytes(),
-                    relayed, rejected, acksProcessed, invalidAcks);
-        } catch (IOException e) {
-            System.err.println("PoDCMetrics: cannot write CSV — " + e);
-        }
-
-        flushWorkTimeSeries(scenarioName, dir);
-        flushGiniTimeSeries(scenarioName, dir);
-        flushPerMessageData(scenarioName, dir);
-        flushPerNodeData(scenarioName, dir);
-    }
-
-    /**
-     * Writes {@code reports/<scenario>_work_timeseries.csv} with columns:
-     * time_bin_start, total_forwards, experienced_forwards, fraction_experienced
-     *
-     * "Experienced" = forwarder had work&gt;0 (i.e. received at least one ACK).
-     */
-    private void flushWorkTimeSeries(String scenarioName, String dir) {
-        String path = dir + "/" + scenarioName + "_work_timeseries.csv";
-        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
-            pw.println("time,total_forwards,experienced_forwards,fraction_experienced");
-            for (int i = 0; i < forwardBins.size(); i++) {
-                int[] slot = forwardBins.get(i);
-                double frac = slot[0] > 0 ? (double) slot[1] / slot[0] : 0;
-                pw.printf("%d,%d,%d,%.4f%n",
-                        i * BIN_SIZE, slot[0], slot[1], frac);
-            }
-        } catch (IOException e) {
-            System.err.println("PoDCMetrics: cannot write timeseries — " + e);
-        }
-    }
-
-    private void flushGiniTimeSeries(String scenarioName, String dir) {
-        String path = dir + "/" + scenarioName + "_gini_timeseries.csv";
-        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
-            pw.println("time,gini");
-            for (int i = 0; i < giniBins.size(); i++) {
-                pw.printf("%d,%.6f%n", i * BIN_SIZE, giniBins.get(i));
-            }
-        } catch (IOException e) {
-            System.err.println("PoDCMetrics: cannot write gini timeseries — " + e);
-        }
-    }
-
-    private void flushPerMessageData(String scenarioName, String dir) {
-        String path = dir + "/" + scenarioName + "_per_message.csv";
-        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
-            pw.println("latency,hops,proof_bytes");
-            int n = latencies.size();
-            for (int i = 0; i < n; i++) {
-                pw.printf("%.2f,%d,%d%n",
-                        latencies.get(i),
-                        i < hopCounts.size() ? hopCounts.get(i) : 0,
-                        i < proofBytes.size() ? proofBytes.get(i) : 0);
-            }
-        } catch (IOException e) {
-            System.err.println("PoDCMetrics: cannot write per-message data — " + e);
-        }
-    }
-
-    public void flushPerNodeData(String scenarioName, String dir) {
-        SimScenario sc = SimScenario.getInstance();
-        if (sc == null) return;
-        String path = dir + "/" + scenarioName + "_per_node.csv";
-        try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
-            pw.println("node_id,work,score,connectivity,forwards,delivery_contributions");
-            for (DTNHost h : sc.getHosts()) {
-                MessageRouter r = h.getRouter();
-                if (r instanceof routing.PoDCRouter) {
-                    routing.PoDCRouter pr = (routing.PoDCRouter) r;
-                    pw.printf("%s,%.6f,%.6f,%.4f,%d,%d%n",
-                            h.toString(),
-                            pr.getWork(),
-                            pr.getScoreForNode(h),
-                            pr.getConnectivity(),
-                            pr.getNodeForwards(),
-                            pr.getDeliveryContributions());
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("PoDCMetrics: cannot write per-node data — " + e);
-        }
-    }
-
-    public void printSummary() {
-        System.out.println("--- PoDC metrics summary ---");
-        System.out.printf("  created          : %d%n", created);
-        System.out.printf("  delivered        : %d%n", delivered);
-        System.out.printf("  delivery_ratio   : %.4f%n", deliveryRatio());
-        System.out.printf("  overhead_ratio   : %.4f%n", overheadRatio());
-        System.out.printf("  avg_latency (s)  : %.2f%n", avgLatency());
-        System.out.printf("  avg_hops         : %.2f%n", avgHops());
-        System.out.printf("  gini_work        : %.6f%n", giniWork());
-        System.out.printf("  avg_proof_bytes  : %.1f%n", avgProofBytes());
-        System.out.printf("  total_forwarded  : %d%n", relayed);
-        System.out.printf("  total_rejected   : %d%n", rejected);
-        System.out.printf("  total_acks       : %d%n", acksProcessed);
-        System.out.printf("  total_invalid    : %d%n", invalidAcks);
-    }
+    private final List<double[]> series = new ArrayList<double[]>();
+    private int[] binForwards = new int[2];
+    private int lastBin = 0;
+    private boolean flushed;
 
     public void reset() {
-        created = delivered = 0;
-        relayed = rejected = acksProcessed = invalidAcks = 0;
-        latencies.clear();
-        hopCounts.clear();
-        proofBytes.clear();
-        forwardBins.clear();
-        giniBins.clear();
-        lastGiniBin = -1;
+        byId.clear();
+        created = delivered = decrypted = 0;
+        acksProcessed = invalidAcks = 0;
+        latencies.clear(); hops.clear(); proofBytes.clear();
+        series.clear();
+        binForwards = new int[2];
+        lastBin = 0;
+        flushed = false;
     }
 
-    /* ---- helpers ---- */
+    public void register(String id, PoDCRouter r) { byId.put(id, r); }
+
+    public void recordCreated() { created++; }
+    public void recordAckProcessed() { acksProcessed++; }
+    public void recordInvalidAck() { invalidAcks++; }
+
+    public void recordDelivered(double latency, int nHops, int bytes,
+                                boolean ok, List<ProofEntry> chain) {
+        delivered++;
+        if (ok) decrypted++;
+        latencies.add(latency);
+        hops.add(nHops);
+        proofBytes.add(bytes);
+    }
+
+    public void recordDataForward(double t, DTNHost to) {
+        binForwards[0]++;
+        if (to.getRouter() instanceof SybilPoDCRouter) binForwards[1]++;
+    }
+
+    private static boolean isAttacker(PoDCRouter r) {
+        return r instanceof SybilPoDCRouter;
+    }
+
+    /**
+     * Mean work of attackers and of honest nodes as seen by honest
+     * observers, and mean score ratio attacker/observer.
+     */
+    private double[] snapshot() {
+        double att = 0, hon = 0;
+        int na = 0, nh = 0;
+        List<PoDCRouter> all = new ArrayList<PoDCRouter>(byId.values());
+        for (PoDCRouter obs : all) {
+            if (isAttacker(obs)) continue;
+            for (PoDCRouter tgt : all) {
+                if (tgt == obs) continue;
+                double w = obs.observedWork(tgt.getNodeId());
+                if (isAttacker(tgt)) { att += w; na++; }
+                else { hon += w; nh++; }
+            }
+        }
+        return new double[]{na > 0 ? att / na : 0, nh > 0 ? hon / nh : 0};
+    }
+
+    /** Called from every router update; samples once per bin. */
+    public void tick() {
+        double t = SimClock.getTime();
+        int bin = (int) (t / BIN);
+        if (bin > lastBin) {
+            double[] s = snapshot();
+            double frac = binForwards[0] > 0
+                    ? (double) binForwards[1] / binForwards[0] : 0;
+            series.add(new double[]{lastBin * BIN, s[0], s[1],
+                    binForwards[0], binForwards[1], frac});
+            binForwards = new int[2];
+            lastBin = bin;
+        }
+        SimScenario sc = SimScenario.getInstance();
+        if (!flushed && sc != null && t + 0.001 >= sc.getEndTime()) {
+            flushed = true;
+            flush(sc.getName());
+        }
+    }
+
+    /** Gini coefficient of honest nodes' work averaged over observers. */
+    private double giniConsensusWork() {
+        List<PoDCRouter> all = new ArrayList<PoDCRouter>(byId.values());
+        List<Double> w = new ArrayList<Double>();
+        for (PoDCRouter tgt : all) {
+            if (isAttacker(tgt)) continue;
+            double s = 0; int n = 0;
+            for (PoDCRouter obs : all) {
+                if (obs == tgt || isAttacker(obs)) continue;
+                s += obs.observedWork(tgt.getNodeId()); n++;
+            }
+            w.add(n > 0 ? s / n : 0);
+        }
+        return gini(w);
+    }
+
+    private void flush(String name) {
+        String dir = "reports/podc";
+        new File(dir).mkdirs();
+        try (PrintWriter pw = new PrintWriter(new FileWriter(dir + "/" + name + "_summary.txt"))) {
+            pw.println("created: " + created);
+            pw.println("delivered: " + delivered);
+            pw.println("decrypted: " + decrypted);
+            pw.println("acks_processed: " + acksProcessed);
+            pw.println("invalid_acks: " + invalidAcks);
+            pw.println("avg_latency: " + avg(latencies));
+            pw.println("avg_proof_hops: " + avgI(hops));
+            pw.println("avg_proof_bytes: " + avgI(proofBytes));
+            pw.println("gini_work: " + giniConsensusWork());
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: " + e);
+        }
+        try (PrintWriter pw = new PrintWriter(new FileWriter(dir + "/" + name + "_series.csv"))) {
+            pw.println("time,attacker_work,honest_work,forwards,forwards_to_attackers,frac_to_attackers");
+            for (double[] r : series) {
+                pw.printf(java.util.Locale.ROOT, "%.0f,%.6f,%.6f,%.0f,%.0f,%.6f%n",
+                        r[0], r[1], r[2], r[3], r[4], r[5]);
+            }
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: " + e);
+        }
+        try (PrintWriter pw = new PrintWriter(new FileWriter(dir + "/" + name + "_per_node.csv"))) {
+            pw.println("host,attacker,consensus_work,forwards");
+            List<PoDCRouter> all = new ArrayList<PoDCRouter>(byId.values());
+            for (PoDCRouter tgt : all) {
+                double s = 0; int n = 0;
+                for (PoDCRouter obs : all) {
+                    if (obs == tgt || isAttacker(obs)) continue;
+                    s += obs.observedWork(tgt.getNodeId()); n++;
+                }
+                pw.printf(java.util.Locale.ROOT, "%s,%d,%.6f,%d%n", tgt.getHostName(),
+                        isAttacker(tgt) ? 1 : 0, n > 0 ? s / n : 0,
+                        tgt.getNodeForwards());
+            }
+        } catch (IOException e) {
+            System.err.println("PoDCMetrics: " + e);
+        }
+    }
 
     private static double avg(List<Double> v) {
-        if (v.isEmpty()) return 0;
         double s = 0;
         for (double d : v) s += d;
-        return s / v.size();
+        return v.isEmpty() ? 0 : s / v.size();
+    }
+
+    private static double avgI(List<Integer> v) {
+        double s = 0;
+        for (int d : v) s += d;
+        return v.isEmpty() ? 0 : s / v.size();
     }
 
     static double gini(List<Double> values) {
@@ -271,12 +191,12 @@ public final class PoDCMetrics {
         if (n == 0) return 0;
         List<Double> sorted = new ArrayList<Double>(values);
         Collections.sort(sorted);
-        double sum = 0, cumSum = 0;
+        double sum = 0, cum = 0;
         for (int i = 0; i < n; i++) {
-            sum    += sorted.get(i);
-            cumSum += sorted.get(i) * (i + 1);
+            sum += sorted.get(i);
+            cum += sorted.get(i) * (i + 1);
         }
         if (sum == 0) return 0;
-        return (2.0 * cumSum) / (n * sum) - (n + 1.0) / n;
+        return (2.0 * cum) / (n * sum) - (n + 1.0) / n;
     }
 }

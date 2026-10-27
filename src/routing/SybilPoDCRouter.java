@@ -1,83 +1,152 @@
 package routing;
 
+import java.security.KeyPair;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
 import core.DTNHost;
 import core.Message;
 import core.Settings;
 import core.SimClock;
 import core.SimScenario;
 
+import routing.podc.AckMessage;
 import routing.podc.ProofEntry;
 
-import java.util.List;
-import java.util.Random;
-
 /**
- * A malicious PoDC router that tries to inflate its own {@code work}
- * by injecting forged {@link ProofEntry} records.
+ * Malicious PoDC node.
  *
- * <h3>Attack vector (with Ed25519)</h3>
- * When forwarding a data message the Sybil node inserts an <b>extra</b>
- * proof entry with a <em>spoofed</em> node id (picked randomly from the
- * scenario's host list).  The entry is signed with <em>this</em> node's
- * Ed25519 private key and carries <em>this</em> node's public key.
- *
- * <p>Because {@link ProofEntry#verify()} only checks that the signature
- * matches the embedded public key (no global PKI), the forged entry
- * passes cryptographic verification.  However, the public key does
- * <b>not</b> belong to the claimed {@code nodeId}, so a system with
- * identity-binding checks would detect the forgery.</p>
+ * <ul>
+ *   <li><b>blackhole</b>: accepts data messages from neighbours and
+ *       silently drops them.</li>
+ *   <li><b>self-promotion</b>: every {@code fakeAckInterval} seconds until
+ *       {@code attackStop} it fabricates a proof of delivery between two of
+ *       its own Sybil identities in which its real identity is the only
+ *       relay, so honest verifiers credit it with 1. All signatures are
+ *       valid, so the fake ACK passes verification.</li>
+ *   <li>while promoting, it announces maximal connectivity in hello.</li>
+ *   <li><b>spoofIdentity</b>: the relay entry of the fake ACK claims the
+ *       identity of a random honest node but is signed with the attacker's
+ *       key (the attack of the first PoDC version).</li>
+ * </ul>
+ * Settings namespace {@code SybilPoDCRouter}: blackhole (true),
+ * fakeAckInterval (0 = off), attackStop (end of simulation),
+ * spoofIdentity (false).
  */
 public class SybilPoDCRouter extends PoDCRouter {
 
-    private final Random rng = new Random();
+    private final boolean blackhole, spoofIdentity;
+    private final double fakeAckInterval, attackStop;
+    private KeyPair sybilA, sybilB;
+    private double nextFake;
+    private int fakeCount;
+    private final Random rng = new Random(7);
 
-    public SybilPoDCRouter(Settings s) { super(s); }
-
-    protected SybilPoDCRouter(SybilPoDCRouter proto) { super(proto); }
-
-    @Override
-    public SybilPoDCRouter replicate() {
-        return new SybilPoDCRouter(this);
+    public SybilPoDCRouter(Settings s) {
+        super(s);
+        Settings ss = new Settings("SybilPoDCRouter");
+        blackhole = ss.getBoolean("blackhole", true);
+        spoofIdentity = ss.getBoolean("spoofIdentity", false);
+        fakeAckInterval = ss.getDouble("fakeAckInterval", 0);
+        attackStop = ss.getDouble("attackStop", Double.MAX_VALUE);
     }
 
-    /**
-     * Injects a forged proof entry with a randomly chosen victim node id
-     * (signed with this Sybil node's own key) <em>before</em> the
-     * legitimate proof entry for this host.
-     */
+    protected SybilPoDCRouter(SybilPoDCRouter proto) {
+        super(proto);
+        blackhole = proto.blackhole;
+        spoofIdentity = proto.spoofIdentity;
+        fakeAckInterval = proto.fakeAckInterval;
+        attackStop = proto.attackStop;
+        sybilA = newEd25519();
+        sybilB = newEd25519();
+    }
+
     @Override
-    protected void addProofToMessage(Message msg) {
-        DTNHost victim = pickRandomVictim();
-        if (victim != null) {
-            String fakeId = victim.toString();
-            long ts = (long) SimClock.getTime();
-            String prev = msg.getProofLength() == 0
-                    ? "0"
-                    : msg.getRouteProof()
-                          .get(msg.getProofLength() - 1).computeHash();
-            String dataToSign = fakeId + "|" + ts + "|" + prev;
-            byte[] sig = sign(dataToSign);
-            msg.addProof(new ProofEntry(
-                    fakeId, ts, prev, sig, getEd25519PublicEncoded()));
+    public SybilPoDCRouter replicate() { return new SybilPoDCRouter(this); }
+
+    private boolean promoting() {
+        return fakeAckInterval > 0 && SimClock.getTime() < attackStop;
+    }
+
+    @Override
+    public double advertisedConnectivity() {
+        return promoting() ? 1.0 : super.advertisedConnectivity();
+    }
+
+    private final Set<String> swallowed = new HashSet<String>();
+
+    @Override
+    protected int checkReceiving(Message m, DTNHost from) {
+        if (swallowed.contains(m.getId())) return DENIED_OLD;
+        return super.checkReceiving(m, from);
+    }
+
+    @Override
+    public Message messageTransferred(String id, DTNHost from) {
+        Message m = super.messageTransferred(id, from);
+        if (m != null && blackhole && !isAck(m) && m.getTo() != getHost()
+                && hasMessage(id)) {
+            swallowed.add(id);
+            deleteMessage(id, true);
         }
-        super.addProofToMessage(msg);
+        return m;
     }
 
-    private DTNHost pickRandomVictim() {
-        SimScenario sc = SimScenario.getInstance();
-        if (sc == null) return null;
-        List<DTNHost> hosts = sc.getHosts();
-        if (hosts.size() <= 1) return null;
-        DTNHost victim;
-        do {
-            victim = hosts.get(rng.nextInt(hosts.size()));
-        } while (victim == getHost());
-        return victim;
+    @Override
+    public void update() {
+        if (promoting() && SimClock.getTime() >= nextFake) {
+            nextFake = SimClock.getTime() + fakeAckInterval;
+            injectFakeAck();
+        }
+        super.update();
+    }
+
+    private void injectFakeAck() {
+        long ts = (long) SimClock.getTime();
+        String msgId = "SYB_" + getHost() + "_" + (fakeCount++);
+        byte[] pa = sybilA.getPublic().getEncoded();
+        byte[] pb = sybilB.getPublic().getEncoded();
+        String ida = ProofEntry.fingerprint(pa);
+        String idb = ProofEntry.fingerprint(pb);
+        ProofEntry e0 = ProofEntry.create(ts,
+                ProofEntry.genesis(msgId, ida, idb), sybilA.getPrivate(), pa);
+        ProofEntry e1;
+        if (spoofIdentity) {
+            String[] victim = lookupIdentity(randomHonestHost().toString());
+            e1 = ProofEntry.spoofed(victim[0], ts, e0.computeHash(),
+                    getEd25519Private(), getEd25519Public());
+        } else {
+            e1 = ProofEntry.create(ts, e0.computeHash(),
+                    getEd25519Private(), getEd25519Public());
+        }
+        ProofEntry e2 = ProofEntry.create(ts, e1.computeHash(),
+                sybilB.getPrivate(), pb);
+        AckMessage ack = new AckMessage(msgId, idb,
+                new ArrayList<ProofEntry>(Arrays.asList(e0, e1, e2)));
+
+        DTNHost target = randomHonestHost();
+        if (target == null) return;
+        Message m = new Message(getHost(), target, ACK_PREFIX + msgId,
+                ack.sizeBytes());
+        m.updateProperty(PROP_IS_ACK, Boolean.TRUE);
+        m.updateProperty(PROP_ACK_PAYLOAD, ack);
+        createNewMessage(m);
+    }
+
+    private DTNHost randomHonestHost() {
+        List<DTNHost> honest = new ArrayList<DTNHost>();
+        for (DTNHost h : SimScenario.getInstance().getHosts()) {
+            if (!(h.getRouter() instanceof SybilPoDCRouter)) honest.add(h);
+        }
+        return honest.isEmpty() ? null : honest.get(rng.nextInt(honest.size()));
     }
 
     @Override
     public String toString() {
-        return "SybilPoDCRouter@" + getHost()
-             + " w=" + String.format("%.3f", getWork());
+        return "SybilPoDCRouter@" + getHost();
     }
 }

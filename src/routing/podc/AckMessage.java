@@ -1,125 +1,86 @@
 package routing.podc;
 
-import core.Message;
-
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
-import java.security.Signature;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Acknowledgement payload carried inside a control {@link Message}.
+ * Proof of delivery issued by the destination of a data message.
  *
- * When the final recipient accepts a data message it builds an
- * {@code AckMessage} via {@link #fromDeliveredMessage}.  The
- * {@link #confirmationPath} is the delivered message's
- * {@link Message#getRouteProof()} reversed (receiver → source) with
- * a freshly computed hash chain.  Each entry in the reverse chain is
- * signed by the ACK creator (the final recipient) using Ed25519.
+ * The chain is the forward proof chain exactly as it arrived (each entry
+ * signed by the node that forwarded the message) followed by one delivery
+ * entry signed by the destination. Any node can verify the whole chain
+ * from the ACK alone: signatures, identity binding of every entry, hash
+ * links, and the genesis value that ties the chain to the message id,
+ * the source and the destination.
  */
 public class AckMessage {
 
     private final String originalMessageId;
-    private final List<ProofEntry> confirmationPath;
-    private final long timestamp;
+    private final String destinationId;
+    private final List<ProofEntry> chain;
 
-    /* ---- factory ---- */
-
-    /**
-     * Reverses the forward proof chain and re-links the hashes.
-     * Each new entry is signed by the ACK creator's Ed25519 key.
-     *
-     * @param delivered       the delivered data message
-     * @param now             simulation timestamp for the ACK
-     * @param signerPrivate   Ed25519 private key of the ACK creator
-     * @param signerPubEncoded X.509-encoded public key of the ACK creator
-     */
-    public static AckMessage fromDeliveredMessage(
-            Message delivered, long now,
-            PrivateKey signerPrivate, byte[] signerPubEncoded) {
-        List<ProofEntry> fwd = delivered.getRouteProof();
-        List<ProofEntry> rev = new ArrayList<ProofEntry>();
-        String prev = "0";
-        for (int i = fwd.size() - 1; i >= 0; i--) {
-            ProofEntry e = fwd.get(i);
-            String data = e.getNodeId() + "|" + e.getTimestamp() + "|" + prev;
-            byte[] sig = signData(signerPrivate, data);
-            ProofEntry step = new ProofEntry(
-                    e.getNodeId(), e.getTimestamp(), prev,
-                    sig, signerPubEncoded);
-            rev.add(step);
-            prev = step.computeHash();
-        }
-        return new AckMessage(delivered.getId(), rev, now);
-    }
-
-    private static final boolean FAST_CRYPTO =
-            Boolean.getBoolean("podc.fastCrypto");
-
-    private static byte[] signData(PrivateKey key, String data) {
-        if (FAST_CRYPTO) return new byte[64];
-        try {
-            Signature signer = Signature.getInstance("Ed25519");
-            signer.initSign(key);
-            signer.update(data.getBytes(StandardCharsets.UTF_8));
-            return signer.sign();
-        } catch (GeneralSecurityException e) {
-            return new byte[0];
-        }
-    }
-
-    /* ---- constructors ---- */
-
-    public AckMessage(String originalMessageId,
-                      List<ProofEntry> confirmationPath, long timestamp) {
+    public AckMessage(String originalMessageId, String destinationId,
+                      List<ProofEntry> chain) {
         this.originalMessageId = originalMessageId;
-        this.confirmationPath  = confirmationPath != null
-                ? new ArrayList<ProofEntry>(confirmationPath)
-                : new ArrayList<ProofEntry>();
-        this.timestamp = timestamp;
+        this.destinationId = destinationId;
+        this.chain = new ArrayList<ProofEntry>(chain);
     }
 
-    /* ---- verification ---- */
+    /** Builds the ACK at the destination from the received forward chain. */
+    public static AckMessage issue(String msgId, List<ProofEntry> forward,
+                                   long now, PrivateKey dstPriv,
+                                   byte[] dstPub) {
+        List<ProofEntry> c = new ArrayList<ProofEntry>(forward);
+        String prev = c.get(c.size() - 1).computeHash();
+        c.add(ProofEntry.create(now, prev, dstPriv, dstPub));
+        return new AckMessage(msgId, ProofEntry.fingerprint(dstPub), c);
+    }
 
-    /**
-     * Validates both structural integrity (hash chain) and cryptographic
-     * integrity (Ed25519 signature) of every entry in the path.
-     *
-     * <ol>
-     *   <li>First entry's prevHash must be {@code "0"}.</li>
-     *   <li>Each subsequent entry's prevHash must equal the preceding
-     *       entry's {@link ProofEntry#computeHash()}.</li>
-     *   <li>{@link ProofEntry#verify()} must return {@code true} for
-     *       every entry (Ed25519 signature check).</li>
-     * </ol>
-     */
     public boolean verifyChain() {
-        List<ProofEntry> path = confirmationPath;
-        if (path.isEmpty()) return true;
-        for (int i = 0; i < path.size(); i++) {
-            ProofEntry e = path.get(i);
-            if (i == 0) {
-                if (!"0".equals(e.getPrevHash())) return false;
-            } else {
-                if (!e.getPrevHash().equals(path.get(i - 1).computeHash()))
-                    return false;
-            }
+        if (chain.size() < 2) return false;
+        ProofEntry first = chain.get(0);
+        String g = ProofEntry.genesis(originalMessageId,
+                first.getNodeId(), destinationId);
+        if (!g.equals(first.getPrevHash())) return false;
+        if (!destinationId.equals(chain.get(chain.size() - 1).getNodeId()))
+            return false;
+        for (int i = 0; i < chain.size(); i++) {
+            ProofEntry e = chain.get(i);
+            if (i > 0 && !e.getPrevHash().equals(chain.get(i - 1).computeHash()))
+                return false;
             if (!e.verify()) return false;
         }
         return true;
     }
 
-    /* ---- accessors ---- */
-
-    public String getOriginalMessageId() { return originalMessageId; }
-    public long   getTimestamp()         { return timestamp; }
-
-    public List<ProofEntry> getConfirmationPath() {
-        return Collections.unmodifiableList(confirmationPath);
+    /**
+     * Relay identifiers ordered from the destination side (index 0 is the
+     * node that handed the message to the destination). The source and the
+     * destination are excluded, and every identifier appears once.
+     */
+    public List<String> relaysFromDestination() {
+        String src = chain.get(0).getNodeId();
+        Set<String> seen = new LinkedHashSet<String>();
+        for (int i = chain.size() - 2; i >= 1; i--) {
+            String id = chain.get(i).getNodeId();
+            if (!id.equals(src) && !id.equals(destinationId)) seen.add(id);
+        }
+        return new ArrayList<String>(seen);
     }
 
-    public int getHopCount() { return confirmationPath.size(); }
+    /** Unique key of this proof of delivery. */
+    public String key() {
+        return originalMessageId + ":" + chain.get(chain.size() - 1).computeHash();
+    }
+
+    public String getOriginalMessageId() { return originalMessageId; }
+    public String getDestinationId()     { return destinationId; }
+    public String getSourceId()          { return chain.get(0).getNodeId(); }
+    public long   getTimestamp() { return chain.get(chain.size() - 1).getTimestamp(); }
+    public List<ProofEntry> getChain() { return Collections.unmodifiableList(chain); }
+    public int sizeBytes() { return 64 + 128 * chain.size(); }
 }

@@ -3,6 +3,13 @@
 
 # Simulation report files
 *reports*/*.txt
+reports/
+scenarios/
+tmp_configs/
+
+# Local experiment scripts
+*.bat
+*.py
 
 # Javadocs
 *.html
